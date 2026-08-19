@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>MGM Hub — Soluciones & Beneficios MGM</title>
+  <meta name="description" content="Aplicación Móvil MGM Hub: MGM Puntos, Calendario de Capacitaciones, Promociones del Mes y Asistente IA Magie.">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- DIV INVISIBLE PARA BOTPRESS TOGGLE -->
+  <div id="bp-toggle-chat" style="display: none; visibility: hidden; opacity: 0; width: 0; height: 0;"></div>
+
+  <!-- APP MOBILE ROOT SHELL -->
+  <div id="app-root">
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         HEADER PRINCIPAL MÓVIL (BLANCO CON BOTÓN ASESORÍA)
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <header class="app-header">
+      <div class="brand-wrapper">
+        <img src="https://mgmpty.odoo.com/web/image/website/1/logo/MGM?unique=44e5057" alt="MGM Logo" class="brand-logo-img" onerror="this.src='https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'">
+        <div class="brand-titles">
+          <div class="brand-app-name">
+            MGM <span class="badge-box">HUB</span>
+          </div>
+          <div class="brand-tagline">Soluciones & Beneficios</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="btn-open-chat-header" class="btn-header-wa-action" onclick="openAsesoriaModal()" aria-label="Asesoría WhatsApp">
+          <i class="fa-brands fa-whatsapp"></i>
+          <span>Asesoría</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VISTA 1: INICIO (DASHBOARD HUB)
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <main id="view-home" class="view-container active">
+
+      <!-- HERO BANNER: PRÓXIMO EVENTO O EVENTO EN CURSO -->
+      <div class="next-event-hero" id="home-event-banner" onclick="switchMainTab('agenda')">
+        <div class="next-event-icon-box" id="home-event-icon-wrap">
+          <i class="fa-solid fa-calendar-star" id="home-event-icon"></i>
+        </div>
+        <div class="next-event-details">
+          <div class="next-event-badge" id="home-event-badge">
+            <i class="fa-solid fa-bolt"></i> Próximo Evento
+          </div>
+          <div class="next-event-title-text" id="home-event-title">Sincronizando agenda...</div>
+          <div class="next-event-countdown" id="home-event-time">Calculando fecha...</div>
+        </div>
+        <i class="fa-solid fa-chevron-right" style="color: rgba(255,255,255,0.6); font-size: 13px;"></i>
+      </div>
+
+      <!-- SECCIÓN: ACCESOS DIRECTOS RÁPIDOS -->
+      <div class="section-header">
+        <h2 class="section-title"><i class="fa-solid fa-grip" style="color: var(--primary-blue);"></i> Servicios Rápidos</h2>
+      </div>
+
+      <div class="quick-grid">
+        <div class="quick-card" onclick="switchMainTab('puntos')">
+          <div class="card-icon-pill pill-puntos"><i class="fa-solid fa-coins"></i></div>
+          <div>
+            <div class="card-title">MGM Puntos</div>
+            <div class="card-desc">Consulta tu saldo de puntos acumulados y beneficios.</div>
+          </div>
+        </div>
+
+        <div class="quick-card" onclick="switchMainTab('agenda')">
+          <div class="card-icon-pill pill-agenda"><i class="fa-solid fa-calendar-days"></i></div>
+          <div>
+            <div class="card-title">Agenda & Cursos</div>
+            <div class="card-desc">Webinars, certificaciones y registro con QR.</div>
+          </div>
+        </div>
+
+        <div class="quick-card" onclick="switchMainTab('promos')">
+          <div class="card-icon-pill pill-promos"><i class="fa-solid fa-fire"></i></div>
+          <div>
+            <div class="card-title">Promociones</div>
+            <div class="card-desc">Ofertas del mes y lanzamientos exclusivos.</div>
+          </div>
+        </div>
+
+        <!-- ACCESO DIRECTO MAGIE IA BOTPRESS -->
+        <div class="quick-card" onclick="openBot()">
+          <div class="card-icon-pill pill-chat"><i class="fa-solid fa-robot"></i></div>
+          <div>
+            <div class="card-title">Magie IA 24/7</div>
+            <div class="card-desc">Asistente virtual de ventas y cotizaciones.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN: PROMOCIONES DESTACADAS EN TIEMPO REAL -->
+      <div class="section-header">
+        <h2 class="section-title"><i class="fa-solid fa-sparkles" style="color: var(--accent-gold-dark);"></i> Promos de este Mes</h2>
+        <span class="section-link" onclick="switchMainTab('promos')">Ver todas →</span>
+      </div>
+
+      <div class="promos-slider-container" id="home-promos-slider">
+        <div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Cargando promociones del mes...</div>
+      </div>
+
+      <!-- SECCIÓN: BENEFICIOS MGM (CON PADDING PARA SCROLL COMPLETO) -->
+      <div class="section-header">
+        <h2 class="section-title"><i class="fa-solid fa-shield-check" style="color: var(--primary-blue);"></i> Experiencia MGM</h2>
+      </div>
+
+      <div class="features-list">
+        <div class="feature-item">
+          <div class="feature-icon" style="color: var(--accent-gold-dark);"><i class="fa-solid fa-award"></i></div>
+          <div class="feature-text">
+            <strong>Garantía & Respaldo Oficial</strong>
+            <span>Distribución autorizada de las mejores marcas de seguridad electrónica en Panamá.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon" style="color: var(--primary-blue);"><i class="fa-solid fa-user-tie"></i></div>
+          <div class="feature-text">
+            <strong>Asesoría Técnica Especializada</strong>
+            <span>Ingenieros de proyectos listos para dimensionar tus soluciones de CCTV y Control de Acceso.</span>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VISTA 2: MGM PUNTOS (PORTAL CLIENTE EXCLUSIVO)
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <main id="view-puntos" class="view-container">
+
+      <!-- SUB-NAVEGACIÓN INTERNA MGM PUNTOS -->
+      <div class="puntos-subnav">
+        <button class="puntos-subtab active" data-subview="subview-cuenta">Mi Cuenta</button>
+        <button class="puntos-subtab" data-subview="subview-registro">Registrarme</button>
+        <button class="puntos-subtab" data-subview="subview-promos">Beneficios</button>
+        <button class="puntos-subtab" data-subview="subview-terminos">Términos</button>
+      </div>
+
+      <!-- SUBVISTA 1: MI CUENTA / CONSULTA DE PUNTOS -->
+      <div id="subview-cuenta" class="puntos-subview active">
+
+        <!-- CAJA DE LOGIN / CONSULTA POR CÉDULA -->
+        <div id="puntos-login-box" class="app-form">
+          <div style="text-align: center; margin-bottom: 16px;">
+            <i class="fa-solid fa-address-card" style="font-size: 32px; color: var(--accent-gold-dark); margin-bottom: 8px;"></i>
+            <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">Consulta tus MGM Puntos</h3>
+            <p style="font-size: 12px; color: var(--text-muted);">Ingresa tu cédula o RUC registrado para ver tu saldo acumulado.</p>
+          </div>
+
+          <div id="puntos-login-alert" class="app-alert"></div>
+
+          <form id="form-puntos-login">
+            <div class="form-group">
+              <label class="form-label" for="login-cedula">Cédula o Identificación</label>
+              <input type="text" id="login-cedula" class="form-control" placeholder="Ej: 8-888-1234 o E-8-12345" data-fmt="cedula" required>
+            </div>
+            <button type="submit" class="btn-submit">
+              <i class="fa-solid fa-search"></i> Consultar Mi Saldo
+            </button>
+          </form>
+        </div>
+
+        <!-- DASHBOARD DIGITAL DE SOCIO (SE REVELA TRAS CONSULTAR) -->
+        <div id="puntos-dashboard-box" style="display: none;">
+
+          <!-- TARJETA DIGITAL DE MEMBRESÍA -->
+          <div class="member-card">
+            <div class="member-card-header">
+              <img src="https://mgmpty.odoo.com/web/image/website/1/logo/MGM?unique=44e5057" alt="MGM Logo" class="card-brand-logo">
+              <div class="card-tier-pill" id="dash-tier">MGM MIEMBRO</div>
+            </div>
+
+            <div class="member-points-display">
+              <div class="points-label">Saldo Disponible</div>
+              <div class="points-number" id="dash-pts">0</div>
+              <div class="points-usd" id="dash-pts-usd">$0.00 USD para canjes</div>
+            </div>
+
+            <div class="member-card-footer">
+              <div>
+                <div class="member-holder-label">Titular</div>
+                <div class="member-holder-name" id="dash-holder">---</div>
+              </div>
+              <div class="member-cedula" id="dash-cedula-display">---</div>
+            </div>
+          </div>
+
+          <!-- BANNER ESPECIAL DE CUMPLEAÑOS -->
+          <div id="dash-bday-banner" class="bday-banner" style="display: none;">
+            <div class="bday-icon">🎂</div>
+            <div class="bday-text">
+              <strong>¡Mes de Cumpleaños Detectado!</strong>
+              <span>Disfruta de 10% de descuento especial en tus compras de este mes.</span>
+            </div>
+          </div>
+
+          <!-- HISTORIAL DE MOVIMIENTOS -->
+          <div class="section-header" style="padding: 10px 0;">
+            <h3 class="section-title"><i class="fa-solid fa-receipt" style="color: var(--primary-blue);"></i> Últimos Movimientos</h3>
+            <button class="btn-header-action" onclick="resetPuntosLogin()" style="width: auto; height: auto; padding: 4px 10px; border-radius: 6px; font-size: 11px; background: var(--bg-page); color: var(--text-dark); border-color: var(--border-light);">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i> Salir
+            </button>
+          </div>
+
+          <div class="tx-history-box">
+            <table class="tx-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Factura</th>
+                  <th>Monto</th>
+                  <th>Puntos</th>
+                </tr>
+              </thead>
+              <tbody id="dash-tx-body">
+                <tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 18px;">Sin movimientos registrados.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SUBVISTA 2: REGISTRO DE CLIENTE -->
+      <div id="subview-registro" class="puntos-subview">
+        <div class="app-form">
+          <div style="text-align: center; margin-bottom: 16px;">
+            <i class="fa-solid fa-user-plus" style="font-size: 30px; color: var(--primary-blue); margin-bottom: 6px;"></i>
+            <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">Únete al Programa MGM Puntos</h3>
+            <p style="font-size: 12px; color: var(--text-muted);">Compra, acumula puntos y canjea por descuentos directos.</p>
+          </div>
+
+          <div id="reg-alert" class="app-alert"></div>
+
+          <form id="form-puntos-register">
+            <div class="form-group">
+              <label class="form-label" for="reg-nombre">Nombre Completo o Empresa</label>
+              <input type="text" id="reg-nombre" class="form-control" placeholder="Ej: Juan Pérez" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reg-cedula">Cédula o RUC</label>
+              <input type="text" id="reg-cedula" class="form-control" placeholder="Ej: 8-888-1234" data-fmt="cedula" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reg-correo">Correo Electrónico</label>
+              <input type="email" id="reg-correo" class="form-control" placeholder="juan@ejemplo.com" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reg-telefono">Teléfono / WhatsApp</label>
+              <input type="tel" id="reg-telefono" class="form-control" placeholder="6254-0000" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reg-cumpleanos">Fecha de Cumpleaños</label>
+              <input type="date" id="reg-cumpleanos" class="form-control">
+            </div>
+
+            <button type="submit" class="btn-submit">
+              <i class="fa-solid fa-badge-check"></i> Completar Registro
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- SUBVISTA 3: BENEFICIOS & MULTIPLICADORES -->
+      <div id="subview-promos" class="puntos-subview">
+        <div id="puntos-promos-container" style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- Cargado dinámicamente -->
+        </div>
+      </div>
+
+      <!-- SUBVISTA 4: TÉRMINOS & CONDICIONES -->
+      <div id="subview-terminos" class="puntos-subview">
+        <div class="app-form" id="puntos-terms-container">
+          <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--text-dark);">Reglamento Oficial</h3>
+          <div id="terms-list-content" style="font-size: 12.5px; color: var(--text-muted); line-height: 1.6; display: flex; flex-direction: column; gap: 10px;">
+            Cargando términos oficiales...
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VISTA 3: CALENDARIO & AGENDA MGM
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <main id="view-agenda" class="view-container">
+      <div class="calendar-wrap">
+
+        <!-- MES & NAVEGACIÓN -->
+        <div class="calendar-top-bar">
+          <div class="calendar-month-text">
+            <i class="fa-solid fa-calendar-circle-user" style="color: var(--primary-blue);"></i>
+            <span id="cal-month-title">Cargando mes...</span>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button class="cal-nav-btn" id="btn-cal-prev" aria-label="Mes anterior"><i class="fa-solid fa-chevron-left"></i></button>
+            <button class="cal-nav-btn" id="btn-cal-next" aria-label="Mes siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </div>
+
+        <!-- FILTROS POR CATEGORÍA -->
+        <div class="cal-filters">
+          <div class="filter-pill active" onclick="filterEvents('all', this)"><i class="fa-solid fa-layer-group"></i> Todos</div>
+          <div class="filter-pill" onclick="filterEvents('webinar', this)"><i class="fa-solid fa-desktop"></i> Webinars</div>
+          <div class="filter-pill" onclick="filterEvents('training', this)"><i class="fa-solid fa-users"></i> Capacitaciones</div>
+          <div class="filter-pill" onclick="filterEvents('curso', this)"><i class="fa-solid fa-award"></i> Certificaciones</div>
+        </div>
+
+        <!-- DÍAS DE LA SEMANA -->
+        <div class="cal-grid-header">
+          <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+        </div>
+
+        <!-- CUADRÍCULA DEL CALENDARIO -->
+        <div class="cal-grid-days" id="cal-grid-days-container"></div>
+
+      </div>
+    </main>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VISTA 4: PROMOCIONES DEL MES (GALERÍA COMPLETA)
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <main id="view-promos" class="view-container">
+      <div class="promos-gallery" id="promos-full-gallery">
+        <!-- Cargado dinámicamente desde Google Sheets -->
+        <div style="text-align: center; color: var(--text-muted); padding: 40px;">Cargando catálogo de promociones...</div>
+      </div>
+    </main>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         MINI AUDIO PLAYER (REPRODUCTOR STREAMING CON PLAYLIST MULTI-PISTA Y CIERRE 'X')
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <div class="audio-mini-bar hidden" id="audio-mini-bar">
+      <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="Track Cover" class="audio-cover-img" id="audio-cover">
+      
+      <div class="audio-info-wrap">
+        <div class="audio-track-title" id="audio-title">Cargando música...</div>
+        <div class="audio-track-artist" id="audio-artist">MGM Radio</div>
+      </div>
+
+      <div class="audio-controls">
+        <button class="btn-audio" id="audio-btn-prev" aria-label="Anterior"><i class="fa-solid fa-backward-step"></i></button>
+        <button class="btn-audio btn-audio-play" id="audio-btn-play" aria-label="Play/Pause">
+          <i class="fa-solid fa-play" id="audio-play-icon"></i>
+          <i class="fa-solid fa-pause" id="audio-pause-icon" style="display: none;"></i>
+        </button>
+        <button class="btn-audio" id="audio-btn-next" aria-label="Siguiente"><i class="fa-solid fa-forward-step"></i></button>
+        <!-- BOTÓN DE CIERRE 'X' -->
+        <button class="btn-audio btn-audio-close" id="audio-btn-close" aria-label="Cerrar reproductor" title="Cerrar reproductor">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <audio id="audio-element" style="display: none;" preload="none"></audio>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         BOTTOM NAVIGATION BAR (BARRA DE PESTAÑAS FIJA INFERIOR)
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-tab="home" onclick="switchMainTab('home')">
+        <i class="fa-solid fa-house nav-icon"></i>
+        <span class="nav-label">Inicio</span>
+      </button>
+
+      <button class="nav-item" data-tab="puntos" onclick="switchMainTab('puntos')">
+        <i class="fa-solid fa-coins nav-icon"></i>
+        <span class="nav-label">Puntos</span>
+      </button>
+
+      <button class="nav-item" data-tab="agenda" onclick="switchMainTab('agenda')">
+        <i class="fa-solid fa-calendar-days nav-icon"></i>
+        <span class="nav-label">Agenda</span>
+      </button>
+
+      <button class="nav-item" data-tab="promos" onclick="switchMainTab('promos')">
+        <i class="fa-solid fa-fire nav-icon"></i>
+        <span class="nav-label">Promos</span>
+      </button>
+    </nav>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         MODAL PANTALLA COMPLETA: ASESORÍA MGM & CONTACTOS WHATSAPP
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <div class="app-modal" id="modal-asesoria">
+      <div class="modal-content-card full-screen">
+        <button class="modal-close-x" onclick="closeAppModal('modal-asesoria')">✕</button>
+
+        <div class="asesoria-banner-header">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+            <i class="fa-brands fa-whatsapp" style="font-size: 26px; color: #25d366;"></i>
+            <h3 style="font-size: 17px; font-weight: 800; color: #fff;">Asesoría MGM en Línea</h3>
+          </div>
+          <p style="font-size: 12px; color: rgba(255,255,255,0.75);">Elige el canal de atención especializada según tu necesidad:</p>
+        </div>
+
+        <div class="wa-contact-list-modal">
+          <!-- CARD DESTACADA MAGIE IA BOTPRESS -->
+          <div class="wa-card-item magie-special-card" onclick="openBot()">
+            <img src="https://mgmpty.odoo.com/web/image/69925-9cdb234e/magiechat.png" alt="Magie" class="magie-avatar-img" onerror="this.src='https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'">
+            <div class="wa-card-info" style="flex: 1;">
+              <strong style="color: var(--accent-purple); font-size: 14.5px;">Magie IA 24/7 (Botpress)</strong>
+              <span>Asistente de Ventas MGM (Respuesta inmediata)</span>
+            </div>
+            <i class="fa-solid fa-robot" style="color: var(--accent-purple); font-size: 20px;"></i>
+          </div>
+
+          <!-- ASESOR DE VENTAS -->
+          <a class="wa-card-item" target="_blank" href="https://wa.me/50762540412?text=Consulta%20desde%20MGM%20Hub%20App">
+            <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" class="wa-avatar-img">
+            <div class="wa-card-info" style="flex: 1;">
+              <strong>Asesor de Ventas & Cotizaciones</strong>
+              <span>Atención directa para distribuidores y pedidos</span>
+            </div>
+            <i class="fa-brands fa-whatsapp" style="color: var(--accent-green); font-size: 22px;"></i>
+          </a>
+
+          <!-- PROYECTOS & RETAIL -->
+          <a class="wa-card-item" target="_blank" href="https://wa.me/50764541476?text=Consulta%20Proyectos%20desde%20MGM%20Hub%20App">
+            <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" class="wa-avatar-img">
+            <div class="wa-card-info" style="flex: 1;">
+              <strong>Ingeniería de Proyectos</strong>
+              <span>Dimensionamiento de CCTV y control de acceso</span>
+            </div>
+            <i class="fa-brands fa-whatsapp" style="color: var(--accent-green); font-size: 22px;"></i>
+          </a>
+
+          <!-- SOPORTE TÉCNICO -->
+          <a class="wa-card-item" target="_blank" href="https://wa.me/50765843751?text=Soporte%20Tecnico%20desde%20MGM%20Hub%20App">
+            <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" class="wa-avatar-img">
+            <div class="wa-card-info" style="flex: 1;">
+              <strong>Soporte Técnico & Garantías</strong>
+              <span>Configuración, firmwares y servicio postventa</span>
+            </div>
+            <i class="fa-brands fa-whatsapp" style="color: var(--accent-green); font-size: 22px;"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         MODAL 1: DETALLES DE EVENTO & CAPACITACIÓN (LIGHTBOX)
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <div class="app-modal" id="modal-event-detail">
+      <div class="modal-content-card">
+        <button class="modal-close-x" onclick="closeAppModal('modal-event-detail')">✕</button>
+
+        <div style="display: inline-block; background: var(--primary-blue-lt); border: 1px solid var(--primary-blue); color: var(--primary-blue); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 12px; margin-bottom: 12px; text-transform: uppercase;" id="modal-event-cat">
+          Capacitación
+        </div>
+
+        <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;" id="modal-event-title">---</h3>
+        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;" id="modal-event-desc">---</p>
+
+        <div class="event-detail-grid">
+          <div class="event-detail-item"><i class="fa-solid fa-calendar-days"></i> <span id="modal-event-date">---</span></div>
+          <div class="event-detail-item"><i class="fa-solid fa-clock"></i> <span id="modal-event-time">---</span></div>
+          <div class="event-detail-item"><i class="fa-solid fa-dollar-sign"></i> <span id="modal-event-cost">---</span></div>
+          <div class="event-detail-item"><i class="fa-solid fa-location-dot"></i> <span id="modal-event-place">---</span></div>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 18px;">
+          <a href="#" target="_blank" id="modal-event-btn-reserve" class="btn-submit" style="flex: 1; text-decoration: none;">
+            <i class="fa-solid fa-ticket"></i> Reservar Cupo
+          </a>
+          <button class="btn-header-action" onclick="openEventQR()" title="Ver código QR" style="background: var(--bg-page); color: var(--text-dark); border-color: var(--border-light);"><i class="fa-solid fa-qrcode"></i></button>
+          <button class="btn-header-action" onclick="openEventShare()" title="Compartir" style="background: var(--bg-page); color: var(--text-dark); border-color: var(--border-light);"><i class="fa-solid fa-share-nodes"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL QR DE EVENTO -->
+    <div class="app-modal" id="modal-event-qr">
+      <div class="modal-content-card" style="text-align: center;">
+        <button class="modal-close-x" onclick="closeAppModal('modal-event-qr')">✕</button>
+        <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--text-dark);">Escanea para Registrarte</h4>
+        <img id="qr-image-src" src="" alt="QR Code" style="width: 190px; height: 190px; border-radius: 12px; background: #f8fafc; padding: 8px; margin: 0 auto 16px; display: block; border: 1px solid var(--border-light);">
+        <button class="btn-submit" onclick="closeAppModal('modal-event-qr')">Entendido</button>
+      </div>
+    </div>
+
+    <!-- MODAL COMPARTIR EVENTO -->
+    <div class="app-modal" id="modal-event-share">
+      <div class="modal-content-card" style="text-align: center;">
+        <button class="modal-close-x" onclick="closeAppModal('modal-event-share')">✕</button>
+        <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 16px; color: var(--text-dark);">Compartir Evento</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+          <div class="feature-item" style="cursor: pointer; justify-content: center;" onclick="shareAction('wa')">
+            <i class="fa-brands fa-whatsapp" style="color: #25D366; font-size: 20px;"></i> <span>WhatsApp</span>
+          </div>
+          <div class="feature-item" style="cursor: pointer; justify-content: center;" onclick="shareAction('cal')">
+            <i class="fa-solid fa-calendar-plus" style="color: #4285F4; font-size: 20px;"></i> <span>Google Cal</span>
+          </div>
+          <div class="feature-item" style="cursor: pointer; justify-content: center;" onclick="shareAction('copy')">
+            <i class="fa-solid fa-copy" style="font-size: 20px; color: var(--text-dark);"></i> <span>Copiar</span>
+          </div>
+          <div class="feature-item" style="cursor: pointer; justify-content: center;" onclick="shareAction('mail')">
+            <i class="fa-solid fa-envelope" style="color: #ea4335; font-size: 20px;"></i> <span>Email</span>
+          </div>
+        </div>
+        <button class="btn-submit" onclick="closeAppModal('modal-event-share')">Cerrar</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         MODAL 2: DETALLES DE PROMOCIÓN
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <div class="app-modal" id="modal-promo-detail">
+      <div class="modal-content-card" style="padding: 0; overflow: hidden; border-radius: var(--radius-lg);">
+        <button class="modal-close-x" onclick="closeAppModal('modal-promo-detail')" style="background: rgba(0,0,0,0.5); border: none; color: #fff; top: 10px; right: 10px;">✕</button>
+        <div style="width: 100%; height: 240px; background: var(--bg-page); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <img id="modal-promo-img" src="" alt="Promo" style="width: 100%; height: 100%; object-fit: contain; display: block;">
+        </div>
+        <div style="padding: 16px 18px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" style="width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border-light);">
+              <strong style="font-size: 13px; color: var(--text-dark);">MGM Panamá</strong>
+            </div>
+            <button class="btn-like" id="modal-promo-like-btn" onclick="toggleModalPromoLike()">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span id="modal-promo-likes-count">Me gusta</span>
+            </button>
+          </div>
+          <p id="modal-promo-copy" style="font-size: 13px; color: var(--text-body); line-height: 1.55; white-space: pre-line; margin-bottom: 16px;">---</p>
+          <a href="https://wa.me/50762540412?text=Hola,%20quisiera%20mas%20informacion%20sobre%20la%20promocion" target="_blank" class="btn-submit" style="text-decoration: none;">
+            <i class="fa-brands fa-whatsapp"></i> Consultar Disponibilidad
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         SPLASHSCREEN INTELIGENTE DE BIENVENIDA / OFERTAS
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <div id="imou-splash">
+      <div class="splash-card-inner">
+        <button class="splash-close-btn" onclick="closeSplashWidget()">✕</button>
+        <div id="splash-content-wrap" style="cursor: pointer;">
+          <img id="splash-img" src="" alt="Promoción Especial">
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- FIN APP ROOT -->
+
+  <!-- BOTPRESS WEBCHAT SDK v3.6 (mismo que funciona en la web MGM) -->
+  <script src="https://cdn.botpress.cloud/webchat/v3.6/inject.js"></script>
+
+  <script>
+    // Inicializar Botpress con los mismos parámetros que funcionan en la web MGM
+    // Se ejecuta inmediatamente después de cargar el SDK
+    if (window.botpress) {
+      window.botpress.init({
+        "botId": "e5a3c8a6-9aec-41a3-870d-d1985dc8c7df",
+        "clientId": "defae30e-36d3-4f8e-91a9-5c524f7bc655",
+        "configuration": {
+          "version": "v2",
+          "botName": "Magie — Asistente IA MGM",
+          "botAvatar": "https://mgmpty.odoo.com/web/image/69925-9cdb234e/magiechat.png",
+          "color": "#143266",
+          "variant": "solid",
+          "headerVariant": "glass",
+          "themeMode": "light",
+          "fontFamily": "inter",
+          "toggleChatId": "bp-toggle-chat"
+        }
+      });
+    }
+  </script>
+
+  <!-- LÓGICA PRINCIPAL DE LA APP -->
+  <script src="app.js"></script>
+</body>
+</html>
