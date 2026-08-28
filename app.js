@@ -862,27 +862,56 @@
   };
 
   window.openPromoDetail = function(idx) {
-    const p = state.promos[idx];
-    if (!p) return;
-    state.activePromoData = { ...p, idx };
-
-    const imgEl = document.getElementById('modal-promo-img');
-    if (imgEl) {
-      if (p.imagen) {
-        imgEl.src = p.imagen;
-        imgEl.style.display = 'block';
-      } else {
-        imgEl.style.display = 'none';
-      }
-    }
-
+    const modal = document.getElementById('modal-promo-feed');
+    const feed = document.getElementById('cli-modal-feed');
+    if (!modal || !feed || !state.promos) return;
+    
     const likes = JSON.parse(localStorage.getItem(K_LIKES) || '{}');
-    const totalLikes = parseInt(p.likes || 0) + (likes[p.id] ? 1 : 0);
-    document.getElementById('modal-promo-copy').textContent = `${p.nombre}\n\n${p.descripcion || ''}\n\n📅 Promoción vigente`;
-    document.getElementById('modal-promo-likes-count').textContent = `${totalLikes}`;
-    document.getElementById('modal-promo-like-btn').classList.toggle('liked', !!likes[p.id]);
 
-    openAppModal('modal-promo-detail');
+    feed.innerHTML = state.promos.map((p, i) => {
+        const totalLikes = parseInt(p.likes || 0) + (likes[p.id] ? 1 : 0);
+        return `
+        <div class="cli-feed-item" id="promo-feed-${i}">
+            ${p.imagen
+                ? `<img class="cli-feed-img" src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">`
+                : `<div class="cli-feed-img-placeholder" style="background:${promoPlaceholderBg(p.tipo)};">${promoPlaceholderEmoji(p.tipo)}</div>`
+            }
+            <div class="cli-feed-body" onclick="this.classList.toggle('expanded')">
+                <span class="cli-feed-type">${(p.tipo||'Especial').toUpperCase()}</span>
+                <div class="cli-feed-title">${p.nombre}</div>
+                <div class="cli-feed-desc">${p.descripcion}</div>
+                <div class="cli-feed-more">Ver más...</div>
+                <div class="cli-feed-dates">📅 Válida: ${p.fecha_inicio || ''} — ${p.fecha_fin || ''}</div>
+                
+                <div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between;" onclick="event.stopPropagation()">
+                    <button class="btn-like ${likes[p.id] ? 'liked' : ''}" onclick="togglePromoLike('${p.id}', this, event)">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="${likes[p.id] ? '#ef4444' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        <span>${totalLikes} Me gusta</span>
+                    </button>
+                    <a href="https://wa.me/50762540412?text=Hola,%20quisiera%20mas%20informacion%20sobre%20la%20promocion:%20${encodeURIComponent(p.nombre)}" target="_blank" class="btn-submit" style="text-decoration: none; padding: 8px 12px; font-size: 12px; border-radius: 6px; background: rgba(255,255,255,0.2); color: #fff;">
+                        <i class="fa-brands fa-whatsapp"></i> Consultar
+                    </a>
+                </div>
+            </div>
+        </div>
+        `;
+    }).join('');
+    
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        const target = document.getElementById('promo-feed-' + idx);
+        if (target) {
+            target.scrollIntoView({ behavior: 'auto', block: 'start' });
+        }
+    }, 50);
+  };
+
+  window.closePromoDetail = function() {
+      const modal = document.getElementById('modal-promo-feed');
+      if (modal) {
+          modal.style.display = 'none';
+          document.getElementById('cli-modal-feed').innerHTML = ''; // Limpiar la memoria
+      }
   };
 
   window.togglePromoLike = function(promoId, btn, ev) {
