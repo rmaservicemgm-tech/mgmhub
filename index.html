@@ -14,6 +14,46 @@
 </head>
 <body>
 
+  <!-- ══════════════════════════════════════════════════════════════════════════
+       PANTALLA BIENVENIDA: INSTALAR WEBAPP (solo si no está ya instalada)
+       ══════════════════════════════════════════════════════════════════════════ -->
+  <div id="install-overlay" style="display:none;">
+    <div id="install-card">
+      <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" id="install-logo">
+      <div id="install-badge">HUB</div>
+      <h1 id="install-title">MGM Hub</h1>
+      <p id="install-sub">Tu centro de beneficios, promociones y puntos MGM — siempre a la mano.</p>
+      <div id="install-features">
+        <div class="install-feature">
+          <i class="fa-solid fa-star" style="color:#ffb800;"></i>
+          <span>MGM Puntos</span>
+        </div>
+        <div class="install-feature">
+          <i class="fa-solid fa-fire" style="color:#ef4444;"></i>
+          <span>Promociones</span>
+        </div>
+        <div class="install-feature">
+          <i class="fa-solid fa-calendar" style="color:#6366f1;"></i>
+          <span>Agenda</span>
+        </div>
+        <div class="install-feature">
+          <i class="fa-solid fa-robot" style="color:#14b8a6;"></i>
+          <span>Magie IA</span>
+        </div>
+      </div>
+      <button id="btn-install-app" onclick="triggerPwaInstall()">
+        <i class="fa-solid fa-download"></i> Instalar como App
+      </button>
+      <div id="install-ios-hint" style="display:none;">
+        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+        <span>En Safari: toca <strong>Compartir</strong> → <strong>Añadir a inicio</strong></span>
+      </div>
+      <button id="btn-skip-install" onclick="skipInstallOverlay()">
+        <i class="fa-solid fa-globe"></i> Continuar en el navegador
+      </button>
+    </div>
+  </div>
+
   <!-- DIV INVISIBLE PARA BOTPRESS TOGGLE -->
   <div id="bp-toggle-chat" style="display: none; visibility: hidden; opacity: 0; width: 0; height: 0;"></div>
 
@@ -571,5 +611,84 @@
 
   <!-- LÓGICA PRINCIPAL DE LA APP -->
   <script src="app.js"></script>
+
+  <!-- LÓGICA DE INSTALACIÓN PWA -->
+  <script>
+    (function() {
+      // Detectar si YA está instalada como PWA
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                        || window.navigator.standalone === true;
+
+      if (isStandalone) return; // Si ya es webapp, no mostrar nada
+
+      // Si ya la ignoró, no mostrarla de nuevo
+      const skipped = localStorage.getItem('mgm_install_skipped');
+      if (skipped) return;
+
+      // Capturar el evento beforeinstallprompt (Android/Chrome)
+      window._pwaInstallEvent = null;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        window._pwaInstallEvent = e;
+        // Mostrar botón de instalación nativo
+        const btn = document.getElementById('btn-install-app');
+        if (btn) btn.style.display = 'flex';
+        const iosHint = document.getElementById('install-ios-hint');
+        if (iosHint) iosHint.style.display = 'none';
+      });
+
+      // Detectar iOS (Safari) — no tiene beforeinstallprompt
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
+                 && !window.MSStream;
+      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+      // Mostrar overlay
+      const overlay = document.getElementById('install-overlay');
+      if (overlay) overlay.style.display = 'flex';
+
+      if (isIOS && isSafari) {
+        // En iOS mostrar instrucción manual
+        const btn = document.getElementById('btn-install-app');
+        if (btn) btn.style.display = 'none';
+        const iosHint = document.getElementById('install-ios-hint');
+        if (iosHint) iosHint.style.display = 'flex';
+      } else {
+        // En Android/Chrome ocultamos el botón hasta recibir beforeinstallprompt
+        const btn = document.getElementById('btn-install-app');
+        if (btn) btn.style.display = 'none'; // Se mostrará cuando llegue el evento
+      }
+
+      // Detectar si se instaló exitosamente
+      window.addEventListener('appinstalled', function() {
+        const overlay = document.getElementById('install-overlay');
+        if (overlay) overlay.style.display = 'none';
+        localStorage.removeItem('mgm_install_skipped');
+      });
+    })();
+
+    window.triggerPwaInstall = function() {
+      if (window._pwaInstallEvent) {
+        window._pwaInstallEvent.prompt();
+        window._pwaInstallEvent.userChoice.then(function(result) {
+          if (result.outcome === 'accepted') {
+            const overlay = document.getElementById('install-overlay');
+            if (overlay) overlay.style.display = 'none';
+          }
+          window._pwaInstallEvent = null;
+        });
+      }
+    };
+
+    window.skipInstallOverlay = function() {
+      localStorage.setItem('mgm_install_skipped', '1');
+      const overlay = document.getElementById('install-overlay');
+      if (overlay) {
+        overlay.style.opacity = '0';
+        overlay.style.transition = 'opacity 0.3s';
+        setTimeout(function() { overlay.style.display = 'none'; }, 320);
+      }
+    };
+  </script>
+
 </body>
 </html>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mgm-toolbox-v2';
+const CACHE_NAME = 'mgm-toolbox-v3';
 const ASSETS = [
   './',
   './index.html',

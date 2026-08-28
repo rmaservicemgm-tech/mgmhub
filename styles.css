@@ -880,3 +880,142 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
 .cli-feed-dates {
     font-size: 12px; color: #94a3b8; margin-top: 12px;
 }
+
+/* ==========================================================================
+   INSTALL OVERLAY (PANTALLA DE BIENVENIDA / INSTALAR WEBAPP)
+   ========================================================================== */
+#install-overlay {
+  position: fixed; inset: 0; z-index: 99999999;
+  background: linear-gradient(155deg, #00214a 0%, #143266 50%, #1a3e80 100%);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  font-family: 'Inter', 'Nunito Sans', system-ui, sans-serif;
+}
+
+#install-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 28px;
+  padding: 40px 28px 32px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+  animation: installCardIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes installCardIn {
+  from { opacity: 0; transform: translateY(40px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+#install-logo {
+  width: 80px; height: 80px; object-fit: contain;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  background: #fff;
+  padding: 6px;
+  margin-bottom: 12px;
+}
+
+#install-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ffb800, #e08600);
+  color: #00214a;
+  font-size: 11px; font-weight: 900;
+  letter-spacing: 2px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+
+#install-title {
+  font-size: 28px; font-weight: 900;
+  color: #fff;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+#install-sub {
+  font-size: 14px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.55;
+  margin-bottom: 24px;
+}
+
+#install-features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.install-feature {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.install-feature i { font-size: 20px; }
+
+#btn-install-app {
+  width: 100%;
+  padding: 15px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #ffb800, #e08600);
+  color: #00214a;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 6px 20px rgba(255,184,0,0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+#btn-install-app:active { transform: scale(0.97); }
+
+#install-ios-hint {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-size: 13px;
+  text-align: left;
+}
+#install-ios-hint i { font-size: 20px; flex-shrink: 0; color: #60a5fa; }
+#install-ios-hint strong { color: #ffb800; }
+
+#btn-skip-install {
+  width: 100%;
+  padding: 13px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+#btn-skip-install:hover { background: rgba(255,255,255,0.08); color: #fff; }
