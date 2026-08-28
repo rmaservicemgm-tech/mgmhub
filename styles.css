@@ -810,8 +810,9 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
 
 /* ── INSTAGRAM STYLE PROMO FEED ── */
 .cli-modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #000; z-index: 999999;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%; height: 100dvh;
+    background: #000; z-index: 9999999;
     display: none; flex-direction: column;
 }
 .cli-modal-close {
@@ -827,7 +828,7 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
     -webkit-overflow-scrolling: touch;
 }
 .cli-feed-item {
-    width: 100%; height: 100vh;
+    width: 100%; height: 100%; height: 100dvh;
     scroll-snap-align: start;
     position: relative;
     display: flex; flex-direction: column;
