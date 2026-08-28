@@ -11,6 +11,38 @@
   <!-- Google Fonts & FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
+
+  <!-- Registro del Service Worker con auto-actualización -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js').then(function (reg) {
+          // Detectar nuevo SW esperando
+          reg.addEventListener('updatefound', function () {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', function () {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // Hay una nueva versión: forzar recarga automática
+                console.log('[MGM Hub] Nueva versión disponible, actualizando...');
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+              }
+            });
+          });
+        }).catch(function (err) {
+          console.warn('[MGM Hub] Error SW:', err);
+        });
+
+        // Recargar cuando el SW nuevo toma control
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
+      });
+    }
+  </script>
 </head>
 <body>
 
