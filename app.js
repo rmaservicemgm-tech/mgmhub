@@ -340,6 +340,10 @@
       if (state.promos.length === 0) loadHomePromos();
       if (state.agendaEvents.length === 0) loadHomeNextEvent();
     }
+    // AUTO-LOGIN PUNTOS: si hay sesión activa, cargar dashboard directo
+    if (tabName === 'puntos') {
+      autoLoadPuntosDashboard();
+    }
   };
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -426,6 +430,37 @@
     }
     renderDashboard(res.client);
   });
+
+  // AUTO-LOAD: si el usuario ya está autenticado, carga dashboard sin pedir cédula
+  async function autoLoadPuntosDashboard() {
+    if (!state.authUser) return; // sin sesión, mostrar formulario normal
+    // Mostrar spinner mientras recarga datos frescos del GAS
+    document.getElementById('puntos-login-box').style.display = 'none';
+    document.getElementById('puntos-dashboard-box').style.display = 'block';
+    // Usar datos guardados primero (instantáneo)
+    renderDashboard(state.authUser);
+    // Luego refrescar desde el GAS en segundo plano
+    try {
+      const res = await fetch(CFG.PUNTOS_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'get_client', cedula: state.authUser.cedula })
+      }).then(r => r.json());
+      if (res.success && res.client) {
+        // Actualizar estado y perfil con puntos frescos
+        state.authUser = { ...state.authUser, ...res.client };
+        localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
+        renderDashboard(state.authUser);
+        // Actualizar también el icono de perfil
+        updateHeaderUserIcon();
+        // Actualizar puntos en el modal de perfil si está abierto
+        const authPtosEl = document.getElementById('auth-puntos');
+        if (authPtosEl) authPtosEl.textContent = state.authUser.puntos || 0;
+      }
+    } catch(err) {
+      console.warn('[MGM] Error refrescando puntos:', err);
+    }
+  }
 
   function renderDashboard(c) {
     const pts = parseInt(c.puntos) || 0;
@@ -1410,15 +1445,23 @@
       return;
     }
 
-    list.innerHTML = state.notifications.map(n => `
-      <div style="background:#fff; border:1px solid var(--border-light); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:0 2px 6px rgba(0,33,74,0.05);">
+    list.innerHTML = state.notifications.map(n => {
+      // Detectar si la notificación es de puntos para agregar deeplink
+      const isPuntos = n.title && (n.title.toLowerCase().includes('punto') || n.title.toLowerCase().includes('cumpleaños') || n.title.toLowerCase().includes('cumpleanos'));
+      const iconClass = isPuntos ? 'fa-star' : 'fa-circle-info';
+      const iconColor = isPuntos ? '#f59e0b' : '#0ea5e9';
+      const clickAction = isPuntos ? `onclick="closeAppModal('modal-notifications'); switchMainTab('puntos');" style="cursor:pointer;"` : '';
+      return `
+      <div ${clickAction} style="background:#fff; border:1px solid var(--border-light); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:0 2px 6px rgba(0,33,74,0.05); transition: box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 4px 14px rgba(0,33,74,0.13)'" onmouseout="this.style.boxShadow='0 2px 6px rgba(0,33,74,0.05)'">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-          <i class="fa-solid fa-circle-info" style="color:#0ea5e9; font-size:14px;"></i>
-          <div style="font-size:14px; font-weight:800; color:var(--text-dark);">${n.title}</div>
+          <i class="fa-solid ${iconClass}" style="color:${iconColor}; font-size:14px;"></i>
+          <div style="font-size:14px; font-weight:800; color:var(--text-dark); flex:1;">${n.title}</div>
+          ${isPuntos ? '<span style="font-size:10px; background:#fef3c7; color:#b45309; padding:2px 7px; border-radius:20px; font-weight:700;">Ver detalles →</span>' : ''}
         </div>
         <div style="font-size:13px; color:var(--text-muted); line-height:1.5;">${n.body}</div>
         <div style="font-size:11px; color:#cbd5e1; margin-top:8px; text-align:right;">${n.date || 'Reciente'}</div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
   // ══════════════════════════════════════════════════════════════════════════════
