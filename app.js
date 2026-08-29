@@ -65,6 +65,7 @@
   const K_LIKES   = 'mgm_promo_likes';
   const K_AUTH    = 'mgm_auth_user';
   const K_NOTIFS  = 'mgm_notifications';
+  const K_CLEARED_NOTIFS = 'mgm_cleared_notifs';
 
   const state = {
     activeTab:   'home',
@@ -79,6 +80,7 @@
     agendaEvents: [],
     promos: [],
     notifications: JSON.parse(localStorage.getItem(K_NOTIFS)) || [],
+    clearedNotifs: JSON.parse(localStorage.getItem(K_CLEARED_NOTIFS)) || [],
     authUser: JSON.parse(localStorage.getItem(K_AUTH)) || null,
     clients: JSON.parse(localStorage.getItem(K_CLIENTS)) || [
       { cedula:'8-888-1234', nombre:'Juan Carlos Pérez', correo:'juan@email.com', telefono:'6254-0412', cumpleanos:'1990-08-15', fechaRegistro:'2026-01-10', puntos:2800, totalComprasAno:1400.00 },
@@ -1262,7 +1264,7 @@
     const welcomeNotif = {
       id: '0000',
       title: '¡Bienvenido a MGM Hub! 🎉',
-      body: `Hola ${primerNombre}, gracias por unirte. Aquí recibirás tus alertas de puntos, promociones exclusivas y lanzamientos antes que nadie.`,
+      body: `Hola ${primerNombre}, gracias por unirte a nuestro programa de beneficios. Te invitamos a seguir sumando puntos en todas tus compras y disfrutar de recompensas exclusivas.`,
       date: new Date().toLocaleDateString('es-PA')
     };
 
@@ -1377,8 +1379,11 @@
       if (res.success && Array.isArray(res.notifications) && res.notifications.length > 0) {
         let hasNew = false;
         res.notifications.forEach(n => {
-          const alreadyExists = state.notifications.some(existing => existing.id === String(n.id));
-          if (!alreadyExists) {
+          const stringId = String(n.id);
+          const alreadyExists = state.notifications.some(existing => String(existing.id) === stringId);
+          const isCleared = state.clearedNotifs.includes(stringId);
+
+          if (!alreadyExists && !isCleared) {
             state.notifications.unshift(n);
             hasNew = true;
             // Disparar notificación nativa del sistema
@@ -1420,6 +1425,15 @@
   window.clearNotifications = function() {
     if (state.notifications.length === 0) return;
     if (confirm('¿Estás seguro de que quieres borrar todas tus notificaciones?')) {
+      // Guardar las IDs borradas para que no vuelvan a aparecer del backend
+      state.notifications.forEach(n => {
+        const stringId = String(n.id);
+        if (!state.clearedNotifs.includes(stringId)) {
+          state.clearedNotifs.push(stringId);
+        }
+      });
+      localStorage.setItem(K_CLEARED_NOTIFS, JSON.stringify(state.clearedNotifs));
+
       state.notifications = [];
       localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
       renderNotifications();
