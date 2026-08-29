@@ -1156,7 +1156,7 @@
     }
     
     const modal = document.getElementById('modal-user-login');
-    if (modal) modal.classList.add('show');
+    if (modal) modal.classList.add('active');
   };
 
   window.submitLogin = async function() {
@@ -1238,7 +1238,7 @@
 
   window.openNotificationsPanel = function() {
     const modal = document.getElementById('modal-notifications');
-    if (modal) modal.classList.add('show');
+    if (modal) modal.classList.add('active');
     renderNotifications();
     
     // Marcar como leídas
@@ -1310,17 +1310,14 @@
   }
 
   function updateNotifBadge() {
-    const btnIcon = document.getElementById('btn-notifications');
     const badge = document.getElementById('notif-badge');
-    if (!btnIcon || !badge) return;
-    
-    btnIcon.style.display = 'flex'; // siempre mostrar la campana ahora que hay notif panel
-    
-    const unreadCount = state.notifications.length; // asumiendo que al abrir el modal se "leen"
-    // Pero como no tenemos boolean 'read' complejo, simplemente mostramos rojo si hay >0 en general y ocultamos al hacer clic.
-    if (unreadCount > 0) {
-      badge.textContent = unreadCount;
+    if (!badge) return;
+    const count = state.notifications.length;
+    if (count > 0) {
+      badge.textContent = count > 9 ? '9+' : count;
       badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
     }
   }
 
@@ -1329,7 +1326,12 @@
     if (!list) return;
     
     if (state.notifications.length === 0) {
-      list.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 30px 10px; font-size: 13px;">No hay notificaciones recientes.</div>';
+      list.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px;">
+          <div style="font-size: 40px; margin-bottom: 12px;">🔔</div>
+          <div style="font-size: 14px; font-weight: 800; color: var(--text-dark); margin-bottom: 6px;">¡Estás al día!</div>
+          <div style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">No tienes notificaciones pendientes.<br>Aquí aparecerán tus alertas de puntos, promociones exclusivas y mensajes de MGM.</div>
+        </div>`;
       return;
     }
     
