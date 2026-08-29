@@ -25,6 +25,9 @@
     // 5. SPLASHSCREEN (Campañas IMOU / Promos)
     SPLASH_GAS_URL: 'https://script.google.com/macros/s/AKfycbw3Aey_uya9yLM8xKrcQCBrlMcTSkAdnUBCQEq_kitdBN4-BZHnxbJP66lO5qgZgO8KAQ/exec',
 
+    // 6. NOTIFICACIONES & TRACKING (El usuario creará este nuevo GAS)
+    NOTIFS_GAS_URL: 'https://script.google.com/macros/s/AKfycbz8q-CUI-M2TBGhUTHwprY1LE3dTFIX9HzSszunexR493oYx63POxdECktGHCP0wY1YJA/exec',
+
     VAL_PUNTO: 0.01,
     BOTPRESS_BOT_ID: 'e5a3c8a6-9aec-41a3-870d-d1985dc8c7df',
     SPLASH_ENABLED: true,
@@ -60,6 +63,8 @@
   const K_TX      = 'mgm_local_tx';
   const K_SPLASH  = 'mgm_splash_date';
   const K_LIKES   = 'mgm_promo_likes';
+  const K_AUTH    = 'mgm_auth_user';
+  const K_NOTIFS  = 'mgm_notifications';
 
   const state = {
     activeTab:   'home',
@@ -73,6 +78,8 @@
     audioTrackIndex: 0,
     agendaEvents: [],
     promos: [],
+    notifications: JSON.parse(localStorage.getItem(K_NOTIFS)) || [],
+    authUser: JSON.parse(localStorage.getItem(K_AUTH)) || null,
     clients: JSON.parse(localStorage.getItem(K_CLIENTS)) || [
       { cedula:'8-888-1234', nombre:'Juan Carlos Pérez', correo:'juan@email.com', telefono:'6254-0412', cumpleanos:'1990-08-15', fechaRegistro:'2026-01-10', puntos:2800, totalComprasAno:1400.00 },
       { cedula:'4-752-9812', nombre:'María Elena Rodríguez', correo:'maria@email.com', telefono:'6611-9988', cumpleanos:'1988-11-22', fechaRegistro:'2026-02-14', puntos:450, totalComprasAno:450.00 }
@@ -1125,11 +1132,236 @@
   }
 
   // ══════════════════════════════════════════════════════════════════════════════
+  // AUTHENTICATION & LOGIN (MGM PUNTOS)
+  // ══════════════════════════════════════════════════════════════════════════════
+  
+  window.openLoginModal = function() {
+    const isAuth = !!state.authUser;
+    document.getElementById('login-view-unauth').style.display = isAuth ? 'none' : 'block';
+    document.getElementById('login-view-auth').style.display = isAuth ? 'block' : 'none';
+    
+    if (isAuth) {
+      document.getElementById('auth-initials').textContent = state.authUser.nombre.charAt(0).toUpperCase();
+      document.getElementById('auth-name').textContent = state.authUser.nombre;
+      document.getElementById('auth-cedula').textContent = state.authUser.cedula;
+      document.getElementById('auth-puntos').textContent = state.authUser.puntos || 0;
+      
+      // Mostrar botón de notificaciones si no tienen permiso concedido
+      const btnNotifs = document.getElementById('btn-enable-notifs');
+      if (btnNotifs && Notification.permission !== 'granted') {
+        btnNotifs.style.display = 'block';
+      } else if (btnNotifs) {
+        btnNotifs.style.display = 'none';
+      }
+    }
+    
+    const modal = document.getElementById('modal-user-login');
+    if (modal) modal.classList.add('show');
+  };
+
+  window.submitLogin = async function() {
+    const input = document.getElementById('login-cedula-input').value.trim();
+    const errorMsg = document.getElementById('login-error-msg');
+    const btn = document.getElementById('btn-login-submit');
+    
+    if (!input) {
+      errorMsg.textContent = 'Por favor ingresa tu cédula o correo.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+    
+    errorMsg.style.display = 'none';
+    btn.textContent = 'Verificando...';
+    btn.disabled = true;
+    
+    try {
+      const res = await fetch(CFG.PUNTOS_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'get_client', cedula: input })
+      }).then(r => r.json());
+      
+      if (res.success && res.client) {
+        state.authUser = res.client;
+        localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
+        
+        // Registrar en notificaciones si es posible
+        registerDeviceForNotifs(state.authUser.cedula, state.authUser.nombre);
+        
+        openLoginModal(); // Recargar modal
+        updateHeaderUserIcon();
+      } else {
+        errorMsg.textContent = res.message || 'Credenciales no encontradas en MGM Puntos.';
+        errorMsg.style.display = 'block';
+      }
+    } catch (err) {
+      // Fallback offline / demo para propósitos de prueba si GAS falla
+      console.warn('Fallback login');
+      const c = state.clients.find(x => x.cedula === input || x.correo === input);
+      if (c) {
+        state.authUser = c;
+        localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
+        openLoginModal();
+        updateHeaderUserIcon();
+      } else {
+        errorMsg.textContent = 'Error de conexión. Intenta nuevamente.';
+        errorMsg.style.display = 'block';
+      }
+    }
+    
+    btn.textContent = 'Ingresar a MGM Hub';
+    btn.disabled = false;
+  };
+
+  window.logoutClient = function() {
+    state.authUser = null;
+    localStorage.removeItem(K_AUTH);
+    updateHeaderUserIcon();
+    closeAppModal('modal-user-login');
+  };
+
+  function updateHeaderUserIcon() {
+    const btn = document.getElementById('btn-user-login');
+    if (!btn) return;
+    if (state.authUser) {
+      btn.innerHTML = `<span style="font-weight:800;font-size:14px;color:#0ea5e9;">${state.authUser.nombre.charAt(0).toUpperCase()}</span>`;
+      btn.style.background = '#e0f2fe';
+    } else {
+      btn.innerHTML = `<i class="fa-regular fa-user"></i>`;
+      btn.style.background = 'rgba(0,0,0,0.05)';
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // NOTIFICATIONS (LOCAL + TRACKING BACKEND)
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  window.openNotificationsPanel = function() {
+    const modal = document.getElementById('modal-notifications');
+    if (modal) modal.classList.add('show');
+    renderNotifications();
+    
+    // Marcar como leídas
+    const badge = document.getElementById('notif-badge');
+    if (badge) badge.style.display = 'none';
+  };
+
+  window.requestNotificationPermission = function() {
+    if (!('Notification' in window)) {
+      alert("Tu navegador no soporta notificaciones.");
+      return;
+    }
+    Notification.requestPermission().then(permission => {
+      if (permission === 'granted') {
+        new Notification("MGM Hub", { 
+          body: "¡Notificaciones activadas con éxito!",
+          icon: "https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png"
+        });
+        openLoginModal(); // Recargar para ocultar botón
+        if (state.authUser) registerDeviceForNotifs(state.authUser.cedula, state.authUser.nombre);
+      }
+    });
+  };
+
+  async function registerDeviceForNotifs(cedula, nombre) {
+    if (CFG.NOTIFS_GAS_URL === 'URL_TEMPORAL_PENDIENTE') return;
+    try {
+      await fetch(CFG.NOTIFS_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'register_device', cedula, nombre })
+      });
+    } catch(e) {}
+  }
+
+  async function checkNotifications() {
+    if (CFG.NOTIFS_GAS_URL === 'URL_TEMPORAL_PENDIENTE') return; // backend not ready yet
+    
+    const cedula = state.authUser ? state.authUser.cedula : 'ANONIMO';
+    
+    try {
+      const res = await fetch(CFG.NOTIFS_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'get_notifications', cedula })
+      }).then(r => r.json());
+
+      if (res.success && res.notifications && res.notifications.length > 0) {
+        let hasNew = false;
+        res.notifications.forEach(n => {
+          // Si no está ya en las locales
+          if (!state.notifications.find(existing => existing.id === n.id)) {
+            state.notifications.unshift(n);
+            hasNew = true;
+            // Mostrar notificación local nativa si hay permisos
+            if (Notification.permission === 'granted') {
+              new Notification(n.title, { body: n.body, icon: "https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" });
+            }
+          }
+        });
+        
+        if (hasNew) {
+          localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
+          updateNotifBadge();
+          renderNotifications();
+        }
+      }
+    } catch (e) {}
+  }
+
+  function updateNotifBadge() {
+    const btnIcon = document.getElementById('btn-notifications');
+    const badge = document.getElementById('notif-badge');
+    if (!btnIcon || !badge) return;
+    
+    btnIcon.style.display = 'flex'; // siempre mostrar la campana ahora que hay notif panel
+    
+    const unreadCount = state.notifications.length; // asumiendo que al abrir el modal se "leen"
+    // Pero como no tenemos boolean 'read' complejo, simplemente mostramos rojo si hay >0 en general y ocultamos al hacer clic.
+    if (unreadCount > 0) {
+      badge.textContent = unreadCount;
+      badge.style.display = 'flex';
+    }
+  }
+
+  function renderNotifications() {
+    const list = document.getElementById('notif-list');
+    if (!list) return;
+    
+    if (state.notifications.length === 0) {
+      list.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 30px 10px; font-size: 13px;">No hay notificaciones recientes.</div>';
+      return;
+    }
+    
+    list.innerHTML = state.notifications.map(n => `
+      <div style="background: #fff; border: 1px solid var(--border-light); border-radius: 12px; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+        <div style="font-size: 14px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px;">${n.title}</div>
+        <div style="font-size: 13px; color: var(--text-muted);">${n.body}</div>
+        <div style="font-size: 11px; color: #cbd5e1; margin-top: 6px; text-align: right;">${n.date || 'Reciente'}</div>
+      </div>
+    `).join('');
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════════
   // INIT — ARRANCA LA APP MGM HUB
   // ══════════════════════════════════════════════════════════════════════════════
 
   async function init() {
     switchMainTab('home');
+
+    // Inicializar estado de UI autenticación
+    updateHeaderUserIcon();
+    
+    // Si el usuario está autenticado, registrar equipo (si el backend existe) y checar notificaciones
+    if (state.authUser) {
+      registerDeviceForNotifs(state.authUser.cedula, state.authUser.nombre);
+    }
+    
+    // Actualizar badge visual con las locales
+    updateNotifBadge();
+    
+    // Consultar nuevas notificaciones
+    checkNotifications();
 
     await Promise.allSettled([
       loadHomePromos(),

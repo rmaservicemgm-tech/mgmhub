@@ -106,7 +106,16 @@
         </div>
       </div>
 
-      <div class="header-actions">
+      <div class="header-actions" style="display: flex; gap: 8px; align-items: center;">
+        <button id="btn-notifications" class="btn-header-icon" onclick="openNotificationsPanel()" aria-label="Notificaciones" style="display: none; background: transparent; border: none; font-size: 20px; color: var(--text-dark); position: relative; cursor: pointer;">
+          <i class="fa-regular fa-bell"></i>
+          <span id="notif-badge" style="position: absolute; top: -4px; right: -6px; background: #ef4444; color: #fff; font-size: 10px; font-weight: 800; min-width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; display: none;">0</span>
+        </button>
+        
+        <button id="btn-user-login" class="btn-header-icon" onclick="openLoginModal()" aria-label="Mi Cuenta" style="background: rgba(0,0,0,0.05); border: none; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-dark); cursor: pointer;">
+          <i class="fa-regular fa-user"></i>
+        </button>
+
         <button id="btn-open-chat-header" class="btn-header-wa-action" onclick="openAsesoriaModal()" aria-label="Asesoría WhatsApp">
           <i class="fa-brands fa-whatsapp"></i>
           <span>Asesoría</span>
@@ -591,6 +600,50 @@
       </div>
     </div>
 
+    <!-- MODAL LOGIN / PERFIL -->
+    <div class="app-modal" id="modal-user-login">
+      <div class="modal-content-card">
+        <button class="modal-close-x" onclick="closeAppModal('modal-user-login')">✕</button>
+        <div id="login-view-unauth">
+          <h4 style="font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--text-dark); text-align: center;">Iniciar Sesión</h4>
+          <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 16px;">Ingresa tu cédula o correo para acceder a tus beneficios y recibir notificaciones especiales.</p>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label style="display:block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Cédula o Correo</label>
+            <input type="text" id="login-cedula-input" placeholder="Ej: 8-888-8888" style="width:100%; padding: 12px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px; outline: none; background: #f8fafc;">
+          </div>
+          <button class="btn-submit" onclick="submitLogin()" id="btn-login-submit" style="width: 100%;">
+            Ingresar a MGM Hub
+          </button>
+          <div id="login-error-msg" style="color: #ef4444; font-size: 12px; font-weight: 600; margin-top: 10px; text-align: center; display: none;"></div>
+        </div>
+        <div id="login-view-auth" style="display: none; text-align: center;">
+          <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #0284c7, #0ea5e9); border-radius: 50%; color: #fff; font-size: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-weight: 800;" id="auth-initials">M</div>
+          <h4 style="font-size: 18px; font-weight: 900; margin-bottom: 4px; color: var(--text-dark);" id="auth-name">---</h4>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;" id="auth-cedula">---</p>
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;"><i class="fa-solid fa-star" style="color: var(--accent-gold);"></i> <strong style="color: var(--text-dark);" id="auth-puntos">0</strong> Puntos MGM</p>
+          
+          <!-- Botón Permisos -->
+          <button id="btn-enable-notifs" class="btn-submit" onclick="requestNotificationPermission()" style="width: 100%; background: linear-gradient(135deg, #6366f1, #4f46e5); margin-bottom: 12px; font-size: 13px; display: none;">
+            <i class="fa-solid fa-bell"></i> Activar Notificaciones
+          </button>
+
+          <button class="btn-submit" onclick="logoutClient()" style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; font-size: 13px;">Cerrar Sesión</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL NOTIFICACIONES -->
+    <div class="app-modal" id="modal-notifications">
+      <div class="modal-content-card" style="padding: 0; display: flex; flex-direction: column; max-height: 80vh;">
+        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: #fff; z-index: 10; border-radius: 20px 20px 0 0;">
+          <h4 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0;"><i class="fa-regular fa-bell" style="color: #ef4444; margin-right: 6px;"></i> Notificaciones</h4>
+          <button onclick="closeAppModal('modal-notifications')" style="background: transparent; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;">✕</button>
+        </div>
+        <div id="notif-list" style="padding: 12px; overflow-y: auto; flex: 1; background: #f8fafc; min-height: 200px;">
+          <div style="text-align: center; color: var(--text-muted); padding: 30px 10px; font-size: 13px;">No hay notificaciones recientes.</div>
+        </div>
+      </div>
+    </div>
 
     <!-- ══════════════════════════════════════════════════════════════════════════
          SPLASHSCREEN INTELIGENTE DE BIENVENIDA / OFERTAS
