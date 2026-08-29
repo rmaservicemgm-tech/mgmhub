@@ -1237,32 +1237,59 @@
   // ══════════════════════════════════════════════════════════════════════════════
 
   window.openNotificationsPanel = function() {
-    const modal = document.getElementById('modal-notifications');
-    if (modal) modal.classList.add('active');
+    openAppModal('modal-notifications');
     renderNotifications();
-    
-    // Marcar como leídas
+    // Ocultar badge al abrir el panel (marcar como vistas)
     const badge = document.getElementById('notif-badge');
     if (badge) badge.style.display = 'none';
   };
 
+  // Solicitar permiso de notificaciones nativas del navegador
   window.requestNotificationPermission = function() {
     if (!('Notification' in window)) {
-      alert("Tu navegador no soporta notificaciones.");
+      alert('Tu navegador no soporta notificaciones del sistema.');
       return;
     }
     Notification.requestPermission().then(permission => {
       if (permission === 'granted') {
-        new Notification("MGM Hub", { 
-          body: "¡Notificaciones activadas con éxito!",
-          icon: "https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png"
-        });
-        openLoginModal(); // Recargar para ocultar botón
-        if (state.authUser) registerDeviceForNotifs(state.authUser.cedula, state.authUser.nombre);
+        fireNativeNotif('MGM Hub', '¡Notificaciones activadas! 🔔 Recibirás alertas exclusivas.');
+        openLoginModal(); // Refrescar modal para ocultar el botón
+        if (state.authUser) {
+          registerDeviceForNotifs(state.authUser.cedula, state.authUser.nombre);
+        }
       }
     });
   };
 
+  // Disparar una notificación nativa del navegador/sistema
+  function fireNativeNotif(title, body) {
+    if (Notification.permission !== 'granted') return;
+    try {
+      // Service Worker notification (funciona en móvil como PWA)
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.ready.then(reg => {
+          reg.showNotification(title, {
+            body,
+            icon: 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png',
+            badge: 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png',
+            vibrate: [200, 100, 200]
+          });
+        }).catch(() => {
+          new Notification(title, {
+            body,
+            icon: 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'
+          });
+        });
+      } else {
+        new Notification(title, {
+          body,
+          icon: 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'
+        });
+      }
+    } catch(e) { console.warn('Notif error:', e); }
+  }
+
+  // Registrar dispositivo en el Sheet de Tracking
   async function registerDeviceForNotifs(cedula, nombre) {
     if (CFG.NOTIFS_GAS_URL === 'URL_TEMPORAL_PENDIENTE') return;
     try {
@@ -1274,74 +1301,87 @@
     } catch(e) {}
   }
 
+  // Consultar notificaciones del backend
   async function checkNotifications() {
-    if (CFG.NOTIFS_GAS_URL === 'URL_TEMPORAL_PENDIENTE') return; // backend not ready yet
-    
-    const cedula = state.authUser ? state.authUser.cedula : 'ANONIMO';
+    if (CFG.NOTIFS_GAS_URL === 'URL_TEMPORAL_PENDIENTE') return;
     
     try {
+      const cedula = state.authUser ? state.authUser.cedula : 'ANONIMO';
       const res = await fetch(CFG.NOTIFS_GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'get_notifications', cedula })
       }).then(r => r.json());
 
-      if (res.success && res.notifications && res.notifications.length > 0) {
+      if (res.success && Array.isArray(res.notifications) && res.notifications.length > 0) {
         let hasNew = false;
         res.notifications.forEach(n => {
-          // Si no está ya en las locales
-          if (!state.notifications.find(existing => existing.id === n.id)) {
+          const alreadyExists = state.notifications.some(existing => existing.id === String(n.id));
+          if (!alreadyExists) {
             state.notifications.unshift(n);
             hasNew = true;
-            // Mostrar notificación local nativa si hay permisos
-            if (Notification.permission === 'granted') {
-              new Notification(n.title, { body: n.body, icon: "https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" });
-            }
+            // Disparar notificación nativa del sistema
+            fireNativeNotif(n.title, n.body);
           }
         });
-        
+
         if (hasNew) {
           localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
           updateNotifBadge();
-          renderNotifications();
         }
       }
-    } catch (e) {}
+    } catch(e) {
+      console.warn('[MGM Hub] Error al consultar notificaciones:', e);
+    }
   }
 
+  // Chequear notificaciones cada vez que el usuario vuelve a abrir la app (vuelve al tab)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      checkNotifications();
+    }
+  });
+
+  // Actualizar el globito rojo de la campana
   function updateNotifBadge() {
     const badge = document.getElementById('notif-badge');
     if (!badge) return;
     const count = state.notifications.length;
     if (count > 0) {
-      badge.textContent = count > 9 ? '9+' : count;
-      badge.style.display = 'flex';
+      badge.textContent = count > 9 ? '9+' : String(count);
+      badge.style.display = 'inline-flex';
     } else {
       badge.style.display = 'none';
     }
   }
 
+  // Renderizar la lista de notificaciones en el panel
   function renderNotifications() {
     const list = document.getElementById('notif-list');
     if (!list) return;
-    
+
     if (state.notifications.length === 0) {
       list.innerHTML = `
-        <div style="text-align: center; padding: 40px 20px;">
-          <div style="font-size: 40px; margin-bottom: 12px;">🔔</div>
-          <div style="font-size: 14px; font-weight: 800; color: var(--text-dark); margin-bottom: 6px;">¡Estás al día!</div>
-          <div style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">No tienes notificaciones pendientes.<br>Aquí aparecerán tus alertas de puntos, promociones exclusivas y mensajes de MGM.</div>
+        <div style="text-align:center; padding:40px 20px;">
+          <div style="font-size:40px; margin-bottom:12px;">✅</div>
+          <div style="font-size:15px; font-weight:800; color:var(--text-dark); margin-bottom:8px;">¡Estás al día!</div>
+          <div style="font-size:13px; color:var(--text-muted); line-height:1.7;">
+            No tienes notificaciones pendientes.<br>
+            Aquí aparecerán promociones exclusivas,<br>alertas de puntos y mensajes de MGM.
+          </div>
         </div>`;
       return;
     }
-    
+
     list.innerHTML = state.notifications.map(n => `
-      <div style="background: #fff; border: 1px solid var(--border-light); border-radius: 12px; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px;">${n.title}</div>
-        <div style="font-size: 13px; color: var(--text-muted);">${n.body}</div>
-        <div style="font-size: 11px; color: #cbd5e1; margin-top: 6px; text-align: right;">${n.date || 'Reciente'}</div>
-      </div>
-    `).join('');
+      <div style="background:#fff; border:1px solid var(--border-light); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:0 2px 6px rgba(0,33,74,0.05);">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+          <i class="fa-solid fa-circle-info" style="color:#0ea5e9; font-size:14px;"></i>
+          <div style="font-size:14px; font-weight:800; color:var(--text-dark);">${n.title}</div>
+        </div>
+        <div style="font-size:13px; color:var(--text-muted); line-height:1.5;">${n.body}</div>
+        <div style="font-size:11px; color:#cbd5e1; margin-top:8px; text-align:right;">${n.date || 'Reciente'}</div>
+      </div>`).join('');
   }
 
   // ══════════════════════════════════════════════════════════════════════════════
