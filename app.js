@@ -1188,6 +1188,9 @@
         // Registrar en notificaciones si es posible
         registerDeviceForNotifs(state.authUser.cedula, state.authUser.nombre);
         
+        // Bienvenida automática
+        checkAndSendWelcomeNotification(state.authUser.nombre);
+
         openLoginModal(); // Recargar modal
         updateHeaderUserIcon();
       } else {
@@ -1201,6 +1204,9 @@
       if (c) {
         state.authUser = c;
         localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
+        
+        checkAndSendWelcomeNotification(state.authUser.nombre);
+
         openLoginModal();
         updateHeaderUserIcon();
       } else {
@@ -1212,6 +1218,26 @@
     btn.textContent = 'Ingresar a MGM Hub';
     btn.disabled = false;
   };
+
+  function checkAndSendWelcomeNotification(nombre) {
+    // Si ya existe la bienvenida, no hacer nada
+    if (state.notifications.some(n => n.id === '0000')) return;
+
+    const primerNombre = (nombre || '').split(' ')[0] || 'Cliente';
+    const welcomeNotif = {
+      id: '0000',
+      title: '¡Bienvenido a MGM Hub! 🎉',
+      body: `Hola ${primerNombre}, gracias por unirte. Aquí recibirás tus alertas de puntos, promociones exclusivas y lanzamientos antes que nadie.`,
+      date: new Date().toLocaleDateString('es-PA')
+    };
+
+    state.notifications.unshift(welcomeNotif);
+    localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
+    updateNotifBadge();
+    
+    // Alerta visual local
+    fireNativeNotif(welcomeNotif.title, welcomeNotif.body);
+  }
 
   window.logoutClient = function() {
     state.authUser = null;
@@ -1354,6 +1380,17 @@
       badge.style.display = 'none';
     }
   }
+
+  // Limpiar cola de mensajes (Borrar todos)
+  window.clearNotifications = function() {
+    if (state.notifications.length === 0) return;
+    if (confirm('¿Estás seguro de que quieres borrar todas tus notificaciones?')) {
+      state.notifications = [];
+      localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
+      renderNotifications();
+      updateNotifBadge();
+    }
+  };
 
   // Renderizar la lista de notificaciones en el panel
   function renderNotifications() {
