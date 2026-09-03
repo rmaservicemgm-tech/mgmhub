@@ -653,7 +653,16 @@
          ══════════════════════════════════════════════════════════════════════════ -->
     <div id="imou-splash">
       <div class="splash-card-inner">
-        <button class="splash-close-btn" onclick="closeSplashWidget()">✕</button>
+        <div class="splash-actions-container">
+          <div class="splash-settings">
+            <button class="splash-settings-btn" onclick="toggleSplashSettings()"><i class="fa-solid fa-gear"></i></button>
+            <div class="splash-settings-menu" id="splash-settings-menu">
+              <div onclick="closeSplashOption('session')">No mostrar en esta sesión</div>
+              <div onclick="closeSplashOption('today')">No volver a mostrar hoy</div>
+            </div>
+          </div>
+          <button class="splash-close-btn" onclick="closeSplashOption('session')">✕</button>
+        </div>
         <div id="splash-content-wrap" style="cursor: pointer;">
           <img id="splash-img" src="" alt="Promoción Especial">
         </div>

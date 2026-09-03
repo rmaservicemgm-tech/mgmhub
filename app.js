@@ -1092,16 +1092,31 @@
   // SPLASHSCREEN / PROMO INTERSTITIAL (SPLASH_GAS_URL)
   // ══════════════════════════════════════════════════════════════════════════════
 
-  window.closeSplashWidget = function() {
+  window.closeSplashOption = function(option) {
     const el = document.getElementById('imou-splash');
     if (el) { el.style.display = 'none'; el.classList.remove('show'); }
-    localStorage.setItem(K_SPLASH, new Date().toDateString());
+    
+    if (option === 'today') {
+      localStorage.setItem(K_SPLASH, new Date().toDateString());
+    } else if (option === 'session') {
+      sessionStorage.setItem('mgm_splash_session', 'hidden');
+    }
+  };
+
+  window.toggleSplashSettings = function() {
+    const menu = document.getElementById('splash-settings-menu');
+    if (menu) menu.classList.toggle('show');
+  };
+
+  window.closeSplashWidget = function() {
+    closeSplashOption('session'); // Por defecto se oculta en esta sesión
   };
 
   async function checkAndShowSplash() {
     if (!CFG.SPLASH_ENABLED) return;
     const lastShown = localStorage.getItem(K_SPLASH);
     if (lastShown === new Date().toDateString()) return;
+    if (sessionStorage.getItem('mgm_splash_session') === 'hidden') return;
 
     try {
       const res = await fetch(CFG.SPLASH_GAS_URL);
@@ -1143,7 +1158,7 @@
             wrapEl.onclick = (e) => {
               e.preventDefault();
               openMagieChatModal();
-              closeSplashWidget();
+              closeSplashOption('session');
             };
           } else if (elegida.enlace && elegida.enlace !== '#') {
             wrapEl.onclick = () => window.open(elegida.enlace, '_blank');
