@@ -61,7 +61,7 @@
   // ══════════════════════════════════════════════════════════════════════════════
   const K_CLIENTS = 'mgm_local_clients';
   const K_TX      = 'mgm_local_tx';
-  const K_SPLASH  = 'mgm_splash_date';
+  const K_SPLASH  = 'mgm_splash_date_v2';
   const K_LIKES   = 'mgm_promo_likes';
   const K_AUTH    = 'mgm_auth_user';
   const K_NOTIFS  = 'mgm_notifications';
