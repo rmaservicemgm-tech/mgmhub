@@ -348,6 +348,63 @@
     }
   };
 
+  // ══════════════════════════════════════════════════════════════════════════════
+  // DEEP LINK NAVIGATION — navigateTo(seccion)
+  // Formato: 'tab' o 'tab:sub_o_id' — Ej: 'puntos:registro', 'agenda:EV001'
+  // ══════════════════════════════════════════════════════════════════════════════
+  window.navigateTo = function(seccion) {
+    if (!seccion) return;
+    const parts = seccion.split(':');
+    const tab = parts[0];
+    const sub = parts[1] || null;
+
+    // Cerrar cualquier modal abierto antes de navegar
+    document.querySelectorAll('.app-modal.active').forEach(m => m.classList.remove('active'));
+
+    // Navegar al tab principal
+    switchMainTab(tab);
+
+    if (!sub) return;
+
+    // --- Puntos: navegar a subtab ---
+    if (tab === 'puntos') {
+      const subviewMap = {
+        registro:   'subview-registro',
+        beneficios: 'subview-promos',
+        terminos:   'subview-terminos',
+        cuenta:     'subview-cuenta'
+      };
+      const targetSubview = subviewMap[sub] || 'subview-cuenta';
+      const btn = document.querySelector(`.puntos-subtab[data-subview="${targetSubview}"]`);
+      if (btn) btn.click();
+    }
+
+    // --- Agenda: abrir modal del evento por ID ---
+    if (tab === 'agenda') {
+      const tryOpenEvent = (attempts) => {
+        if (state.agendaEvents.length > 0) {
+          openEventDetail(sub);
+        } else if (attempts < 20) {
+          setTimeout(() => tryOpenEvent(attempts + 1), 300);
+        }
+      };
+      tryOpenEvent(0);
+    }
+
+    // --- Promos: abrir modal de la promo por ID ---
+    if (tab === 'promos') {
+      const tryOpenPromo = (attempts) => {
+        if (state.promos.length > 0) {
+          const idx = state.promos.findIndex(p => p.id === sub);
+          if (idx >= 0) openPromoDetail(idx);
+        } else if (attempts < 20) {
+          setTimeout(() => tryOpenPromo(attempts + 1), 300);
+        }
+      };
+      tryOpenPromo(0);
+    }
+  };
+
   // ══════════════════════════════════════════════════════════════════════════
   // MAGIE IA — BOTPRESS WIDGET OFICIAL (misma lógica que funciona en la web)
   // ══════════════════════════════════════════════════════════════════════════
@@ -1474,18 +1531,43 @@
       return;
     }
 
+    // Configuración visual por sección destino
+    const SECC_CFG = {
+      puntos:  { icon: 'fa-star',          color: '#f59e0b', badgeText: '⭐ Puntos',  badgeBg: '#fef3c7', badgeTxt: '#b45309' },
+      agenda:  { icon: 'fa-calendar-days', color: '#6366f1', badgeText: '📅 Agenda',  badgeBg: '#ede9fe', badgeTxt: '#5b21b6' },
+      promos:  { icon: 'fa-fire',          color: '#ef4444', badgeText: '🔥 Promo',   badgeBg: '#fee2e2', badgeTxt: '#b91c1c' },
+      default: { icon: 'fa-circle-info',   color: '#0ea5e9', badgeText: null,         badgeBg: null,      badgeTxt: null      }
+    };
+
     list.innerHTML = state.notifications.map(n => {
-      // Detectar si la notificación es de puntos para agregar deeplink
-      const isPuntos = n.title && (n.title.toLowerCase().includes('punto') || n.title.toLowerCase().includes('cumpleaños') || n.title.toLowerCase().includes('cumpleanos'));
-      const iconClass = isPuntos ? 'fa-star' : 'fa-circle-info';
-      const iconColor = isPuntos ? '#f59e0b' : '#0ea5e9';
-      const clickAction = isPuntos ? `onclick="closeAppModal('modal-notifications'); switchMainTab('puntos');" style="cursor:pointer;"` : '';
+      // Usar campo seccion del backend; fallback: detectar por título (compatibilidad)
+      let seccion = (n.seccion || '').trim();
+      if (!seccion) {
+        const t = (n.title || '').toLowerCase();
+        if (t.includes('punto') || t.includes('cumpleaños') || t.includes('cumpleanos')) seccion = 'puntos';
+        else if (t.includes('promo') || t.includes('oferta') || t.includes('descuento')) seccion = 'promos';
+        else if (t.includes('evento') || t.includes('webinar') || t.includes('curso') || t.includes('capacitación')) seccion = 'agenda';
+      }
+
+      const tab = seccion.split(':')[0];
+      const cfg = SECC_CFG[tab] || SECC_CFG.default;
+      const isClickable = !!seccion;
+
+      const clickAttr = isClickable
+        ? `onclick="closeAppModal('modal-notifications'); navigateTo('${seccion}');" style="cursor:pointer;"`
+        : '';
+
+      const hoverIn  = `this.style.boxShadow='0 4px 14px rgba(0,33,74,0.13)'; ${isClickable ? "this.style.transform='translateY(-1px)';" : ''}`;
+      const hoverOut = `this.style.boxShadow='0 2px 6px rgba(0,33,74,0.05)'; this.style.transform='translateY(0)';`;
+
       return `
-      <div ${clickAction} style="background:#fff; border:1px solid var(--border-light); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:0 2px 6px rgba(0,33,74,0.05); transition: box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 4px 14px rgba(0,33,74,0.13)'" onmouseout="this.style.boxShadow='0 2px 6px rgba(0,33,74,0.05)'">
+      <div ${clickAttr}
+        style="background:#fff; border:1px solid var(--border-light); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:0 2px 6px rgba(0,33,74,0.05); transition: box-shadow 0.2s, transform 0.2s;"
+        onmouseover="${hoverIn}" onmouseout="${hoverOut}">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-          <i class="fa-solid ${iconClass}" style="color:${iconColor}; font-size:14px;"></i>
+          <i class="fa-solid ${cfg.icon}" style="color:${cfg.color}; font-size:14px;"></i>
           <div style="font-size:14px; font-weight:800; color:var(--text-dark); flex:1;">${n.title}</div>
-          ${isPuntos ? '<span style="font-size:10px; background:#fef3c7; color:#b45309; padding:2px 7px; border-radius:20px; font-weight:700;">Ver detalles →</span>' : ''}
+          ${cfg.badgeText ? `<span style="font-size:10px; background:${cfg.badgeBg}; color:${cfg.badgeTxt}; padding:2px 7px; border-radius:20px; font-weight:700; white-space:nowrap;">${cfg.badgeText} →</span>` : ''}
         </div>
         <div style="font-size:13px; color:var(--text-muted); line-height:1.5;">${n.body}</div>
         <div style="font-size:11px; color:#cbd5e1; margin-top:8px; text-align:right;">${n.date || 'Reciente'}</div>
@@ -1521,6 +1603,19 @@
     ]);
 
     checkAndShowSplash();
+
+    // ── DEEP LINK: Leer parámetros de URL al arrancar la app ─────────────────
+    // Ejemplos: ?tab=puntos&sub=registro | ?tab=agenda&id=EV001 | ?tab=promos&id=P001
+    const _urlParams = new URLSearchParams(window.location.search);
+    const _deepTab   = _urlParams.get('tab');
+    const _deepSub   = _urlParams.get('sub') || _urlParams.get('id');
+    if (_deepTab) {
+      const _seccion = _deepSub ? `${_deepTab}:${_deepSub}` : _deepTab;
+      // Pequeño delay para dejar que los datos carguen antes de navegar
+      setTimeout(() => navigateTo(_seccion), 400);
+      // Limpiar la URL para que no se repita en recargas
+      history.replaceState({}, document.title, window.location.pathname);
+    }
   }
 
   if (document.readyState === 'loading') {
