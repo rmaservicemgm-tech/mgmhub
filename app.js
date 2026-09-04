@@ -1448,8 +1448,23 @@
         body: JSON.stringify({ action: 'get_notifications', cedula })
       }).then(r => r.json());
 
-      if (res.success && Array.isArray(res.notifications) && res.notifications.length > 0) {
-        let hasNew = false;
+      if (res.success && Array.isArray(res.notifications)) {
+        let hasChanged = false;
+        
+        // Sincronizar eliminaciones: borrar notificaciones locales (excepto '0000') que ya no estén en el backend
+        const serverIds = res.notifications.map(n => String(n.id));
+        const originalLength = state.notifications.length;
+        state.notifications = state.notifications.filter(localNotif => {
+          const localId = String(localNotif.id);
+          if (localId === '0000') return true; // Mantener siempre la de bienvenida
+          return serverIds.includes(localId);  // Mantener solo si sigue en el server
+        });
+        
+        if (state.notifications.length !== originalLength) {
+          hasChanged = true;
+        }
+
+        // Agregar nuevas notificaciones
         res.notifications.forEach(n => {
           const stringId = String(n.id);
           const alreadyExists = state.notifications.some(existing => String(existing.id) === stringId);
@@ -1457,15 +1472,16 @@
 
           if (!alreadyExists && !isCleared) {
             state.notifications.unshift(n);
-            hasNew = true;
+            hasChanged = true;
             // Disparar notificación nativa del sistema
             fireNativeNotif(n.title, n.body);
           }
         });
 
-        if (hasNew) {
+        if (hasChanged) {
           localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
           updateNotifBadge();
+          renderNotifications(); // Re-renderizar por si el panel está abierto
         }
       }
     } catch(e) {
