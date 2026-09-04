@@ -7,6 +7,76 @@
   'use strict';
 
   // ══════════════════════════════════════════════════════════════════════════════
+  // 🎉 MGM CONFETTI — Módulo de celebraciones con canvas-confetti
+  // ══════════════════════════════════════════════════════════════════════════════
+  const mgmConfetti = {
+    // Colores MGM: azul marino, dorado, blanco, celeste
+    _colors: ['#00214a', '#f59e0b', '#ffffff', '#0ea5e9', '#fbbf24', '#60a5fa'],
+    _goldColors: ['#f59e0b', '#fbbf24', '#fef3c7', '#ffffff', '#d97706'],
+    _blueColors: ['#0ea5e9', '#38bdf8', '#bae6fd', '#ffffff', '#0284c7'],
+    _birthdayColors: ['#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9', '#10b981', '#f472b6', '#ffffff'],
+
+    /** 🎊 Confeti bilateral grande — Registro nuevo exitoso */
+    celebrate() {
+      if (typeof confetti === 'undefined') return;
+      const opts = { particleCount: 80, spread: 70, startVelocity: 45, ticks: 300, colors: this._colors, zIndex: 99999 };
+      confetti({ ...opts, origin: { x: 0.1, y: 0.6 }, angle: 60 });
+      confetti({ ...opts, origin: { x: 0.9, y: 0.6 }, angle: 120 });
+      setTimeout(() => {
+        confetti({ ...opts, particleCount: 50, origin: { x: 0.5, y: 0.5 }, angle: 90, startVelocity: 35 });
+      }, 400);
+    },
+
+    /** 🌟 Confeti dorado MGM — Login / bienvenida exitosa */
+    gold() {
+      if (typeof confetti === 'undefined') return;
+      confetti({
+        particleCount: 100, spread: 80, startVelocity: 40, ticks: 250,
+        colors: this._goldColors, zIndex: 99999,
+        origin: { x: 0.5, y: 0.55 },
+        shapes: ['star', 'circle']
+      });
+    },
+
+    /** 🎆 Fuegos artificiales de cumpleaños — disparados desde los costados */
+    birthday() {
+      if (typeof confetti === 'undefined') return;
+      const duration = 2500;
+      const end = Date.now() + duration;
+      const colors = this._birthdayColors;
+      const frame = () => {
+        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0, y: 0.65 }, colors, zIndex: 99999 });
+        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1, y: 0.65 }, colors, zIndex: 99999 });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      };
+      frame();
+    },
+
+    /** ❤️ Mini-burst para likes en promos */
+    burst(x, y) {
+      if (typeof confetti === 'undefined') return;
+      const nx = typeof x === 'number' ? Math.min(Math.max(x / window.innerWidth, 0.05), 0.95) : 0.5;
+      const ny = typeof y === 'number' ? Math.min(Math.max(y / window.innerHeight, 0.05), 0.95) : 0.5;
+      confetti({
+        particleCount: 30, spread: 55, startVelocity: 25, ticks: 120,
+        colors: ['#ef4444', '#f87171', '#fecaca', '#f59e0b', '#ffffff'],
+        origin: { x: nx, y: ny }, zIndex: 99999, gravity: 1.2, scalar: 0.8
+      });
+    },
+
+    /** 🔔 Confeti azul — Notificaciones activadas */
+    bell() {
+      if (typeof confetti === 'undefined') return;
+      confetti({
+        particleCount: 60, spread: 90, startVelocity: 30, ticks: 180,
+        colors: this._blueColors, zIndex: 99999,
+        origin: { x: 0.5, y: 0.4 }, scalar: 0.9
+      });
+    }
+  };
+
+
+  // ══════════════════════════════════════════════════════════════════════════════
   // CONFIGURACIÓN GLOBAL — ENDPOINTS OFICIALES DE GOOGLE APPS SCRIPT
   // ══════════════════════════════════════════════════════════════════════════════
   const CFG = {
@@ -530,7 +600,13 @@
     document.getElementById('dash-tier').textContent       = 'MGM MIEMBRO';
 
     const bdayEl = document.getElementById('dash-bday-banner');
-    if (bdayEl) bdayEl.style.display = isBdayMonth(c.cumpleanos) ? 'flex' : 'none';
+    const isBday = isBdayMonth(c.cumpleanos);
+    if (bdayEl) bdayEl.style.display = isBday ? 'flex' : 'none';
+    // 🎂 Fuegos artificiales de cumpleaños — una vez por sesión
+    if (isBday && !sessionStorage.getItem('mgm_bday_confetti')) {
+      sessionStorage.setItem('mgm_bday_confetti', '1');
+      setTimeout(() => mgmConfetti.birthday(), 600);
+    }
 
     const tbody = document.getElementById('dash-tx-body');
     tbody.innerHTML = '';
@@ -590,6 +666,8 @@
 
     if (res.success) {
       showAlert('reg-alert', 'success', res.message || '¡Registro exitoso!');
+      // 🎊 ¡Celebrar nuevo miembro MGM!
+      mgmConfetti.celebrate();
       e.target.reset();
       if (res.client) setTimeout(() => renderDashboard(res.client), 1500);
     } else {
@@ -1018,6 +1096,7 @@
   window.togglePromoLike = function(promoId, btn, ev) {
     ev.stopPropagation();
     const likes = JSON.parse(localStorage.getItem(K_LIKES) || '{}');
+    const wasLiked = !!likes[promoId];
     likes[promoId] = !likes[promoId];
     localStorage.setItem(K_LIKES, JSON.stringify(likes));
     const svg = btn.querySelector('svg');
@@ -1027,6 +1106,11 @@
     if (promo) {
       const base = parseInt(promo.likes || 0);
       btn.querySelector('span') && (btn.lastChild.textContent = base + (likes[promoId] ? 1 : 0));
+    }
+    // ❤️ Mini-burst en el punto del click al dar like
+    if (!wasLiked && likes[promoId]) {
+      const rect = btn.getBoundingClientRect();
+      mgmConfetti.burst(rect.left + rect.width / 2, rect.top + rect.height / 2);
     }
   };
 
@@ -1294,6 +1378,9 @@
         state.authUser = res.client;
         localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
         
+        // 🌟 ¡Confeti dorado de bienvenida!
+        mgmConfetti.gold();
+
         // Registrar en notificaciones si es posible
         registerDeviceForNotifs(state.authUser.cedula, state.authUser.nombre);
         
@@ -1387,6 +1474,8 @@
     }
     Notification.requestPermission().then(permission => {
       if (permission === 'granted') {
+        // 🔔 ¡Celebrar activación de notificaciones!
+        mgmConfetti.bell();
         fireNativeNotif('MGM Hub', '¡Notificaciones activadas! 🔔 Recibirás alertas exclusivas.');
         openLoginModal(); // Refrescar modal para ocultar el botón
         if (state.authUser) {
@@ -1592,10 +1681,47 @@
   }
 
   // ══════════════════════════════════════════════════════════════════════════════
+  // DARK MODE
+  // ══════════════════════════════════════════════════════════════════════════════
+  
+  window.toggleDarkMode = function() {
+    const root = document.documentElement;
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    
+    if (isDark) {
+      root.removeAttribute('data-theme');
+      localStorage.setItem('mgm_theme', 'light');
+    } else {
+      root.setAttribute('data-theme', 'dark');
+      localStorage.setItem('mgm_theme', 'dark');
+    }
+    updateDarkModeBtn();
+  };
+
+  function updateDarkModeBtn() {
+    const btn = document.getElementById('btn-dark-mode');
+    if (!btn) return;
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+      btn.innerHTML = '<i class="fa-solid fa-sun" style="color: #fbbf24;"></i> <span>Modo Claro</span>';
+    } else {
+      btn.innerHTML = '<i class="fa-solid fa-moon" style="color: #64748b;"></i> <span>Modo Oscuro</span>';
+    }
+  }
+
+  function applySavedTheme() {
+    if (localStorage.getItem('mgm_theme') === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+    updateDarkModeBtn();
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════════
   // INIT — ARRANCA LA APP MGM HUB
   // ══════════════════════════════════════════════════════════════════════════════
 
   async function init() {
+    applySavedTheme();
     switchMainTab('home');
 
     // Inicializar estado de UI autenticación

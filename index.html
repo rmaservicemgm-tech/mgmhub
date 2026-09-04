@@ -12,6 +12,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
 
+  <!-- 🎉 canvas-confetti — celebraciones MGM Hub -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
   <!-- Registro del Service Worker con auto-actualización -->
   <script>
     if ('serviceWorker' in navigator) {
@@ -622,6 +625,11 @@
           <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;" id="auth-cedula">---</p>
           <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;"><i class="fa-solid fa-star" style="color: var(--accent-gold);"></i> <strong style="color: var(--text-dark);" id="auth-puntos">0</strong> Puntos MGM</p>
           
+          <!-- Botón Tema Oscuro -->
+          <button class="btn-submit" onclick="toggleDarkMode()" id="btn-dark-mode" style="width: 100%; background: var(--bg-card-alt); border: 1px solid var(--border-light); color: var(--text-dark); margin-bottom: 12px; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class="fa-solid fa-moon"></i> <span>Modo Oscuro</span>
+          </button>
+
           <!-- Botón Permisos -->
           <button id="btn-enable-notifs" class="btn-submit" onclick="requestNotificationPermission()" style="width: 100%; background: linear-gradient(135deg, #6366f1, #4f46e5); margin-bottom: 12px; font-size: 13px; display: none;">
             <i class="fa-solid fa-bell"></i> Activar Notificaciones

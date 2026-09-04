@@ -47,6 +47,33 @@
 }
 
 /* ==========================================================================
+   CSS VARIABLES — TEMA OSCURO
+   ========================================================================== */
+[data-theme="dark"] {
+  --bg-page:      #0f172a;
+  --bg-surface:   #1e293b;
+  --bg-card:      #1e293b;
+  --bg-card-alt:  #334155;
+  --border-light: #334155;
+  --border-mid:   #475569;
+
+  --text-dark:    #f8fafc;
+  --text-body:    #cbd5e1;
+  --text-muted:   #94a3b8;
+  --text-subtle:  #64748b;
+  --text-white:   #ffffff;
+
+  --primary-navy:      #e2e8f0;
+  --primary-navy-mid:  #cbd5e1;
+  
+  --shadow-xs:   0 1px 4px rgba(0,0,0,0.3);
+  --shadow-sm:   0 2px 10px rgba(0,0,0,0.4);
+  --shadow-md:   0 6px 24px rgba(0,0,0,0.5);
+  --shadow-lg:   0 12px 40px rgba(0,0,0,0.6);
+}
+
+
+/* ==========================================================================
    RESET & BASE
    ========================================================================== */
 *, *::before, *::after {
