@@ -4,6 +4,10 @@
   "description": "Aplicación Móvil de MGM Seguridad: MGM Puntos, Agenda, Promociones y Asistente IA Magie.",
   "start_url": "./index.html",
   "display": "standalone",
+  "scope": "/",
+  "launch_handler": {
+    "client_mode": ["focus-existing", "navigate-new"]
+  },
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "orientation": "portrait",
