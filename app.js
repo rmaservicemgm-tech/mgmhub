@@ -2006,43 +2006,14 @@
   }
 
   // ══════════════════════════════════════════════════════════════════════════════
-  // DARK MODE
-  // ══════════════════════════════════════════════════════════════════════════════
-  
-  window.toggleDarkMode = function() {
-    const root = document.documentElement;
-    const isDark = root.getAttribute('data-theme') === 'dark';
-    
-    if (isDark) {
-      root.removeAttribute('data-theme');
-      localStorage.setItem('mgm_theme', 'light');
-    } else {
-      root.setAttribute('data-theme', 'dark');
-      localStorage.setItem('mgm_theme', 'dark');
-    }
-    updateDarkModeBtn();
-  };
-
-  function updateDarkModeBtn() {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    // Sincronizar el checkbox toggle
-    const toggle = document.getElementById('dark-mode-toggle-input');
-    if (toggle) toggle.checked = isDark;
-  }
-
-  function applySavedTheme() {
-    if (localStorage.getItem('mgm_theme') === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
-    updateDarkModeBtn();
-  }
-
-  // ══════════════════════════════════════════════════════════════════════════════
   // INIT — ARRANCA LA APP MGM HUB
   // ══════════════════════════════════════════════════════════════════════════════
 
   async function init() {
-    applySavedTheme();
+    // Asegurar tema estándar limpio (sin modo oscuro residual)
+    document.documentElement.removeAttribute('data-theme');
+    try { localStorage.removeItem('mgm_theme'); } catch(e) {}
+
     switchMainTab('home');
 
     // Inicializar estado de UI autenticación
