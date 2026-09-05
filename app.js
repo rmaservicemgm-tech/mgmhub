@@ -158,6 +158,7 @@
       { cedula:'4-752-9812', nombre:'María Elena Rodríguez', correo:'maria@email.com', telefono:'6611-9988', cumpleanos:'1988-11-22', fechaRegistro:'2026-02-14', puntos:450, totalComprasAno:450.00 }
     ],
     transactions: JSON.parse(localStorage.getItem(K_TX)) || [
+      { fecha:'2026-08-10 16:30', cedula:'8-888-1234', factura:'RED-492104', subtotal:-5.00, multiplicador:'REDENCIÓN (100 pts = $1)', puntos:-500, asesor:'Carlos Ruiz' },
       { fecha:'2026-08-01 11:20', cedula:'8-888-1234', factura:'FAC-2026-0891', subtotal:1400.00, multiplicador:'2X Monto × 2X Día', puntos:5600, asesor:'Carlos Ruiz' },
       { fecha:'2026-07-15 09:40', cedula:'8-888-1234', factura:'FAC-2026-0742', subtotal:200.00, multiplicador:'1X Estándar', puntos:200, asesor:'Ana Gómez' }
     ]
@@ -174,7 +175,7 @@
     },
     {
       id:'P002', nombre:'Descuento de Cumpleaños 🎂',
-      descripcion:'Disfruta un 10% de descuento especial durante todo tu mes de cumpleaños.\nSolo presenta tu cédula al asesor.',
+      descripcion:'Disfruta un 10% de descuento especial el día de tu cumpleaños.\n(Si tu cumpleaños cae en domingo, tu descuento es válido el lunes siguiente).\nSolo presenta tu cédula en caja.',
       tipo:'descuento', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÍ', likes:18
     },
     {
@@ -252,9 +253,46 @@
     return `${prefix}-${rest.slice(0, tomoLen)}-${rest.slice(tomoLen, 10)}`;
   }
 
+  function isBdayBenefitActive(d) {
+    if (!d) return { active: false, isSundayMoved: false };
+    try {
+      const now = new Date();
+      const bday = new Date(d.toString().split('T')[0] + 'T12:00:00');
+      if (isNaN(bday.getTime())) return { active: false, isSundayMoved: false };
+
+      const bMonth = bday.getMonth();
+      const bDate  = bday.getDate();
+
+      const curYear  = now.getFullYear();
+      const curMonth = now.getMonth();
+      const curDate  = now.getDate();
+      const curDayOfWeek = now.getDay(); // 0 = Domingo, 1 = Lunes...
+
+      const bdayThisYear = new Date(curYear, bMonth, bDate, 12, 0, 0);
+      const bdayDayOfWeek = bdayThisYear.getDay(); // 0 = Domingo
+
+      // Caso 1: Su cumpleaños es HOY y NO es domingo
+      if (curMonth === bMonth && curDate === bDate && curDayOfWeek !== 0) {
+        return { active: true, isSundayMoved: false };
+      }
+
+      // Caso 2: Su cumpleaños cayó en DOMINGO y HOY es LUNES siguiente
+      if (bdayDayOfWeek === 0 && curDayOfWeek === 1) {
+        const ayer = new Date(now);
+        ayer.setDate(curDate - 1);
+        if (ayer.getMonth() === bMonth && ayer.getDate() === bDate) {
+          return { active: true, isSundayMoved: true };
+        }
+      }
+
+      return { active: false, isSundayMoved: false };
+    } catch {
+      return { active: false, isSundayMoved: false };
+    }
+  }
+
   function isBdayMonth(d) {
-    if (!d) return false;
-    try { return new Date(d + 'T12:00:00').getMonth() === new Date().getMonth(); } catch { return false; }
+    return isBdayBenefitActive(d).active;
   }
 
   function isPromoActive(p) {
@@ -589,7 +627,10 @@
     // 7. Renderizar dashboard de puntos al instante
     renderDashboard(state.authUser);
 
-    // 8. Consultar notificaciones personalizadas desde el backend
+    // 8. Detectar movimientos de puntos (acreditaciones, canjes/redenciones, ajustes del asesor)
+    checkAndNotifyNewPoints(state.authUser);
+
+    // 9. Consultar notificaciones personalizadas desde el backend
     checkNotifications();
   }
 
@@ -708,7 +749,8 @@
   });
 
   // ══════════════════════════════════════════════════════════════════════════════
-  // DETECCIÓN AUTOMÁTICA DE NUEVOS PUNTOS / TRANSACCIONES ACREDITADAS
+  // DETECCIÓN AUTOMÁTICA DE MOVIMIENTOS: PUNTOS ACREDITADOS, REDIMIDOS Y AJUSTES
+  // (Generados desde el panel de administración de los asesores o compras)
   // ══════════════════════════════════════════════════════════════════════════════
   function checkAndNotifyNewPoints(freshClient) {
     if (!freshClient) return;
@@ -717,59 +759,196 @@
     const historico = freshClient.historico || [];
     if (historico.length === 0) return;
 
-    let hasNewPoints = false;
-    let totalNuevosPuntos = 0;
+    let hasNewChanges = false;
+    let newNotificationsToAdd = [];
+    let liveAlerts = [];
 
     historico.forEach(tx => {
       // Clave identificadora única de la transacción (fecha + factura + puntos)
       const txKey = `${tx.fecha || ''}_${tx.factura || ''}_${tx.puntos || 0}`;
+      const notifId = 'pts_' + txKey.replace(/[^a-zA-Z0-9]/g, '_');
       const ptsNum = Number(tx.puntos) || 0;
+      const ptsAbs = Math.abs(ptsNum);
+      const isNewlyDiscovered = !notifiedTxs.includes(txKey);
 
-      if (!notifiedTxs.includes(txKey)) {
-        notifiedTxs.push(txKey);
+      // Determinar si ya está en la lista de notificaciones o fue borrada por el usuario
+      const alreadyInList = state.notifications.some(n => String(n.id) === String(notifId));
+      const wasCleared = state.clearedNotifs.includes(String(notifId));
 
-        if (ptsNum > 0) {
-          hasNewPoints = true;
-          totalNuevosPuntos += ptsNum;
+      const fac = (tx.factura || '').toString().trim().toUpperCase();
+      const mult = (tx.multiplicador || '').toString().trim().toUpperCase();
+      const asesor = tx.asesor || 'Asesor Comercial';
+      const saldoActual = (freshClient.puntos || 0).toLocaleString('es-PA');
 
-          const notifId = 'pts_' + txKey.replace(/[^a-zA-Z0-9]/g, '_');
-          const nuevaNotif = {
+      let notifObj = null;
+      let alertType = null; // 'redemption', 'earned', 'adjustment_pos', 'adjustment_neg', 'nc'
+
+      if (ptsNum < 0) {
+        // Movimiento negativo: ¿Redención, Devolución/NC o Ajuste en contra?
+        const isNC = fac.startsWith('NC-') || mult.includes('DEVOLUCI') || mult.includes('NOTA DE CR');
+        const isAjusteNeg = mult.includes('AJUSTE EN CONTRA') || mult.includes('AJUSTE (-)') || mult.includes('AJUSTE NEG');
+
+        if (isNC) {
+          alertType = 'nc';
+          notifObj = {
             id: notifId,
-            title: `⭐ ¡+${ptsNum} Puntos MGM Acreditados! 🎉`,
-            body: `Se han acreditado ${ptsNum} puntos a tu cuenta por tu compra (Factura: ${tx.factura || 'MGM'}). Asesor: ${tx.asesor || 'MGM'}. ¡Tu nuevo saldo es de ${freshClient.puntos} Pts!`,
+            title: `📋 Ajuste por Devolución / Nota de Crédito`,
+            body: `Se debitaron ${ptsAbs.toLocaleString('es-PA')} puntos (${tx.factura || 'NC'}). Detalle: ${tx.multiplicador || 'Devolución'}. Asesor: ${asesor}. Tu saldo actual es de ${saldoActual} Pts.`,
             date: tx.fecha || new Date().toLocaleDateString('es-PA'),
-            seccion: 'puntos:cuenta'
+            seccion: 'puntos:cuenta',
+            icon: 'fa-file-invoice-dollar',
+            iconColor: '#ef4444',
+            badgeText: '📋 Devolución',
+            badgeBg: '#fee2e2',
+            badgeTxt: '#991b1b'
           };
-
-          // Agregar al listado de notificaciones si no existe
-          if (!state.notifications.some(n => String(n.id) === String(notifId))) {
-            state.notifications.unshift(nuevaNotif);
-          }
+        } else if (isAjusteNeg) {
+          alertType = 'adjustment_neg';
+          notifObj = {
+            id: notifId,
+            title: `⚠️ Ajuste de Puntos Aplicado`,
+            body: `Se debitaron ${ptsAbs.toLocaleString('es-PA')} puntos de tu cuenta (${tx.factura || 'Ajuste'}). Detalle: ${tx.multiplicador}. Asesor: ${asesor}. Tu saldo es de ${saldoActual} Pts.`,
+            date: tx.fecha || new Date().toLocaleDateString('es-PA'),
+            seccion: 'puntos:cuenta',
+            icon: 'fa-sliders',
+            iconColor: '#f59e0b',
+            badgeText: '⚠️ Ajuste (-)',
+            badgeBg: '#fef3c7',
+            badgeTxt: '#92400e'
+          };
+        } else {
+          // REDENCIÓN DE PUNTOS (Canje por descuento en compras)
+          alertType = 'redemption';
+          const usdVal = Math.abs(Number(tx.subtotal) || (ptsAbs * CFG.VAL_PUNTO)).toFixed(2);
+          notifObj = {
+            id: notifId,
+            title: `🎁 ¡${ptsAbs.toLocaleString('es-PA')} Puntos MGM Redimidos! ✨`,
+            body: `Has canjeado ${ptsAbs.toLocaleString('es-PA')} puntos por $${usdVal} USD de descuento (Comprobante: ${tx.factura || 'MGM'}). Asesor: ${asesor}. Saldo disponible: ${saldoActual} Pts.`,
+            date: tx.fecha || new Date().toLocaleDateString('es-PA'),
+            seccion: 'puntos:cuenta',
+            icon: 'fa-gift',
+            iconColor: '#10b981',
+            badgeText: '🎁 Canje',
+            badgeBg: '#d1fae5',
+            badgeTxt: '#065f46'
+          };
         }
+      } else if (ptsNum > 0) {
+        // Movimiento positivo: ¿Ajuste a favor o Acreditación por compra?
+        const isAjustePos = mult.includes('AJUSTE A FAVOR') || mult.includes('AJUSTE (+)') || mult.includes('AJUSTE POS') || mult.includes('BONIFICAC');
+
+        if (isAjustePos) {
+          alertType = 'adjustment_pos';
+          notifObj = {
+            id: notifId,
+            title: `✨ ¡Ajuste de Puntos a tu Favor! 🌟`,
+            body: `El asesor ${asesor} ha acreditado +${ptsNum.toLocaleString('es-PA')} puntos a tu favor (${tx.factura || 'Ajuste'}). Detalle: ${tx.multiplicador}. Tu saldo es de ${saldoActual} Pts.`,
+            date: tx.fecha || new Date().toLocaleDateString('es-PA'),
+            seccion: 'puntos:cuenta',
+            icon: 'fa-award',
+            iconColor: '#8b5cf6',
+            badgeText: '✨ Ajuste (+)',
+            badgeBg: '#ede9fe',
+            badgeTxt: '#5b21b6'
+          };
+        } else {
+          alertType = 'earned';
+          notifObj = {
+            id: notifId,
+            title: `⭐ ¡+${ptsNum.toLocaleString('es-PA')} Puntos MGM Acreditados! 🎉`,
+            body: `Se han acreditado ${ptsNum.toLocaleString('es-PA')} puntos a tu cuenta por tu compra (Factura: ${tx.factura || 'MGM'}). Asesor: ${asesor}. ¡Tu nuevo saldo es de ${saldoActual} Pts!`,
+            date: tx.fecha || new Date().toLocaleDateString('es-PA'),
+            seccion: 'puntos:cuenta',
+            icon: 'fa-star',
+            iconColor: '#f59e0b',
+            badgeText: '⭐ Puntos',
+            badgeBg: '#fef3c7',
+            badgeTxt: '#b45309'
+          };
+        }
+      }
+
+      if (notifObj) {
+        // Si no existe en la lista de notificaciones del cliente y no fue eliminada por el usuario
+        if (!alreadyInList && !wasCleared) {
+          newNotificationsToAdd.push(notifObj);
+          hasNewChanges = true;
+        }
+
+        // Si es una transacción recién descubierta en vivo
+        if (isNewlyDiscovered) {
+          notifiedTxs.push(txKey);
+          liveAlerts.push({ type: alertType, tx, notif: notifObj, ptsNum, ptsAbs });
+        }
+      } else if (isNewlyDiscovered) {
+        notifiedTxs.push(txKey);
       }
     });
 
-    if (hasNewPoints) {
-      localStorage.setItem(K_NOTIFIED_TX, JSON.stringify(notifiedTxs));
+    // Agregar las nuevas notificaciones al estado
+    if (newNotificationsToAdd.length > 0) {
+      state.notifications.unshift(...newNotificationsToAdd);
       localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
+      hasNewChanges = true;
+    }
 
-      // Actualizar campana y lista de notificaciones
+    localStorage.setItem(K_NOTIFIED_TX, JSON.stringify(notifiedTxs));
+
+    if (hasNewChanges) {
       updateNotifBadge();
       renderNotifications();
+    }
 
-      // Disparar notificación nativa/push del sistema
-      fireNativeNotif(
-        `🎉 ¡+${totalNuevosPuntos} Puntos MGM Acreditados!`,
-        `Se cargaron ${totalNuevosPuntos} puntos a tu cuenta. Nuevo saldo: ${freshClient.puntos} Pts.`
-      );
+    // Disparar alertas en vivo (Toasts, Push, Confetti) solo si hay transacciones recién detectadas
+    if (liveAlerts.length > 0) {
+      const latest = liveAlerts[0];
+      const { type, tx, notif, ptsNum, ptsAbs } = latest;
 
-      // Celebración visual con confeti dorado y toast
-      mgmConfetti.gold();
-      if (typeof showToast === 'function') {
-        showToast(`⭐ ¡Has recibido +${totalNuevosPuntos} Puntos MGM!`, 'fa-solid fa-coins');
+      if (type === 'redemption') {
+        const usdVal = Math.abs(Number(tx.subtotal) || (ptsAbs * CFG.VAL_PUNTO)).toFixed(2);
+        fireNativeNotif(
+          `🎁 ¡Puntos MGM Redimidos!`,
+          `Canjeaste ${ptsAbs.toLocaleString('es-PA')} puntos ($${usdVal} USD). Saldo actual: ${freshClient.puntos} Pts.`
+        );
+        mgmConfetti.celebrate();
+        if (typeof showToast === 'function') {
+          showToast(`🎁 ¡Has redimido ${ptsAbs.toLocaleString('es-PA')} Puntos MGM ($${usdVal} USD)!`, 'fa-solid fa-gift');
+        }
+      } else if (type === 'earned') {
+        fireNativeNotif(
+          `🎉 ¡+${ptsNum.toLocaleString('es-PA')} Puntos MGM Acreditados!`,
+          `Se cargaron ${ptsNum.toLocaleString('es-PA')} puntos a tu cuenta. Nuevo saldo: ${freshClient.puntos} Pts.`
+        );
+        mgmConfetti.gold();
+        if (typeof showToast === 'function') {
+          showToast(`⭐ ¡Has recibido +${ptsNum.toLocaleString('es-PA')} Puntos MGM!`, 'fa-solid fa-coins');
+        }
+      } else if (type === 'adjustment_pos') {
+        fireNativeNotif(
+          `✨ ¡Ajuste de +${ptsNum.toLocaleString('es-PA')} Puntos Acreditado!`,
+          `El asesor acreditó puntos a tu favor. Nuevo saldo: ${freshClient.puntos} Pts.`
+        );
+        mgmConfetti.gold();
+        if (typeof showToast === 'function') {
+          showToast(`✨ ¡Ajuste de +${ptsNum.toLocaleString('es-PA')} Puntos a tu favor!`, 'fa-solid fa-award');
+        }
+      } else if (type === 'nc') {
+        fireNativeNotif(
+          `📋 Ajuste por Nota de Crédito / Devolución`,
+          `Se debitaron ${ptsAbs.toLocaleString('es-PA')} puntos (${tx.factura}). Saldo: ${freshClient.puntos} Pts.`
+        );
+        if (typeof showToast === 'function') {
+          showToast(`📋 Ajuste por Devolución: -${ptsAbs.toLocaleString('es-PA')} Pts (${tx.factura})`, 'fa-solid fa-file-invoice-dollar');
+        }
+      } else if (type === 'adjustment_neg') {
+        fireNativeNotif(
+          `⚠️ Ajuste de Puntos en Cuenta`,
+          `Se debitaron ${ptsAbs.toLocaleString('es-PA')} puntos (${tx.factura}). Saldo: ${freshClient.puntos} Pts.`
+        );
+        if (typeof showToast === 'function') {
+          showToast(`⚠️ Ajuste aplicado: -${ptsAbs.toLocaleString('es-PA')} Pts`, 'fa-solid fa-sliders');
+        }
       }
-    } else {
-      localStorage.setItem(K_NOTIFIED_TX, JSON.stringify(notifiedTxs));
     }
   }
 
@@ -816,10 +995,26 @@
     document.getElementById('dash-tier').textContent       = 'MGM MIEMBRO';
 
     const bdayEl = document.getElementById('dash-bday-banner');
-    const isBday = isBdayMonth(c.cumpleanos);
-    if (bdayEl) bdayEl.style.display = isBday ? 'flex' : 'none';
-    // 🎂 Fuegos artificiales de cumpleaños — una vez por sesión
-    if (isBday && !sessionStorage.getItem('mgm_bday_confetti')) {
+    const bdayInfo = isBdayBenefitActive(c.cumpleanos);
+    if (bdayEl) {
+      if (bdayInfo.active) {
+        bdayEl.style.display = 'flex';
+        const titleEl = document.getElementById('bday-banner-title');
+        const subEl = document.getElementById('bday-banner-sub');
+        if (titleEl) {
+          titleEl.textContent = bdayInfo.isSundayMoved ? '¡Feliz Cumpleaños! 🎉🎂 (Beneficio Domingo)' : '¡Feliz Cumpleaños! 🎉🎂';
+        }
+        if (subEl) {
+          subEl.textContent = bdayInfo.isSundayMoved
+            ? 'Como tu cumpleaños cayó domingo, ¡hoy lunes es tu día especial para disfrutar de tu 10% de descuento en MGM!'
+            : '¡Hoy es tu día! Disfruta de un 10% de descuento en tus compras hoy en MGM.';
+        }
+      } else {
+        bdayEl.style.display = 'none';
+      }
+    }
+    // 🎂 Fuegos artificiales de cumpleaños — una vez por sesión el día del beneficio
+    if (bdayInfo.active && !sessionStorage.getItem('mgm_bday_confetti')) {
       sessionStorage.setItem('mgm_bday_confetti', '1');
       setTimeout(() => mgmConfetti.birthday(), 600);
     }
@@ -1956,6 +2151,11 @@
   window.logoutClient = function() {
     state.authUser = null;
     localStorage.removeItem(K_AUTH);
+    // Limpiar notificaciones de puntos de la sesión anterior (manteniendo bienvenida)
+    state.notifications = state.notifications.filter(n => String(n.id) === '0000');
+    localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
+    updateNotifBadge();
+    renderNotifications();
     updateHeaderUserIcon();
     updateHomeAuthBanner();
     updatePuntosAuthViews();
@@ -2087,6 +2287,10 @@
             hasChanged = true;
             // Disparar notificación nativa del sistema
             fireNativeNotif(n.title || 'MGM', n.body || '');
+            // Mostrar Toast visual en la app
+            if (typeof showToast === 'function') {
+              showToast(n.title || 'Nueva notificación de MGM', 'fa-solid fa-bell');
+            }
           } else if (alreadyExists) {
             // Actualizar si hay cambios en el texto
             const existingIdx = state.notifications.findIndex(existing => String(existing.id) === stringId);
@@ -2188,15 +2392,60 @@
     list.innerHTML = state.notifications.map(n => {
       // Usar campo seccion del backend; fallback: detectar por título (compatibilidad)
       let seccion = (n.seccion || '').trim();
+      const titleLower = (n.title || '').toLowerCase();
+      const bodyLower  = (n.body || '').toLowerCase();
+
       if (!seccion) {
-        const t = (n.title || '').toLowerCase();
-        if (t.includes('punto') || t.includes('cumpleaños') || t.includes('cumpleanos')) seccion = 'puntos';
-        else if (t.includes('promo') || t.includes('oferta') || t.includes('descuento')) seccion = 'promos';
-        else if (t.includes('evento') || t.includes('webinar') || t.includes('curso') || t.includes('capacitación')) seccion = 'agenda';
+        if (titleLower.includes('punto') || titleLower.includes('cumpleaños') || titleLower.includes('cumpleanos') || titleLower.includes('redim') || titleLower.includes('canje') || titleLower.includes('ajuste')) seccion = 'puntos:cuenta';
+        else if (titleLower.includes('promo') || titleLower.includes('oferta') || titleLower.includes('descuento')) seccion = 'promos';
+        else if (titleLower.includes('evento') || titleLower.includes('webinar') || titleLower.includes('curso') || titleLower.includes('capacitación')) seccion = 'agenda';
       }
 
       const tab = seccion.split(':')[0];
-      const cfg = SECC_CFG[tab] || SECC_CFG.default;
+      const baseCfg = SECC_CFG[tab] || SECC_CFG.default;
+
+      // Icono y badge dinámicos por tipo de notificación
+      let itemIcon      = n.icon      || baseCfg.icon;
+      let itemColor     = n.iconColor || baseCfg.color;
+      let itemBadgeText = n.badgeText || baseCfg.badgeText;
+      let itemBadgeBg   = n.badgeBg   || baseCfg.badgeBg;
+      let itemBadgeTxt  = n.badgeTxt  || baseCfg.badgeTxt;
+
+      if (!n.badgeText) {
+        if (titleLower.includes('redim') || titleLower.includes('canje') || bodyLower.includes('canjeado') || bodyLower.includes('redimi')) {
+          itemIcon = 'fa-gift';
+          itemColor = '#10b981';
+          itemBadgeText = '🎁 Canje';
+          itemBadgeBg = '#d1fae5';
+          itemBadgeTxt = '#065f46';
+        } else if (titleLower.includes('devolución') || titleLower.includes('devolucion') || titleLower.includes('nota de crédito') || titleLower.includes('nc')) {
+          itemIcon = 'fa-file-invoice-dollar';
+          itemColor = '#ef4444';
+          itemBadgeText = '📋 Devolución';
+          itemBadgeBg = '#fee2e2';
+          itemBadgeTxt = '#991b1b';
+        } else if (titleLower.includes('ajuste')) {
+          const isFavor = titleLower.includes('favor') || titleLower.includes('acredit') || titleLower.includes('(+)');
+          itemIcon = isFavor ? 'fa-award' : 'fa-sliders';
+          itemColor = isFavor ? '#8b5cf6' : '#f59e0b';
+          itemBadgeText = isFavor ? '✨ Ajuste (+)' : '⚠️ Ajuste (-)';
+          itemBadgeBg = isFavor ? '#ede9fe' : '#fef3c7';
+          itemBadgeTxt = isFavor ? '#5b21b6' : '#92400e';
+        } else if (titleLower.includes('cumpleaños') || titleLower.includes('cumpleanos')) {
+          itemIcon = 'fa-cake-candles';
+          itemColor = '#ec4899';
+          itemBadgeText = '🎂 Cumpleaños';
+          itemBadgeBg = '#fce7f3';
+          itemBadgeTxt = '#9d174d';
+        } else if (titleLower.includes('bienvenido')) {
+          itemIcon = 'fa-hand-peace';
+          itemColor = '#6366f1';
+          itemBadgeText = '🎉 Bienvenida';
+          itemBadgeBg = '#e0e7ff';
+          itemBadgeTxt = '#4338ca';
+        }
+      }
+
       const isClickable = !!seccion;
 
       const clickAttr = isClickable
@@ -2211,9 +2460,9 @@
         style="background:var(--bg-surface); border:1px solid var(--border-light); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:var(--shadow-xs); transition: box-shadow 0.2s, transform 0.2s;"
         onmouseover="${hoverIn}" onmouseout="${hoverOut}">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-          <i class="fa-solid ${cfg.icon}" style="color:${cfg.color}; font-size:14px;"></i>
+          <i class="fa-solid ${itemIcon}" style="color:${itemColor}; font-size:14px;"></i>
           <div style="font-size:14px; font-weight:800; color:var(--text-dark); flex:1;">${n.title || 'Sin Título'}</div>
-          ${cfg.badgeText ? `<span style="font-size:10px; background:${cfg.badgeBg}; color:${cfg.badgeTxt}; padding:2px 7px; border-radius:20px; font-weight:700; white-space:nowrap;">${cfg.badgeText} →</span>` : ''}
+          ${itemBadgeText ? `<span style="font-size:10px; background:${itemBadgeBg}; color:${itemBadgeTxt}; padding:2px 7px; border-radius:20px; font-weight:700; white-space:nowrap;">${itemBadgeText} →</span>` : ''}
         </div>
         <div style="font-size:13px; color:var(--text-muted); line-height:1.5;">${n.body || ''}</div>
         <div style="font-size:11px; color:var(--text-subtle); margin-top:8px; text-align:right;">${n.date || 'Reciente'}</div>
