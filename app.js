@@ -1114,13 +1114,13 @@
 
     const icon = btn.querySelector('i');
     const countEl = document.getElementById('like-count-' + itemIdx);
-    const promo = state.promos.find(p => p.id === promoId);
-    const base = parseInt(promo?.likes || 0);
+    
+    let current = parseInt(countEl?.textContent || '0');
 
     if (likes[promoId]) {
       btn.classList.add('liked');
       icon.className = 'fa-solid fa-heart';
-      if (countEl) countEl.textContent = base + 1;
+      if (countEl) countEl.textContent = current + 1;
       mgmConfetti.burst(window.innerWidth - 40, window.innerHeight * 0.45);
       // Sync al GAS
       fetch(CFG.NOTIFS_GAS_URL, {
@@ -1131,7 +1131,7 @@
     } else {
       btn.classList.remove('liked');
       icon.className = 'fa-regular fa-heart';
-      if (countEl) countEl.textContent = base;
+      if (countEl) countEl.textContent = Math.max(0, current - 1);
     }
   };
 
@@ -1164,9 +1164,12 @@
     if (!listEl) listEl = document.getElementById('cli-copy-comments-list');
     if (!listEl) return;
     try {
-      // Intentar GET primero (más simple, evita CORS en algunos despliegues)
-      const url = `${CFG.NOTIFS_GAS_URL}?action=get_comments&promoId=${encodeURIComponent(promoId)}`;
-      const res = await fetch(url).then(r => r.json());
+      const res = await fetch(CFG.NOTIFS_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'get_comments', promoId })
+      }).then(r => r.json());
+      
       if (res.success && res.comments && res.comments.length > 0) {
         listEl.innerHTML = res.comments.map(c =>
           `<div style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--border-light);">
@@ -1288,7 +1291,8 @@
     const promo = state.promos?.find(p => p.id === id);
     if (promo?.imagen && navigator.canShare) {
       try {
-        const imgRes  = await fetch(promo.imagen);
+        const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(promo.imagen);
+        const imgRes  = await fetch(proxyUrl);
         const blob    = await imgRes.blob();
         const ext     = blob.type.includes('png') ? 'png' : 'jpg';
         const imgFile = new File([blob], `mgm-promo.${ext}`, { type: blob.type });
