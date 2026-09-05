@@ -732,6 +732,29 @@
       </div>
     </div>
 
+    <!-- BOTTOM SHEET: COPY COMPLETO DE LA PROMO -->
+    <div class="cli-copy-sheet" id="cli-copy-sheet">
+      <div class="cli-copy-sheet-backdrop" onclick="closeCopySheet()"></div>
+      <div class="cli-copy-sheet-body">
+        <div class="cli-copy-handle"></div>
+        <div class="cli-copy-title" id="cli-copy-title"></div>
+        <div class="cli-copy-desc" id="cli-copy-desc"></div>
+        <div class="cli-copy-dates" id="cli-copy-dates"></div>
+        <!-- Sección comentarios dentro del sheet -->
+        <div id="cli-copy-comments">
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-dark); margin-bottom: 10px;">
+            <i class="fa-regular fa-comment" style="margin-right: 5px;"></i> Comentarios
+          </div>
+          <div id="cli-copy-comments-list" style="max-height: 180px; overflow-y: auto; margin-bottom: 10px; font-size: 13px;"></div>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="cli-copy-comment-input" placeholder="Agrega un comentario..."
+              style="flex:1; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 20px; font-size: 13px; outline: none; background: var(--bg-card-alt); color: var(--text-body);">
+            <button onclick="postCommentFromSheet()" style="background: transparent; border: none; color: var(--primary-blue); font-weight: 700; cursor: pointer; padding: 0 8px;">Publicar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   <!-- LÓGICA PRINCIPAL DE LA APP -->
   <script src="app.js"></script>
 

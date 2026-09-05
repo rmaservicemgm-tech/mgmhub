@@ -1048,62 +1048,169 @@
     const likes = JSON.parse(localStorage.getItem(K_LIKES) || '{}');
 
     feed.innerHTML = state.promos.map((p, i) => {
-        const totalLikes = parseInt(p.likes || 0) + (likes[p.id] ? 1 : 0);
-        return `
-        <div class="cli-feed-item" id="promo-feed-${i}">
-            ${p.imagen
-                ? `<img class="cli-feed-img" src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">`
-                : `<div class="cli-feed-img-placeholder" style="background:${promoPlaceholderBg(p.tipo)};">${promoPlaceholderEmoji(p.tipo)}</div>`
-            }
-            <div class="cli-feed-body">
-                <span class="cli-feed-type">${(p.tipo||'Especial').toUpperCase()}</span>
-                <div class="cli-feed-title">${p.nombre}</div>
-                <!-- Text format added: white-space: pre-wrap -->
-                <div class="cli-feed-desc" style="white-space: pre-wrap;">${p.descripcion}</div>
-                <div class="cli-feed-dates">📅 Válida: ${p.fecha_inicio || ''} — ${p.fecha_fin || ''}</div>
-                
-                <div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; gap: 8px;">
-                      <button class="btn-like ${likes[p.id] ? 'liked' : ''}" onclick="togglePromoLike('${p.id}', this, event)" style="background: rgba(0,0,0,0.05); border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                          <svg viewBox="0 0 24 24" width="20" height="20" fill="${likes[p.id] ? '#ef4444' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                          <span style="font-size: 12px; color: var(--text-dark);">${totalLikes}</span>
-                      </button>
-                      <button onclick="sharePromo('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion)}')" style="background: rgba(0,0,0,0.05); border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-share-nodes" style="color: var(--text-dark);"></i>
-                      </button>
-                      <button onclick="toggleComments('${p.id}', event)" style="background: rgba(0,0,0,0.05); border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                        <i class="fa-regular fa-comment" style="color: var(--text-dark);"></i>
-                      </button>
-                    </div>
-                    
-                    <button onclick="promptWhatsApp('${p.id}', '${encodeURIComponent(p.nombre)}')" class="btn-submit" style="border: none; padding: 8px 12px; font-size: 12px; border-radius: 6px; background: #25d366; color: #fff; cursor: pointer;">
-                        <i class="fa-brands fa-whatsapp"></i> Consultar
-                    </button>
-                </div>
-                
-                <!-- Comments Section (Hidden by default) -->
-                <div id="comments-section-${p.id}" style="display: none; margin-top: 16px; border-top: 1px solid var(--border-light); padding-top: 12px;">
-                  <div id="comments-list-${p.id}" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px; font-size: 13px;">
-                    <div style="color: var(--text-muted); text-align: center; font-size: 12px; padding: 10px;">Cargando comentarios...</div>
-                  </div>
-                  <div style="display: flex; gap: 8px;">
-                    <input type="text" id="comment-input-${p.id}" placeholder="Agrega un comentario..." style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 20px; font-size: 13px; outline: none; background: #f8fafc;">
-                    <button onclick="postComment('${p.id}')" style="background: transparent; border: none; color: var(--primary-blue); font-weight: 700; cursor: pointer; padding: 0 8px;">Publicar</button>
-                  </div>
-                </div>
-            </div>
+      const totalLikes = parseInt(p.likes || 0) + (likes[p.id] ? 1 : 0);
+      const isLiked = !!likes[p.id];
+      const descPreview = (p.descripcion || '').replace(/\n/g, ' ').substring(0, 80);
+
+      return `
+      <div class="cli-feed-item" id="promo-feed-${i}">
+        ${ p.imagen
+          ? `<img class="cli-feed-img" src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">`
+          : `<div class="cli-feed-img-placeholder" style="background:${promoPlaceholderBg(p.tipo)};">${promoPlaceholderEmoji(p.tipo)}</div>`
+        }
+        <div class="cli-feed-gradient"></div>
+
+        <!-- Info inferior izquierda -->
+        <div class="cli-feed-info">
+          <span class="cli-feed-type">${(p.tipo || 'Especial').toUpperCase()}</span>
+          <div class="cli-feed-title">${p.nombre}</div>
+          <div class="cli-feed-caption">${descPreview}</div>
+          <button class="cli-feed-more-btn" onclick="openCopySheet('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion || '')}', '${p.fecha_inicio || ''}', '${p.fecha_fin || ''}')">...más</button>
+          <div class="cli-feed-dates">📅 Válida: ${p.fecha_inicio || ''} — ${p.fecha_fin || ''}</div>
         </div>
-        `;
+
+        <!-- Botones de acción derecha -->
+        <div class="cli-feed-actions">
+          <!-- Like -->
+          <button class="cli-action-btn ${isLiked ? 'liked' : ''}" id="like-btn-${i}"
+            onclick="toggleReelsLike('${p.id}', ${i}, ${totalLikes}, this)">
+            <i class="fa-${isLiked ? 'solid' : 'regular'} fa-heart"></i>
+            <span id="like-count-${i}">${totalLikes}</span>
+          </button>
+          <!-- Comentarios (abre el sheet) -->
+          <button class="cli-action-btn"
+            onclick="openCopySheet('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion || '')}', '${p.fecha_inicio || ''}', '${p.fecha_fin || ''}')">
+            <i class="fa-regular fa-comment"></i>
+            <span>Comentar</span>
+          </button>
+          <!-- Compartir nativo -->
+          <button class="cli-action-btn"
+            onclick="sharePromo('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion || '')}')">
+            <i class="fa-solid fa-share-nodes"></i>
+            <span>Compartir</span>
+          </button>
+          <!-- WhatsApp -->
+          <button class="cli-action-btn wa-btn"
+            onclick="promptWhatsApp('${p.id}', '${encodeURIComponent(p.nombre)}')">
+            <i class="fa-brands fa-whatsapp"></i>
+            <span>Consultar</span>
+          </button>
+        </div>
+      </div>`;
     }).join('');
     
     modal.style.display = 'flex';
     setTimeout(() => {
-        const target = document.getElementById('promo-feed-' + idx);
-        if (target) {
-            target.scrollIntoView({ behavior: 'auto', block: 'start' });
-        }
+      const target = document.getElementById('promo-feed-' + idx);
+      if (target) target.scrollIntoView({ behavior: 'auto', block: 'start' });
     }, 50);
   };
+
+  // — Like dentro del feed Reels (sin confetti de posición ya que es overlay)
+  window.toggleReelsLike = function(promoId, itemIdx, currentCount, btn) {
+    const likes = JSON.parse(localStorage.getItem(K_LIKES) || '{}');
+    const wasLiked = !!likes[promoId];
+    likes[promoId] = !wasLiked;
+    localStorage.setItem(K_LIKES, JSON.stringify(likes));
+
+    const icon = btn.querySelector('i');
+    const countEl = document.getElementById('like-count-' + itemIdx);
+    const promo = state.promos.find(p => p.id === promoId);
+    const base = parseInt(promo?.likes || 0);
+
+    if (likes[promoId]) {
+      btn.classList.add('liked');
+      icon.className = 'fa-solid fa-heart';
+      if (countEl) countEl.textContent = base + 1;
+      // Confetti desde el centro-derecho donde está el botón
+      mgmConfetti.burst(window.innerWidth - 40, window.innerHeight * 0.45);
+    } else {
+      btn.classList.remove('liked');
+      icon.className = 'fa-regular fa-heart';
+      if (countEl) countEl.textContent = base;
+    }
+  };
+
+  // — Abrir bottom sheet con copy completo
+  let _activeCopyPromoId = null;
+
+  window.openCopySheet = function(id, encTitle, encDesc, fi, ff) {
+    _activeCopyPromoId = id;
+    document.getElementById('cli-copy-title').textContent = decodeURIComponent(encTitle);
+    document.getElementById('cli-copy-desc').textContent  = decodeURIComponent(encDesc);
+    document.getElementById('cli-copy-dates').textContent = fi || ff ? `📅 Válida: ${fi} — ${ff}` : '';
+    
+    // Cargar comentarios
+    const listEl = document.getElementById('cli-copy-comments-list');
+    listEl.innerHTML = '<div style="color: var(--text-muted); font-size: 12px; padding: 8px;">Cargando...</div>';
+    loadComments(id, listEl);
+    
+    document.getElementById('cli-copy-sheet').classList.add('open');
+  };
+
+  window.closeCopySheet = function() {
+    document.getElementById('cli-copy-sheet').classList.remove('open');
+    document.getElementById('cli-copy-comment-input').value = '';
+    _activeCopyPromoId = null;
+  };
+
+  async function loadComments(promoId, listEl) {
+    if (!listEl) listEl = document.getElementById('cli-copy-comments-list');
+    if (!listEl) return;
+    try {
+      const res = await fetch(CFG.NOTIFS_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'get_comments', promoId })
+      }).then(r => r.json());
+      if (res.success && res.comments && res.comments.length > 0) {
+        listEl.innerHTML = res.comments.map(c =>
+          `<div style="margin-bottom:8px;"><strong style="color:var(--text-dark);">${c.nombre}:</strong> <span style="color:var(--text-body);">${c.texto}</span></div>`
+        ).join('');
+      } else {
+        listEl.innerHTML = '<div style="color:var(--text-muted);text-align:center;font-size:12px;padding:10px;">Sin comentarios aún. ¡Sé el primero!</div>';
+      }
+    } catch {
+      const local = JSON.parse(localStorage.getItem('mgm_comments_' + promoId) || '[]');
+      listEl.innerHTML = local.length
+        ? local.map(c => `<div style="margin-bottom:8px;"><strong style="color:var(--text-dark);">${c.nombre}:</strong> <span style="color:var(--text-body);">${c.texto}</span></div>`).join('')
+        : '<div style="color:var(--text-muted);text-align:center;font-size:12px;padding:10px;">Sin comentarios aún. ¡Sé el primero!</div>';
+    }
+  }
+
+  window.postCommentFromSheet = async function() {
+    if (!state.authUser) {
+      alert('Debes iniciar sesión para comentar.');
+      closeCopySheet();
+      openLoginModal();
+      return;
+    }
+    const promoId = _activeCopyPromoId;
+    if (!promoId) return;
+    const input = document.getElementById('cli-copy-comment-input');
+    const texto = input.value.trim();
+    if (!texto) return;
+    input.value = '';
+
+    const listEl = document.getElementById('cli-copy-comments-list');
+    if (listEl.innerHTML.includes('Sin comentarios')) listEl.innerHTML = '';
+    listEl.innerHTML += `<div style="margin-bottom:8px; opacity:0.7;"><strong style="color:var(--text-dark);">${state.authUser.nombre}:</strong> <span style="color:var(--text-body);">${texto}</span></div>`;
+    listEl.scrollTop = listEl.scrollHeight;
+
+    try {
+      await fetch(CFG.NOTIFS_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'add_comment', promoId, nombre: state.authUser.nombre, texto })
+      });
+    } catch(e) {}
+
+    const local = JSON.parse(localStorage.getItem('mgm_comments_' + promoId) || '[]');
+    local.push({ nombre: state.authUser.nombre, texto });
+    localStorage.setItem('mgm_comments_' + promoId, JSON.stringify(local));
+    loadComments(promoId, listEl);
+  };
+
 
   window.closePromoDetail = function() {
       const modal = document.getElementById('modal-promo-feed');
