@@ -136,6 +136,7 @@
   const K_AUTH    = 'mgm_auth_user';
   const K_NOTIFS  = 'mgm_notifications';
   const K_CLEARED_NOTIFS = 'mgm_cleared_notifs';
+  const K_NOTIFIED_TX    = 'mgm_notified_tx_v1';
 
   const state = {
     activeTab:   'home',
@@ -706,6 +707,72 @@
     setClientSession(res.client, 'login');
   });
 
+  // ══════════════════════════════════════════════════════════════════════════════
+  // DETECCIÓN AUTOMÁTICA DE NUEVOS PUNTOS / TRANSACCIONES ACREDITADAS
+  // ══════════════════════════════════════════════════════════════════════════════
+  function checkAndNotifyNewPoints(freshClient) {
+    if (!freshClient) return;
+    
+    let notifiedTxs = JSON.parse(localStorage.getItem(K_NOTIFIED_TX)) || [];
+    const historico = freshClient.historico || [];
+    if (historico.length === 0) return;
+
+    let hasNewPoints = false;
+    let totalNuevosPuntos = 0;
+
+    historico.forEach(tx => {
+      // Clave identificadora única de la transacción (fecha + factura + puntos)
+      const txKey = `${tx.fecha || ''}_${tx.factura || ''}_${tx.puntos || 0}`;
+      const ptsNum = Number(tx.puntos) || 0;
+
+      if (!notifiedTxs.includes(txKey)) {
+        notifiedTxs.push(txKey);
+
+        if (ptsNum > 0) {
+          hasNewPoints = true;
+          totalNuevosPuntos += ptsNum;
+
+          const notifId = 'pts_' + txKey.replace(/[^a-zA-Z0-9]/g, '_');
+          const nuevaNotif = {
+            id: notifId,
+            title: `⭐ ¡+${ptsNum} Puntos MGM Acreditados! 🎉`,
+            body: `Se han acreditado ${ptsNum} puntos a tu cuenta por tu compra (Factura: ${tx.factura || 'MGM'}). Asesor: ${tx.asesor || 'MGM'}. ¡Tu nuevo saldo es de ${freshClient.puntos} Pts!`,
+            date: tx.fecha || new Date().toLocaleDateString('es-PA'),
+            seccion: 'puntos:cuenta'
+          };
+
+          // Agregar al listado de notificaciones si no existe
+          if (!state.notifications.some(n => String(n.id) === String(notifId))) {
+            state.notifications.unshift(nuevaNotif);
+          }
+        }
+      }
+    });
+
+    if (hasNewPoints) {
+      localStorage.setItem(K_NOTIFIED_TX, JSON.stringify(notifiedTxs));
+      localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
+
+      // Actualizar campana y lista de notificaciones
+      updateNotifBadge();
+      renderNotifications();
+
+      // Disparar notificación nativa/push del sistema
+      fireNativeNotif(
+        `🎉 ¡+${totalNuevosPuntos} Puntos MGM Acreditados!`,
+        `Se cargaron ${totalNuevosPuntos} puntos a tu cuenta. Nuevo saldo: ${freshClient.puntos} Pts.`
+      );
+
+      // Celebración visual con confeti dorado y toast
+      mgmConfetti.gold();
+      if (typeof showToast === 'function') {
+        showToast(`⭐ ¡Has recibido +${totalNuevosPuntos} Puntos MGM!`, 'fa-solid fa-coins');
+      }
+    } else {
+      localStorage.setItem(K_NOTIFIED_TX, JSON.stringify(notifiedTxs));
+    }
+  }
+
   // AUTO-LOAD: si el usuario ya está autenticado, carga dashboard y refresca datos frescos
   async function autoLoadPuntosDashboard() {
     if (!state.authUser) {
@@ -723,6 +790,9 @@
         body: JSON.stringify({ action: 'get_client', cedula: state.authUser.cedula })
       }).then(r => r.json());
       if (res.success && res.client) {
+        // Detectar si entraron puntos o transacciones nuevas y disparar notificación
+        checkAndNotifyNewPoints(res.client);
+
         state.authUser = { ...state.authUser, ...res.client };
         localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
         renderDashboard(state.authUser);
@@ -1985,12 +2055,12 @@
       if (res.success && Array.isArray(res.notifications)) {
         let hasChanged = false;
         
-        // Sincronizar eliminaciones: borrar notificaciones locales (excepto '0000') que ya no estén en el backend
+        // Sincronizar eliminaciones: borrar notificaciones de servidor obsoletas (preservar bienvenida y puntos acreditados)
         const serverIds = res.notifications.map(n => String(n.id));
         const originalLength = state.notifications.length;
         state.notifications = state.notifications.filter(localNotif => {
           const localId = String(localNotif.id);
-          if (localId === '0000') return true; // Mantener siempre la de bienvenida
+          if (localId === '0000' || localId.startsWith('pts_')) return true; // Preservar bienvenida y transacciones de puntos
           return serverIds.includes(localId);  // Mantener solo si sigue en el server
         });
         
@@ -2041,12 +2111,20 @@
     }
   }
 
-  // Chequear notificaciones cada vez que el usuario vuelve a abrir la app (vuelve al tab)
+  // Chequear notificaciones y puntos cada vez que el usuario vuelve a abrir la app (vuelve al tab)
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       checkNotifications();
+      if (state.authUser) autoLoadPuntosDashboard();
     }
   });
+
+  // Chequeo periódico en segundo plano cada 20 segundos si la app está visible
+  setInterval(() => {
+    if (state.authUser && document.visibilityState === 'visible') {
+      autoLoadPuntosDashboard();
+    }
+  }, 20000);
 
   // Actualizar el globito rojo de la campana
   function updateNotifBadge() {
