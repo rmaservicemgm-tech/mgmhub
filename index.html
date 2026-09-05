@@ -199,6 +199,16 @@
         <div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Cargando promociones del mes...</div>
       </div>
 
+      <!-- SECCIÓN: PREMIOS CANJEABLES POR PUNTOS -->
+      <div class="section-header" style="margin-top: 10px;">
+        <h2 class="section-title"><i class="fa-solid fa-gift" style="color: #10b981;"></i> Premios por Puntos</h2>
+        <span class="section-link" onclick="switchMainTab('puntos')">Mis Puntos →</span>
+      </div>
+
+      <div class="premios-slider-container" id="home-premios-slider">
+        <div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Cargando catálogo de premios...</div>
+      </div>
+
       <!-- SECCIÓN: BENEFICIOS MGM (CON PADDING PARA SCROLL COMPLETO) -->
       <div class="section-header">
         <h2 class="section-title"><i class="fa-solid fa-shield-check" style="color: var(--primary-blue);"></i> Experiencia MGM</h2>
@@ -296,8 +306,8 @@
           <div id="dash-bday-banner" class="bday-banner" style="display: none;">
             <div class="bday-icon">🎂</div>
             <div class="bday-text">
-              <strong>¡Mes de Cumpleaños Detectado!</strong>
-              <span>Disfruta de 10% de descuento especial en tus compras de este mes.</span>
+              <strong id="bday-banner-title">¡Feliz Cumpleaños! 🎉</strong>
+              <span id="bday-banner-sub">¡Hoy es tu día especial! Disfruta de un 10% de descuento en tus compras hoy en MGM.</span>
             </div>
           </div>
 
@@ -385,6 +395,9 @@
               <div class="form-group">
                 <label class="form-label" for="reg-cumpleanos">Fecha de Cumpleaños</label>
                 <input type="date" id="reg-cumpleanos" class="form-control">
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                  🎁 Disfruta de un 10% de descuento especial el día de tu cumpleaños.
+                </div>
               </div>
 
               <button type="submit" class="btn-submit">
@@ -643,6 +656,54 @@
       </div>
     </div>
 
+    <!-- MODAL DETALLE DE PREMIO -->
+    <div class="app-modal" id="modal-premio-detail">
+      <div class="modal-content-card" style="max-height: 85vh; overflow-y: auto; padding: 20px; position: relative;">
+        <button class="modal-close-x" onclick="closeAppModal('modal-premio-detail')">✕</button>
+
+        <div style="text-align: center; margin-bottom: 14px; position: relative;">
+          <div id="modal-premio-img-wrap" style="width: 100%; height: 185px; border-radius: 14px; background: #f8fafc; border: 1px solid var(--border-light); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+            <img id="modal-premio-img" src="" alt="Premio" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+          </div>
+          <div id="modal-premio-pts-badge" style="position: absolute; bottom: 10px; right: 10px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 900; font-size: 13px; padding: 5px 12px; border-radius: 20px; box-shadow: 0 4px 12px rgba(16,185,129,0.35);">
+            0 Pts
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
+          <span id="modal-premio-model" style="font-size: 11px; font-weight: 800; background: #ede9fe; color: #6d28d9; padding: 3px 8px; border-radius: 6px;">MOD. ---</span>
+          <span id="modal-premio-validez" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">⏱️ Validez: ---</span>
+          <span id="modal-premio-stock" style="font-size: 11px; font-weight: 700; color: #16a34a; background: #f0fdf4; padding: 2px 7px; border-radius: 5px;">Disponible</span>
+        </div>
+
+        <h3 id="modal-premio-title" style="font-size: 18px; font-weight: 900; color: var(--text-dark); margin-bottom: 8px; line-height: 1.3;">---</h3>
+        <p id="modal-premio-desc" style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">---</p>
+
+        <!-- Indicador de saldo vs costo del premio -->
+        <div id="modal-premio-user-status" style="background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px;"></div>
+
+        <!-- Enlace a la tienda online -->
+        <a id="modal-premio-btn-tienda" href="#" target="_blank" rel="noopener noreferrer"
+          style="display:none; align-items:center; justify-content:center; gap:8px; width:100%; padding:11px 16px; margin-bottom:10px;
+                 background:var(--bg-surface); color:var(--primary-blue); border:1.5px solid var(--primary-blue);
+                 border-radius:12px; font-size:13px; font-weight:800; text-decoration:none; cursor:pointer;
+                 transition:background 0.2s, color 0.2s;"
+          onmouseover="this.style.background='#eff6ff'; this.style.color='#1d4ed8';"
+          onmouseout="this.style.background='var(--bg-surface)'; this.style.color='var(--primary-blue)';">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Ver ficha del producto en la tienda
+        </a>
+
+        <div style="display: flex; gap: 8px;">
+          <button id="modal-premio-btn-canjear" class="btn-submit" onclick="actionCanjearPremio()" style="flex: 1; background: linear-gradient(135deg, #10b981, #059669);">
+            <i class="fa-solid fa-gift"></i> Canjear con un Asesor
+          </button>
+          <button class="btn-header-action" onclick="sharePremio()" title="Compartir premio" style="background: var(--bg-page); color: var(--text-dark); border-color: var(--border-light);">
+            <i class="fa-solid fa-share-nodes"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- MODAL LOGIN / PERFIL -->
     <div class="app-modal" id="modal-user-login">
       <div class="modal-content-card" style="position: relative;">
@@ -795,7 +856,7 @@
       </div>
     </div>
 
-  <script src="app.js?v=12"></script>
+  <script src="app.js?v=13"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
   <script>

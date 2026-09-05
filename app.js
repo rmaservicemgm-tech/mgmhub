@@ -98,6 +98,9 @@
     // 6. NOTIFICACIONES & TRACKING (El usuario creará este nuevo GAS)
     NOTIFS_GAS_URL: 'https://script.google.com/macros/s/AKfycby8EOl7-hZ1Q8rvPCjFB2ItFrRKqwVmDoPJrhX3sM_3-O8xeoWmuZ0RxbEgNUjLN_6dfA/exec',
 
+    // 7. CATÁLOGO DE PREMIOS & CANJES (Backend MGM Puntos o propio)
+    PREMIOS_GAS_URL: 'https://script.google.com/macros/s/AKfycbwV90SCVdMrMgE1Vlev3rdpcqMJlVwCV5du_MGJ-BtV5Di8LMY9UroYD7dXhWBXyI2yGw/exec',
+
     VAL_PUNTO: 0.01,
     BOTPRESS_BOT_ID: 'e5a3c8a6-9aec-41a3-870d-d1985dc8c7df',
     SPLASH_ENABLED: true,
@@ -150,6 +153,8 @@
     audioTrackIndex: 0,
     agendaEvents: [],
     promos: [],
+    rewards: [],
+    activeRewardData: null,
     notifications: JSON.parse(localStorage.getItem(K_NOTIFS)) || [],
     clearedNotifs: JSON.parse(localStorage.getItem(K_CLEARED_NOTIFS)) || [],
     authUser: JSON.parse(localStorage.getItem(K_AUTH)) || null,
@@ -193,6 +198,74 @@
     '5. **Comprobante:** Toda redención genera un comprobante con firmas del asesor y del cliente.',
     '6. **Vencimiento:** Los puntos vencen el 31 de diciembre de cada año calendario.',
     '7. **Intransferibilidad:** Los puntos son personales e intransferibles.'
+  ];
+
+  const DEMO_REWARDS = [
+    {
+      id: 'REW-001',
+      nombre: 'Cámara Wi-Fi IMOU Cue 2 (1080P)',
+      modelo: 'IPC-C22EP-A',
+      descripcion: 'Cámara inteligente para interiores con audio bidireccional, visión nocturna y detección de humanos por inteligencia artificial.',
+      puntos: 2500,
+      imagen: 'https://www.imoulife.com/public/asset/v2/img/product/cue2/cue2-pic1.png',
+      fecha_inicio: '2026-01-01',
+      fecha_fin: '2026-12-31',
+      activo: 'SÍ',
+      stock: 'Disponible',
+      link: 'https://mgmpty.odoo.com/shop/camara-wifi-imou-cue-2'
+    },
+    {
+      id: 'REW-002',
+      nombre: 'Cámara Wi-Fi IMOU Ranger 2 (360°)',
+      modelo: 'IPC-A22EN-G',
+      descripcion: 'Cobertura 360° con seguimiento inteligente de movimiento, sirena disuasoria y modo de privacidad.',
+      puntos: 3500,
+      imagen: 'https://www.imoulife.com/public/asset/v2/img/product/ranger2/ranger2-pic1.png',
+      fecha_inicio: '2026-01-01',
+      fecha_fin: '2026-12-31',
+      activo: 'SÍ',
+      stock: 'Disponible',
+      link: 'https://mgmpty.odoo.com/shop/camara-wifi-imou-ranger-2'
+    },
+    {
+      id: 'REW-003',
+      nombre: 'Cámara Exterior IMOU Cruiser Dual (10MP)',
+      modelo: 'IPC-S7XP-10M0WED',
+      descripcion: 'Doble lente PTZ exterior con visión nocturna Smart Dual Light a todo color y certificación de intemperie IP66.',
+      puntos: 6500,
+      imagen: '',
+      fecha_inicio: '2026-01-01',
+      fecha_fin: '2026-12-31',
+      activo: 'SÍ',
+      stock: 'Disponible',
+      link: 'https://mgmpty.odoo.com/shop/camara-exterior-imou-cruiser-dual'
+    },
+    {
+      id: 'REW-004',
+      nombre: 'Kit Ponchadora & Herramientas de Red Pro',
+      modelo: 'TOOL-KIT-PRO',
+      descripcion: 'Ponchadora profesional RJ45/RJ11 con probador de cables UTP y pelador para técnicos e instaladores.',
+      puntos: 1800,
+      imagen: '',
+      fecha_inicio: '2026-01-01',
+      fecha_fin: '',
+      activo: 'SÍ',
+      stock: 'Disponible',
+      link: ''
+    },
+    {
+      id: 'REW-005',
+      nombre: 'Gorra Oficial & Kit Merch MGM 2026',
+      modelo: 'MERCH-MGM-2026',
+      descripcion: 'Gorra bordada de colección MGM + vaso térmico metálico y lanyard oficial.',
+      puntos: 800,
+      imagen: '',
+      fecha_inicio: '2026-01-01',
+      fecha_fin: '',
+      activo: 'SÍ',
+      stock: 'Disponible',
+      link: ''
+    }
   ];
 
   const DEMO_EVENTS = [
@@ -303,6 +376,50 @@
     return true;
   }
 
+  function isRewardActive(r) {
+    if (!r) return false;
+    const act = (r.activo || r.activa || 'SÍ').toString().toUpperCase().trim();
+    if (!['SÍ','SI','1','TRUE','DISPONIBLE'].includes(act)) return false;
+    if (r.stock && r.stock.toString().toUpperCase().trim() === 'AGOTADO') return false;
+    const today = new Date(); today.setHours(0,0,0,0);
+    if (r.fecha_inicio) {
+      const fi = new Date(r.fecha_inicio.toString().split('T')[0] + 'T00:00:00');
+      if (!isNaN(fi.getTime()) && today < fi) return false;
+    }
+    if (r.fecha_fin) {
+      const ff = new Date(r.fecha_fin.toString().split('T')[0] + 'T23:59:59');
+      if (!isNaN(ff.getTime()) && today > ff) return false;
+    }
+    return true;
+  }
+
+  function formatRewardValidez(r) {
+    if (!r) return { text: 'Disponible', isExpiringSoon: false, color: 'var(--text-subtle)' };
+    const finStr = (r.fecha_fin || '').toString().trim();
+    if (!finStr || finStr.toLowerCase().includes('stock') || finStr.toLowerCase().includes('agot') || finStr.toLowerCase().includes('perman')) {
+      return { text: '🔥 Hasta agotar stock', isExpiringSoon: false, color: 'var(--text-subtle)' };
+    }
+    try {
+      const ff = new Date(finStr.split('T')[0] + 'T23:59:59');
+      if (isNaN(ff.getTime())) {
+        return { text: finStr, isExpiringSoon: false, color: 'var(--text-subtle)' };
+      }
+      const today = new Date(); today.setHours(0,0,0,0);
+      const diffDays = Math.ceil((ff.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      if (diffDays <= 7 && diffDays >= 0) {
+        return {
+          text: diffDays === 0 ? '⚡ ¡Vence hoy!' : `⚡ ¡Últimos ${diffDays} días!`,
+          isExpiringSoon: true,
+          color: '#ef4444'
+        };
+      }
+      const dateFmt = ff.toLocaleDateString('es-PA', { day: 'numeric', month: 'short', year: 'numeric' });
+      return { text: `⏱️ Válido hasta ${dateFmt}`, isExpiringSoon: false, color: 'var(--text-subtle)' };
+    } catch(e) {
+      return { text: finStr, isExpiringSoon: false, color: 'var(--text-subtle)' };
+    }
+  }
+
   function showAlert(elId, type, msg) {
     const el = document.getElementById(elId);
     if (!el) return;
@@ -345,7 +462,7 @@
   // API CALL: MGM PUNTOS BACKEND
   // ══════════════════════════════════════════════════════════════════════════════
   async function api(action, payload = {}) {
-    if (['get_client', 'get_promotions', 'get_terms'].includes(action)) {
+    if (['get_client', 'get_promotions', 'get_terms', 'get_rewards', 'get_premios'].includes(action)) {
       try {
         let url = `${CFG.PUNTOS_GAS_URL}?action=${action}`;
         if (payload.cedula) url += `&cedula=${encodeURIComponent(payload.cedula)}`;
@@ -389,6 +506,7 @@
   function localFallback(action, payload) {
     return new Promise(resolve => setTimeout(() => {
       if (action === 'get_promotions') return resolve({ success:true, promos: DEMO_PROMOS.filter(isPromoActive) });
+      if (action === 'get_rewards' || action === 'get_premios') return resolve({ success:true, rewards: DEMO_REWARDS.filter(isRewardActive) });
       if (action === 'get_terms')      return resolve({ success:true, terms: DEMO_TERMS });
       if (action === 'get_events')     return resolve({ success:true, events: DEMO_EVENTS });
       if (action === 'register_client') {
@@ -632,6 +750,9 @@
 
     // 9. Consultar notificaciones personalizadas desde el backend
     checkNotifications();
+
+    // 10. Actualizar catálogo de premios para reflejar puntos del usuario
+    loadHomeRewards();
   }
 
   // Registrar actividad del usuario en el Sheet de Tracking (Google Apps Script)
@@ -1245,6 +1366,240 @@
         </div>`;
     }).join('');
   }
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // MÓDULO CATÁLOGO DE PREMIOS (CANJES POR PUNTOS)
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  async function fetchRewardsFromGAS() {
+    try {
+      // Intentar primero vía GET al backend de puntos o URL dedicada
+      let url = `${CFG.PREMIOS_GAS_URL}?action=get_rewards`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : (data.rewards || data.premios || []);
+      if (Array.isArray(list) && list.length > 0) {
+        return list.map((r, idx) => ({
+          id:           r.id || ('REW_GAS_' + idx),
+          nombre:       r.nombre || r.name || r.titulo || `Premio MGM #${idx + 1}`,
+          modelo:       r.modelo || r.model || '',
+          descripcion:  r.descripcion || r.desc || '',
+          puntos:       parseInt(r.puntos || r.pts || r.puntos_costo || 0),
+          imagen:       r.imagen || r.img || r.imagen_url || '',
+          fecha_inicio: r.fecha_inicio || '',
+          fecha_fin:    r.fecha_fin || r.validez || '',
+          activo:       r.activo || r.activa || 'SÍ',
+          stock:        r.stock || 'Disponible'
+        })).filter(isRewardActive);
+      }
+    } catch (err) {
+      console.warn('Error al conectar con PREMIOS_GAS_URL vía GET, intentando fallback:', err);
+    }
+
+    const resApi = await api('get_rewards');
+    return (resApi.success && resApi.rewards && resApi.rewards.length > 0)
+      ? resApi.rewards.filter(isRewardActive)
+      : DEMO_REWARDS.filter(isRewardActive);
+  }
+
+  window.loadHomeRewards = async function() {
+    state.rewards = await fetchRewardsFromGAS();
+    const slider = document.getElementById('home-premios-slider');
+    if (!slider) return;
+
+    if (!state.rewards || state.rewards.length === 0) {
+      slider.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Próximamente nuevo catálogo de premios disponibles.</div>`;
+      return;
+    }
+
+    slider.innerHTML = state.rewards.map((r, idx) => {
+      const validez = formatRewardValidez(r);
+      const ptsFormatted = Number(r.puntos || 0).toLocaleString('es-PA');
+
+      return `
+      <div class="premio-slide-card" onclick="openRewardDetail(${idx})">
+        <div class="premio-card-img-wrap">
+          ${r.imagen
+            ? `<img src="${r.imagen}" alt="${r.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+               <div style="display:none; font-size:42px; color:#cbd5e1; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
+            : `<div style="font-size:42px; color:#cbd5e1; display:flex; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
+          }
+          <div class="premio-pts-tag">
+            <i class="fa-solid fa-coins"></i> ${ptsFormatted} Pts
+          </div>
+        </div>
+
+        ${r.modelo ? `<div class="premio-model-tag">MOD. ${r.modelo}</div>` : ''}
+        <div class="premio-card-title">${r.nombre}</div>
+        <div class="premio-card-desc">${(r.descripcion || '').split('\n')[0]}</div>
+
+        <div class="premio-card-footer">
+          <div class="premio-validez-text" style="color:${validez.color};">
+            ${validez.text}
+          </div>
+          <button class="premio-btn-action" onclick="event.stopPropagation(); openRewardDetail(${idx});">
+            Canjear
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+  };
+
+  window.openRewardDetail = function(idx) {
+    const r = state.rewards[idx];
+    if (!r) return;
+    state.activeRewardData = r;
+
+    document.getElementById('modal-premio-title').textContent = r.nombre;
+    document.getElementById('modal-premio-desc').textContent  = r.descripcion || 'Sin descripción detallada disponible.';
+    
+    const modelEl = document.getElementById('modal-premio-model');
+    if (modelEl) {
+      if (r.modelo) {
+        modelEl.textContent = `MOD. ${r.modelo}`;
+        modelEl.style.display = 'inline-block';
+      } else {
+        modelEl.style.display = 'none';
+      }
+    }
+
+    const validez = formatRewardValidez(r);
+    const valEl = document.getElementById('modal-premio-validez');
+    if (valEl) {
+      valEl.textContent = validez.text;
+      valEl.style.color = validez.color || 'var(--text-muted)';
+    }
+
+    const stockEl = document.getElementById('modal-premio-stock');
+    if (stockEl) {
+      stockEl.textContent = r.stock || 'Disponible';
+      stockEl.style.color = (r.stock && r.stock.toLowerCase().includes('agot')) ? '#dc2626' : '#16a34a';
+      stockEl.style.background = (r.stock && r.stock.toLowerCase().includes('agot')) ? '#fef2f2' : '#f0fdf4';
+    }
+
+    const ptsBadge = document.getElementById('modal-premio-pts-badge');
+    const ptsFormatted = Number(r.puntos || 0).toLocaleString('es-PA');
+    const usdVal = (Number(r.puntos || 0) * CFG.VAL_PUNTO).toFixed(2);
+    if (ptsBadge) {
+      ptsBadge.innerHTML = `<i class="fa-solid fa-coins"></i> ${ptsFormatted} Pts <span style="font-size:11px; opacity:0.85; font-weight:700;">($${usdVal} USD)</span>`;
+    }
+
+    const imgWrap = document.getElementById('modal-premio-img-wrap');
+    if (imgWrap) {
+      if (r.imagen) {
+        imgWrap.innerHTML = `
+          <img id="modal-premio-img" src="${r.imagen}" alt="${r.nombre}" style="max-width:100%; max-height:100%; object-fit:contain;"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div style="display:none; font-size:60px; color:#cbd5e1; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>
+        `;
+      } else {
+        imgWrap.innerHTML = `<div style="font-size:60px; color:#cbd5e1; display:flex; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`;
+      }
+    }
+
+    // Comparación dinámica con los puntos del usuario autenticado
+    const statusBox = document.getElementById('modal-premio-user-status');
+    if (statusBox) {
+      if (state.authUser) {
+        const userPts = parseInt(state.authUser.puntos) || 0;
+        const requiredPts = parseInt(r.puntos) || 0;
+        const diff = userPts - requiredPts;
+
+        if (diff >= 0) {
+          statusBox.style.background = '#f0fdf4';
+          statusBox.style.borderColor = '#bbf7d0';
+          statusBox.innerHTML = `
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+              <span style="font-size:12px; color:#166534; font-weight:700;">Tu saldo disponible:</span>
+              <strong style="font-size:14px; color:#15803d;">${userPts.toLocaleString('es-PA')} Pts</strong>
+            </div>
+            <div style="font-size:12.5px; color:#16a34a; font-weight:800;">
+              🎉 ¡Te alcanza para canjear este premio! Te sobrarán ${diff.toLocaleString('es-PA')} Pts.
+            </div>
+          `;
+        } else {
+          statusBox.style.background = '#fffbeb';
+          statusBox.style.borderColor = '#fde68a';
+          statusBox.innerHTML = `
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+              <span style="font-size:12px; color:#92400e; font-weight:700;">Tu saldo actual:</span>
+              <strong style="font-size:14px; color:#b45309;">${userPts.toLocaleString('es-PA')} Pts</strong>
+            </div>
+            <div style="font-size:12.5px; color:#d97706; font-weight:700;">
+              Te faltan <strong style="color:#b45309;">${Math.abs(diff).toLocaleString('es-PA')} Pts</strong> para alcanzar este premio. ¡Sigue acumulando en tus compras!
+            </div>
+          `;
+        }
+      } else {
+        statusBox.style.background = 'var(--bg-surface)';
+        statusBox.style.borderColor = 'var(--border-light)';
+        statusBox.innerHTML = `
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <span style="font-size:12px; color:var(--text-muted);">¿Tienes puntos acumulados?</span>
+            <button onclick="closeAppModal('modal-premio-detail'); openLoginModal();" style="background:transparent; border:none; color:var(--primary-blue); font-weight:800; font-size:12px; cursor:pointer; text-decoration:underline;">
+              Iniciar sesión →
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    // Botón 'Ver en tienda': mostrar u ocultar según si hay link
+    const btnTienda = document.getElementById('modal-premio-btn-tienda');
+    if (btnTienda) {
+      if (r.link) {
+        btnTienda.href = r.link;
+        btnTienda.style.display = 'inline-flex';
+      } else {
+        btnTienda.style.display = 'none';
+      }
+    }
+
+    openAppModal('modal-premio-detail');
+  };
+
+  window.actionCanjearPremio = function() {
+    const r = state.activeRewardData;
+    if (!r) return;
+
+    const clienteNombre = state.authUser ? state.authUser.nombre : 'Cliente MGM';
+    const clienteCedula = state.authUser ? state.authUser.cedula : 'Por verificar';
+    const clientePuntos = state.authUser ? (state.authUser.puntos || 0).toLocaleString('es-PA') : 'Por verificar';
+    const usdEquiv = (Number(r.puntos || 0) * CFG.VAL_PUNTO).toFixed(2);
+
+    const msg = `*MGM HUB | SOLICITUD DE CANJE DE PREMIO* 🎁\n\n` +
+      `¡Hola equipo MGM! Deseo solicitar el canje de este producto con mis puntos:\n\n` +
+      `• *Premio:* ${r.nombre}\n` +
+      (r.modelo ? `• *Modelo:* ${r.modelo}\n` : '') +
+      `• *Costo:* ${Number(r.puntos).toLocaleString('es-PA')} Pts (Eq. $${usdEquiv} USD)\n` +
+      `• *Cliente:* ${clienteNombre}\n` +
+      `• *Cédula:* ${clienteCedula}\n` +
+      `• *Saldo en cuenta:* ${clientePuntos} Pts\n\n` +
+      `¿Me confirman por favor la disponibilidad en sucursal y la entrega? ¡Muchas gracias!`;
+
+    // Asesor 1 (+507 6454-1476)
+    const phone = '50764541476';
+    const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, '_blank');
+  };
+
+  window.sharePremio = function() {
+    const r = state.activeRewardData;
+    if (!r) return;
+    const shareText = `🎁 ¡Mira este premio en MGM Hub! ${r.nombre} (${r.modelo || ''}) canjeable por ${Number(r.puntos).toLocaleString('es-PA')} MGM Puntos.`;
+    const shareUrl = r.link || window.location.href;
+    if (navigator.share) {
+      navigator.share({
+        title: r.nombre,
+        text: shareText,
+        url: shareUrl
+      }).catch(()=>{});
+    } else {
+      navigator.clipboard.writeText(shareText + ' ' + window.location.href).then(() => {
+        showToast('Enlace y detalle del premio copiado al portapapeles.', 'fa-solid fa-copy');
+      });
+    }
+  };
 
   // ══════════════════════════════════════════════════════════════════════════════
   // MÓDULO AGENDA & CALENDARIO (AGENDA_GAS_URL)
@@ -2500,6 +2855,7 @@
 
     await Promise.allSettled([
       loadHomePromos(),
+      loadHomeRewards(),
       loadHomeNextEvent(),
       fetchAudioPlaylist()
     ]);
