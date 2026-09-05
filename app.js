@@ -1032,7 +1032,7 @@
     const encoded = encodeURIComponent(text);
     if (platform === 'wa')   window.open(`https://wa.me/?text=${encoded}`, '_blank');
     if (platform === 'mail') window.open(`mailto:?subject=${encodeURIComponent(ev.titulo)}&body=${encoded}`, '_blank');
-    if (platform === 'copy') { navigator.clipboard.writeText(text).then(() => alert('¡Texto copiado!')); }
+    if (platform === 'copy') { navigator.clipboard.writeText(text).then(() => showToast('¡Texto copiado!', 'fa-solid fa-clipboard-check')); }
     if (platform === 'cal') {
       const dateStart = ev.fecha.replace(/-/g,'');
       window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.titulo)}&dates=${dateStart}T000000Z/${dateStart}T235959Z&details=${encodeURIComponent(ev.descripcion)}`, '_blank');
@@ -1066,7 +1066,6 @@
           <div class="cli-feed-title">${p.nombre}</div>
           <div class="cli-feed-caption">${descPreview}</div>
           <button class="cli-feed-more-btn" onclick="openCopySheet('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion || '')}', '${p.fecha_inicio || ''}', '${p.fecha_fin || ''}')">...más</button>
-          <div class="cli-feed-dates">📅 Válida: ${p.fecha_inicio || ''} — ${p.fecha_fin || ''}</div>
         </div>
 
         <!-- Botones de acción derecha -->
@@ -1122,8 +1121,13 @@
       btn.classList.add('liked');
       icon.className = 'fa-solid fa-heart';
       if (countEl) countEl.textContent = base + 1;
-      // Confetti desde el centro-derecho donde está el botón
       mgmConfetti.burst(window.innerWidth - 40, window.innerHeight * 0.45);
+      // Sync al GAS
+      fetch(CFG.NOTIFS_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'add_like', promoId })
+      }).catch(()=>{});
     } else {
       btn.classList.remove('liked');
       icon.className = 'fa-regular fa-heart';
@@ -1138,7 +1142,9 @@
     _activeCopyPromoId = id;
     document.getElementById('cli-copy-title').textContent = decodeURIComponent(encTitle);
     document.getElementById('cli-copy-desc').textContent  = decodeURIComponent(encDesc);
-    document.getElementById('cli-copy-dates').textContent = fi || ff ? `📅 Válida: ${fi} — ${ff}` : '';
+    // Ocultar fechas si no las hay
+    const datesEl = document.getElementById('cli-copy-dates');
+    if (datesEl) datesEl.textContent = (fi && fi !== 'undefined') ? `📅 Válida: ${fi} — ${ff}` : '';
     
     // Cargar comentarios
     const listEl = document.getElementById('cli-copy-comments-list');
@@ -1158,29 +1164,52 @@
     if (!listEl) listEl = document.getElementById('cli-copy-comments-list');
     if (!listEl) return;
     try {
-      const res = await fetch(CFG.NOTIFS_GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'get_comments', promoId })
-      }).then(r => r.json());
+      // Intentar GET primero (más simple, evita CORS en algunos despliegues)
+      const url = `${CFG.NOTIFS_GAS_URL}?action=get_comments&promoId=${encodeURIComponent(promoId)}`;
+      const res = await fetch(url).then(r => r.json());
       if (res.success && res.comments && res.comments.length > 0) {
         listEl.innerHTML = res.comments.map(c =>
-          `<div style="margin-bottom:8px;"><strong style="color:var(--text-dark);">${c.nombre}:</strong> <span style="color:var(--text-body);">${c.texto}</span></div>`
+          `<div style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--border-light);">
+            <div style="font-weight:800; font-size:12px; color:var(--primary-blue); margin-bottom:2px;">${c.nombre}</div>
+            <div style="font-size:13px; color:var(--text-body);">${c.texto}</div>
+          </div>`
         ).join('');
       } else {
-        listEl.innerHTML = '<div style="color:var(--text-muted);text-align:center;font-size:12px;padding:10px;">Sin comentarios aún. ¡Sé el primero!</div>';
+        listEl.innerHTML = '<div style="color:var(--text-muted);text-align:center;font-size:12px;padding:16px;">Sin comentarios aún. ¡Sé el primero!</div>';
       }
-    } catch {
+    } catch(e) {
+      // Fallback a localStorage
       const local = JSON.parse(localStorage.getItem('mgm_comments_' + promoId) || '[]');
       listEl.innerHTML = local.length
-        ? local.map(c => `<div style="margin-bottom:8px;"><strong style="color:var(--text-dark);">${c.nombre}:</strong> <span style="color:var(--text-body);">${c.texto}</span></div>`).join('')
-        : '<div style="color:var(--text-muted);text-align:center;font-size:12px;padding:10px;">Sin comentarios aún. ¡Sé el primero!</div>';
+        ? local.map(c => `<div style="margin-bottom:10px;"><strong style="color:var(--primary-blue);font-size:12px;">${c.nombre}:</strong> <span style="color:var(--text-body);font-size:13px;">${c.texto}</span></div>`).join('')
+        : '<div style="color:var(--text-muted);text-align:center;font-size:12px;padding:16px;">Sin comentarios aún.</div>';
     }
   }
 
+  // — Sistema de Toasts
+  window.showToast = function(msg, icon = 'fa-solid fa-circle-info') {
+    let toast = document.getElementById('mgm-toast-el');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'mgm-toast-el';
+      toast.className = 'mgm-toast';
+      document.body.appendChild(toast);
+    }
+    toast.innerHTML = `<i class="${icon}"></i> <span>${msg}</span>`;
+    // Forzar reflow para que la animación funcione si ya estaba en pantalla
+    void toast.offsetWidth; 
+    toast.classList.add('show');
+    
+    // Limpiar timeout anterior si existe
+    if (toast.hideTimeout) clearTimeout(toast.hideTimeout);
+    toast.hideTimeout = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3000);
+  };
+
   window.postCommentFromSheet = async function() {
     if (!state.authUser) {
-      alert('Debes iniciar sesión para comentar.');
+      showToast('Debes iniciar sesión para comentar.', 'fa-solid fa-lock');
       closeCopySheet();
       openLoginModal();
       return;
@@ -1245,18 +1274,41 @@
   // PROMOS: COMPARTIR, WHATSAPP Y COMENTARIOS
   // ══════════════════════════════════════════════════════════════════════════════
   
-  window.sharePromo = function(id, encTitle, encDesc) {
+  window.sharePromo = async function(id, encTitle, encDesc) {
     const title = decodeURIComponent(encTitle);
-    const text = decodeURIComponent(encDesc).substring(0, 100) + '...';
-    if (navigator.share) {
-      navigator.share({
-        title: title,
-        text: `¡Mira esta promo en MGM Hub!\n${title}\n${text}`,
-        url: window.location.href.split('?')[0] + `?tab=promos&id=${id}`
-      }).catch(err => console.warn('Share error:', err));
-    } else {
-      alert('Tu navegador no soporta la función nativa de compartir.');
+    const text  = decodeURIComponent(encDesc).substring(0, 100) + '...';
+    const url   = window.location.href.split('?')[0] + `?tab=promos&id=${id}`;
+
+    if (!navigator.share) {
+      showToast('Tu navegador no soporta compartir nativo.', 'fa-solid fa-triangle-exclamation');
+      return;
     }
+
+    // Intentar adjuntar la imagen como archivo
+    const promo = state.promos?.find(p => p.id === id);
+    if (promo?.imagen && navigator.canShare) {
+      try {
+        const imgRes  = await fetch(promo.imagen);
+        const blob    = await imgRes.blob();
+        const ext     = blob.type.includes('png') ? 'png' : 'jpg';
+        const imgFile = new File([blob], `mgm-promo.${ext}`, { type: blob.type });
+        if (navigator.canShare({ files: [imgFile] })) {
+          await navigator.share({
+            title,
+            text: `¡Mira esta promo en MGM Hub!\n${title}\n${text}`,
+            files: [imgFile],
+            url
+          });
+          return;
+        }
+      } catch(e) {
+        console.warn('Share con imagen falló, compartiendo sin imagen:', e);
+      }
+    }
+
+    // Fallback: compartir sin imagen
+    navigator.share({ title, text: `¡Mira esta promo en MGM Hub!\n${title}\n${text}`, url })
+      .catch(err => console.warn('Share error:', err));
   };
 
   let activeWaPromoText = '';
@@ -1324,11 +1376,11 @@
 
   window.postComment = async function(promoId) {
     if (!state.authUser) {
-      alert('Debes iniciar sesión para comentar.');
+      showToast('Debes iniciar sesión para comentar.', 'fa-solid fa-lock');
       openLoginModal();
       return;
     }
-    
+
     const input = document.getElementById('comment-input-' + promoId);
     const texto = input.value.trim();
     if (!texto) return;
