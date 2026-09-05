@@ -96,7 +96,7 @@
     SPLASH_GAS_URL: 'https://script.google.com/macros/s/AKfycbw3Aey_uya9yLM8xKrcQCBrlMcTSkAdnUBCQEq_kitdBN4-BZHnxbJP66lO5qgZgO8KAQ/exec',
 
     // 6. NOTIFICACIONES & TRACKING (El usuario creará este nuevo GAS)
-    NOTIFS_GAS_URL: 'https://script.google.com/macros/s/AKfycbz8q-CUI-M2TBGhUTHwprY1LE3dTFIX9HzSszunexR493oYx63POxdECktGHCP0wY1YJA/exec',
+    NOTIFS_GAS_URL: 'https://script.google.com/macros/s/AKfycby8EOl7-hZ1Q8rvPCjFB2ItFrRKqwVmDoPJrhX3sM_3-O8xeoWmuZ0RxbEgNUjLN_6dfA/exec',
 
     VAL_PUNTO: 0.01,
     BOTPRESS_BOT_ID: 'e5a3c8a6-9aec-41a3-870d-d1985dc8c7df',
@@ -1181,7 +1181,8 @@
         listEl.innerHTML = '<div style="color:var(--text-muted);text-align:center;font-size:12px;padding:16px;">Sin comentarios aún. ¡Sé el primero!</div>';
       }
     } catch(e) {
-      // Fallback a localStorage
+      console.warn('Error fetch comentarios:', e);
+      // Fallback a localStorage si falla la red
       const local = JSON.parse(localStorage.getItem('mgm_comments_' + promoId) || '[]');
       listEl.innerHTML = local.length
         ? local.map(c => `<div style="margin-bottom:10px;"><strong style="color:var(--primary-blue);font-size:12px;">${c.nombre}:</strong> <span style="color:var(--text-body);font-size:13px;">${c.texto}</span></div>`).join('')
@@ -1277,42 +1278,20 @@
   // PROMOS: COMPARTIR, WHATSAPP Y COMENTARIOS
   // ══════════════════════════════════════════════════════════════════════════════
   
-  window.sharePromo = async function(id, encTitle, encDesc) {
+  window.sharePromo = function(id, encTitle, encDesc) {
     const title = decodeURIComponent(encTitle);
     const text  = decodeURIComponent(encDesc).substring(0, 100) + '...';
     const url   = window.location.href.split('?')[0] + `?tab=promos&id=${id}`;
 
-    if (!navigator.share) {
+    if (navigator.share) {
+      navigator.share({
+        title,
+        text: `¡Mira esta promo en MGM Hub!\n${title}\n${text}`,
+        url
+      }).catch(err => console.warn('Share error:', err));
+    } else {
       showToast('Tu navegador no soporta compartir nativo.', 'fa-solid fa-triangle-exclamation');
-      return;
     }
-
-    // Intentar adjuntar la imagen como archivo
-    const promo = state.promos?.find(p => p.id === id);
-    if (promo?.imagen && navigator.canShare) {
-      try {
-        const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(promo.imagen);
-        const imgRes  = await fetch(proxyUrl);
-        const blob    = await imgRes.blob();
-        const ext     = blob.type.includes('png') ? 'png' : 'jpg';
-        const imgFile = new File([blob], `mgm-promo.${ext}`, { type: blob.type });
-        if (navigator.canShare({ files: [imgFile] })) {
-          await navigator.share({
-            title,
-            text: `¡Mira esta promo en MGM Hub!\n${title}\n${text}`,
-            files: [imgFile],
-            url
-          });
-          return;
-        }
-      } catch(e) {
-        console.warn('Share con imagen falló, compartiendo sin imagen:', e);
-      }
-    }
-
-    // Fallback: compartir sin imagen
-    navigator.share({ title, text: `¡Mira esta promo en MGM Hub!\n${title}\n${text}`, url })
-      .catch(err => console.warn('Share error:', err));
   };
 
   let activeWaPromoText = '';
