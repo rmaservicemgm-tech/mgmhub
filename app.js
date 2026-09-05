@@ -1836,7 +1836,15 @@
         }
 
         // Agregar nuevas notificaciones o actualizar existentes
-        res.notifications.forEach(n => {
+        res.notifications.forEach(rawN => {
+          // Normalizar campos: el GAS puede devolver titulo/mensaje o title/body
+          const n = {
+            id:      rawN.id,
+            title:   rawN.title   || rawN.titulo  || '',
+            body:    rawN.body    || rawN.mensaje  || '',
+            date:    rawN.date    || rawN.fecha    || '',
+            seccion: rawN.seccion || rawN.seccion  || ''
+          };
           const stringId = String(n.id);
           const alreadyExists = state.notifications.some(existing => String(existing.id) === stringId);
           const isCleared = state.clearedNotifs.includes(stringId);
