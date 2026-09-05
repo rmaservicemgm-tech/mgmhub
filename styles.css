@@ -1285,4 +1285,176 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
   bottom: 40px;
 }
 
+/* ==========================================================================
+   SMART HOME AUTH BANNER (ACCESO & FIDELIDAD)
+   ========================================================================== */
+.home-auth-banner {
+  margin-bottom: 16px;
+}
+
+.home-auth-banner-card {
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-auth-banner-card.unauth {
+  background: linear-gradient(135deg, #00214a 0%, #00387a 100%);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #ffffff;
+}
+
+.home-auth-banner-card.unauth::after {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.hab-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  padding: 3px 9px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+
+.hab-title {
+  font-size: 15px;
+  font-weight: 900;
+  margin-bottom: 4px;
+  color: #ffffff;
+}
+
+.hab-sub {
+  font-size: 12px;
+  color: #cbd5e1;
+  line-height: 1.45;
+  margin-bottom: 12px;
+}
+
+.hab-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hab-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.hab-btn.primary {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #00214a;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+}
+.hab-btn.primary:hover, .hab-btn.primary:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
+}
+
+.hab-btn.secondary {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+.hab-btn.secondary:hover, .hab-btn.secondary:active {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.home-auth-banner-card.auth {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1.5px solid #bae6fd;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+.home-auth-banner-card.auth:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.18);
+  border-color: #38bdf8;
+}
+
+.hab-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hab-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+  color: #fff;
+  font-weight: 800;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
+  flex-shrink: 0;
+}
+
+.hab-user-greeting {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+.hab-points-line {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.hab-pts-num {
+  font-size: 15px;
+  font-weight: 900;
+  color: #d97706;
+}
+
+.hab-pts-usd {
+  font-size: 11px;
+  color: #059669;
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+.hab-link {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--primary-blue);
+  white-space: nowrap;
+}
+
+
 

@@ -10,7 +10,7 @@
   
   <!-- Google Fonts & FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=10">
+  <link rel="stylesheet" href="styles.css?v=11">
 
   <!-- 🎉 canvas-confetti — celebraciones MGM Hub -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
@@ -146,6 +146,9 @@
         <i class="fa-solid fa-chevron-right" style="color: rgba(255,255,255,0.6); font-size: 13px;"></i>
       </div>
 
+      <!-- BANNER INTELIGENTE DE BIENVENIDA / AUTENTICACIÓN -->
+      <div id="home-auth-banner" class="home-auth-banner"></div>
+
       <!-- SECCIÓN: ACCESOS DIRECTOS RÁPIDOS -->
       <div class="section-header">
         <h2 class="section-title"><i class="fa-solid fa-grip" style="color: var(--primary-blue);"></i> Servicios Rápidos</h2>
@@ -252,9 +255,16 @@
               <input type="text" id="login-cedula" class="form-control" placeholder="Ej: 8-888-1234 o E-8-12345" data-fmt="cedula" required>
             </div>
             <button type="submit" class="btn-submit">
-              <i class="fa-solid fa-search"></i> Consultar Mi Saldo
+              <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión / Ver Mis Puntos
             </button>
           </form>
+
+          <div style="margin-top: 14px; text-align: center; font-size: 12.5px; color: var(--text-muted); border-top: 1px dashed var(--border-light); padding-top: 12px;">
+            ¿Aún no eres miembro de MGM Puntos? 
+            <a href="javascript:void(0)" onclick="navigateTo('puntos:registro')" style="color: var(--primary-blue); font-weight: 700; text-decoration: underline;">
+              Regístrate gratis aquí
+            </a>
+          </div>
         </div>
 
         <!-- DASHBOARD DIGITAL DE SOCIO (SE REVELA TRAS CONSULTAR) -->
@@ -294,7 +304,7 @@
           <!-- HISTORIAL DE MOVIMIENTOS -->
           <div class="section-header" style="padding: 10px 0;">
             <h3 class="section-title"><i class="fa-solid fa-receipt" style="color: var(--primary-blue);"></i> Últimos Movimientos</h3>
-            <button class="btn-header-action" onclick="resetPuntosLogin()" style="width: auto; height: auto; padding: 4px 10px; border-radius: 6px; font-size: 11px; background: var(--bg-page); color: var(--text-dark); border-color: var(--border-light);">
+            <button class="btn-header-action" onclick="logoutClient()" style="width: auto; height: auto; padding: 4px 10px; border-radius: 6px; font-size: 11px; background: var(--bg-page); color: var(--text-dark); border-color: var(--border-light);">
               <i class="fa-solid fa-arrow-right-from-bracket"></i> Salir
             </button>
           </div>
@@ -321,44 +331,74 @@
       <!-- SUBVISTA 2: REGISTRO DE CLIENTE -->
       <div id="subview-registro" class="puntos-subview">
         <div class="app-form">
-          <div style="text-align: center; margin-bottom: 16px;">
-            <i class="fa-solid fa-user-plus" style="font-size: 30px; color: var(--primary-blue); margin-bottom: 6px;"></i>
-            <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">Únete al Programa MGM Puntos</h3>
-            <p style="font-size: 12px; color: var(--text-muted);">Compra, acumula puntos y canjea por descuentos directos.</p>
+          <!-- Banner si ya está autenticado -->
+          <div id="reg-already-auth" style="display: none; text-align: center; padding: 20px 10px;">
+            <div style="width: 52px; height: 52px; border-radius: 50%; background: #ecfdf5; color: #10b981; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px; border: 2px solid #a7f3d0;">
+              <i class="fa-solid fa-id-card-clip"></i>
+            </div>
+            <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px;">Ya eres Miembro de MGM Puntos</h3>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
+              Tienes una sesión activa como <strong id="reg-auth-name" style="color: var(--text-dark);">---</strong><br>
+              <span id="reg-auth-cedula" style="font-size: 11.5px; color: var(--text-subtle);"></span>
+            </p>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+              <button type="button" class="btn-submit" onclick="navigateTo('puntos:cuenta')" style="width: auto; padding: 10px 18px; font-size: 13px;">
+                <i class="fa-solid fa-coins"></i> Ver Mi Saldo & Tarjeta
+              </button>
+              <button type="button" class="btn-submit" onclick="logoutClient()" style="width: auto; padding: 10px 18px; font-size: 13px; background: var(--bg-card-alt); color: var(--text-muted); border: 1px solid var(--border-light);">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Cambiar de Cuenta
+              </button>
+            </div>
           </div>
 
-          <div id="reg-alert" class="app-alert"></div>
-
-          <form id="form-puntos-register">
-            <div class="form-group">
-              <label class="form-label" for="reg-nombre">Nombre Completo o Empresa</label>
-              <input type="text" id="reg-nombre" class="form-control" placeholder="Ej: Juan Pérez" required>
+          <!-- Formulario de Registro para nuevos usuarios -->
+          <div id="reg-form-wrap">
+            <div style="text-align: center; margin-bottom: 16px;">
+              <i class="fa-solid fa-user-plus" style="font-size: 30px; color: var(--primary-blue); margin-bottom: 6px;"></i>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">Únete al Programa MGM Puntos</h3>
+              <p style="font-size: 12px; color: var(--text-muted);">Compra, acumula puntos y canjea por descuentos directos.</p>
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="reg-cedula">Cédula o RUC</label>
-              <input type="text" id="reg-cedula" class="form-control" placeholder="Ej: 8-888-1234" data-fmt="cedula" required>
-            </div>
+            <div id="reg-alert" class="app-alert"></div>
 
-            <div class="form-group">
-              <label class="form-label" for="reg-correo">Correo Electrónico</label>
-              <input type="email" id="reg-correo" class="form-control" placeholder="juan@ejemplo.com" required>
-            </div>
+            <form id="form-puntos-register">
+              <div class="form-group">
+                <label class="form-label" for="reg-nombre">Nombre Completo o Empresa</label>
+                <input type="text" id="reg-nombre" class="form-control" placeholder="Ej: Juan Pérez" required>
+              </div>
 
-            <div class="form-group">
-              <label class="form-label" for="reg-telefono">Teléfono / WhatsApp</label>
-              <input type="tel" id="reg-telefono" class="form-control" placeholder="6254-0000" required>
-            </div>
+              <div class="form-group">
+                <label class="form-label" for="reg-cedula">Cédula o RUC</label>
+                <input type="text" id="reg-cedula" class="form-control" placeholder="Ej: 8-888-1234" data-fmt="cedula" required>
+              </div>
 
-            <div class="form-group">
-              <label class="form-label" for="reg-cumpleanos">Fecha de Cumpleaños</label>
-              <input type="date" id="reg-cumpleanos" class="form-control">
-            </div>
+              <div class="form-group">
+                <label class="form-label" for="reg-correo">Correo Electrónico</label>
+                <input type="email" id="reg-correo" class="form-control" placeholder="juan@ejemplo.com" required>
+              </div>
 
-            <button type="submit" class="btn-submit">
-              <i class="fa-solid fa-badge-check"></i> Completar Registro
-            </button>
-          </form>
+              <div class="form-group">
+                <label class="form-label" for="reg-telefono">Teléfono / WhatsApp</label>
+                <input type="tel" id="reg-telefono" class="form-control" placeholder="6254-0000" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="reg-cumpleanos">Fecha de Cumpleaños</label>
+                <input type="date" id="reg-cumpleanos" class="form-control">
+              </div>
+
+              <button type="submit" class="btn-submit">
+                <i class="fa-solid fa-badge-check"></i> Completar Registro & Iniciar Sesión
+              </button>
+            </form>
+
+            <div style="margin-top: 14px; text-align: center; font-size: 12.5px; color: var(--text-muted); border-top: 1px dashed var(--border-light); padding-top: 12px;">
+              ¿Ya tienes una cuenta registrada? 
+              <a href="javascript:void(0)" onclick="navigateTo('puntos:cuenta')" style="color: var(--primary-blue); font-weight: 700; text-decoration: underline;">
+                Inicia sesión con tu cédula aquí
+              </a>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -618,6 +658,13 @@
             Ingresar a MGM Hub
           </button>
           <div id="login-error-msg" style="color: #ef4444; font-size: 12px; font-weight: 600; margin-top: 10px; text-align: center; display: none;"></div>
+
+          <div style="margin-top: 14px; text-align: center; font-size: 12px; color: var(--text-muted); border-top: 1px dashed var(--border-light); padding-top: 12px;">
+            ¿Aún no te has registrado? 
+            <a href="javascript:void(0)" onclick="closeAppModal('modal-user-login'); navigateTo('puntos:registro');" style="color: var(--primary-blue); font-weight: 700; text-decoration: underline;">
+              Crear cuenta en MGM Puntos
+            </a>
+          </div>
         </div>
         <div id="login-view-auth" style="display: none; text-align: center;">
           <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #0284c7, #0ea5e9); border-radius: 50%; color: #fff; font-size: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-weight: 800;" id="auth-initials">M</div>
@@ -748,7 +795,7 @@
       </div>
     </div>
 
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
   <script>

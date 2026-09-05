@@ -412,9 +412,17 @@
       if (state.promos.length === 0) loadHomePromos();
       if (state.agendaEvents.length === 0) loadHomeNextEvent();
     }
-    // AUTO-LOGIN PUNTOS: si hay sesión activa, cargar dashboard directo
+    // AUTO-LOGIN PUNTOS: si hay sesión activa, cargar dashboard directo; si no, preparar login
     if (tabName === 'puntos') {
-      autoLoadPuntosDashboard();
+      if (state.authUser) {
+        autoLoadPuntosDashboard();
+      } else {
+        updatePuntosAuthViews();
+        setTimeout(() => {
+          const inp = document.getElementById('login-cedula');
+          if (inp && state.activeSubtab === 'subview-cuenta') inp.focus();
+        }, 200);
+      }
     }
   };
 
@@ -530,6 +538,11 @@
       if (subEl) subEl.classList.add('active');
       state.activeSubtab = target;
 
+      if (target === 'subview-cuenta') {
+        if (state.authUser) autoLoadPuntosDashboard();
+        else updatePuntosAuthViews();
+      }
+      if (target === 'subview-registro') updatePuntosAuthViews();
       if (target === 'subview-promos') loadPuntosPromos();
       if (target === 'subview-terminos') loadTerminos();
     });
@@ -541,6 +554,138 @@
     });
   });
 
+  // ══════════════════════════════════════════════════════════════════════════════
+  // GESTIÓN CENTRALIZADA DE SESIÓN (LOGIN, REGISTRO, AUTO-LOGIN & TRACKING)
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  function setClientSession(clientData, eventType = 'login') {
+    if (!clientData) return;
+    state.authUser = { ...state.authUser, ...clientData };
+    localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
+
+    // 1. Actualizar icono con inicial y aro azul en el Header
+    updateHeaderUserIcon();
+
+    // 2. Actualizar Banner Inteligente de Bienvenida / Saldo en Home
+    updateHomeAuthBanner();
+
+    // 3. Sincronizar formularios y estados de la vista de Puntos
+    updatePuntosAuthViews();
+
+    // 4. Celebración visual
+    if (eventType === 'registro') {
+      mgmConfetti.celebrate();
+    } else {
+      mgmConfetti.gold();
+    }
+
+    // 5. Registrar en el Sheet de Tracking usando la acción 'track'
+    trackUserActivity(state.authUser.cedula, state.authUser.nombre, eventType);
+
+    // 6. Enviar notificación interna de bienvenida (si es nueva)
+    checkAndSendWelcomeNotification(state.authUser.nombre);
+
+    // 7. Renderizar dashboard de puntos al instante
+    renderDashboard(state.authUser);
+
+    // 8. Consultar notificaciones personalizadas desde el backend
+    checkNotifications();
+  }
+
+  // Registrar actividad del usuario en el Sheet de Tracking (Google Apps Script)
+  async function trackUserActivity(cedula, nombre, evento = 'visita') {
+    if (!cedula || CFG.NOTIFS_GAS_URL === 'URL_TEMPORAL_PENDIENTE') return;
+    try {
+      await fetch(CFG.NOTIFS_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'track',
+          cedula: String(cedula).trim(),
+          nombre: String(nombre || '').trim(),
+          tipo: evento,
+          evento: evento,
+          timestamp: new Date().toISOString()
+        })
+      });
+    } catch(e) {
+      console.warn('[MGM Tracking] Error registrando en Sheet:', e);
+    }
+  }
+
+  // Sincronizar estado visual de las pestañas de Puntos (Mi Cuenta y Registro)
+  function updatePuntosAuthViews() {
+    const isAuth = !!state.authUser;
+    const loginBox = document.getElementById('puntos-login-box');
+    const dashBox = document.getElementById('puntos-dashboard-box');
+    const regAlreadyAuth = document.getElementById('reg-already-auth');
+    const regFormWrap = document.getElementById('reg-form-wrap');
+    const regAuthName = document.getElementById('reg-auth-name');
+    const regAuthCedula = document.getElementById('reg-auth-cedula');
+
+    if (isAuth) {
+      if (loginBox) loginBox.style.display = 'none';
+      if (dashBox) dashBox.style.display = 'block';
+      if (regAlreadyAuth) regAlreadyAuth.style.display = 'block';
+      if (regFormWrap) regFormWrap.style.display = 'none';
+      if (regAuthName) regAuthName.textContent = state.authUser.nombre || '';
+      if (regAuthCedula) regAuthCedula.textContent = `Cédula: ${state.authUser.cedula || ''}`;
+    } else {
+      if (loginBox) loginBox.style.display = 'block';
+      if (dashBox) dashBox.style.display = 'none';
+      if (regAlreadyAuth) regAlreadyAuth.style.display = 'none';
+      if (regFormWrap) regFormWrap.style.display = 'block';
+      const loginInp = document.getElementById('login-cedula');
+      if (loginInp) loginInp.value = '';
+    }
+  }
+
+  // Banner dinámico inteligente en la pantalla de Inicio
+  function updateHomeAuthBanner() {
+    const banner = document.getElementById('home-auth-banner');
+    if (!banner) return;
+    
+    if (state.authUser) {
+      const primerNombre = (state.authUser.nombre || '').split(' ')[0] || 'Cliente';
+      const pts = parseInt(state.authUser.puntos) || 0;
+      const valUsd = (pts * CFG.VAL_PUNTO).toFixed(2);
+      const inicial = (state.authUser.nombre || 'M').charAt(0).toUpperCase();
+
+      banner.innerHTML = `
+        <div class="home-auth-banner-card auth" onclick="switchMainTab('puntos')">
+          <div class="hab-left">
+            <div class="hab-avatar">${inicial}</div>
+            <div>
+              <div class="hab-user-greeting">¡Hola, ${primerNombre}! 👋</div>
+              <div class="hab-points-line">
+                <span class="hab-pts-num">${pts.toLocaleString('es-PA')}</span> Puntos MGM
+                <span class="hab-pts-usd">($${valUsd} USD)</span>
+              </div>
+            </div>
+          </div>
+          <div class="hab-right">
+            <span class="hab-link">Ver Mi Tarjeta <i class="fa-solid fa-chevron-right"></i></span>
+          </div>
+        </div>
+      `;
+    } else {
+      banner.innerHTML = `
+        <div class="home-auth-banner-card unauth">
+          <div class="hab-badge"><i class="fa-solid fa-crown"></i> MGM PUNTOS</div>
+          <div class="hab-body">
+            <h3 class="hab-title">¿Tienes puntos por canjear?</h3>
+            <p class="hab-sub">Inicia sesión con tu cédula o regístrate para consultar tu saldo acumulado y beneficios.</p>
+          </div>
+          <div class="hab-actions">
+            <button type="button" class="hab-btn primary" onclick="openLoginModal()"><i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</button>
+            <button type="button" class="hab-btn secondary" onclick="navigateTo('puntos:registro')"><i class="fa-solid fa-user-plus"></i> Registrarme</button>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // Consulta por cédula en la pestaña de Puntos
   document.getElementById('form-puntos-login')?.addEventListener('submit', async e => {
     e.preventDefault();
     const cedula = document.getElementById('login-cedula').value.trim();
@@ -551,21 +696,23 @@
 
     const res = await api('get_client', { cedula });
     btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-search"></i> Consultar Mi Saldo';
+    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión / Ver Mis Puntos';
 
     if (!res.success) {
       showAlert('puntos-login-alert', 'error', res.message || 'No se encontró tu cuenta. ¿Ya estás registrado/a?');
       return;
     }
-    renderDashboard(res.client);
+    // Guardar sesión persistente, auto-login y registrar tracking
+    setClientSession(res.client, 'login');
   });
 
-  // AUTO-LOAD: si el usuario ya está autenticado, carga dashboard sin pedir cédula
+  // AUTO-LOAD: si el usuario ya está autenticado, carga dashboard y refresca datos frescos
   async function autoLoadPuntosDashboard() {
-    if (!state.authUser) return; // sin sesión, mostrar formulario normal
-    // Mostrar spinner mientras recarga datos frescos del GAS
-    document.getElementById('puntos-login-box').style.display = 'none';
-    document.getElementById('puntos-dashboard-box').style.display = 'block';
+    if (!state.authUser) {
+      updatePuntosAuthViews();
+      return;
+    }
+    updatePuntosAuthViews();
     // Usar datos guardados primero (instantáneo)
     renderDashboard(state.authUser);
     // Luego refrescar desde el GAS en segundo plano
@@ -576,13 +723,11 @@
         body: JSON.stringify({ action: 'get_client', cedula: state.authUser.cedula })
       }).then(r => r.json());
       if (res.success && res.client) {
-        // Actualizar estado y perfil con puntos frescos
         state.authUser = { ...state.authUser, ...res.client };
         localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
         renderDashboard(state.authUser);
-        // Actualizar también el icono de perfil
         updateHeaderUserIcon();
-        // Actualizar puntos en el modal de perfil si está abierto
+        updateHomeAuthBanner();
         const authPtosEl = document.getElementById('auth-puntos');
         if (authPtosEl) authPtosEl.textContent = state.authUser.puntos || 0;
       }
@@ -592,6 +737,7 @@
   }
 
   function renderDashboard(c) {
+    if (!c) return;
     const pts = parseInt(c.puntos) || 0;
     document.getElementById('dash-pts').textContent        = pts.toLocaleString('es-PA');
     document.getElementById('dash-pts-usd').textContent    = `$${(pts * CFG.VAL_PUNTO).toFixed(2)} USD disponibles para canjear`;
@@ -637,12 +783,10 @@
   }
 
   window.resetPuntosLogin = function() {
-    document.getElementById('puntos-login-box').style.display    = 'block';
-    document.getElementById('puntos-dashboard-box').style.display = 'none';
-    document.getElementById('login-cedula').value = '';
-    document.getElementById('puntos-login-alert').className = 'app-alert';
+    logoutClient();
   };
 
+  // Registro de nuevo cliente con Auto-Login inmediato y Tracking
   document.getElementById('form-puntos-register')?.addEventListener('submit', async e => {
     e.preventDefault();
     const data = {
@@ -662,14 +806,30 @@
 
     const res = await api('register_client', data);
     btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-badge-check"></i> Completar Registro';
+    btn.innerHTML = '<i class="fa-solid fa-badge-check"></i> Completar Registro & Iniciar Sesión';
 
     if (res.success) {
-      showAlert('reg-alert', 'success', res.message || '¡Registro exitoso!');
-      // 🎊 ¡Celebrar nuevo miembro MGM!
-      mgmConfetti.celebrate();
+      showAlert('reg-alert', 'success', res.message || '¡Registro exitoso! Iniciando tu sesión...');
+      
+      const clientData = res.client || {
+        nombre: data.nombre,
+        cedula: data.cedula,
+        correo: data.correo,
+        telefono: data.telefono,
+        cumpleanos: data.cumpleanos,
+        puntos: 0,
+        totalComprasAno: 0,
+        historico: []
+      };
+
+      // 🌟 Auto Login instantáneo + Registro en el Tracking Sheet + Confeti + Notificación
+      setClientSession(clientData, 'registro');
       e.target.reset();
-      if (res.client) setTimeout(() => renderDashboard(res.client), 1500);
+
+      // Transición fluida a Mi Cuenta para ver puntos y tarjeta virtual
+      setTimeout(() => {
+        navigateTo('puntos:cuenta');
+      }, 1200);
     } else {
       showAlert('reg-alert', 'error', res.message || 'Error al registrar. Intenta de nuevo.');
     }
@@ -1680,20 +1840,8 @@
       }).then(r => r.json());
       
       if (res.success && res.client) {
-        state.authUser = res.client;
-        localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
-        
-        // 🌟 ¡Confeti dorado de bienvenida!
-        mgmConfetti.gold();
-
-        // Registrar en notificaciones si es posible
-        registerDeviceForNotifs(state.authUser.cedula, state.authUser.nombre);
-        
-        // Bienvenida automática
-        checkAndSendWelcomeNotification(state.authUser.nombre);
-
-        openLoginModal(); // Recargar modal
-        updateHeaderUserIcon();
+        setClientSession(res.client, 'login');
+        openLoginModal(); // Recargar modal a vista autenticada
       } else {
         errorMsg.textContent = res.message || 'Credenciales no encontradas en MGM Puntos.';
         errorMsg.style.display = 'block';
@@ -1703,13 +1851,8 @@
       console.warn('Fallback login');
       const c = state.clients.find(x => x.cedula === input || x.correo === input);
       if (c) {
-        state.authUser = c;
-        localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
-        
-        checkAndSendWelcomeNotification(state.authUser.nombre);
-
+        setClientSession(c, 'login');
         openLoginModal();
-        updateHeaderUserIcon();
       } else {
         errorMsg.textContent = 'Error de conexión. Intenta nuevamente.';
         errorMsg.style.display = 'block';
@@ -1744,6 +1887,8 @@
     state.authUser = null;
     localStorage.removeItem(K_AUTH);
     updateHeaderUserIcon();
+    updateHomeAuthBanner();
+    updatePuntosAuthViews();
     closeAppModal('modal-user-login');
   };
 
@@ -1822,14 +1967,7 @@
 
   // Registrar dispositivo en el Sheet de Tracking
   async function registerDeviceForNotifs(cedula, nombre) {
-    if (CFG.NOTIFS_GAS_URL === 'URL_TEMPORAL_PENDIENTE') return;
-    try {
-      await fetch(CFG.NOTIFS_GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'register_device', cedula, nombre })
-      });
-    } catch(e) {}
+    trackUserActivity(cedula, nombre, 'dispositivo');
   }
 
   // Consultar notificaciones del backend
@@ -2018,10 +2156,13 @@
 
     // Inicializar estado de UI autenticación
     updateHeaderUserIcon();
+    updateHomeAuthBanner();
+    updatePuntosAuthViews();
     
-    // Si el usuario está autenticado, registrar equipo (si el backend existe) y checar notificaciones
+    // Si el usuario está autenticado, registrar visita en tracking sheet y refrescar puntos
     if (state.authUser) {
-      registerDeviceForNotifs(state.authUser.cedula, state.authUser.nombre);
+      trackUserActivity(state.authUser.cedula, state.authUser.nombre, 'app_open');
+      autoLoadPuntosDashboard();
     }
     
     // Actualizar badge visual con las locales
