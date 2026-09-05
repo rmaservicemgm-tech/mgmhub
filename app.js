@@ -1055,21 +1055,41 @@
                 ? `<img class="cli-feed-img" src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">`
                 : `<div class="cli-feed-img-placeholder" style="background:${promoPlaceholderBg(p.tipo)};">${promoPlaceholderEmoji(p.tipo)}</div>`
             }
-            <div class="cli-feed-body" onclick="this.classList.toggle('expanded')">
+            <div class="cli-feed-body">
                 <span class="cli-feed-type">${(p.tipo||'Especial').toUpperCase()}</span>
                 <div class="cli-feed-title">${p.nombre}</div>
-                <div class="cli-feed-desc">${p.descripcion}</div>
-                <div class="cli-feed-more">Ver más...</div>
+                <!-- Text format added: white-space: pre-wrap -->
+                <div class="cli-feed-desc" style="white-space: pre-wrap;">${p.descripcion}</div>
                 <div class="cli-feed-dates">📅 Válida: ${p.fecha_inicio || ''} — ${p.fecha_fin || ''}</div>
                 
-                <div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between;" onclick="event.stopPropagation()">
-                    <button class="btn-like ${likes[p.id] ? 'liked' : ''}" onclick="togglePromoLike('${p.id}', this, event)">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="${likes[p.id] ? '#ef4444' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                        <span>${totalLikes} Me gusta</span>
-                    </button>
-                    <a href="https://wa.me/50762540412?text=Hola,%20quisiera%20mas%20informacion%20sobre%20la%20promocion:%20${encodeURIComponent(p.nombre)}" target="_blank" class="btn-submit" style="text-decoration: none; padding: 8px 12px; font-size: 12px; border-radius: 6px; background: rgba(255,255,255,0.2); color: #fff;">
+                <div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; gap: 8px;">
+                      <button class="btn-like ${likes[p.id] ? 'liked' : ''}" onclick="togglePromoLike('${p.id}', this, event)" style="background: rgba(0,0,0,0.05); border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                          <svg viewBox="0 0 24 24" width="20" height="20" fill="${likes[p.id] ? '#ef4444' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                          <span style="font-size: 12px; color: var(--text-dark);">${totalLikes}</span>
+                      </button>
+                      <button onclick="sharePromo('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion)}')" style="background: rgba(0,0,0,0.05); border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-share-nodes" style="color: var(--text-dark);"></i>
+                      </button>
+                      <button onclick="toggleComments('${p.id}', event)" style="background: rgba(0,0,0,0.05); border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-regular fa-comment" style="color: var(--text-dark);"></i>
+                      </button>
+                    </div>
+                    
+                    <button onclick="promptWhatsApp('${p.id}', '${encodeURIComponent(p.nombre)}')" class="btn-submit" style="border: none; padding: 8px 12px; font-size: 12px; border-radius: 6px; background: #25d366; color: #fff; cursor: pointer;">
                         <i class="fa-brands fa-whatsapp"></i> Consultar
-                    </a>
+                    </button>
+                </div>
+                
+                <!-- Comments Section (Hidden by default) -->
+                <div id="comments-section-${p.id}" style="display: none; margin-top: 16px; border-top: 1px solid var(--border-light); padding-top: 12px;">
+                  <div id="comments-list-${p.id}" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px; font-size: 13px;">
+                    <div style="color: var(--text-muted); text-align: center; font-size: 12px; padding: 10px;">Cargando comentarios...</div>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <input type="text" id="comment-input-${p.id}" placeholder="Agrega un comentario..." style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 20px; font-size: 13px; outline: none; background: #f8fafc;">
+                    <button onclick="postComment('${p.id}')" style="background: transparent; border: none; color: var(--primary-blue); font-weight: 700; cursor: pointer; padding: 0 8px;">Publicar</button>
+                  </div>
                 </div>
             </div>
         </div>
@@ -1112,6 +1132,126 @@
       const rect = btn.getBoundingClientRect();
       mgmConfetti.burst(rect.left + rect.width / 2, rect.top + rect.height / 2);
     }
+  };
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // PROMOS: COMPARTIR, WHATSAPP Y COMENTARIOS
+  // ══════════════════════════════════════════════════════════════════════════════
+  
+  window.sharePromo = function(id, encTitle, encDesc) {
+    const title = decodeURIComponent(encTitle);
+    const text = decodeURIComponent(encDesc).substring(0, 100) + '...';
+    if (navigator.share) {
+      navigator.share({
+        title: title,
+        text: `¡Mira esta promo en MGM Hub!\n${title}\n${text}`,
+        url: window.location.href.split('?')[0] + `?tab=promos&id=${id}`
+      }).catch(err => console.warn('Share error:', err));
+    } else {
+      alert('Tu navegador no soporta la función nativa de compartir.');
+    }
+  };
+
+  let activeWaPromoText = '';
+  
+  window.promptWhatsApp = function(id, encTitle) {
+    activeWaPromoText = `Hola, quisiera mas informacion sobre la promocion: ${decodeURIComponent(encTitle)}`;
+    openAppModal('modal-wa-selector');
+  };
+
+  window.sendWaConsult = function(number) {
+    if (!activeWaPromoText) return;
+    window.open(`https://wa.me/507${number}?text=${encodeURIComponent(activeWaPromoText)}`, '_blank');
+    closeAppModal('modal-wa-selector');
+  };
+
+  window.toggleComments = function(promoId, ev) {
+    ev.stopPropagation();
+    const section = document.getElementById('comments-section-' + promoId);
+    if (!section) return;
+    
+    if (section.style.display === 'none') {
+      section.style.display = 'block';
+      loadComments(promoId);
+    } else {
+      section.style.display = 'none';
+    }
+  };
+
+  async function loadComments(promoId) {
+    const listEl = document.getElementById('comments-list-' + promoId);
+    if (!listEl) return;
+    
+    try {
+      // Mocking fetch call to GAS (since GAS is not updated yet)
+      const res = await fetch(CFG.NOTIFS_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'get_comments', promoId })
+      }).then(r => r.json());
+      
+      if (res.success && res.comments && res.comments.length > 0) {
+        listEl.innerHTML = res.comments.map(c => `
+          <div style="margin-bottom: 6px;">
+            <strong style="color: var(--text-dark);">${c.nombre}:</strong> <span style="color: var(--text-body);">${c.texto}</span>
+          </div>
+        `).join('');
+      } else {
+        listEl.innerHTML = `<div style="color: var(--text-muted); text-align: center; font-size: 12px; padding: 10px;">Aún no hay comentarios. Sé el primero.</div>`;
+      }
+    } catch(err) {
+      // Fallback a localStorage
+      console.warn('Fallback comentarios locales');
+      const localComments = JSON.parse(localStorage.getItem('mgm_comments_' + promoId) || '[]');
+      if (localComments.length > 0) {
+        listEl.innerHTML = localComments.map(c => `
+          <div style="margin-bottom: 6px;">
+            <strong style="color: var(--text-dark);">${c.nombre}:</strong> <span style="color: var(--text-body);">${c.texto}</span>
+          </div>
+        `).join('');
+      } else {
+        listEl.innerHTML = `<div style="color: var(--text-muted); text-align: center; font-size: 12px; padding: 10px;">Aún no hay comentarios. Sé el primero.</div>`;
+      }
+    }
+  }
+
+  window.postComment = async function(promoId) {
+    if (!state.authUser) {
+      alert('Debes iniciar sesión para comentar.');
+      openLoginModal();
+      return;
+    }
+    
+    const input = document.getElementById('comment-input-' + promoId);
+    const texto = input.value.trim();
+    if (!texto) return;
+    
+    input.value = '';
+    
+    // UI instantánea (Optimistic UI)
+    const listEl = document.getElementById('comments-list-' + promoId);
+    if (listEl.innerHTML.includes('Aún no hay comentarios')) listEl.innerHTML = '';
+    listEl.innerHTML += `
+      <div style="margin-bottom: 6px; opacity: 0.7;">
+        <strong style="color: var(--text-dark);">${state.authUser.nombre}:</strong> <span style="color: var(--text-body);">${texto}</span>
+      </div>
+    `;
+    listEl.scrollTop = listEl.scrollHeight;
+    
+    try {
+      await fetch(CFG.NOTIFS_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'add_comment', promoId, nombre: state.authUser.nombre, texto })
+      });
+    } catch(e) { }
+    
+    // Fallback guardar local
+    const localComments = JSON.parse(localStorage.getItem('mgm_comments_' + promoId) || '[]');
+    localComments.push({ nombre: state.authUser.nombre, texto });
+    localStorage.setItem('mgm_comments_' + promoId, JSON.stringify(localComments));
+    
+    loadComments(promoId);
   };
 
   window.toggleModalPromoLike = function() {
