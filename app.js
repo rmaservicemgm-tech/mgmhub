@@ -1230,9 +1230,8 @@
 
   window.postCommentFromSheet = async function() {
     if (!state.authUser) {
-      showToast('Debes iniciar sesión para comentar.', 'fa-solid fa-lock');
-      closeCopySheet();
-      openLoginModal();
+      showToast('Inicia sesión para comentar.', 'fa-solid fa-lock');
+      openLoginModal();   // Se abre encima del feed (z-index 8000 > 3000)
       return;
     }
     const promoId = _activeCopyPromoId;
@@ -1753,10 +1752,12 @@
     if (!btn) return;
     if (state.authUser) {
       btn.innerHTML = `<span style="font-weight:800;font-size:14px;color:#0ea5e9;">${state.authUser.nombre.charAt(0).toUpperCase()}</span>`;
-      btn.style.background = '#e0f2fe';
+      btn.style.background = '';  // Dejar que el CSS maneje el fondo
+      btn.style.border = '2px solid #0ea5e9';
     } else {
       btn.innerHTML = `<i class="fa-regular fa-user"></i>`;
-      btn.style.background = 'rgba(0,0,0,0.05)';
+      btn.style.background = '';
+      btn.style.border = '';
     }
   }
 
@@ -1991,7 +1992,7 @@
 
       return `
       <div ${clickAttr}
-        style="background:#fff; border:1px solid var(--border-light); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:0 2px 6px rgba(0,33,74,0.05); transition: box-shadow 0.2s, transform 0.2s;"
+        style="background:var(--bg-surface); border:1px solid var(--border-light); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:var(--shadow-xs); transition: box-shadow 0.2s, transform 0.2s;"
         onmouseover="${hoverIn}" onmouseout="${hoverOut}">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
           <i class="fa-solid ${cfg.icon}" style="color:${cfg.color}; font-size:14px;"></i>
@@ -1999,7 +2000,7 @@
           ${cfg.badgeText ? `<span style="font-size:10px; background:${cfg.badgeBg}; color:${cfg.badgeTxt}; padding:2px 7px; border-radius:20px; font-weight:700; white-space:nowrap;">${cfg.badgeText} →</span>` : ''}
         </div>
         <div style="font-size:13px; color:var(--text-muted); line-height:1.5;">${n.body || ''}</div>
-        <div style="font-size:11px; color:#cbd5e1; margin-top:8px; text-align:right;">${n.date || 'Reciente'}</div>
+        <div style="font-size:11px; color:var(--text-subtle); margin-top:8px; text-align:right;">${n.date || 'Reciente'}</div>
       </div>`;
     }).join('');
   }
@@ -2023,14 +2024,10 @@
   };
 
   function updateDarkModeBtn() {
-    const btn = document.getElementById('btn-dark-mode');
-    if (!btn) return;
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    if (isDark) {
-      btn.innerHTML = '<i class="fa-solid fa-sun" style="color: #fbbf24;"></i> <span>Modo Claro</span>';
-    } else {
-      btn.innerHTML = '<i class="fa-solid fa-moon" style="color: #64748b;"></i> <span>Modo Oscuro</span>';
-    }
+    // Sincronizar el checkbox toggle
+    const toggle = document.getElementById('dark-mode-toggle-input');
+    if (toggle) toggle.checked = isDark;
   }
 
   function applySavedTheme() {
