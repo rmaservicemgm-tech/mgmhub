@@ -1149,7 +1149,7 @@
     // Cargar comentarios
     const listEl = document.getElementById('cli-copy-comments-list');
     listEl.innerHTML = '<div style="color: var(--text-muted); font-size: 12px; padding: 8px;">Cargando...</div>';
-    loadComments(id, listEl);
+    loadSheetComments(id, listEl);
     
     document.getElementById('cli-copy-sheet').classList.add('open');
   };
@@ -1160,7 +1160,7 @@
     _activeCopyPromoId = null;
   };
 
-  async function loadComments(promoId, listEl) {
+  async function loadSheetComments(promoId, listEl) {
     if (!listEl) listEl = document.getElementById('cli-copy-comments-list');
     if (!listEl) return;
     try {
@@ -1241,7 +1241,7 @@
     const local = JSON.parse(localStorage.getItem('mgm_comments_' + promoId) || '[]');
     local.push({ nombre: state.authUser.nombre, texto });
     localStorage.setItem('mgm_comments_' + promoId, JSON.stringify(local));
-    loadComments(promoId, listEl);
+    loadSheetComments(promoId, listEl);
   };
 
 
@@ -1314,18 +1314,17 @@
     
     if (section.style.display === 'none') {
       section.style.display = 'block';
-      loadComments(promoId);
+      loadCardComments(promoId);
     } else {
       section.style.display = 'none';
     }
   };
 
-  async function loadComments(promoId) {
+  async function loadCardComments(promoId) {
     const listEl = document.getElementById('comments-list-' + promoId);
     if (!listEl) return;
     
     try {
-      // Mocking fetch call to GAS (since GAS is not updated yet)
       const res = await fetch(CFG.NOTIFS_GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -1393,7 +1392,7 @@
     localComments.push({ nombre: state.authUser.nombre, texto });
     localStorage.setItem('mgm_comments_' + promoId, JSON.stringify(localComments));
     
-    loadComments(promoId);
+    loadCardComments(promoId);
   };
 
   window.toggleModalPromoLike = function() {
