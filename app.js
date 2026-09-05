@@ -1835,7 +1835,7 @@
           hasChanged = true;
         }
 
-        // Agregar nuevas notificaciones
+        // Agregar nuevas notificaciones o actualizar existentes
         res.notifications.forEach(n => {
           const stringId = String(n.id);
           const alreadyExists = state.notifications.some(existing => String(existing.id) === stringId);
@@ -1845,7 +1845,17 @@
             state.notifications.unshift(n);
             hasChanged = true;
             // Disparar notificación nativa del sistema
-            fireNativeNotif(n.title, n.body);
+            fireNativeNotif(n.title || 'MGM', n.body || '');
+          } else if (alreadyExists) {
+            // Actualizar si hay cambios en el texto
+            const existingIdx = state.notifications.findIndex(existing => String(existing.id) === stringId);
+            if (existingIdx !== -1) {
+              const existingNotif = state.notifications[existingIdx];
+              if (existingNotif.title !== n.title || existingNotif.body !== n.body || existingNotif.seccion !== n.seccion) {
+                state.notifications[existingIdx] = n;
+                hasChanged = true;
+              }
+            }
           }
         });
 
@@ -1953,10 +1963,10 @@
         onmouseover="${hoverIn}" onmouseout="${hoverOut}">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
           <i class="fa-solid ${cfg.icon}" style="color:${cfg.color}; font-size:14px;"></i>
-          <div style="font-size:14px; font-weight:800; color:var(--text-dark); flex:1;">${n.title}</div>
+          <div style="font-size:14px; font-weight:800; color:var(--text-dark); flex:1;">${n.title || 'Sin Título'}</div>
           ${cfg.badgeText ? `<span style="font-size:10px; background:${cfg.badgeBg}; color:${cfg.badgeTxt}; padding:2px 7px; border-radius:20px; font-weight:700; white-space:nowrap;">${cfg.badgeText} →</span>` : ''}
         </div>
-        <div style="font-size:13px; color:var(--text-muted); line-height:1.5;">${n.body}</div>
+        <div style="font-size:13px; color:var(--text-muted); line-height:1.5;">${n.body || ''}</div>
         <div style="font-size:11px; color:#cbd5e1; margin-top:8px; text-align:right;">${n.date || 'Reciente'}</div>
       </div>`;
     }).join('');
