@@ -1163,30 +1163,47 @@
   async function loadSheetComments(promoId, listEl) {
     if (!listEl) listEl = document.getElementById('cli-copy-comments-list');
     if (!listEl) return;
+
+    // 1. Mostrar comentarios locales inmediatamente (sin esperar la red)
+    const renderList = (comments) => {
+      if (!comments || comments.length === 0) {
+        listEl.innerHTML = '<div style="color:var(--text-muted);text-align:center;font-size:12px;padding:16px;">Sin comentarios aún. ¡Sé el primero!</div>';
+        return;
+      }
+      listEl.innerHTML = comments.map(c =>
+        `<div style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--border-light);">
+          <div style="font-weight:800; font-size:12px; color:var(--primary-blue); margin-bottom:2px;">${c.nombre}</div>
+          <div style="font-size:13px; color:var(--text-body);">${c.texto}</div>
+        </div>`
+      ).join('');
+    };
+
+    const local = JSON.parse(localStorage.getItem('mgm_comments_' + promoId) || '[]');
+    renderList(local);
+
+    // 2. Intentar sincronizar con GAS en segundo plano
     try {
-      const res = await fetch(CFG.NOTIFS_GAS_URL, {
+      const response = await fetch(CFG.NOTIFS_GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'get_comments', promoId })
-      }).then(r => r.json());
-      
-      if (res.success && res.comments && res.comments.length > 0) {
-        listEl.innerHTML = res.comments.map(c =>
-          `<div style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--border-light);">
-            <div style="font-weight:800; font-size:12px; color:var(--primary-blue); margin-bottom:2px;">${c.nombre}</div>
-            <div style="font-size:13px; color:var(--text-body);">${c.texto}</div>
-          </div>`
-        ).join('');
-      } else {
-        listEl.innerHTML = '<div style="color:var(--text-muted);text-align:center;font-size:12px;padding:16px;">Sin comentarios aún. ¡Sé el primero!</div>';
+      });
+      const res = await response.json();
+
+      if (res && res.success && Array.isArray(res.comments) && res.comments.length > 0) {
+        // Merge: combinar comentarios GAS + local (evitar duplicados por texto+nombre)
+        const merged = [...res.comments];
+        local.forEach(lc => {
+          const exists = merged.some(gc => gc.nombre === lc.nombre && gc.texto === lc.texto);
+          if (!exists) merged.push(lc);
+        });
+        // Actualizar localStorage con la version del GAS como base
+        localStorage.setItem('mgm_comments_' + promoId, JSON.stringify(merged));
+        renderList(merged);
       }
     } catch(e) {
-      console.warn('Error fetch comentarios:', e);
-      // Fallback a localStorage si falla la red
-      const local = JSON.parse(localStorage.getItem('mgm_comments_' + promoId) || '[]');
-      listEl.innerHTML = local.length
-        ? local.map(c => `<div style="margin-bottom:10px;"><strong style="color:var(--primary-blue);font-size:12px;">${c.nombre}:</strong> <span style="color:var(--text-body);font-size:13px;">${c.texto}</span></div>`).join('')
-        : '<div style="color:var(--text-muted);text-align:center;font-size:12px;padding:16px;">Sin comentarios aún.</div>';
+      // Silencioso: ya mostramos el fallback local
+      console.warn('[MGM] GAS comentarios no disponible, mostrando locales:', e.message);
     }
   }
 
@@ -1323,36 +1340,44 @@
   async function loadCardComments(promoId) {
     const listEl = document.getElementById('comments-list-' + promoId);
     if (!listEl) return;
-    
+
+    const renderList = (comments) => {
+      if (!comments || comments.length === 0) {
+        listEl.innerHTML = `<div style="color: var(--text-muted); text-align: center; font-size: 12px; padding: 10px;">Aún no hay comentarios. Sé el primero.</div>`;
+        return;
+      }
+      listEl.innerHTML = comments.map(c => `
+        <div style="margin-bottom: 6px;">
+          <strong style="color: var(--text-dark);">${c.nombre}:</strong>
+          <span style="color: var(--text-body);">${c.texto}</span>
+        </div>`
+      ).join('');
+    };
+
+    // 1. Mostrar locales primero
+    const local = JSON.parse(localStorage.getItem('mgm_comments_' + promoId) || '[]');
+    renderList(local);
+
+    // 2. Intentar GAS en segundo plano
     try {
-      const res = await fetch(CFG.NOTIFS_GAS_URL, {
+      const response = await fetch(CFG.NOTIFS_GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'get_comments', promoId })
-      }).then(r => r.json());
-      
-      if (res.success && res.comments && res.comments.length > 0) {
-        listEl.innerHTML = res.comments.map(c => `
-          <div style="margin-bottom: 6px;">
-            <strong style="color: var(--text-dark);">${c.nombre}:</strong> <span style="color: var(--text-body);">${c.texto}</span>
-          </div>
-        `).join('');
-      } else {
-        listEl.innerHTML = `<div style="color: var(--text-muted); text-align: center; font-size: 12px; padding: 10px;">Aún no hay comentarios. Sé el primero.</div>`;
+      });
+      const res = await response.json();
+
+      if (res && res.success && Array.isArray(res.comments) && res.comments.length > 0) {
+        const merged = [...res.comments];
+        local.forEach(lc => {
+          const exists = merged.some(gc => gc.nombre === lc.nombre && gc.texto === lc.texto);
+          if (!exists) merged.push(lc);
+        });
+        localStorage.setItem('mgm_comments_' + promoId, JSON.stringify(merged));
+        renderList(merged);
       }
     } catch(err) {
-      // Fallback a localStorage
-      console.warn('Fallback comentarios locales');
-      const localComments = JSON.parse(localStorage.getItem('mgm_comments_' + promoId) || '[]');
-      if (localComments.length > 0) {
-        listEl.innerHTML = localComments.map(c => `
-          <div style="margin-bottom: 6px;">
-            <strong style="color: var(--text-dark);">${c.nombre}:</strong> <span style="color: var(--text-body);">${c.texto}</span>
-          </div>
-        `).join('');
-      } else {
-        listEl.innerHTML = `<div style="color: var(--text-muted); text-align: center; font-size: 12px; padding: 10px;">Aún no hay comentarios. Sé el primero.</div>`;
-      }
+      console.warn('[MGM] GAS card-comments no disponible:', err.message);
     }
   }
 
