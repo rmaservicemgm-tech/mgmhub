@@ -140,6 +140,7 @@
   const K_NOTIFS  = 'mgm_notifications';
   const K_CLEARED_NOTIFS = 'mgm_cleared_notifs';
   const K_NOTIFIED_TX    = 'mgm_notified_tx_v1';
+  const K_MY_COURSES     = 'mgm_my_courses';
 
   const state = {
     activeTab:   'home',
@@ -152,6 +153,7 @@
     audioPlaying: false,
     audioTrackIndex: 0,
     agendaEvents: [],
+    myCourses: JSON.parse(localStorage.getItem(K_MY_COURSES)) || [],
     promos: [],
     rewards: [],
     activeRewardData: null,
@@ -557,6 +559,7 @@
       } else {
         renderCalendar();
       }
+      loadMyCourses();
     }
     if (tabName === 'promos') {
       if (state.promos.length === 0) {
@@ -589,6 +592,13 @@
   // ══════════════════════════════════════════════════════════════════════════════
   window.navigateTo = function(seccion) {
     if (!seccion) return;
+
+    // Si la sección es una URL externa (ej: enlace a Google Meet)
+    if (/^https?:\/\//i.test(seccion.trim())) {
+      window.open(seccion.trim(), '_blank');
+      return;
+    }
+
     const parts = seccion.split(':');
     const tab = parts[0];
     const sub = parts[1] || null;
@@ -750,6 +760,9 @@
 
     // 9. Consultar notificaciones personalizadas desde el backend
     checkNotifications();
+
+    // 10. Consultar cursos/capacitaciones en los que está inscrito el usuario
+    loadMyCourses();
 
     // 10. Actualizar catálogo de premios para reflejar puntos del usuario
     loadHomeRewards();
@@ -1607,6 +1620,18 @@
 
   const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
+  function formatEventUrl(rawLink) {
+    if (!rawLink || typeof rawLink !== 'string') return 'https://mgmpty.odoo.com/mgm-puntos';
+    const trimmed = rawLink.trim();
+    if (!trimmed) return 'https://mgmpty.odoo.com/mgm-puntos';
+    // Si ya tiene protocolo (https://, http://, wa.me, etc.) se respeta
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+    // Si inicia con /, unimos con el dominio de Odoo
+    if (trimmed.startsWith('/')) return `https://mgmpty.odoo.com${trimmed}`;
+    // Si es un slug de Odoo (ej. capacitacion-control-id-soluciones-para-gimnasios-y-colegios)
+    return `https://mgmpty.odoo.com/${trimmed}`;
+  }
+
   async function fetchEventsFromGAS() {
     try {
       const res = await fetch(CFG.AGENDA_GAS_URL);
@@ -1634,7 +1659,7 @@
                       costo: ev.price || 'Gratis',
                       lugar: ev.extra_2 || 'En línea',
                       cupos: ev.extra_1 || '20',
-                      registro_url: ev.button_link || 'https://mgmpty.odoo.com/mgm-puntos',
+                      registro_url: formatEventUrl(ev.button_link),
                       button_text: ev.button_text || 'Reservar Cupo'
                     });
                   });
@@ -1643,7 +1668,10 @@
             }
           }
         } else {
-          eventsList.push(...data);
+          eventsList.push(...data.map(ev => ({
+            ...ev,
+            registro_url: formatEventUrl(ev.registro_url || ev.button_link)
+          })));
         }
         if (eventsList.length > 0) return eventsList;
       }
@@ -1785,7 +1813,10 @@
     document.getElementById('modal-event-place').innerHTML   = `<strong>${ev.lugar || '—'}</strong>`;
 
     const btnReserve = document.getElementById('modal-event-btn-reserve');
-    if (btnReserve) btnReserve.href = ev.registro_url || '#';
+    if (btnReserve) {
+      btnReserve.href = formatEventUrl(ev.registro_url || ev.button_link);
+      btnReserve.innerHTML = `<i class="fa-solid fa-ticket"></i> ${ev.button_text || 'Reservar Cupo'}`;
+    }
 
     openAppModal('modal-event-detail');
   };
@@ -1793,7 +1824,7 @@
   window.openEventQR = function() {
     const ev = state.activeEventData;
     if (!ev) return;
-    const url = ev.qr_url || ev.registro_url || `https://mgmpty.odoo.com/mgm-puntos`;
+    const url = formatEventUrl(ev.qr_url || ev.registro_url || ev.button_link);
     const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
     document.getElementById('qr-image-src').src = qrSrc;
     closeAppModal('modal-event-detail');
@@ -1808,7 +1839,8 @@
   window.shareAction = function(platform) {
     const ev = state.activeEventData;
     if (!ev) return;
-    const text = `📅 ${ev.titulo}\n🗓️ ${formatDateDisplay(ev.fecha)} · ${ev.hora}\n📍 ${ev.lugar}\n\nRegistro: ${ev.registro_url || 'https://mgmpty.odoo.com/mgm-puntos'}`;
+    const url = formatEventUrl(ev.registro_url || ev.button_link);
+    const text = `📅 ${ev.titulo}\n🗓️ ${formatDateDisplay(ev.fecha)} · ${ev.hora}\n📍 ${ev.lugar}\n\nRegistro: ${url}`;
     const encoded = encodeURIComponent(text);
     if (platform === 'wa')   window.open(`https://wa.me/?text=${encoded}`, '_blank');
     if (platform === 'mail') window.open(`mailto:?subject=${encodeURIComponent(ev.titulo)}&body=${encoded}`, '_blank');
@@ -1818,6 +1850,173 @@
       window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.titulo)}&dates=${dateStart}T000000Z/${dateStart}T235959Z&details=${encodeURIComponent(ev.descripcion)}`, '_blank');
     }
     closeAppModal('modal-event-share');
+  };
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // MIS CAPACITACIONES INSCRITAS (Cuenta del Usuario con cuenta regresiva & Meet)
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  async function loadMyCourses() {
+    renderMyCourses(); // Renderizar lo que haya en caché inmediatamente
+
+    if (!state.authUser || !state.authUser.cedula) return;
+    if (CFG.NOTIFS_GAS_URL === 'URL_TEMPORAL_PENDIENTE') return;
+
+    try {
+      const res = await fetch(CFG.NOTIFS_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'get_my_courses', cedula: state.authUser.cedula })
+      }).then(r => r.json());
+
+      if (res && res.success && Array.isArray(res.courses)) {
+        state.myCourses = res.courses;
+        localStorage.setItem(K_MY_COURSES, JSON.stringify(res.courses));
+        renderMyCourses();
+      }
+    } catch(err) {
+      console.warn('[MGM Hub] Error consultando mis capacitaciones:', err);
+    }
+  }
+
+  function renderMyCourses() {
+    const listEl = document.getElementById('my-courses-list');
+    const countEl = document.getElementById('my-courses-count');
+    if (!listEl) return;
+
+    // Caso 1: Usuario no autenticado
+    if (!state.authUser || !state.authUser.cedula) {
+      if (countEl) countEl.style.display = 'none';
+      listEl.innerHTML = `
+        <div class="my-courses-unauth">
+          <div class="my-courses-empty-icon"><i class="fa-solid fa-id-card" style="color: #6366f1;"></i></div>
+          <div class="my-courses-empty-title">¿Ya te inscribiste a un curso?</div>
+          <div class="my-courses-empty-desc">
+            Inicia sesión con tu cédula en <strong>MGM Puntos</strong> para ver aquí tus cursos confirmados, enlaces a Google Meet y recordatorios en vivo.
+          </div>
+          <button class="btn-submit" onclick="switchMainTab('puntos')" style="margin-top: 14px; width: auto; padding: 9px 18px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> Iniciar Sesión con mi Cédula
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    // Caso 2: Autenticado pero sin cursos inscritos
+    if (!state.myCourses || state.myCourses.length === 0) {
+      if (countEl) countEl.style.display = 'none';
+      listEl.innerHTML = `
+        <div class="my-courses-empty">
+          <div class="my-courses-empty-icon">📅</div>
+          <div class="my-courses-empty-title">Aún no tienes cursos inscritos</div>
+          <div class="my-courses-empty-desc">
+            Elige una capacitación en el calendario de arriba y toca <strong>"Reservar Cupo"</strong> para registrarte. Tus eventos aparecerán aquí automáticamente.
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // Caso 3: Tiene cursos inscritos
+    if (countEl) {
+      countEl.textContent = state.myCourses.length;
+      countEl.style.display = 'inline-flex';
+    }
+
+    const ahora = new Date();
+
+    listEl.innerHTML = state.myCourses.map(course => {
+      const fechaEv = new Date(course.fecha);
+      const isFechaValida = !isNaN(fechaEv.getTime());
+      
+      let countdownHtml = '';
+
+      if (isFechaValida) {
+        const diffMs = fechaEv.getTime() - ahora.getTime();
+        const diffHoras = diffMs / (1000 * 60 * 60);
+        const diffDias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffMs <= 0 && diffMs > -7200000) {
+          countdownHtml = `<div class="my-course-countdown-pill days-live"><i class="fa-solid fa-satellite-dish"></i> ¡EN VIVO AHORA!</div>`;
+        } else if (diffMs <= -7200000) {
+          countdownHtml = `<div class="my-course-countdown-pill days-past"><i class="fa-solid fa-check"></i> Evento Finalizado</div>`;
+        } else if (diffHoras < 1) {
+          const minRestantes = Math.max(1, Math.round(diffMs / 60000));
+          countdownHtml = `<div class="my-course-countdown-pill days-today"><i class="fa-solid fa-bell"></i> ¡Inicia en ${minRestantes} min!</div>`;
+        } else if (diffHoras < 24) {
+          countdownHtml = `<div class="my-course-countdown-pill days-today"><i class="fa-solid fa-fire"></i> ¡HOY a las ${formatEventTime(course.fecha)}!</div>`;
+        } else if (diffDias === 1) {
+          countdownHtml = `<div class="my-course-countdown-pill days-soon"><i class="fa-solid fa-clock"></i> Mañana a las ${formatEventTime(course.fecha)}</div>`;
+        } else if (diffDias <= 3) {
+          countdownHtml = `<div class="my-course-countdown-pill days-soon"><i class="fa-solid fa-hourglass-half"></i> Faltan ${diffDias} días</div>`;
+        } else {
+          countdownHtml = `<div class="my-course-countdown-pill days-normal"><i class="fa-regular fa-calendar"></i> Faltan ${diffDias} días</div>`;
+        }
+      }
+
+      const meetBtnHtml = course.meet ? `
+        <a href="${course.meet}" target="_blank" class="btn-meet-join">
+          <i class="fa-solid fa-video"></i> Entrar a Google Meet
+        </a>
+      ` : `
+        <button class="btn-meet-join" onclick="showToast('Enlace de Meet disponible próximamente', 'fa-solid fa-circle-info')">
+          <i class="fa-solid fa-circle-info"></i> Enlace disponible pronto
+        </button>
+      `;
+
+      return `
+        <div class="my-course-card">
+          <div class="my-course-top-row">
+            <span class="my-course-badge-enrolled">
+              <i class="fa-solid fa-circle-check"></i> Cupo Confirmado
+            </span>
+            ${course.codigo ? `<span class="my-course-code" title="Código de registro">${course.codigo}</span>` : ''}
+          </div>
+
+          <div class="my-course-title">${course.nombre}</div>
+
+          <div class="my-course-meta-row">
+            <div class="my-course-meta-item">
+              <i class="fa-solid fa-calendar-day" style="color: var(--primary-blue);"></i>
+              <span>${formatDateDisplay(course.fecha)}</span>
+            </div>
+            ${isFechaValida ? `
+            <div class="my-course-meta-item">
+              <i class="fa-solid fa-clock" style="color: var(--text-muted);"></i>
+              <span>${formatEventTime(course.fecha)}</span>
+            </div>` : ''}
+          </div>
+
+          ${countdownHtml}
+
+          <div class="my-course-actions-row">
+            ${meetBtnHtml}
+            ${course.meet ? `
+            <button class="btn-course-action-icon" onclick="copyEventMeet('${course.meet}')" title="Copiar enlace de Meet">
+              <i class="fa-regular fa-copy"></i>
+            </button>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function formatEventTime(fechaStr) {
+    if (!fechaStr) return '09:00 AM';
+    try {
+      const d = new Date(fechaStr);
+      if (isNaN(d.getTime())) return '09:00 AM';
+      return d.toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit', hour12: true });
+    } catch(e) {
+      return '09:00 AM';
+    }
+  }
+
+  window.copyEventMeet = function(url) {
+    if (!url) return;
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('¡Enlace de Meet copiado!', 'fa-solid fa-clipboard-check');
+    });
   };
 
   window.openPromoDetail = function(idx) {
@@ -2506,6 +2705,9 @@
   window.logoutClient = function() {
     state.authUser = null;
     localStorage.removeItem(K_AUTH);
+    state.myCourses = [];
+    localStorage.removeItem(K_MY_COURSES);
+    renderMyCourses();
     // Limpiar notificaciones de puntos de la sesión anterior (manteniendo bienvenida)
     state.notifications = state.notifications.filter(n => String(n.id) === '0000');
     localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
@@ -2810,6 +3012,12 @@
           itemBadgeText = '🎉 Bienvenida';
           itemBadgeBg = '#e0e7ff';
           itemBadgeTxt = '#4338ca';
+        } else if (titleLower.includes('curso') || titleLower.includes('capacitación') || titleLower.includes('capacitacion') || titleLower.includes('certificación') || titleLower.includes('certificacion')) {
+          itemIcon = 'fa-graduation-cap';
+          itemColor = '#005bbb';
+          itemBadgeText = '🎓 Capacitación';
+          itemBadgeBg = '#e8f1ff';
+          itemBadgeTxt = '#005bbb';
         }
       }
 
@@ -2857,6 +3065,9 @@
     if (state.authUser) {
       trackUserActivity(state.authUser.cedula, state.authUser.nombre, 'app_open');
       autoLoadPuntosDashboard();
+      loadMyCourses();
+    } else {
+      renderMyCourses();
     }
     
     // Actualizar badge visual con las locales
