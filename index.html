@@ -759,6 +759,70 @@
       </div>
     </div>
 
+    <!-- MODAL CONFIRMACIÓN — LIMPIAR NOTIFICACIONES -->
+    <div class="app-modal" id="modal-confirm-clear" style="z-index: 9500;">
+      <div class="modal-content-card" style="max-width: 320px; padding: 0; overflow: hidden; border-radius: 22px;">
+        <!-- Icono + encabezado -->
+        <div style="background: linear-gradient(135deg, #fff1f2 0%, #fef9ec 100%); padding: 28px 24px 20px; text-align: center; border-bottom: 1px solid var(--border-light);">
+          <div id="confirm-clear-icon-wrap" style="
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border: 2px solid #fca5a5;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 14px;
+            box-shadow: 0 4px 16px rgba(239,68,68,0.18);
+          ">
+            <i class="fa-solid fa-trash-can" style="font-size: 24px; color: #ef4444;"></i>
+          </div>
+          <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">¿Limpiar notificaciones?</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
+            Se eliminarán <strong style="color: var(--text-dark);">todas</strong> tus notificaciones.<br>Esta acción no se puede deshacer.
+          </p>
+        </div>
+        <!-- Botones de acción -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; background: #fff;">
+          <button
+            id="btn-confirm-clear-cancel"
+            onclick="closeAppModal('modal-confirm-clear')"
+            style="
+              padding: 16px 12px;
+              background: #fff;
+              border: none; border-right: 1px solid var(--border-light);
+              font-family: 'Outfit', sans-serif;
+              font-size: 14px; font-weight: 700;
+              color: var(--text-muted);
+              cursor: pointer;
+              transition: background 0.18s, color 0.18s;
+              border-radius: 0 0 0 22px;
+            "
+            onmouseover="this.style.background='#f8fafc'; this.style.color='var(--text-body)'"
+            onmouseout="this.style.background='#fff'; this.style.color='var(--text-muted)'"
+          >
+            <i class="fa-solid fa-xmark" style="margin-right: 5px; font-size: 12px;"></i>Cancelar
+          </button>
+          <button
+            id="btn-confirm-clear-ok"
+            onclick="confirmClearNotifications()"
+            style="
+              padding: 16px 12px;
+              background: #fff;
+              border: none;
+              font-family: 'Outfit', sans-serif;
+              font-size: 14px; font-weight: 800;
+              color: #ef4444;
+              cursor: pointer;
+              transition: background 0.18s, color 0.18s;
+              border-radius: 0 0 22px 0;
+            "
+            onmouseover="this.style.background='#fef2f2'; this.style.color='#dc2626'"
+            onmouseout="this.style.background='#fff'; this.style.color='#ef4444'"
+          >
+            <i class="fa-solid fa-trash-can" style="margin-right: 5px; font-size: 12px;"></i>Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- ══════════════════════════════════════════════════════════════════════════
          SPLASHSCREEN INTELIGENTE DE BIENVENIDA / OFERTAS
          ══════════════════════════════════════════════════════════════════════════ -->

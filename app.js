@@ -2698,25 +2698,37 @@
     }
   }
 
-  // Limpiar cola de mensajes (Borrar todos)
+  // Limpiar cola de mensajes (Borrar todos) — abre modal elegante
   window.clearNotifications = function() {
     if (state.notifications.length === 0) return;
-    if (confirm('¿Estás seguro de que quieres borrar todas tus notificaciones?')) {
-      // Guardar las IDs borradas para que no vuelvan a aparecer del backend
-      state.notifications.forEach(n => {
-        const stringId = String(n.id);
-        if (!state.clearedNotifs.includes(stringId)) {
-          state.clearedNotifs.push(stringId);
-        }
-      });
-      localStorage.setItem(K_CLEARED_NOTIFS, JSON.stringify(state.clearedNotifs));
-
-      state.notifications = [];
-      localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
-      renderNotifications();
-      updateNotifBadge();
+    // Abre el modal de confirmación elegante (en lugar del confirm() nativo)
+    const modal = document.getElementById('modal-confirm-clear');
+    if (modal) {
+      modal.classList.add('active');
     }
   };
+
+  // Ejecuta el borrado real (llamado desde el botón "Eliminar" del modal)
+  window.confirmClearNotifications = function() {
+    // Cerrar el modal de confirmación
+    const modal = document.getElementById('modal-confirm-clear');
+    if (modal) modal.classList.remove('active');
+
+    // Guardar las IDs borradas para que no vuelvan a aparecer del backend
+    state.notifications.forEach(n => {
+      const stringId = String(n.id);
+      if (!state.clearedNotifs.includes(stringId)) {
+        state.clearedNotifs.push(stringId);
+      }
+    });
+    localStorage.setItem(K_CLEARED_NOTIFS, JSON.stringify(state.clearedNotifs));
+
+    state.notifications = [];
+    localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
+    renderNotifications();
+    updateNotifBadge();
+  };
+
 
   // Renderizar la lista de notificaciones en el panel
   function renderNotifications() {
