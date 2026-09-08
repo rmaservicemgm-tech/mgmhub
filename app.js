@@ -105,27 +105,8 @@
     BOTPRESS_BOT_ID: 'e5a3c8a6-9aec-41a3-870d-d1985dc8c7df',
     SPLASH_ENABLED: true,
 
-    // Playlist por defecto si la red o el GAS fallan
-    DEFAULT_AUDIO_TRACKS: [
-      {
-        title: 'Remate Dahua MGM',
-        artist: 'MGM Marketing Production',
-        src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-        cover: 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'
-      },
-      {
-        title: 'Lanzamientos Hikvision 2026',
-        artist: 'MGM Audio Spot',
-        src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-        cover: 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'
-      },
-      {
-        title: 'Soluciones IMOU Panamá',
-        artist: 'MGM Radio',
-        src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
-        cover: 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'
-      }
-    ],
+    // Playlist de audios: sólo se poblará si el backend devuelve pistas reales
+    DEFAULT_AUDIO_TRACKS: [],
     AUDIO_TRACKS: []
   };
 
@@ -2516,13 +2497,16 @@
   const coverImg   = document.getElementById('audio-cover');
 
   function loadTrack(idx) {
-    const tracks = CFG.AUDIO_TRACKS.length > 0 ? CFG.AUDIO_TRACKS : CFG.DEFAULT_AUDIO_TRACKS;
-    if (!tracks || !tracks.length || !audioEl) return;
+    const tracks = CFG.AUDIO_TRACKS;
+    if (!tracks || !tracks.length || !audioEl) {
+      if (audioBar) audioBar.classList.add('hidden');
+      return;
+    }
 
     state.audioTrackIndex = ((idx % tracks.length) + tracks.length) % tracks.length;
     const track = tracks[state.audioTrackIndex];
 
-    if (track.src) {
+    if (track && track.src) {
       const wasPlaying = state.audioPlaying;
       audioEl.src = track.src;
       if (trackTitle) trackTitle.textContent = track.title || 'MGM Radio';
@@ -2535,6 +2519,8 @@
       if (wasPlaying) {
         audioEl.play().catch(err => console.warn('Autoplay track change error:', err));
       }
+    } else {
+      if (audioBar) audioBar.classList.add('hidden');
     }
   }
 
@@ -2542,8 +2528,10 @@
     try {
       const res = await fetch(CFG.AUDIO_GAS_URL);
       const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        const mapped = data.map(t => ({
+      const rawList = Array.isArray(data) ? data : (data && Array.isArray(data.value) ? data.value : []);
+
+      if (Array.isArray(rawList) && rawList.length > 0) {
+        const mapped = rawList.map(t => ({
           title: t.title || t.titulo || t.nombre || 'MGM Audio',
           artist: t.artist || t.artista || 'MGM Radio',
           src: t.url || t.src || t.audio_url || t.audio || t.link || '',
@@ -2552,23 +2540,32 @@
 
         if (mapped.length > 0) {
           CFG.AUDIO_TRACKS = mapped;
-        } else {
-          CFG.AUDIO_TRACKS = CFG.DEFAULT_AUDIO_TRACKS;
+          loadTrack(0);
+          return;
         }
-      } else {
-        CFG.AUDIO_TRACKS = CFG.DEFAULT_AUDIO_TRACKS;
+      }
+
+      // Si no hay pistas válidas en el GAS, dejar vacío y ocultar completamente el reproductor
+      CFG.AUDIO_TRACKS = [];
+      if (audioBar) audioBar.classList.add('hidden');
+      if (audioEl) {
+        audioEl.pause();
+        audioEl.src = '';
       }
     } catch (err) {
-      console.warn('Audio GAS fetch warning, usando playlist por defecto:', err);
-      CFG.AUDIO_TRACKS = CFG.DEFAULT_AUDIO_TRACKS;
+      console.warn('Audio GAS fetch error / sin pistas:', err);
+      CFG.AUDIO_TRACKS = [];
+      if (audioBar) audioBar.classList.add('hidden');
+      if (audioEl) {
+        audioEl.pause();
+        audioEl.src = '';
+      }
     }
-
-    loadTrack(0);
   }
 
   document.getElementById('audio-btn-play')?.addEventListener('click', () => {
-    const tracks = CFG.AUDIO_TRACKS.length > 0 ? CFG.AUDIO_TRACKS : CFG.DEFAULT_AUDIO_TRACKS;
-    if (!audioEl || !tracks.length) return;
+    const tracks = CFG.AUDIO_TRACKS;
+    if (!audioEl || !tracks || !tracks.length) return;
 
     if (state.audioPlaying) {
       audioEl.pause();
