@@ -873,6 +873,11 @@
 
     // 10. Actualizar catálogo de premios para reflejar puntos del usuario
     loadHomeRewards();
+
+    // 11. Sincronizar foto de perfil si no está en caché local
+    if (!state.authUser.avatar) {
+      syncUserAvatarFromBackend(state.authUser.cedula);
+    }
   }
 
   // Registrar actividad del usuario en el Sheet de Tracking (Google Apps Script)
@@ -933,11 +938,14 @@
       const pts = parseInt(state.authUser.puntos) || 0;
       const valUsd = (pts * CFG.VAL_PUNTO).toFixed(2);
       const inicial = (state.authUser.nombre || 'M').charAt(0).toUpperCase();
+      const avatarHtml = state.authUser.avatar
+        ? `<div class="hab-avatar"><img src="${state.authUser.avatar}" alt="Avatar"></div>`
+        : `<div class="hab-avatar">${inicial}</div>`;
 
       banner.innerHTML = `
         <div class="home-auth-banner-card auth" onclick="switchMainTab('puntos')">
           <div class="hab-left">
-            <div class="hab-avatar">${inicial}</div>
+            ${avatarHtml}
             <div>
               <div class="hab-user-greeting">¡Hola, ${primerNombre}! 👋</div>
               <div class="hab-points-line">
@@ -2741,10 +2749,7 @@
     document.getElementById('login-view-auth').style.display = isAuth ? 'block' : 'none';
     
     if (isAuth) {
-      document.getElementById('auth-initials').textContent = state.authUser.nombre.charAt(0).toUpperCase();
-      document.getElementById('auth-name').textContent = state.authUser.nombre;
-      document.getElementById('auth-cedula').textContent = state.authUser.cedula;
-      document.getElementById('auth-puntos').textContent = state.authUser.puntos || 0;
+      updateAuthModalProfile();
       
       // Mostrar botón de notificaciones si no tienen permiso concedido
       const btnNotifs = document.getElementById('btn-enable-notifs');
@@ -2846,13 +2851,208 @@
     const btn = document.getElementById('btn-user-login');
     if (!btn) return;
     if (state.authUser) {
-      btn.innerHTML = `<span style="font-weight:800;font-size:14px;color:#0ea5e9;">${state.authUser.nombre.charAt(0).toUpperCase()}</span>`;
-      btn.style.background = '';  // Dejar que el CSS maneje el fondo
-      btn.style.border = '2px solid #0ea5e9';
+      if (state.authUser.avatar) {
+        btn.innerHTML = `<img src="${state.authUser.avatar}" alt="Avatar" class="header-user-avatar">`;
+        btn.style.padding = '0';
+        btn.style.border = '2px solid #0ea5e9';
+      } else {
+        btn.innerHTML = `<span style="font-weight:800;font-size:14px;color:#0ea5e9;">${state.authUser.nombre.charAt(0).toUpperCase()}</span>`;
+        btn.style.padding = '';
+        btn.style.border = '2px solid #0ea5e9';
+      }
     } else {
       btn.innerHTML = `<i class="fa-regular fa-user"></i>`;
-      btn.style.background = '';
+      btn.style.padding = '';
       btn.style.border = '';
+    }
+  }
+
+  // Sincronizar datos y foto en el modal de perfil
+  function updateAuthModalProfile() {
+    if (!state.authUser) return;
+    const initEl = document.getElementById('auth-initials');
+    const imgEl = document.getElementById('auth-avatar-img');
+    const nameEl = document.getElementById('auth-name');
+    const cedEl = document.getElementById('auth-cedula');
+    const ptosEl = document.getElementById('auth-puntos');
+
+    if (nameEl) nameEl.textContent = state.authUser.nombre || '---';
+    if (cedEl) cedEl.textContent = state.authUser.cedula ? `Cédula: ${state.authUser.cedula}` : '---';
+    if (ptosEl) ptosEl.textContent = (state.authUser.puntos || 0).toLocaleString('es-PA');
+
+    if (state.authUser.avatar) {
+      if (imgEl) {
+        imgEl.src = state.authUser.avatar;
+        imgEl.style.display = 'block';
+      }
+      if (initEl) initEl.style.display = 'none';
+    } else {
+      if (initEl) {
+        initEl.textContent = (state.authUser.nombre || 'M').charAt(0).toUpperCase();
+        initEl.style.display = 'flex';
+      }
+      if (imgEl) imgEl.style.display = 'none';
+    }
+  }
+
+  /**
+   * Comprime y recorta la imagen en el cliente para que pese lo mínimo posible (~15KB - 25KB)
+   * Recorte centrado 1:1, resolución 256x256 px, compresión JPEG 80%.
+   */
+  function compressAndCropAvatar(file, targetSize = 256, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+      if (!file || !file.type.startsWith('image/')) {
+        return reject(new Error('Por favor selecciona un archivo de imagen válido (JPG, PNG, WebP).'));
+      }
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('No se pudo leer el archivo seleccionado.'));
+      reader.onload = e => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('Error al procesar la imagen seleccionada.'));
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = targetSize;
+            canvas.height = targetSize;
+            const ctx = canvas.getContext('2d');
+
+            // Recorte cuadrado centrado 1:1 para evitar deformaciones
+            const minDim = Math.min(img.width, img.height);
+            const sx = (img.width - minDim) / 2;
+            const sy = (img.height - minDim) / 2;
+
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, targetSize, targetSize);
+
+            // Generar JPEG comprimido
+            const dataUrl = canvas.toDataURL('image/jpeg', quality);
+            resolve(dataUrl);
+          } catch (err) {
+            reject(err);
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /**
+   * Manejador de subida de avatar disparado desde el modal de perfil
+   */
+  window.handleAvatarSelected = async function(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    if (!state.authUser) {
+      alert('Debes iniciar sesión para actualizar tu foto de perfil.');
+      return;
+    }
+
+    const feedbackEl = document.getElementById('avatar-upload-feedback');
+    const imgEl = document.getElementById('auth-avatar-img');
+    const initEl = document.getElementById('auth-initials');
+
+    if (feedbackEl) {
+      feedbackEl.style.display = 'block';
+      feedbackEl.style.background = '#f0f9ff';
+      feedbackEl.style.color = '#0284c7';
+      feedbackEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Optimizando foto de perfil...';
+    }
+
+    try {
+      // 1. Tratamiento y compresión en cliente a peso mínimo (~20KB)
+      const compressedDataUrl = await compressAndCropAvatar(file, 256, 0.8);
+
+      // 2. Feedback inmediato en toda la interfaz (0ms de latencia)
+      if (imgEl) {
+        imgEl.src = compressedDataUrl;
+        imgEl.style.display = 'block';
+      }
+      if (initEl) initEl.style.display = 'none';
+
+      state.authUser.avatar = compressedDataUrl;
+      localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
+
+      updateHeaderUserIcon();
+      updateHomeAuthBanner();
+
+      if (feedbackEl) {
+        feedbackEl.style.background = '#f0fdf4';
+        feedbackEl.style.color = '#15803d';
+        feedbackEl.innerHTML = '<i class="fa-solid fa-cloud-arrow-up fa-fade"></i> Guardando en Google Drive...';
+      }
+
+      // 3. Envío al backend de Google Apps Script (Carpeta Drive 1wKgyYIkGVUWz25DC9P56uTx9Pr92dsxb)
+      const cedula = (state.authUser.cedula || '').toString().trim();
+      const payload = {
+        action: 'upload_avatar',
+        cedula: cedula,
+        nombre: state.authUser.nombre || '',
+        base64: compressedDataUrl
+      };
+
+      let targetUrl = CFG.NOTIFS_GAS_URL;
+      if (!targetUrl || targetUrl === 'URL_TEMPORAL_PENDIENTE') {
+        targetUrl = CFG.PUNTOS_GAS_URL;
+      }
+
+      try {
+        const res = await fetch(targetUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (json && json.success && (json.avatarUrl || json.viewUrl)) {
+          state.authUser.avatarDriveUrl = json.avatarUrl || json.viewUrl;
+          localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
+        }
+      } catch (uploadErr) {
+        console.warn('Aviso: guardado local completado; sincronización en segundo plano con Drive pendiente:', uploadErr);
+      }
+
+      if (feedbackEl) {
+        feedbackEl.style.background = '#f0fdf4';
+        feedbackEl.style.color = '#15803d';
+        feedbackEl.innerHTML = '✅ ¡Foto de perfil guardada exitosamente!';
+        setTimeout(() => {
+          if (feedbackEl) feedbackEl.style.display = 'none';
+        }, 3500);
+      }
+
+    } catch (err) {
+      console.error('Error al actualizar avatar:', err);
+      if (feedbackEl) {
+        feedbackEl.style.background = '#fef2f2';
+        feedbackEl.style.color = '#b91c1c';
+        feedbackEl.innerHTML = '❌ ' + (err.message || 'Error al procesar la imagen');
+      }
+    } finally {
+      event.target.value = '';
+    }
+  };
+
+  /**
+   * Sincroniza la foto de perfil desde el backend de Notificaciones si no existe en local
+   */
+  async function syncUserAvatarFromBackend(cedula) {
+    if (!cedula || !CFG.NOTIFS_GAS_URL || CFG.NOTIFS_GAS_URL === 'URL_TEMPORAL_PENDIENTE') return;
+    try {
+      const res = await fetch(`${CFG.NOTIFS_GAS_URL}?action=get_avatar&cedula=${encodeURIComponent(cedula)}`);
+      const data = await res.json();
+      if (data && data.success && data.avatarUrl) {
+        if (state.authUser && state.authUser.cedula === cedula) {
+          state.authUser.avatar = data.avatarUrl;
+          localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
+          updateHeaderUserIcon();
+          updateHomeAuthBanner();
+          updateAuthModalProfile();
+        }
+      }
+    } catch(err) {
+      console.warn('Sincronización de avatar en segundo plano no disponible:', err);
     }
   }
 
@@ -3271,6 +3471,9 @@
       trackUserActivity(state.authUser.cedula, state.authUser.nombre, 'app_open');
       autoLoadPuntosDashboard();
       loadMyCourses();
+      if (!state.authUser.avatar) {
+        syncUserAvatarFromBackend(state.authUser.cedula);
+      }
     } else {
       renderMyCourses();
     }
