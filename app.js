@@ -597,6 +597,14 @@
         }, 200);
       }
     }
+    if (tabName === 'rma') {
+      setTimeout(() => {
+        const emailInp = document.querySelector('#consultaForm input[name="email"]');
+        if (emailInp && !emailInp.value && state.authUser && state.authUser.email) {
+          emailInp.value = state.authUser.email;
+        }
+      }, 100);
+    }
   };
 
   // ══════════════════════════════════════════════════════════════════════════════
@@ -615,7 +623,7 @@
     if (s.startsWith('/')) return true; // Ruta relativa hacia la web externa (Odoo)
 
     // Si coincide con alguna pestaña interna conocida o deeplink interno, NO es externa
-    const internalTabs = ['home', 'inicio', 'puntos', 'agenda', 'promos', 'asesoria', 'soporte'];
+    const internalTabs = ['home', 'inicio', 'puntos', 'agenda', 'promos', 'rma', 'asesoria', 'soporte'];
     const prefix = s.split(':')[0].trim();
     if (internalTabs.includes(prefix)) return false;
 
@@ -723,6 +731,17 @@
         }
       };
       tryOpenPromo(0);
+    }
+
+    // --- RMA: auto-llenar el número de RMA si viene en sub ---
+    if (tab === 'rma' && sub) {
+      setTimeout(() => {
+        const form = document.getElementById('consultaForm');
+        if (form && form.rma) {
+          form.rma.value = sub;
+          form.rma.focus();
+        }
+      }, 200);
     }
   };
 
@@ -3061,27 +3080,39 @@
       puntos:   { icon: 'fa-star',          color: '#f59e0b', badgeText: '⭐ Puntos',  badgeBg: '#fef3c7', badgeTxt: '#b45309' },
       agenda:   { icon: 'fa-calendar-days', color: '#6366f1', badgeText: '📅 Agenda',  badgeBg: '#ede9fe', badgeTxt: '#5b21b6' },
       promos:   { icon: 'fa-fire',          color: '#ef4444', badgeText: '🔥 Promo',   badgeBg: '#fee2e2', badgeTxt: '#b91c1c' },
+      rma:      { icon: 'fa-screwdriver-wrench', color: '#0f766e', badgeText: '🔧 Mi RMA', badgeBg: '#ccfbf1', badgeTxt: '#0f766e' },
       external: { icon: 'fa-arrow-up-right-from-square', color: '#005bbb', badgeText: '🌐 MGM Web ↗', badgeBg: '#e8f1ff', badgeTxt: '#005bbb' },
       default:  { icon: 'fa-circle-info',   color: '#0ea5e9', badgeText: null,         badgeBg: null,      badgeTxt: null      }
     };
 
     list.innerHTML = state.notifications.map(n => {
-      // Usar campo seccion o url del backend; fallback: detectar por título (compatibilidad)
+      // Usar campo seccion o url del backend; fallback: inferir por contenido
       let seccion = (n.seccion || n.url || '').trim();
       const titleLower = (n.title || '').toLowerCase();
       const bodyLower  = (n.body || '').toLowerCase();
+      const combinedText = `${titleLower} ${bodyLower}`;
 
+      // Helper para comprobar palabras completas de forma segura
+      const hasWord = (rx) => rx.test(combinedText);
+
+      // Si no viene sección del backend, inferirla por palabras clave
       if (!seccion) {
-        if (titleLower.includes('punto') || titleLower.includes('cumpleaños') || titleLower.includes('cumpleanos') || titleLower.includes('redim') || titleLower.includes('canje') || titleLower.includes('ajuste')) seccion = 'puntos:cuenta';
-        else if (titleLower.includes('promo') || titleLower.includes('oferta') || titleLower.includes('descuento')) seccion = 'promos';
-        else if (titleLower.includes('evento') || titleLower.includes('webinar') || titleLower.includes('curso') || titleLower.includes('capacitación')) seccion = 'agenda';
+        if (hasWord(/\b(rma|garant[ií]a|garantias|taller|reparaci[oó]n|reparar|equipo)\b/i)) {
+          seccion = 'rma';
+        } else if (hasWord(/\b(punto|puntos|cumplea[nñ]os|redim|canje|canjear|saldo|acredit|ajuste)\b/i)) {
+          seccion = 'puntos:cuenta';
+        } else if (hasWord(/\b(promo|oferta|descuento|rebaja|remate)\b/i)) {
+          seccion = 'promos';
+        } else if (hasWord(/\b(evento|webinar|curso|capacitaci[oó]n|charla|certificaci[oó]n)\b/i)) {
+          seccion = 'agenda';
+        }
       }
 
       const isExternal = isExternalUrl(seccion);
       const tab = isExternal ? 'external' : seccion.split(':')[0].toLowerCase();
       const baseCfg = SECC_CFG[tab] || SECC_CFG.default;
 
-      // Icono y badge dinámicos por tipo de notificación
+      // Icono y badge base
       let itemIcon      = n.icon      || baseCfg.icon;
       let itemColor     = n.iconColor || baseCfg.color;
       let itemBadgeText = n.badgeText || baseCfg.badgeText;
@@ -3116,43 +3147,64 @@
           itemBadgeTxt  = '#0284c7';
         }
       } else if (!n.badgeText) {
-        if (titleLower.includes('redim') || titleLower.includes('canje') || bodyLower.includes('canjeado') || bodyLower.includes('redimi')) {
-          itemIcon = 'fa-gift';
-          itemColor = '#10b981';
+        // Refinar insignia y estilo visual según el tipo específico de evento/alerta interna
+
+        // 1. RMA / Garantías / Taller técnico
+        if (tab === 'rma' || hasWord(/\b(rma|garant[ií]a|garantias|taller\s+rma|taller|reparaci[oó]n)\b/i)) {
+          itemIcon      = 'fa-screwdriver-wrench';
+          itemColor     = '#0f766e';
+          itemBadgeText = '🔧 Mi RMA';
+          itemBadgeBg   = '#ccfbf1';
+          itemBadgeTxt  = '#0f766e';
+        }
+        // 2. Canjes de premios de puntos
+        else if (hasWord(/\b(redim|canje|canjeado|canjeaste|canjear|recompensa)\b/i)) {
+          itemIcon      = 'fa-gift';
+          itemColor     = '#10b981';
           itemBadgeText = '🎁 Canje';
-          itemBadgeBg = '#d1fae5';
-          itemBadgeTxt = '#065f46';
-        } else if (titleLower.includes('devolución') || titleLower.includes('devolucion') || titleLower.includes('nota de crédito') || titleLower.includes('nc')) {
-          itemIcon = 'fa-file-invoice-dollar';
-          itemColor = '#ef4444';
+          itemBadgeBg   = '#d1fae5';
+          itemBadgeTxt  = '#065f46';
+        }
+        // 3. Devolución de mercadería / Nota de crédito comercial (\bnc\b como palabra entera, ¡NUNCA .includes('nc')!)
+        else if (hasWord(/\b(devoluci[oó]n|devoluciones|nota(?:s)? de cr[eé]dito|\bnc\b)\b/i)) {
+          itemIcon      = 'fa-file-invoice-dollar';
+          itemColor     = '#ef4444';
           itemBadgeText = '📋 Devolución';
-          itemBadgeBg = '#fee2e2';
-          itemBadgeTxt = '#991b1b';
-        } else if (titleLower.includes('ajuste')) {
-          const isFavor = titleLower.includes('favor') || titleLower.includes('acredit') || titleLower.includes('(+)');
-          itemIcon = isFavor ? 'fa-award' : 'fa-sliders';
-          itemColor = isFavor ? '#8b5cf6' : '#f59e0b';
+          itemBadgeBg   = '#fee2e2';
+          itemBadgeTxt  = '#991b1b';
+        }
+        // 4. Ajustes de saldo de puntos
+        else if (hasWord(/\b(ajuste|ajustes)\b/i)) {
+          const isFavor = hasWord(/\b(favor|acredit|bono|\(\+\))\b/i);
+          itemIcon      = isFavor ? 'fa-award' : 'fa-sliders';
+          itemColor     = isFavor ? '#8b5cf6' : '#f59e0b';
           itemBadgeText = isFavor ? '✨ Ajuste (+)' : '⚠️ Ajuste (-)';
-          itemBadgeBg = isFavor ? '#ede9fe' : '#fef3c7';
-          itemBadgeTxt = isFavor ? '#5b21b6' : '#92400e';
-        } else if (titleLower.includes('cumpleaños') || titleLower.includes('cumpleanos')) {
-          itemIcon = 'fa-cake-candles';
-          itemColor = '#ec4899';
+          itemBadgeBg   = isFavor ? '#ede9fe' : '#fef3c7';
+          itemBadgeTxt  = isFavor ? '#5b21b6' : '#92400e';
+        }
+        // 5. Cumpleaños del cliente
+        else if (hasWord(/\b(cumplea[nñ]os|aniversario)\b/i)) {
+          itemIcon      = 'fa-cake-candles';
+          itemColor     = '#ec4899';
           itemBadgeText = '🎂 Cumpleaños';
-          itemBadgeBg = '#fce7f3';
-          itemBadgeTxt = '#9d174d';
-        } else if (titleLower.includes('bienvenido')) {
-          itemIcon = 'fa-hand-peace';
-          itemColor = '#6366f1';
+          itemBadgeBg   = '#fce7f3';
+          itemBadgeTxt  = '#9d174d';
+        }
+        // 6. Bienvenida a MGM Hub
+        else if (hasWord(/\b(bienvenid[oa]s?)\b/i)) {
+          itemIcon      = 'fa-hand-peace';
+          itemColor     = '#6366f1';
           itemBadgeText = '🎉 Bienvenida';
-          itemBadgeBg = '#e0e7ff';
-          itemBadgeTxt = '#4338ca';
-        } else if (titleLower.includes('curso') || titleLower.includes('capacitación') || titleLower.includes('capacitacion') || titleLower.includes('certificación') || titleLower.includes('certificacion')) {
-          itemIcon = 'fa-graduation-cap';
-          itemColor = '#005bbb';
+          itemBadgeBg   = '#e0e7ff';
+          itemBadgeTxt  = '#4338ca';
+        }
+        // 7. Cursos y capacitaciones
+        else if (hasWord(/\b(curso|cursos|capacitaci[oó]n|capacitaciones|certificaci[oó]n|webinar)\b/i)) {
+          itemIcon      = 'fa-graduation-cap';
+          itemColor     = '#005bbb';
           itemBadgeText = '🎓 Capacitación';
-          itemBadgeBg = '#e8f1ff';
-          itemBadgeTxt = '#005bbb';
+          itemBadgeBg   = '#e8f1ff';
+          itemBadgeTxt  = '#005bbb';
         }
       }
 
