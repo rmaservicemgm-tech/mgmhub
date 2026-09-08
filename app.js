@@ -2917,10 +2917,11 @@
     
     try {
       const cedula = state.authUser ? state.authUser.cedula : 'ANONIMO';
+      const email  = (state.authUser && state.authUser.email) ? state.authUser.email : '';
       const res = await fetch(CFG.NOTIFS_GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'get_notifications', cedula })
+        body: JSON.stringify({ action: 'get_notifications', cedula, email })
       }).then(r => r.json());
 
       if (res.success && Array.isArray(res.notifications)) {

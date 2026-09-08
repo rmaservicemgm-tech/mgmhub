@@ -1008,6 +1008,56 @@
             background: #FEE2E2; color: var(--error); width: 40px; height: 40px;
             border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
           }
+          /* Timeline de Historial RMA */
+          .mgm-consulta-module .timeline-section {
+            margin-top: 22px; padding-top: 18px; border-top: 1px dashed var(--border);
+          }
+          .mgm-consulta-module .timeline-title {
+            font-size: 12px; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 6px;
+          }
+          .mgm-consulta-module .timeline-title .material-icons-round {
+            font-size: 18px; color: var(--primary);
+          }
+          .mgm-consulta-module .timeline-track {
+            position: relative; padding-left: 26px; display: flex; flex-direction: column; gap: 16px;
+          }
+          .mgm-consulta-module .timeline-track::before {
+            content: ''; position: absolute; top: 8px; bottom: 8px; left: 8px;
+            width: 2px; background: #E2E8F0;
+          }
+          .mgm-consulta-module .timeline-step {
+            position: relative;
+          }
+          .mgm-consulta-module .timeline-dot {
+            position: absolute; left: -26px; top: 1px; width: 18px; height: 18px;
+            border-radius: 50%; background: white; border: 2px solid #CBD5E1;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; color: #94A3B8; box-shadow: 0 0 0 3px #F8FAFC;
+          }
+          .mgm-consulta-module .timeline-step.latest .timeline-dot {
+            background: var(--primary); border-color: var(--primary); color: white;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+          }
+          .mgm-consulta-module .timeline-step.done .timeline-dot {
+            background: #10B981; border-color: #10B981; color: white;
+            box-shadow: 0 0 0 3px #D1FAE5;
+          }
+          .mgm-consulta-module .timeline-header {
+            display: flex; justify-content: space-between; align-items: baseline;
+            gap: 8px; flex-wrap: wrap; margin-bottom: 2px;
+          }
+          .mgm-consulta-module .timeline-estado {
+            font-size: 14px; font-weight: 700; color: var(--text-main);
+          }
+          .mgm-consulta-module .timeline-fecha {
+            font-size: 11px; color: var(--text-muted); font-weight: 500;
+          }
+          .mgm-consulta-module .timeline-notas {
+            font-size: 13px; color: #475569; line-height: 1.45; background: #F8FAFC;
+            padding: 8px 12px; border-radius: 8px; margin-top: 5px; border-left: 3px solid #CBD5E1;
+          }
         </style>
 
         <div class="rma-consulta-card">
@@ -1086,6 +1136,39 @@
               const isComplete    = stringEstado.includes("reparad") || stringEstado.includes("listo") ||
                                     stringEstado.includes("cerrad") || stringEstado.includes("entregad") ||
                                     stringEstado.includes("finalizad");
+              const historial = Array.isArray(data.historial) && data.historial.length > 0 ? data.historial : [];
+              let timelineHtml = '';
+              if (historial.length > 0) {
+                timelineHtml = `
+                  <div class="timeline-section">
+                    <div class="timeline-title">
+                      <span class="material-icons-round">history</span>
+                      Historial del Servicio &amp; Diagnósticos
+                    </div>
+                    <div class="timeline-track">
+                      ${historial.map((h, idx) => {
+                        const isLatest = idx === historial.length - 1;
+                        const hEstadoLower = (h.estado || '').toLowerCase();
+                        const isDone = hEstadoLower.includes('reparad') || hEstadoLower.includes('entregad') || hEstadoLower.includes('listo');
+                        const stepClass = isDone ? 'done' : (isLatest ? 'latest' : '');
+                        const iconName = isDone ? 'task_alt' : (isLatest ? 'pending' : 'check');
+                        return `
+                          <div class="timeline-step ${stepClass}">
+                            <div class="timeline-dot">
+                              <span class="material-icons-round" style="font-size:11px;">${iconName}</span>
+                            </div>
+                            <div class="timeline-header">
+                              <span class="timeline-estado">${h.estado || 'Actualización'}</span>
+                              <span class="timeline-fecha">${h.fecha || ''}</span>
+                            </div>
+                            ${h.notas ? `<div class="timeline-notas">${h.notas}</div>` : ''}
+                            ${h.precio ? `<div style="font-size:12px; color:#059669; font-weight:700; margin-top:4px;">Presupuesto: ${h.precio}</div>` : ''}
+                          </div>`;
+                      }).join('')}
+                    </div>
+                  </div>`;
+              }
+
               resultDiv.innerHTML = `
                 <div class="estado-box ${isComplete ? 'success-border' : ''}">
                   <div class="estado-header">
@@ -1110,7 +1193,7 @@
                       </div>
                     </div>
                   </div>
-                  ${mostrarNotas ? `
+                  ${mostrarNotas && (!historial || historial.length === 0) ? `
                   <div class="notes-box">
                     <span class="material-icons-round info-icon">assignment</span>
                     <div class="info-content">
@@ -1118,6 +1201,7 @@
                       <p class="info-text" style="color:#334155;">${data.notas}</p>
                     </div>
                   </div>` : ''}
+                  ${timelineHtml}
                   ${mostrarPrecio ? `
                   <div class="price-box">
                     <span class="material-icons-round info-icon">payments</span>
