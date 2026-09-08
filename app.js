@@ -874,10 +874,8 @@
     // 10. Actualizar catálogo de premios para reflejar puntos del usuario
     loadHomeRewards();
 
-    // 11. Sincronizar foto de perfil si no está en caché local
-    if (!state.authUser.avatar) {
-      syncUserAvatarFromBackend(state.authUser.cedula);
-    }
+    // 11. Sincronizar foto de perfil desde el backend (siempre, para reflejar cambios de otros dispositivos)
+    syncUserAvatarFromBackend(state.authUser.cedula);
   }
 
   // Registrar actividad del usuario en el Sheet de Tracking (Google Apps Script)
@@ -3035,7 +3033,9 @@
   };
 
   /**
-   * Sincroniza la foto de perfil desde el backend de Notificaciones si no existe en local
+   * Sincroniza la foto de perfil desde el backend de Notificaciones.
+   * Siempre sobrescribe el caché local con la versión del servidor,
+   * para que los cambios hechos en PC aparezcan en el móvil y viceversa.
    */
   async function syncUserAvatarFromBackend(cedula) {
     if (!cedula || !CFG.NOTIFS_GAS_URL || CFG.NOTIFS_GAS_URL === 'URL_TEMPORAL_PENDIENTE') return;
@@ -3044,7 +3044,9 @@
       const data = await res.json();
       if (data && data.success && data.avatarUrl) {
         if (state.authUser && state.authUser.cedula === cedula) {
+          // Actualizar tanto avatar (para display inmediato) como avatarDriveUrl (persistencia)
           state.authUser.avatar = data.avatarUrl;
+          state.authUser.avatarDriveUrl = data.avatarUrl;
           localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
           updateHeaderUserIcon();
           updateHomeAuthBanner();
@@ -3052,7 +3054,7 @@
         }
       }
     } catch(err) {
-      console.warn('Sincronización de avatar en segundo plano no disponible:', err);
+      console.warn('[MGM] Sincronización de avatar no disponible:', err);
     }
   }
 
@@ -3244,7 +3246,12 @@
     const modal = document.getElementById('modal-confirm-clear');
     if (modal) modal.classList.remove('active');
 
-    // Guardar las IDs borradas para que no vuelvan a aparecer del backend
+    // Recopilar IDs antes de limpiar el array
+    const idsToClear = state.notifications
+      .map(n => String(n.id))
+      .filter(id => id !== '0000' && !id.startsWith('pts_')); // No enviar bienvenida ni puntos locales
+
+    // Guardar las IDs borradas localmente para que no vuelvan a aparecer del backend
     state.notifications.forEach(n => {
       const stringId = String(n.id);
       if (!state.clearedNotifs.includes(stringId)) {
@@ -3257,6 +3264,20 @@
     localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
     renderNotifications();
     updateNotifBadge();
+
+    // Sincronizar borrado con el backend para que otros dispositivos no vean estas notificaciones
+    if (idsToClear.length > 0 && state.authUser && state.authUser.cedula &&
+        CFG.NOTIFS_GAS_URL && CFG.NOTIFS_GAS_URL !== 'URL_TEMPORAL_PENDIENTE') {
+      fetch(CFG.NOTIFS_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'clear_notifications',
+          cedula: state.authUser.cedula,
+          notifIds: idsToClear
+        })
+      }).catch(err => console.warn('[MGM] No se pudo sincronizar borrado de notificaciones:', err));
+    }
   };
 
   // Manejador centralizado y seguro para el clic en notificaciones
@@ -3471,9 +3492,8 @@
       trackUserActivity(state.authUser.cedula, state.authUser.nombre, 'app_open');
       autoLoadPuntosDashboard();
       loadMyCourses();
-      if (!state.authUser.avatar) {
-        syncUserAvatarFromBackend(state.authUser.cedula);
-      }
+      // Siempre sincronizar foto de perfil desde el backend (multi-dispositivo)
+      syncUserAvatarFromBackend(state.authUser.cedula);
     } else {
       renderMyCourses();
     }
