@@ -1475,6 +1475,7 @@
           descripcion:  r.descripcion || r.desc || '',
           puntos:       parseInt(r.puntos || r.pts || r.puntos_costo || 0),
           imagen:       r.imagen || r.img || r.imagen_url || '',
+          link:         r.link || r.url || r.enlace || r.ficha || '',
           fecha_inicio: r.fecha_inicio || '',
           fecha_fin:    r.fecha_fin || r.validez || '',
           activo:       r.activo || r.activa || 'SÍ',
