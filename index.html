@@ -1068,6 +1068,10 @@
             <h2>Estado de Servicio</h2>
             <p class="subtitle">Ingresa tus datos para rastrear tu equipo</p>
           </div>
+
+          <!-- DASHBOARD DE EQUIPOS DEL USUARIO LOGUEADO -->
+          <div id="rmaUserDashboard" style="display:none; margin-bottom: 20px;"></div>
+
           <form id="consultaForm">
             <div class="field-group">
               <div class="field">
@@ -1230,6 +1234,109 @@
                 </div>`;
             }
           });
+
+          // Cargar automáticamente los equipos activos del cliente logueado
+          window.loadUserActiveRmas = async function() {
+            const container = document.getElementById("rmaUserDashboard");
+            if (!container) return;
+
+            // Obtener usuario autenticado en MGM Hub (desde localStorage o estado global)
+            let user = null;
+            try {
+              user = JSON.parse(localStorage.getItem('mgm_auth_user')) || (window.state && window.state.authUser);
+            } catch(e) {}
+
+            if (!user || (!user.cedula && !user.email)) {
+              container.style.display = "none";
+              return;
+            }
+
+            // Pre-llenar el correo en el formulario manual si está vacío
+            const form = document.getElementById("consultaForm");
+            if (form && form.email && !form.email.value && user.email) {
+              form.email.value = user.email;
+            }
+
+            container.style.display = "block";
+            container.innerHTML = `
+              <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:16px; padding:18px; margin-bottom:15px; animation:fadeIn_consulta 0.4s ease;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; flex-wrap:wrap;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="material-icons-round" style="color:var(--primary); font-size:22px;">inventory_2</span>
+                    <strong style="font-size:15px; color:var(--text-main);">Mis Equipos en Taller</strong>
+                  </div>
+                  <span style="font-size:11px; background:#EEF2FF; color:var(--primary-dark); padding:3px 9px; border-radius:20px; font-weight:700;">
+                    ${user.cedula || user.email}
+                  </span>
+                </div>
+                <div id="rmaUserList" style="font-size:13px; color:var(--text-muted); text-align:center; padding:12px 0;">
+                  <div class="spinner" style="width:24px; height:24px; margin:0 auto 8px;"></div>
+                  Cargando tus equipos en servicio...
+                </div>
+              </div>`;
+
+            try {
+              const url = `${API_URL}?action=mis_rmas&cedula=${encodeURIComponent(user.cedula || '')}&email=${encodeURIComponent(user.email || '')}`;
+              const res = await fetch(url);
+              const data = await res.json();
+              const listEl = document.getElementById("rmaUserList");
+              if (!listEl) return;
+
+              if (data.success && Array.isArray(data.rmas) && data.rmas.length > 0) {
+                listEl.innerHTML = `
+                  <div style="display:flex; flex-direction:column; gap:10px; text-align:left;">
+                    ${data.rmas.map(r => {
+                      const isDone = (r.estado || '').toLowerCase().includes('reparad') || (r.estado || '').toLowerCase().includes('entregad') || (r.estado || '').toLowerCase().includes('listo');
+                      const badgeBg = isDone ? '#D1FAE5' : '#EEF2FF';
+                      const badgeTxt = isDone ? '#065F46' : '#3730A3';
+                      const safeRma = String(r.rma).replace(/'/g, "\\'");
+                      const safeEmail = String(r.email || user.email || '').replace(/'/g, "\\'");
+                      return `
+                        <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                          <div style="flex:1; min-width:0;">
+                            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                              <span style="font-size:12px; font-weight:800; color:var(--primary); font-family:monospace;">${r.rma}</span>
+                              <span style="font-size:11px; font-weight:700; background:${badgeBg}; color:${badgeTxt}; padding:2px 7px; border-radius:12px;">${r.estado || 'Recibido'}</span>
+                            </div>
+                            <div style="font-size:13px; font-weight:600; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.producto || 'Equipo en servicio'}</div>
+                            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Actualizado: ${r.actualizacion || r.fecha}</div>
+                          </div>
+                          <button type="button" onclick="window.consultarRmaDirecto('${safeRma}', '${safeEmail}')"
+                            style="background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:white; border:none; padding:8px 12px; border-radius:10px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; flex-shrink:0;">
+                            <span>Ver</span>
+                            <span class="material-icons-round" style="font-size:14px;">arrow_forward</span>
+                          </button>
+                        </div>`;
+                    }).join('')}
+                  </div>`;
+              } else {
+                listEl.innerHTML = `
+                  <div style="text-align:center; padding:6px 0;">
+                    <span class="material-icons-round" style="font-size:26px; color:#10B981; opacity:0.85;">check_circle</span>
+                    <div style="font-size:13px; font-weight:700; color:var(--text-main); margin-top:2px;">No tienes equipos activos en taller</div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Si te dieron una boleta física en recepción, búscala abajo.</div>
+                  </div>`;
+              }
+            } catch (err) {
+              const listEl = document.getElementById("rmaUserList");
+              if (listEl) {
+                listEl.innerHTML = `<div style="font-size:12px; color:var(--text-muted);">Puedes rastrear tu equipo ingresando el número de RMA abajo.</div>`;
+              }
+            }
+          };
+
+          window.consultarRmaDirecto = function(rma, email) {
+            const form = document.getElementById("consultaForm");
+            if (form) {
+              form.rma.value = rma;
+              if (email) form.email.value = email;
+              form.dispatchEvent(new Event("submit"));
+              setTimeout(() => {
+                const res = document.getElementById("resultado");
+                if (res) res.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 400);
+            }
+          };
         </script>
       </div>
     </main>

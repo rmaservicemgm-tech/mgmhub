@@ -599,11 +599,16 @@
     }
     if (tabName === 'rma') {
       setTimeout(() => {
+        // Pre-llenar el email en el form manual si el usuario está logueado
         const emailInp = document.querySelector('#consultaForm input[name="email"]');
         if (emailInp && !emailInp.value && state.authUser && state.authUser.email) {
           emailInp.value = state.authUser.email;
         }
-      }, 100);
+        // Cargar automáticamente los equipos activos del usuario logueado
+        if (typeof window.loadUserActiveRmas === 'function') {
+          window.loadUserActiveRmas();
+        }
+      }, 150);
     }
   };
 
@@ -733,15 +738,22 @@
       tryOpenPromo(0);
     }
 
-    // --- RMA: auto-llenar el número de RMA si viene en sub ---
+    // --- RMA: auto-llenar y buscar cuando viene número de RMA de notificación ---
     if (tab === 'rma' && sub) {
       setTimeout(() => {
-        const form = document.getElementById('consultaForm');
-        if (form && form.rma) {
-          form.rma.value = sub;
-          form.rma.focus();
+        // Si existe consultarRmaDirecto (función del módulo de consulta en index.html)
+        if (typeof window.consultarRmaDirecto === 'function') {
+          const userEmail = (state.authUser && state.authUser.email) ? state.authUser.email : '';
+          window.consultarRmaDirecto(sub, userEmail);
+        } else {
+          // Fallback: solo llenar el campo
+          const form = document.getElementById('consultaForm');
+          if (form && form.rma) {
+            form.rma.value = sub;
+            form.rma.focus();
+          }
         }
-      }, 200);
+      }, 300);
     }
   };
 
