@@ -10,6 +10,7 @@
   
   <!-- Google Fonts & FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
   <link rel="stylesheet" href="styles.css?v=11">
 
   <!-- 🎉 canvas-confetti — celebraciones MGM Hub -->
@@ -527,8 +528,325 @@
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════════════════
-         BOTTOM NAVIGATION BAR (BARRA DE PESTAÑAS FIJA INFERIOR)
+         VISTA 5: CONSULTA RMA
          ══════════════════════════════════════════════════════════════════════════ -->
+    <main id="view-rma" class="view-container">
+      <div class="mgm-consulta-module">
+        <style>
+          /* variables y estilos encapsulados */
+          .mgm-consulta-module {
+            --primary: #4F46E5;
+            --primary-dark: #3730A3;
+            --primary-light: #818CF8;
+            --card-bg: #FFFFFF;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+            --error: #EF4444;
+            --border: #E5E7EB;
+            --success: #10B981;
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-main);
+            padding: 20px 15px 40px;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            box-sizing: border-box;
+            line-height: normal;
+          }
+          .mgm-consulta-module * { box-sizing: border-box; }
+          .mgm-consulta-module .rma-consulta-card {
+            width: 100%;
+            max-width: 460px;
+            padding: 32px 24px;
+            border-radius: 24px;
+            background: var(--card-bg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            animation: slideUp_consulta 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          @keyframes slideUp_consulta {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .mgm-consulta-module .header { text-align: center; margin-bottom: 28px; }
+          .mgm-consulta-module .icon-wrapper {
+            width: 64px; height: 64px;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px auto;
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.25);
+            color: white;
+          }
+          .mgm-consulta-module .icon-wrapper .material-icons-round { font-size: 32px; }
+          .mgm-consulta-module h2 {
+            color: var(--text-main); font-size: 22px; font-weight: 700;
+            margin: 0 0 8px 0; font-family: inherit;
+          }
+          .mgm-consulta-module p.subtitle {
+            color: var(--text-muted); margin: 0; font-size: 14px; font-family: inherit;
+          }
+          .mgm-consulta-module .field-group { margin-bottom: 16px; }
+          .mgm-consulta-module .field {
+            display: flex; align-items: center;
+            background: #F9FAFB; border: 2px solid transparent;
+            padding: 12px 16px; border-radius: 14px;
+            transition: all 0.3s ease; margin: 0;
+          }
+          .mgm-consulta-module .field:focus-within {
+            background: white; border-color: var(--primary-light);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+          }
+          .mgm-consulta-module .field.error {
+            border-color: var(--error); background: #FEF2F2;
+            animation: shake_consulta 0.4s ease;
+          }
+          @keyframes shake_consulta {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+          }
+          .mgm-consulta-module .field span {
+            color: var(--text-muted); font-size: 22px; margin-right: 12px; transition: color 0.3s;
+          }
+          .mgm-consulta-module .field:focus-within span { color: var(--primary); }
+          .mgm-consulta-module .field.error span { color: var(--error); }
+          .mgm-consulta-module .field input {
+            border: none; width: 100%; background: transparent; outline: none;
+            font-size: 15px; font-family: inherit; color: var(--text-main); padding: 0; margin: 0;
+          }
+          .mgm-consulta-module button {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; border: none; padding: 14px; width: 100%; border-radius: 14px;
+            font-size: 15px; cursor: pointer; font-weight: 600; font-family: inherit;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+            transition: all 0.3s ease; box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25); margin-top: 8px;
+          }
+          .mgm-consulta-module button:hover {
+            transform: translateY(-2px); box-shadow: 0 12px 20px rgba(79, 70, 229, 0.35);
+          }
+          .mgm-consulta-module button:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+          .mgm-consulta-module .loader {
+            text-align: center; margin-top: 24px; display: flex; flex-direction: column;
+            align-items: center; gap: 12px; animation: fadeIn_consulta 0.3s ease;
+          }
+          .mgm-consulta-module .loader p { color: var(--text-muted); font-size: 14px; margin: 0; }
+          .mgm-consulta-module .hidden { display: none !important; }
+          .mgm-consulta-module .spinner {
+            width: 44px; height: 44px; border: 4px solid var(--border);
+            border-top-color: var(--primary); border-radius: 50%;
+            animation: spin_consulta 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+          }
+          @keyframes spin_consulta { to { transform: rotate(360deg); } }
+          @keyframes fadeIn_consulta { from { opacity: 0; } to { opacity: 1; } }
+          .mgm-consulta-module .resultado { margin-top: 24px; }
+          .mgm-consulta-module .estado-box {
+            background: white; padding: 24px; border-radius: 16px; border: 1px solid var(--border);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04); animation: slideUp_consulta 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative; overflow: hidden;
+          }
+          .mgm-consulta-module .estado-box::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, var(--primary), #A78BFA);
+          }
+          .mgm-consulta-module .estado-box.success-border::before {
+            background: linear-gradient(90deg, #059669, #10B981);
+          }
+          .mgm-consulta-module .estado-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px dashed var(--border);
+          }
+          .mgm-consulta-module .rma-badge {
+            background: #EEF2FF; color: var(--primary-dark); padding: 6px 12px;
+            border-radius: 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
+          }
+          .mgm-consulta-module .estado-title {
+            font-size: 12px; text-transform: uppercase; color: var(--text-muted);
+            font-weight: 600; letter-spacing: 1px; margin-bottom: 8px;
+          }
+          .mgm-consulta-module .estado-value {
+            font-size: 26px; color: var(--primary); font-weight: 800; margin: 0; line-height: 1.2;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+          }
+          .mgm-consulta-module .info-list { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
+          .mgm-consulta-module .info-item { display: flex; gap: 12px; align-items: flex-start; }
+          .mgm-consulta-module .info-icon { color: var(--primary-light); font-size: 20px; margin-top: 2px; }
+          .mgm-consulta-module .info-content { flex: 1; }
+          .mgm-consulta-module .info-label { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
+          .mgm-consulta-module .info-text { font-size: 15px; color: var(--text-main); line-height: 1.5; margin: 0; }
+          .mgm-consulta-module .notes-box {
+            margin-top: 20px; background: #F8FAFC; border: 1px solid #E2E8F0;
+            padding: 16px; border-radius: 12px; display: flex; gap: 12px;
+          }
+          .mgm-consulta-module .notes-box .info-icon { color: #64748B; }
+          .mgm-consulta-module .price-box {
+            margin-top: 16px; background: #ECFDF5; border: 1px solid #A7F3D0;
+            padding: 16px; border-radius: 12px; display: flex; gap: 12px;
+            align-items: center; animation: fadeIn_consulta 0.5s ease;
+          }
+          .mgm-consulta-module .price-box .info-icon { color: #10B981; font-size: 28px; }
+          .mgm-consulta-module .pdf-btn {
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+            margin-top: 16px; padding: 14px; background: white; border: 2px solid #E0E7FF;
+            color: #4F46E5; border-radius: 12px; font-weight: 700; text-decoration: none;
+            transition: all 0.3s ease;
+          }
+          .mgm-consulta-module .pdf-btn:hover {
+            background: #EEF2FF; border-color: #C7D2FE; transform: translateY(-2px);
+          }
+          .mgm-consulta-module .error-msg {
+            background: #FEF2F2; color: #991B1B; padding: 20px; border-radius: 16px;
+            border: 1px solid #FECACA; display: flex; align-items: center; gap: 16px;
+            animation: shake_consulta 0.4s ease;
+          }
+          .mgm-consulta-module .error-icon {
+            background: #FEE2E2; color: var(--error); width: 40px; height: 40px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+          }
+        </style>
+
+        <div class="rma-consulta-card">
+          <div class="header">
+            <div class="icon-wrapper">
+              <span class="material-icons-round">manage_search</span>
+            </div>
+            <h2>Estado de Servicio</h2>
+            <p class="subtitle">Ingresa tus datos para rastrear tu equipo</p>
+          </div>
+          <form id="consultaForm">
+            <div class="field-group">
+              <div class="field">
+                <span class="material-icons-round">qr_code_2</span>
+                <input name="rma" placeholder="Número RMA (Ej: RMA-2026-0001)" required autocomplete="off">
+              </div>
+            </div>
+            <div class="field-group">
+              <div class="field">
+                <span class="material-icons-round">alternate_email</span>
+                <input name="email" type="email" placeholder="Email de la solicitud" required autocomplete="email">
+              </div>
+            </div>
+            <button type="submit">
+              <span>Consultar Estado</span>
+              <span class="material-icons-round">arrow_forward</span>
+            </button>
+          </form>
+          <div id="loader" class="loader hidden">
+            <div class="spinner"></div>
+            <p>Buscando la información de tu equipo...</p>
+          </div>
+          <div id="resultado" class="resultado"></div>
+        </div>
+
+        <script>
+          const API_URL = "https://script.google.com/macros/s/AKfycbzSGitaqVZxmpRADTGWXEzPNEyvWaXGcRpnGmd1N2d2eQlfJMAGnH68eb7oKybER0MdwA/exec";
+          document.getElementById("consultaForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const button = form.querySelector('button');
+            const btnText = button.querySelector('span:first-child');
+            const rma = form.rma.value.trim();
+            const email = form.email.value.trim();
+            const loader = document.getElementById("loader");
+            const resultDiv = document.getElementById("resultado");
+            form.querySelectorAll(".field").forEach(f => f.classList.remove("error"));
+            if (!rma) form.rma.parentElement.classList.add("error");
+            if (!email) form.email.parentElement.classList.add("error");
+            if (!rma || !email) return;
+            resultDiv.innerHTML = "";
+            loader.classList.remove("hidden");
+            button.disabled = true;
+            btnText.textContent = 'Buscando en Taller...';
+            try {
+              const res = await fetch(`${API_URL}?rma=${encodeURIComponent(rma)}&email=${encodeURIComponent(email)}`);
+              const data = await res.json();
+              loader.classList.add("hidden");
+              button.disabled = false;
+              btnText.textContent = 'Consultar Estado';
+              if (data.error) {
+                resultDiv.innerHTML = `
+                  <div class="error-msg">
+                    <div class="error-icon"><span class="material-icons-round">error_outline</span></div>
+                    <div>
+                      <strong style="font-size:16px;">Equipo no encontrado</strong><br>
+                      <span style="font-size:14px;opacity:0.9;">Verifica que el número RMA y el correo coincidan.</span>
+                    </div>
+                  </div>`;
+                return;
+              }
+              const mostrarNotas  = data.notas && data.notas !== "Sin notas aún" && data.notas.toString().trim() !== "";
+              const mostrarPrecio = data.precio && data.precio.toString().trim() !== "";
+              const mostrarPdf    = data.pdf && data.pdf.trim() !== "";
+              const stringEstado  = data.estado.toLowerCase();
+              const isComplete    = stringEstado.includes("reparad") || stringEstado.includes("listo") ||
+                                    stringEstado.includes("cerrad") || stringEstado.includes("entregad") ||
+                                    stringEstado.includes("finalizad");
+              resultDiv.innerHTML = `
+                <div class="estado-box ${isComplete ? 'success-border' : ''}">
+                  <div class="estado-header">
+                    <span class="rma-badge"><span class="material-icons-round" style="font-size:14px;vertical-align:middle;margin-right:4px;">tag</span>${data.rma}</span>
+                    <span class="material-icons-round" style="color:${isComplete ? 'var(--success)' : 'var(--primary)'};opacity:0.15;font-size:32px;">verified</span>
+                  </div>
+                  <div class="estado-title">Estado de la Reparación</div>
+                  <h3 class="estado-value" style="${isComplete ? 'background:linear-gradient(135deg,#059669,#10B981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;' : ''}">${data.estado}</h3>
+                  <div class="info-list">
+                    <div class="info-item">
+                      <span class="material-icons-round info-icon">event_available</span>
+                      <div class="info-content">
+                        <div class="info-label">Reporte actualizado el</div>
+                        <p class="info-text">${data.actualizacion}</p>
+                      </div>
+                    </div>
+                    <div class="info-item">
+                      <span class="material-icons-round info-icon">devices</span>
+                      <div class="info-content">
+                        <div class="info-label">Problema documentado</div>
+                        <p class="info-text">${data.descripcion}</p>
+                      </div>
+                    </div>
+                  </div>
+                  ${mostrarNotas ? `
+                  <div class="notes-box">
+                    <span class="material-icons-round info-icon">assignment</span>
+                    <div class="info-content">
+                      <div class="info-label" style="color:#475569;">Informe de nuestro Técnico</div>
+                      <p class="info-text" style="color:#334155;">${data.notas}</p>
+                    </div>
+                  </div>` : ''}
+                  ${mostrarPrecio ? `
+                  <div class="price-box">
+                    <span class="material-icons-round info-icon">payments</span>
+                    <div class="info-content">
+                      <div class="info-label" style="color:#065F46;">Monto Total del Servicio</div>
+                      <p class="info-text" style="color:#047857;font-size:22px;font-weight:800;margin-top:2px;">${data.precio}</p>
+                    </div>
+                  </div>` : ''}
+                  ${mostrarPdf ? `
+                  <a href="${data.pdf}" target="_blank" class="pdf-btn">
+                    <span class="material-icons-round">picture_as_pdf</span>
+                    Descargar Informe Técnico
+                  </a>` : ''}
+                </div>`;
+            } catch (err) {
+              loader.classList.add("hidden");
+              button.disabled = false;
+              btnText.textContent = 'Consultar Estado';
+              resultDiv.innerHTML = `
+                <div class="error-msg">
+                  <div class="error-icon"><span class="material-icons-round">wifi_off</span></div>
+                  <div>
+                    <strong style="font-size:16px;">Error de conexión</strong><br>
+                    <span style="font-size:14px;opacity:0.9;">Tuvimos un problema con el servidor, intenta nuevamente.</span>
+                  </div>
+                </div>`;
+            }
+          });
+        <\/script>
+      </div>
+    </main>
+
+
     <nav class="bottom-nav">
       <button class="nav-item active" data-tab="home" onclick="switchMainTab('home')">
         <i class="fa-solid fa-house nav-icon"></i>
@@ -548,6 +866,11 @@
       <button class="nav-item" data-tab="promos" onclick="switchMainTab('promos')">
         <i class="fa-solid fa-fire nav-icon"></i>
         <span class="nav-label">Promos</span>
+      </button>
+
+      <button class="nav-item" data-tab="rma" onclick="switchMainTab('rma')">
+        <i class="fa-solid fa-rotate-left nav-icon"></i>
+        <span class="nav-label">Mi RMA</span>
       </button>
     </nav>
 

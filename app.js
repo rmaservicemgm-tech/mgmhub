@@ -3130,10 +3130,188 @@
     }
   }
 
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
+
+})();
+
+/* ==========================================================================
+   MÓDULO RMA — CONSULTA DE GARANTÍA (Global, fuera del IIFE principal)
+   Endpoint: mismo GAS de Notificaciones (action=get_rma)
+   ========================================================================== */
+(function() {
+  'use strict';
+
+  // URL del backend — usa el mismo GAS de Notificaciones
+  const RMA_GAS_URL = 'https://script.google.com/macros/s/AKfycby8EOl7-hZ1Q8rvPCjFB2ItFrRKqwVmDoPJrhX3sM_3-O8xeoWmuZ0RxbEgNUjLN_6dfA/exec';
+
+  // Mapa de estados → { clase CSS, icono, progreso % }
+  const ESTADO_MAP = {
+    'recibido':          { cls: 'recibido',        icon: 'fa-inbox',            progress: 15,  label: 'Recibido' },
+    'en diagnóstico':    { cls: 'diagnostico',     icon: 'fa-microscope',       progress: 35,  label: 'En Diagnóstico' },
+    'en diagnóstico':    { cls: 'diagnostico',     icon: 'fa-microscope',       progress: 35,  label: 'En Diagnóstico' },
+    'en diagnostico':    { cls: 'diagnostico',     icon: 'fa-microscope',       progress: 35,  label: 'En Diagnóstico' },
+    'en reparación':     { cls: 'reparacion',      icon: 'fa-screwdriver-wrench', progress: 55, label: 'En Reparación' },
+    'en reparacion':     { cls: 'reparacion',      icon: 'fa-screwdriver-wrench', progress: 55, label: 'En Reparación' },
+    'espera de repuesto':{ cls: 'espera-repuesto', icon: 'fa-clock',            progress: 50,  label: 'Espera Repuesto' },
+    'listo para retirar':{ cls: 'listo',           icon: 'fa-circle-check',     progress: 90,  label: 'Listo para Retirar' },
+    'entregado':         { cls: 'entregado',       icon: 'fa-check-double',     progress: 100, label: 'Entregado' },
+    'sin garantía':      { cls: 'sin-garantia',    icon: 'fa-triangle-exclamation', progress: 0, label: 'Sin Garantía' },
+    'sin garantia':      { cls: 'sin-garantia',    icon: 'fa-triangle-exclamation', progress: 0, label: 'Sin Garantía' },
+  };
+
+  function getEstadoInfo(rawEstado) {
+    if (!rawEstado) return { cls: 'default', icon: 'fa-circle-question', progress: 0, label: rawEstado || 'Desconocido' };
+    const key = rawEstado.trim().toLowerCase();
+    return ESTADO_MAP[key] || { cls: 'default', icon: 'fa-circle-question', progress: 20, label: rawEstado };
+  }
+
+  function rmaSetLoading(on) {
+    const btn = document.getElementById('rma-search-btn');
+    if (!btn) return;
+    btn.disabled = on;
+    btn.innerHTML = on
+      ? '<i class="fa-solid fa-spinner fa-spin"></i><span>Consultando...</span>'
+      : '<i class="fa-solid fa-search"></i><span>Consultar Estado</span>';
+  }
+
+  function rmaShowError(msg) {
+    const el = document.getElementById('rma-error-msg');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function rmaHideError() {
+    const el = document.getElementById('rma-error-msg');
+    if (el) el.style.display = 'none';
+  }
+
+  function buildRmaCard(item) {
+    const estado = getEstadoInfo(item.estado);
+    const fechaIngreso = item.fecha_ingreso || item.fecha || '—';
+    const modelo      = item.modelo || item.producto || item.equipo || '—';
+    const serial      = item.serial || item.numero_serie || item.serie || '';
+    const falla       = item.falla || item.descripcion || '—';
+    const tecnico     = item.tecnico || item.responsable || '—';
+    const rmaNum      = item.rma || item.numero_rma || item.id || '';
+
+    return `
+      <div class="rma-card">
+        <div class="rma-card-header">
+          <div class="rma-card-icon">
+            <i class="fa-solid ${estado.icon}"></i>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div class="rma-card-model" title="${modelo}">${modelo}</div>
+            ${serial ? `<div class="rma-card-serial">S/N: ${serial}</div>` : ''}
+            ${rmaNum ? `<div class="rma-card-serial">RMA #${rmaNum}</div>` : ''}
+          </div>
+          <span class="rma-badge ${estado.cls}">
+            <i class="fa-solid ${estado.icon}" style="font-size:10px;"></i>
+            ${estado.label}
+          </span>
+        </div>
+        <div class="rma-progress-bar">
+          <div class="rma-progress-fill" style="width:${estado.progress}%;"></div>
+        </div>
+        <div class="rma-card-body">
+          <div class="rma-info-row">
+            <span class="rma-info-label"><i class="fa-solid fa-calendar-day" style="margin-right:5px;color:#4F46E5;"></i>Ingreso</span>
+            <span class="rma-info-value">${fechaIngreso}</span>
+          </div>
+          <div class="rma-info-row">
+            <span class="rma-info-label"><i class="fa-solid fa-comment-dots" style="margin-right:5px;color:#4F46E5;"></i>Falla</span>
+            <span class="rma-info-value" style="white-space:normal;line-height:1.4;">${falla}</span>
+          </div>
+          ${tecnico !== '—' ? `
+          <div class="rma-info-row">
+            <span class="rma-info-label"><i class="fa-solid fa-user-gear" style="margin-right:5px;color:#4F46E5;"></i>Técnico</span>
+            <span class="rma-info-value">${tecnico}</span>
+          </div>` : ''}
+        </div>
+      </div>`;
+  }
+
+  window.buscarRMA = function() {
+    const input = document.getElementById('rma-cedula-input');
+    if (!input) return;
+    const cedula = input.value.trim();
+    if (!cedula) {
+      rmaShowError('Por favor ingresa tu cédula o RUC.');
+      return;
+    }
+    rmaHideError();
+    rmaSetLoading(true);
+
+    const url = `${RMA_GAS_URL}?action=get_rma&cedula=${encodeURIComponent(cedula)}`;
+
+    // Mostrar spinner provisional mientras carga
+    const resultSection = document.getElementById('rma-result-section');
+    const searchCard    = document.querySelector('.rma-search-card');
+    const cardsList     = document.getElementById('rma-cards-list');
+    const resultSub     = document.getElementById('rma-result-sub');
+
+    if (cardsList) cardsList.innerHTML = '<div class="rma-spinner">Consultando base de datos...</div>';
+    if (resultSection) resultSection.style.display = 'block';
+
+    fetch(url)
+      .then(r => r.json())
+      .then(data => {
+        rmaSetLoading(false);
+
+        // Normalizar respuesta — admite { data: [...] } o array directo
+        let items = Array.isArray(data) ? data : (data.data || data.rmas || data.result || []);
+
+        if (!items.length) {
+          if (cardsList) cardsList.innerHTML = `
+            <div style="text-align:center;padding:30px 16px;">
+              <i class="fa-solid fa-box-open" style="font-size:40px;color:#e0e7ff;margin-bottom:14px;display:block;"></i>
+              <div style="font-size:14px;font-weight:700;color:var(--text-dark);margin-bottom:6px;">Sin equipos en servicio</div>
+              <div style="font-size:12px;color:var(--text-muted);">No encontramos RMAs activos para <strong>${cedula}</strong>.<br>Si crees que es un error, contáctanos por WhatsApp.</div>
+            </div>`;
+          if (resultSub) resultSub.textContent = `Cédula: ${cedula}`;
+          if (searchCard) searchCard.style.display = 'none';
+          return;
+        }
+
+        if (searchCard) searchCard.style.display = 'none';
+        if (resultSub) resultSub.textContent = `${items.length} equipo${items.length !== 1 ? 's' : ''} encontrado${items.length !== 1 ? 's' : ''} para ${cedula}`;
+        if (cardsList) cardsList.innerHTML = items.map(buildRmaCard).join('');
+      })
+      .catch(err => {
+        rmaSetLoading(false);
+        console.error('[RMA]', err);
+        if (resultSection) resultSection.style.display = 'none';
+        rmaShowError('No se pudo conectar al servidor. Verifica tu conexión e intenta de nuevo.');
+      });
+  };
+
+  window.rmaVolverBusqueda = function() {
+    const resultSection = document.getElementById('rma-result-section');
+    const searchCard    = document.querySelector('.rma-search-card');
+    const cardsList     = document.getElementById('rma-cards-list');
+    const input         = document.getElementById('rma-cedula-input');
+
+    if (resultSection) resultSection.style.display = 'none';
+    if (searchCard)    searchCard.style.display = 'flex';
+    if (cardsList)     cardsList.innerHTML = '';
+    if (input)         { input.value = ''; input.focus(); }
+    rmaHideError();
+  };
+
+  // Permitir buscar con Enter
+  document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('rma-cedula-input');
+    if (input) {
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') window.buscarRMA();
+      });
+    }
+  });
 
 })();

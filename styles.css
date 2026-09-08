@@ -1791,6 +1791,13 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
   margin: 0 auto;
 }
 
-
-
-
+.my-courses-loading, .my-courses-unauth {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 30px 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
