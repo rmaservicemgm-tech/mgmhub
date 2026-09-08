@@ -210,6 +210,308 @@
         <div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Cargando catálogo de premios...</div>
       </div>
 
+      <!-- SECCIÓN: BANNER PUBLICITARIO / DESTACADOS -->
+      <style>
+        .mgm-ad-container {
+          width: 100%;
+          max-width: 1100px;
+          margin: 20px auto 14px;
+          font-family: inherit;
+          position: relative;
+        }
+        .mgm-ad-row {
+          width: 100%;
+          border-radius: 14px;
+          overflow: hidden;
+          box-shadow: 0 4px 14px rgba(0,33,74,0.08);
+          background: #fff;
+          display: none;
+          position: relative;
+        }
+        .mgm-ad-row img, .mgm-ad-row video {
+          width: 100%;
+          display: block;
+          border-radius: 14px;
+          transition: transform 0.3s ease;
+        }
+        .mgm-ad-row a {
+          display: block;
+          width: 100%;
+          text-decoration: none;
+        }
+        .mgm-ad-row a:hover img {
+          transform: scale(1.01);
+        }
+        .mgm-ad-row iframe {
+          width: 100%;
+          aspect-ratio: 16/9;
+          border: none;
+          border-radius: 14px;
+          display: block;
+        }
+        #ad-loader-standalone {
+          text-align: center;
+          padding: 16px;
+          color: var(--primary-blue, #00214a);
+          font-size: 13px;
+          font-weight: 600;
+        }
+        /* Slider de Anuncios */
+        .mgm-ad-slider-wrapper {
+          position: relative;
+          width: 100%;
+          overflow: hidden;
+          border-radius: 14px;
+        }
+        .mgm-ad-slides-track {
+          display: flex;
+          transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+          width: 100%;
+        }
+        .mgm-ad-slide-item {
+          min-width: 100%;
+          width: 100%;
+          flex-shrink: 0;
+          box-sizing: border-box;
+        }
+        .mgm-ad-nav-btn {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          background: rgba(255, 255, 255, 0.88);
+          backdrop-filter: blur(6px);
+          border: 1px solid rgba(0, 33, 74, 0.12);
+          color: var(--primary-blue, #00214a);
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 13px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+          transition: background 0.2s, transform 0.2s;
+          z-index: 5;
+        }
+        .mgm-ad-nav-btn:hover {
+          background: #ffffff;
+          transform: translateY(-50%) scale(1.08);
+        }
+        .mgm-ad-nav-btn.prev { left: 10px; }
+        .mgm-ad-nav-btn.next { right: 10px; }
+        .mgm-ad-dots-wrap {
+          position: absolute;
+          bottom: 10px;
+          left: 0;
+          right: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          z-index: 5;
+        }
+        .mgm-ad-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.55);
+          border: 1px solid rgba(0, 0, 0, 0.2);
+          cursor: pointer;
+          padding: 0;
+          transition: background 0.25s, transform 0.25s, width 0.25s;
+        }
+        .mgm-ad-dot.active {
+          background: #ffffff;
+          width: 20px;
+          border-radius: 10px;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+      </style>
+
+      <div class="mgm-ad-container">
+        <div id="ad-loader-standalone"><i class="fa-solid fa-spinner fa-spin"></i> Cargando publicidad...</div>
+        <div id="mgm-ad-target-standalone" class="mgm-ad-row"></div>
+      </div>
+
+      <script>
+      (function() {
+        const AD_API_URL = "https://script.google.com/macros/s/AKfycbxp13LGUxKJCZqE9mFt02FNdpm7EBuk0raAbiYubrsjC6ihh62kDst3qFJfhBJdTvSuJQ/exec";
+        let adInterval = null;
+        let currentSlideIndex = 0;
+        let totalSlides = 0;
+
+        function fixUrl(url) {
+          if (!url) return "#";
+          url = url.trim();
+          if (url.startsWith('<')) return url;
+          if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')) {
+            return url;
+          }
+          return 'https://' + url;
+        }
+
+        function getYoutubeId(url) {
+          const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+          const match = url.match(regExp);
+          return (match && match[2].length === 11) ? match[2] : url;
+        }
+
+        function getAdHtml(ad) {
+          const fmt = (ad.Tipo_Formato || '').toLowerCase().trim();
+          if (fmt === 'html_puro') {
+            return ad.Contenido || '';
+          }
+          const contenido = fixUrl(ad.Contenido);
+          const link = fixUrl(ad.Link_Click);
+          if (fmt === 'imagen') {
+            const hasLink = link && link !== '#';
+            const imgTag = `<img src="${contenido}" alt="${ad.Nombre_Campaña || ad['Nombre_Campaña'] || 'Publicidad MGM'}" loading="lazy">`;
+            return hasLink ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${imgTag}</a>` : imgTag;
+          } 
+          else if (fmt === 'video_yt') {
+            const videoId = getYoutubeId(ad.Contenido);
+            return `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=0&mute=1" allowfullscreen loading="lazy"></iframe>`;
+          } 
+          else if (fmt === 'video_interno') {
+            return `<video controls muted playsinline><source src="${contenido}" type="video/mp4"></video>`;
+          } 
+          else {
+            return ad.Contenido || '';
+          }
+        }
+
+        window.mgmAdGoToSlide = function(index) {
+          if (totalSlides <= 1) return;
+          currentSlideIndex = (index + totalSlides) % totalSlides;
+          const track = document.getElementById('mgm-ad-slides-track');
+          if (track) {
+            track.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
+          }
+          const dots = document.querySelectorAll('.mgm-ad-dot');
+          dots.forEach((dot, idx) => {
+            dot.classList.toggle('active', idx === currentSlideIndex);
+          });
+        };
+
+        window.mgmAdNextSlide = function() {
+          mgmAdGoToSlide(currentSlideIndex + 1);
+        };
+
+        window.mgmAdPrevSlide = function() {
+          mgmAdGoToSlide(currentSlideIndex - 1);
+        };
+
+        function startAdAutoPlay() {
+          stopAdAutoPlay();
+          if (totalSlides > 1) {
+            adInterval = setInterval(window.mgmAdNextSlide, 5000);
+          }
+        }
+
+        function stopAdAutoPlay() {
+          if (adInterval) {
+            clearInterval(adInterval);
+            adInterval = null;
+          }
+        }
+
+        window.startAdAutoPlay = startAdAutoPlay;
+        window.stopAdAutoPlay = stopAdAutoPlay;
+
+        async function loadStandaloneAd() {
+          const target = document.getElementById('mgm-ad-target-standalone');
+          const loader = document.getElementById('ad-loader-standalone');
+          if (!target) return;
+
+          try {
+            const response = await fetch(AD_API_URL);
+            const allAds = await response.json();
+            if (!Array.isArray(allAds) || allAds.length === 0) {
+              if (loader) loader.style.display = 'none';
+              return;
+            }
+
+            // Filtrar por ubicación y estado activo
+            const validAds = allAds.filter(a => {
+              const u = (a.Ubicacion || a.Ubicación || '').toLowerCase().trim();
+              const est = (a.Estado || '').toLowerCase().trim();
+              const isLoc = u === 'todos' || u === 'web' || u === 'inicio' || !u;
+              const isActive = est !== 'inactivo' && est !== 'pausado';
+              return isLoc && isActive;
+            });
+
+            if (validAds.length === 0) {
+              if (loader) loader.style.display = 'none';
+              return;
+            }
+
+            totalSlides = validAds.length;
+
+            if (validAds.length === 1) {
+              // Un solo anuncio: renderizado directo
+              target.innerHTML = getAdHtml(validAds[0]);
+            } else {
+              // Múltiples anuncios: Slider interactivo con autoplay
+              const slidesHtml = validAds.map(ad => `
+                <div class="mgm-ad-slide-item">
+                  ${getAdHtml(ad)}
+                </div>
+              `).join('');
+
+              const dotsHtml = validAds.map((_, idx) => `
+                <button class="mgm-ad-dot ${idx === 0 ? 'active' : ''}" onclick="mgmAdGoToSlide(${idx})" aria-label="Slide ${idx + 1}"></button>
+              `).join('');
+
+              target.innerHTML = `
+                <div class="mgm-ad-slider-wrapper" id="mgm-ad-slider-wrapper" onmouseenter="stopAdAutoPlay()" onmouseleave="startAdAutoPlay()">
+                  <div class="mgm-ad-slides-track" id="mgm-ad-slides-track">
+                    ${slidesHtml}
+                  </div>
+                  <button class="mgm-ad-nav-btn prev" onclick="mgmAdPrevSlide()" aria-label="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                  <button class="mgm-ad-nav-btn next" onclick="mgmAdNextSlide()" aria-label="Siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+                  <div class="mgm-ad-dots-wrap" id="mgm-ad-dots">
+                    ${dotsHtml}
+                  </div>
+                </div>
+              `;
+
+              // Soporte táctil / swipe en móvil
+              const wrapper = document.getElementById('mgm-ad-slider-wrapper');
+              if (wrapper) {
+                let startX = 0;
+                let endX = 0;
+                wrapper.addEventListener('touchstart', e => {
+                  startX = e.touches[0].clientX;
+                  stopAdAutoPlay();
+                }, { passive: true });
+                wrapper.addEventListener('touchend', e => {
+                  endX = e.changedTouches[0].clientX;
+                  if (startX - endX > 45) mgmAdNextSlide();
+                  else if (endX - startX > 45) mgmAdPrevSlide();
+                  startAdAutoPlay();
+                }, { passive: true });
+              }
+
+              startAdAutoPlay();
+            }
+
+            if (loader) loader.style.display = 'none';
+            target.style.display = 'block';
+          } catch (e) {
+            console.error("Error AdServer:", e);
+            if (loader) loader.style.display = 'none';
+          }
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', loadStandaloneAd);
+        } else {
+          loadStandaloneAd();
+        }
+      })();
+      </script>
+
       <!-- SECCIÓN: BENEFICIOS MGM (CON PADDING PARA SCROLL COMPLETO) -->
       <div class="section-header">
         <h2 class="section-title"><i class="fa-solid fa-shield-check" style="color: var(--primary-blue);"></i> Experiencia MGM</h2>
