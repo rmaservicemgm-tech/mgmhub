@@ -437,12 +437,44 @@
     return Math.ceil((target - today) / 86400000);
   }
 
+  function parseSafeDate(dateInput) {
+    if (!dateInput) return null;
+    if (dateInput instanceof Date) return isNaN(dateInput.getTime()) ? null : dateInput;
+    if (typeof dateInput === 'number') {
+      const d = new Date(dateInput);
+      return isNaN(d.getTime()) ? null : d;
+    }
+    if (typeof dateInput === 'string') {
+      const trimmed = dateInput.trim();
+      if (!trimmed) return null;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+        const d = new Date(trimmed + 'T12:00:00');
+        return isNaN(d.getTime()) ? null : d;
+      }
+      if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(trimmed)) {
+        const d = new Date(trimmed.replace(' ', 'T'));
+        return isNaN(d.getTime()) ? null : d;
+      }
+      const d = new Date(trimmed);
+      return isNaN(d.getTime()) ? null : d;
+    }
+    return null;
+  }
+
   function formatDateDisplay(dateStr) {
-    if (!dateStr) return '—';
+    const d = parseSafeDate(dateStr);
+    if (!d) return dateStr ? String(dateStr) : '—';
     try {
-      const d = new Date(dateStr + 'T12:00:00');
-      return d.toLocaleDateString('es-PA', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-    } catch { return dateStr; }
+      const formatted = d.toLocaleDateString('es-PA', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+    } catch {
+      return String(dateStr);
+    }
   }
 
   function promoPlaceholderBg(tipo) {
@@ -1926,8 +1958,8 @@
     const ahora = new Date();
 
     listEl.innerHTML = state.myCourses.map(course => {
-      const fechaEv = new Date(course.fecha);
-      const isFechaValida = !isNaN(fechaEv.getTime());
+      const fechaEv = parseSafeDate(course.fecha);
+      const isFechaValida = !!fechaEv;
       
       let countdownHtml = '';
 
@@ -2002,10 +2034,9 @@
   }
 
   function formatEventTime(fechaStr) {
-    if (!fechaStr) return '09:00 AM';
+    const d = parseSafeDate(fechaStr);
+    if (!d) return '09:00 AM';
     try {
-      const d = new Date(fechaStr);
-      if (isNaN(d.getTime())) return '09:00 AM';
       return d.toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit', hour12: true });
     } catch(e) {
       return '09:00 AM';
