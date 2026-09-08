@@ -919,17 +919,115 @@
             border: none; width: 100%; background: transparent; outline: none;
             font-size: 15px; font-family: inherit; color: var(--text-main); padding: 0; margin: 0;
           }
-          .mgm-consulta-module button {
+          .mgm-consulta-module #consultaForm button[type="submit"],
+          .mgm-consulta-module .rma-submit-btn {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white; border: none; padding: 14px; width: 100%; border-radius: 14px;
             font-size: 15px; cursor: pointer; font-weight: 600; font-family: inherit;
             display: flex; justify-content: center; align-items: center; gap: 10px;
             transition: all 0.3s ease; box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25); margin-top: 8px;
           }
-          .mgm-consulta-module button:hover {
+          .mgm-consulta-module #consultaForm button[type="submit"]:hover,
+          .mgm-consulta-module .rma-submit-btn:hover {
             transform: translateY(-2px); box-shadow: 0 12px 20px rgba(79, 70, 229, 0.35);
           }
-          .mgm-consulta-module button:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+          .mgm-consulta-module #consultaForm button[type="submit"]:disabled,
+          .mgm-consulta-module .rma-submit-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+          /* Tarjetas y listado de Mis Equipos en Taller */
+          .mgm-consulta-module .rma-equipos-list {
+            display: flex; flex-direction: column; gap: 14px; text-align: left;
+          }
+          .mgm-consulta-module .rma-item-card {
+            background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 18px;
+            padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            display: flex; flex-direction: column; gap: 10px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+          }
+          .mgm-consulta-module .rma-item-card:hover {
+            transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+          }
+          .mgm-consulta-module .rma-card-top {
+            display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;
+          }
+          .mgm-consulta-module .rma-code-tag {
+            font-family: monospace; font-size: 13px; font-weight: 800; color: var(--primary-dark);
+            background: #EEF2FF; padding: 4px 10px; border-radius: 8px; letter-spacing: 0.5px;
+            border: 1px solid #C7D2FE;
+          }
+          .mgm-consulta-module .rma-status-chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 11.5px; font-weight: 700; padding: 4px 10px; border-radius: 20px;
+          }
+          .mgm-consulta-module .rma-status-chip.done {
+            background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0;
+          }
+          .mgm-consulta-module .rma-status-chip.progress {
+            background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A;
+          }
+          .mgm-consulta-module .rma-status-chip.received {
+            background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE;
+          }
+          .mgm-consulta-module .rma-product-name {
+            font-size: 14.5px; font-weight: 700; color: #0F172A; line-height: 1.35;
+          }
+          .mgm-consulta-module .rma-issue-preview {
+            font-size: 12.5px; color: #475569; background: #F8FAFC; border-radius: 10px;
+            padding: 8px 12px; border-left: 3px solid #CBD5E1; line-height: 1.4;
+          }
+          .mgm-consulta-module .rma-card-bottom {
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 10px; flex-wrap: wrap; padding-top: 6px; border-top: 1px dashed #F1F5F9;
+          }
+          .mgm-consulta-module .rma-card-date {
+            font-size: 11px; color: #94A3B8; font-weight: 500;
+          }
+          .mgm-consulta-module .rma-card-actions {
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+          }
+          .mgm-consulta-module .btn-action-ver {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; border: none; padding: 7px 14px; border-radius: 10px;
+            font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex;
+            align-items: center; gap: 5px; box-shadow: 0 3px 8px rgba(79, 70, 229, 0.25);
+            transition: all 0.2s ease;
+          }
+          .mgm-consulta-module .btn-action-ver:hover {
+            transform: translateY(-1px); box-shadow: 0 5px 12px rgba(79, 70, 229, 0.35);
+          }
+          .mgm-consulta-module .btn-action-borrar {
+            background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA;
+            padding: 7px 11px; border-radius: 10px; font-size: 11.5px; font-weight: 700;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+            transition: all 0.2s ease;
+          }
+          .mgm-consulta-module .btn-action-borrar:hover {
+            background: #FEE2E2; border-color: #FCA5A5;
+          }
+          .mgm-consulta-module .btn-toggle-manual {
+            background: #F8FAFC; border: 1px dashed #CBD5E1; color: #64748B;
+            border-radius: 14px; padding: 11px 16px; font-size: 12.5px; font-weight: 600;
+            cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px; width: 100%; transition: all 0.2s;
+          }
+          .mgm-consulta-module .btn-toggle-manual:hover {
+            background: #EEF2FF; border-color: #A5B4FC; color: var(--primary);
+          }
+          .mgm-consulta-module .rma-user-badge-header {
+            display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px;
+            background: #EEF2FF; color: #3730A3; padding: 4px 12px; border-radius: 20px;
+            font-weight: 700; margin-top: 6px;
+          }
+          .mgm-consulta-module .rma-login-cta {
+            background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px;
+            padding: 14px 16px; margin-bottom: 16px; display: flex; align-items: flex-start;
+            gap: 12px; font-size: 13px; color: #475569; text-align: left;
+          }
+          .mgm-consulta-module .btn-login-cta {
+            background: var(--primary); color: white; border: none; padding: 6px 12px;
+            border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
+            margin-top: 8px; display: inline-flex; align-items: center; gap: 4px;
+          }
           .mgm-consulta-module .loader {
             text-align: center; margin-top: 24px; display: flex; flex-direction: column;
             align-items: center; gap: 12px; animation: fadeIn_consulta 0.3s ease;
@@ -1061,17 +1159,32 @@
         </style>
 
         <div class="rma-consulta-card">
-          <div class="header">
-            <div class="icon-wrapper">
-              <span class="material-icons-round">manage_search</span>
+          <!-- CABECERA DINÁMICA -->
+          <div class="header" id="rmaMainHeader">
+            <div class="icon-wrapper" id="rmaHeaderIconWrapper">
+              <span class="material-icons-round" id="rmaHeaderIcon">manage_search</span>
             </div>
-            <h2>Estado de Servicio</h2>
-            <p class="subtitle">Ingresa tus datos para rastrear tu equipo</p>
+            <h2 id="rmaHeaderTitle">Estado de Servicio</h2>
+            <p class="subtitle" id="rmaHeaderSubtitle">Ingresa tus datos para rastrear tu equipo</p>
+            <div id="rmaHeaderUserBadge"></div>
           </div>
 
-          <!-- DASHBOARD DE EQUIPOS DEL USUARIO LOGUEADO -->
-          <div id="rmaUserDashboard" style="display:none; margin-bottom: 20px;"></div>
+          <!-- BANNER INVITACIÓN LOGIN PARA CLIENTES NO AUTENTICADOS -->
+          <div id="rmaLoginNotice" style="display:none;"></div>
 
+          <!-- DASHBOARD DE EQUIPOS DEL USUARIO LOGUEADO -->
+          <div id="rmaUserDashboard" style="display:none; margin-bottom: 16px;"></div>
+
+          <!-- BOTÓN DESPLEGABLE DE CONSULTA MANUAL (SOLO SI ESTÁ LOGUEADO) -->
+          <div id="manualSearchToggleWrap" style="display:none; margin-bottom: 16px;">
+            <button type="button" class="btn-toggle-manual" onclick="window.toggleManualRmaSearch()">
+              <span class="material-icons-round" style="font-size:18px;">receipt_long</span>
+              <span>¿Consultar otra boleta física por número RMA?</span>
+              <span class="material-icons-round" id="manualToggleIcon" style="font-size:20px;">expand_more</span>
+            </button>
+          </div>
+
+          <!-- FORMULARIO DE CONSULTA MANUAL -->
           <form id="consultaForm">
             <div class="field-group">
               <div class="field">
@@ -1085,11 +1198,12 @@
                 <input name="email" type="email" placeholder="Email de la solicitud" required autocomplete="email">
               </div>
             </div>
-            <button type="submit">
+            <button type="submit" class="rma-submit-btn">
               <span>Consultar Estado</span>
               <span class="material-icons-round">arrow_forward</span>
             </button>
           </form>
+
           <div id="loader" class="loader hidden">
             <div class="spinner"></div>
             <p>Buscando la información de tu equipo...</p>
@@ -1099,29 +1213,35 @@
 
         <script>
           const API_URL = "https://script.google.com/macros/s/AKfycbzSGitaqVZxmpRADTGWXEzPNEyvWaXGcRpnGmd1N2d2eQlfJMAGnH68eb7oKybER0MdwA/exec";
+
+          // Formulario manual
           document.getElementById("consultaForm").addEventListener("submit", async function(e) {
             e.preventDefault();
             const form = e.target;
-            const button = form.querySelector('button');
-            const btnText = button.querySelector('span:first-child');
+            const button = form.querySelector('button[type="submit"]') || form.querySelector('button');
+            const btnText = button ? button.querySelector('span:first-child') : null;
             const rma = form.rma.value.trim();
             const email = form.email.value.trim();
             const loader = document.getElementById("loader");
             const resultDiv = document.getElementById("resultado");
+
             form.querySelectorAll(".field").forEach(f => f.classList.remove("error"));
             if (!rma) form.rma.parentElement.classList.add("error");
             if (!email) form.email.parentElement.classList.add("error");
             if (!rma || !email) return;
+
             resultDiv.innerHTML = "";
             loader.classList.remove("hidden");
-            button.disabled = true;
-            btnText.textContent = 'Buscando en Taller...';
+            if (button) button.disabled = true;
+            if (btnText) btnText.textContent = 'Buscando en Taller...';
+
             try {
               const res = await fetch(`${API_URL}?rma=${encodeURIComponent(rma)}&email=${encodeURIComponent(email)}`);
               const data = await res.json();
               loader.classList.add("hidden");
-              button.disabled = false;
-              btnText.textContent = 'Consultar Estado';
+              if (button) button.disabled = false;
+              if (btnText) btnText.textContent = 'Consultar Estado';
+
               if (data.error) {
                 resultDiv.innerHTML = `
                   <div class="error-msg">
@@ -1133,14 +1253,25 @@
                   </div>`;
                 return;
               }
+
               const mostrarNotas  = data.notas && data.notas !== "Sin notas aún" && data.notas.toString().trim() !== "";
               const mostrarPrecio = data.precio && data.precio.toString().trim() !== "";
               const mostrarPdf    = data.pdf && data.pdf.trim() !== "";
-              const stringEstado  = data.estado.toLowerCase();
+              const stringEstado  = (data.estado || '').toLowerCase();
               const isComplete    = stringEstado.includes("reparad") || stringEstado.includes("listo") ||
                                     stringEstado.includes("cerrad") || stringEstado.includes("entregad") ||
                                     stringEstado.includes("finalizad");
-              const historial = Array.isArray(data.historial) && data.historial.length > 0 ? data.historial : [];
+
+              // Anti-duplicados para el historial en frontend
+              const rawHistorial = Array.isArray(data.historial) && data.historial.length > 0 ? data.historial : [];
+              const historial = [];
+              rawHistorial.forEach(h => {
+                const prev = historial[historial.length - 1];
+                if (!prev || prev.estado !== h.estado || prev.notas !== h.notas) {
+                  historial.push(h);
+                }
+              });
+
               let timelineHtml = '';
               if (historial.length > 0) {
                 timelineHtml = `
@@ -1177,7 +1308,7 @@
                 <div class="estado-box ${isComplete ? 'success-border' : ''}">
                   <div class="estado-header">
                     <span class="rma-badge"><span class="material-icons-round" style="font-size:14px;vertical-align:middle;margin-right:4px;">tag</span>${data.rma}</span>
-                    <span class="material-icons-round" style="color:${isComplete ? 'var(--success)' : 'var(--primary)'};opacity:0.15;font-size:32px;">verified</span>
+                    <span class="material-icons-round" style="color:${isComplete ? 'var(--success)' : 'var(--primary)'};opacity:0.2;font-size:32px;">verified</span>
                   </div>
                   <div class="estado-title">Estado de la Reparación</div>
                   <h3 class="estado-value" style="${isComplete ? 'background:linear-gradient(135deg,#059669,#10B981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;' : ''}">${data.estado}</h3>
@@ -1219,11 +1350,18 @@
                     <span class="material-icons-round">picture_as_pdf</span>
                     Descargar Informe Técnico
                   </a>` : ''}
+                  <div style="text-align:center; margin-top:16px;">
+                    <button type="button" onclick="window.cerrarDetalleRma()"
+                      style="background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; padding:9px 18px; border-radius:12px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                      <span class="material-icons-round" style="font-size:16px;">keyboard_arrow_up</span>
+                      <span>Ocultar Detalle</span>
+                    </button>
+                  </div>
                 </div>`;
             } catch (err) {
               loader.classList.add("hidden");
-              button.disabled = false;
-              btnText.textContent = 'Consultar Estado';
+              if (button) button.disabled = false;
+              if (btnText) btnText.textContent = 'Consultar Estado';
               resultDiv.innerHTML = `
                 <div class="error-msg">
                   <div class="error-icon"><span class="material-icons-round">wifi_off</span></div>
@@ -1235,10 +1373,62 @@
             }
           });
 
+          // Cerrar / Ocultar detalle de consulta
+          window.cerrarDetalleRma = function() {
+            const res = document.getElementById("resultado");
+            if (res) res.innerHTML = "";
+            const dashboard = document.getElementById("rmaUserDashboard");
+            if (dashboard) dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          };
+
+          // Alternar formulario manual (cuando está logueado)
+          window.toggleManualRmaSearch = function() {
+            const form = document.getElementById("consultaForm");
+            const icon = document.getElementById("manualToggleIcon");
+            if (!form) return;
+            if (form.style.display === "none" || !form.style.display) {
+              form.style.display = "block";
+              if (icon) icon.textContent = "expand_less";
+              form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+              form.style.display = "none";
+              if (icon) icon.textContent = "expand_more";
+            }
+          };
+
+          // Quitar / ocultar RMA cerrado de la lista del cliente
+          window.quitarRmaDeLista = function(rma) {
+            if (!confirm(`¿Deseas quitar el equipo ${rma} de tu lista de seguimiento? Ya está finalizado y podrás restaurarlo cuando quieras.`)) {
+              return;
+            }
+            try {
+              let dismissed = JSON.parse(localStorage.getItem('mgm_dismissed_rmas') || '[]');
+              if (!dismissed.includes(rma)) {
+                dismissed.push(rma);
+                localStorage.setItem('mgm_dismissed_rmas', JSON.stringify(dismissed));
+              }
+              window.loadUserActiveRmas();
+            } catch(e) {
+              console.error("Error archivando RMA:", e);
+            }
+          };
+
+          // Restaurar todos los RMAs archivados
+          window.restaurarRmasOcultos = function() {
+            localStorage.removeItem('mgm_dismissed_rmas');
+            window.loadUserActiveRmas();
+          };
+
           // Cargar automáticamente los equipos activos del cliente logueado
           window.loadUserActiveRmas = async function() {
             const container = document.getElementById("rmaUserDashboard");
-            if (!container) return;
+            const consultaForm = document.getElementById("consultaForm");
+            const toggleManualWrap = document.getElementById("manualSearchToggleWrap");
+            const loginNotice = document.getElementById("rmaLoginNotice");
+            const headerTitle = document.getElementById("rmaHeaderTitle");
+            const headerSubtitle = document.getElementById("rmaHeaderSubtitle");
+            const headerIcon = document.getElementById("rmaHeaderIcon");
+            const headerBadge = document.getElementById("rmaHeaderUserBadge");
 
             // Obtener usuario autenticado en MGM Hub (desde localStorage o estado global)
             let user = null;
@@ -1246,33 +1436,66 @@
               user = JSON.parse(localStorage.getItem('mgm_auth_user')) || (window.state && window.state.authUser);
             } catch(e) {}
 
+            // ── CASO A: CLIENTE NO LOGUEADO ──
             if (!user || (!user.cedula && !user.email)) {
-              container.style.display = "none";
+              if (container) container.style.display = "none";
+              if (toggleManualWrap) toggleManualWrap.style.display = "none";
+              if (consultaForm) consultaForm.style.display = "block";
+
+              if (headerTitle) headerTitle.textContent = "Estado de Servicio";
+              if (headerSubtitle) headerSubtitle.textContent = "Ingresa tus datos para rastrear tu equipo";
+              if (headerIcon) headerIcon.textContent = "manage_search";
+              if (headerBadge) headerBadge.innerHTML = "";
+
+              if (loginNotice) {
+                loginNotice.style.display = "block";
+                loginNotice.innerHTML = `
+                  <div class="rma-login-cta">
+                    <span class="material-icons-round" style="color:var(--primary); font-size:24px; margin-top:2px;">account_circle</span>
+                    <div style="flex:1;">
+                      <strong style="color:var(--text-main); font-size:13.5px;">¿Ya tienes cuenta en MGM Hub?</strong>
+                      <p style="margin:3px 0 0 0; font-size:12px; color:var(--text-muted); line-height:1.4;">
+                        Inicia sesión para ver el estado de todos tus equipos automáticamente sin tener que ingresar el número de RMA ni correo.
+                      </p>
+                      <button type="button" class="btn-login-cta" onclick="switchMainTab('puntos')">
+                        <span>Iniciar Sesión</span>
+                        <span class="material-icons-round" style="font-size:14px;">arrow_forward</span>
+                      </button>
+                    </div>
+                  </div>`;
+              }
               return;
             }
 
-            // Pre-llenar el correo en el formulario manual si está vacío
-            const form = document.getElementById("consultaForm");
-            if (form && form.email && !form.email.value && user.email) {
-              form.email.value = user.email;
+            // ── CASO B: CLIENTE LOGUEADO DIRECTO EN LA APP ──
+            if (loginNotice) loginNotice.style.display = "none";
+            if (consultaForm) consultaForm.style.display = "none"; // Ocultar formulario manual directo
+            if (toggleManualWrap) toggleManualWrap.style.display = "block"; // Permitir consultar otra boleta si quiere
+
+            // Adaptar cabecera para el usuario
+            if (headerTitle) headerTitle.textContent = "Mis Equipos en Taller";
+            if (headerSubtitle) headerSubtitle.textContent = "Seguimiento en vivo de tus equipos en servicio técnico";
+            if (headerIcon) headerIcon.textContent = "devices";
+            if (headerBadge) {
+              const labelUser = user.nombre ? user.nombre.split(' ')[0] : (user.cedula || user.email);
+              headerBadge.innerHTML = `
+                <div class="rma-user-badge-header">
+                  <span class="material-icons-round" style="font-size:14px;">verified_user</span>
+                  <span>Cliente: ${labelUser}</span>
+                </div>`;
             }
 
+            // Pre-llenar en el formulario manual en background
+            if (consultaForm && consultaForm.email && !consultaForm.email.value && user.email) {
+              consultaForm.email.value = user.email;
+            }
+
+            if (!container) return;
             container.style.display = "block";
             container.innerHTML = `
-              <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:16px; padding:18px; margin-bottom:15px; animation:fadeIn_consulta 0.4s ease;">
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; flex-wrap:wrap;">
-                  <div style="display:flex; align-items:center; gap:8px;">
-                    <span class="material-icons-round" style="color:var(--primary); font-size:22px;">inventory_2</span>
-                    <strong style="font-size:15px; color:var(--text-main);">Mis Equipos en Taller</strong>
-                  </div>
-                  <span style="font-size:11px; background:#EEF2FF; color:var(--primary-dark); padding:3px 9px; border-radius:20px; font-weight:700;">
-                    ${user.cedula || user.email}
-                  </span>
-                </div>
-                <div id="rmaUserList" style="font-size:13px; color:var(--text-muted); text-align:center; padding:12px 0;">
-                  <div class="spinner" style="width:24px; height:24px; margin:0 auto 8px;"></div>
-                  Cargando tus equipos en servicio...
-                </div>
+              <div id="rmaUserList" style="font-size:13px; color:var(--text-muted); text-align:center; padding:16px 0;">
+                <div class="spinner" style="width:28px; height:28px; margin:0 auto 8px;"></div>
+                Cargando tus equipos en servicio técnico...
               </div>`;
 
             try {
@@ -1282,45 +1505,105 @@
               const listEl = document.getElementById("rmaUserList");
               if (!listEl) return;
 
+              // Obtener lista de RMAs ocultados/cerrados por el usuario
+              let dismissed = [];
+              try {
+                dismissed = JSON.parse(localStorage.getItem('mgm_dismissed_rmas') || '[]');
+              } catch(e) {}
+
               if (data.success && Array.isArray(data.rmas) && data.rmas.length > 0) {
+                // Filtrar los que el usuario haya quitado de su lista
+                const rmasVisibles = data.rmas.filter(r => !dismissed.includes(String(r.rma).trim()));
+
+                if (rmasVisibles.length === 0) {
+                  listEl.innerHTML = `
+                    <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:16px; padding:22px; text-align:center;">
+                      <span class="material-icons-round" style="font-size:32px; color:#10B981;">task_alt</span>
+                      <div style="font-size:14px; font-weight:700; color:var(--text-main); margin-top:6px;">No tienes equipos pendientes en taller</div>
+                      <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Has archivado tus equipos finalizados.</div>
+                      ${dismissed.length > 0 ? `
+                        <div style="margin-top:12px;">
+                          <button type="button" onclick="window.restaurarRmasOcultos()" style="background:none; border:none; color:var(--primary); font-weight:700; font-size:12px; cursor:pointer; text-decoration:underline;">
+                            Restaurar ${dismissed.length} equipo(s) cerrado(s)
+                          </button>
+                        </div>` : ''}
+                    </div>`;
+                  return;
+                }
+
                 listEl.innerHTML = `
-                  <div style="display:flex; flex-direction:column; gap:10px; text-align:left;">
-                    ${data.rmas.map(r => {
-                      const isDone = (r.estado || '').toLowerCase().includes('reparad') || (r.estado || '').toLowerCase().includes('entregad') || (r.estado || '').toLowerCase().includes('listo');
-                      const badgeBg = isDone ? '#D1FAE5' : '#EEF2FF';
-                      const badgeTxt = isDone ? '#065F46' : '#3730A3';
+                  <div class="rma-equipos-list">
+                    ${rmasVisibles.map(r => {
+                      const estLower = (r.estado || '').toLowerCase();
+                      const isDone = estLower.includes('reparad') || estLower.includes('entregad') || estLower.includes('listo') || estLower.includes('cerrad') || estLower.includes('finalizad');
+                      const isProgress = estLower.includes('revisi') || estLower.includes('diagn') || estLower.includes('espera') || estLower.includes('repuesto');
+                      
+                      const chipClass = isDone ? 'done' : (isProgress ? 'progress' : 'received');
+                      const chipIcon = isDone ? 'check_circle' : (isProgress ? 'pending' : 'move_to_inbox');
+
                       const safeRma = String(r.rma).replace(/'/g, "\\'");
                       const safeEmail = String(r.email || user.email || '').replace(/'/g, "\\'");
+
                       return `
-                        <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
-                          <div style="flex:1; min-width:0;">
-                            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                              <span style="font-size:12px; font-weight:800; color:var(--primary); font-family:monospace;">${r.rma}</span>
-                              <span style="font-size:11px; font-weight:700; background:${badgeBg}; color:${badgeTxt}; padding:2px 7px; border-radius:12px;">${r.estado || 'Recibido'}</span>
-                            </div>
-                            <div style="font-size:13px; font-weight:600; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.producto || 'Equipo en servicio'}</div>
-                            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Actualizado: ${r.actualizacion || r.fecha}</div>
+                        <div class="rma-item-card">
+                          <div class="rma-card-top">
+                            <span class="rma-code-tag">${r.rma}</span>
+                            <span class="rma-status-chip ${chipClass}">
+                              <span class="material-icons-round" style="font-size:13px;">${chipIcon}</span>
+                              <span>${r.estado || 'Recibido'}</span>
+                            </span>
                           </div>
-                          <button type="button" onclick="window.consultarRmaDirecto('${safeRma}', '${safeEmail}')"
-                            style="background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:white; border:none; padding:8px 12px; border-radius:10px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; flex-shrink:0;">
-                            <span>Ver</span>
-                            <span class="material-icons-round" style="font-size:14px;">arrow_forward</span>
-                          </button>
+
+                          <div class="rma-product-name">${r.producto || 'Equipo en servicio'}</div>
+
+                          ${r.problema ? `
+                            <div class="rma-issue-preview">
+                              <span style="font-weight:700; color:var(--text-main);">Problema:</span> ${r.problema}
+                            </div>
+                          ` : ''}
+
+                          <div class="rma-card-bottom">
+                            <div class="rma-card-date">
+                              <span class="material-icons-round" style="font-size:13px; vertical-align:middle; margin-right:2px; color:#94A3B8;">event</span>
+                              ${r.actualizacion || r.fecha}
+                            </div>
+
+                            <div class="rma-card-actions">
+                              <button type="button" class="btn-action-ver" onclick="window.consultarRmaDirecto('${safeRma}', '${safeEmail}')">
+                                <span>Ver Diagnóstico</span>
+                                <span class="material-icons-round" style="font-size:14px;">arrow_forward</span>
+                              </button>
+                              ${isDone ? `
+                                <button type="button" class="btn-action-borrar" onclick="window.quitarRmaDeLista('${safeRma}')" title="Quitar este equipo cerrado de la lista">
+                                  <span class="material-icons-round" style="font-size:14px;">delete_outline</span>
+                                  <span>Quitar</span>
+                                </button>
+                              ` : ''}
+                            </div>
+                          </div>
                         </div>`;
                     }).join('')}
+
+                    ${dismissed.length > 0 ? `
+                      <div style="text-align:center; padding-top:4px;">
+                        <button type="button" onclick="window.restaurarRmasOcultos()" style="background:none; border:none; color:#64748B; font-size:12px; cursor:pointer; text-decoration:underline;">
+                          Mostrar ${dismissed.length} equipo(s) cerrado(s) oculto(s)
+                        </button>
+                      </div>
+                    ` : ''}
                   </div>`;
               } else {
                 listEl.innerHTML = `
-                  <div style="text-align:center; padding:6px 0;">
-                    <span class="material-icons-round" style="font-size:26px; color:#10B981; opacity:0.85;">check_circle</span>
-                    <div style="font-size:13px; font-weight:700; color:var(--text-main); margin-top:2px;">No tienes equipos activos en taller</div>
-                    <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Si te dieron una boleta física en recepción, búscala abajo.</div>
+                  <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:16px; padding:22px; text-align:center;">
+                    <span class="material-icons-round" style="font-size:32px; color:#10B981;">inventory_2</span>
+                    <div style="font-size:14px; font-weight:700; color:var(--text-main); margin-top:6px;">No tienes equipos activos en taller</div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Si ingresaste un equipo con boleta física y no aparece, puedes consultarlo abajo.</div>
                   </div>`;
               }
             } catch (err) {
               const listEl = document.getElementById("rmaUserList");
               if (listEl) {
-                listEl.innerHTML = `<div style="font-size:12px; color:var(--text-muted);">Puedes rastrear tu equipo ingresando el número de RMA abajo.</div>`;
+                listEl.innerHTML = `<div style="font-size:12px; color:var(--text-muted); padding:10px;">Puedes rastrear tu equipo ingresando el número de RMA con el botón de abajo.</div>`;
               }
             }
           };
@@ -1337,6 +1620,15 @@
               }, 400);
             }
           };
+
+          // Inicializar al cargar
+          document.addEventListener("DOMContentLoaded", function() {
+            setTimeout(() => {
+              if (typeof window.loadUserActiveRmas === 'function') {
+                window.loadUserActiveRmas();
+              }
+            }, 300);
+          });
         </script>
       </div>
     </main>
