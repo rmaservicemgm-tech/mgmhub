@@ -619,20 +619,83 @@
   };
 
   // ══════════════════════════════════════════════════════════════════════════════
+  // HELPER: DETECCIÓN Y FORMATEO DE ENLACES EXTERNOS VS INTERNOS
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  function isExternalUrl(str) {
+    if (!str || typeof str !== 'string') return false;
+    const s = str.trim().toLowerCase();
+    if (!s) return false;
+
+    // Prefijos explícitos comunes
+    if (s.startsWith('http://') || s.startsWith('https://')) return true;
+    if (s.startsWith('www.') || s.startsWith('wa.me/')) return true;
+    if (s.startsWith('ext:') || s.startsWith('url:') || s.startsWith('link:') || s.startsWith('odoo:')) return true;
+    if (s.startsWith('/')) return true; // Ruta relativa hacia la web externa (Odoo)
+
+    // Si coincide con alguna pestaña interna conocida o deeplink interno, NO es externa
+    const internalTabs = ['home', 'inicio', 'puntos', 'agenda', 'promos', 'asesoria', 'soporte'];
+    const prefix = s.split(':')[0].trim();
+    if (internalTabs.includes(prefix)) return false;
+
+    // Si tiene formato de dominio (ej: mgmpty.odoo.com, google.com, meet.google.com, zoom.us)
+    if (/^[a-z0-9-]+(\.[a-z0-9-]+)+([/?#].*)?$/i.test(s)) return true;
+
+    return false;
+  }
+
+  function formatExternalUrl(str) {
+    if (!str || typeof str !== 'string') return '';
+    let s = str.trim();
+    if (!s) return '';
+
+    // Remover prefijos explícitos si existen
+    if (/^ext:/i.test(s)) s = s.substring(4).trim();
+    else if (/^url:/i.test(s)) s = s.substring(4).trim();
+    else if (/^link:/i.test(s)) s = s.substring(5).trim();
+    else if (/^odoo:/i.test(s)) {
+      const slug = s.substring(5).trim();
+      return slug.startsWith('/') ? `https://mgmpty.odoo.com${slug}` : `https://mgmpty.odoo.com/${slug}`;
+    }
+
+    // Si empieza con /, anexar al dominio web de Odoo
+    if (s.startsWith('/')) {
+      return `https://mgmpty.odoo.com${s}`;
+    }
+
+    // Si ya tiene protocolo http o https
+    if (/^https?:\/\//i.test(s)) {
+      return s;
+    }
+
+    // Si es WhatsApp wa.me
+    if (/^wa\.me\//i.test(s)) {
+      return `https://${s}`;
+    }
+
+    // Por defecto para dominios directos (ej. mgmpty.odoo.com, www.sitio.com)
+    return `https://${s}`;
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════════
   // DEEP LINK NAVIGATION — navigateTo(seccion)
   // Formato: 'tab' o 'tab:sub_o_id' — Ej: 'puntos:registro', 'agenda:EV001'
+  // O Enlace Externo — Ej: 'https://mgmpty.odoo.com', 'mgmpty.odoo.com', 'wa.me/...'
   // ══════════════════════════════════════════════════════════════════════════════
   window.navigateTo = function(seccion) {
     if (!seccion) return;
+    const trimmed = String(seccion).trim();
+    if (!trimmed) return;
 
-    // Si la sección es una URL externa (ej: enlace a Google Meet)
-    if (/^https?:\/\//i.test(seccion.trim())) {
-      window.open(seccion.trim(), '_blank');
+    // Si la sección es una URL externa (ej: enlace a Odoo, WhatsApp, Meet, web externa)
+    if (isExternalUrl(trimmed)) {
+      const finalUrl = formatExternalUrl(trimmed);
+      window.open(finalUrl, '_blank', 'noopener,noreferrer');
       return;
     }
 
-    const parts = seccion.split(':');
-    const tab = parts[0];
+    const parts = trimmed.split(':');
+    const tab = parts[0].toLowerCase();
     const sub = parts[1] || null;
 
     // Cerrar cualquier modal abierto antes de navegar
@@ -2796,29 +2859,32 @@
   };
 
   // Disparar una notificación nativa del navegador/sistema
-  function fireNativeNotif(title, body) {
+  function fireNativeNotif(title, body, targetUrl) {
     if (Notification.permission !== 'granted') return;
     try {
+      const options = {
+        body,
+        icon: 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png',
+        badge: 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png',
+        vibrate: [200, 100, 200],
+        data: { url: targetUrl || '' }
+      };
+
       // Service Worker notification (funciona en móvil como PWA)
       if (navigator.serviceWorker && navigator.serviceWorker.controller) {
         navigator.serviceWorker.ready.then(reg => {
-          reg.showNotification(title, {
-            body,
-            icon: 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png',
-            badge: 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png',
-            vibrate: [200, 100, 200]
-          });
+          reg.showNotification(title, options);
         }).catch(() => {
-          new Notification(title, {
-            body,
-            icon: 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'
-          });
+          const notif = new Notification(title, options);
+          if (targetUrl) {
+            notif.onclick = () => { window.focus(); navigateTo(targetUrl); notif.close(); };
+          }
         });
       } else {
-        new Notification(title, {
-          body,
-          icon: 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'
-        });
+        const notif = new Notification(title, options);
+        if (targetUrl) {
+          notif.onclick = () => { window.focus(); navigateTo(targetUrl); notif.close(); };
+        }
       }
     } catch(e) { console.warn('Notif error:', e); }
   }
@@ -2858,13 +2924,14 @@
 
         // Agregar nuevas notificaciones o actualizar existentes
         res.notifications.forEach(rawN => {
-          // Normalizar campos: el GAS puede devolver titulo/mensaje o title/body
+          // Normalizar campos: el GAS puede devolver titulo/mensaje o title/body, y seccion/url/enlace/link
           const n = {
             id:      rawN.id,
             title:   rawN.title   || rawN.titulo  || '',
             body:    rawN.body    || rawN.mensaje  || '',
             date:    rawN.date    || rawN.fecha    || '',
-            seccion: rawN.seccion || rawN.seccion  || ''
+            seccion: (rawN.seccion || rawN.enlace || rawN.url || rawN.link || '').trim(),
+            url:     (rawN.url || rawN.enlace || rawN.link || '').trim()
           };
           const stringId = String(n.id);
           const alreadyExists = state.notifications.some(existing => String(existing.id) === stringId);
@@ -2874,17 +2941,17 @@
             state.notifications.unshift(n);
             hasChanged = true;
             // Disparar notificación nativa del sistema
-            fireNativeNotif(n.title || 'MGM', n.body || '');
+            fireNativeNotif(n.title || 'MGM', n.body || '', n.seccion || n.url || '');
             // Mostrar Toast visual en la app
             if (typeof showToast === 'function') {
               showToast(n.title || 'Nueva notificación de MGM', 'fa-solid fa-bell');
             }
           } else if (alreadyExists) {
-            // Actualizar si hay cambios en el texto
+            // Actualizar si hay cambios en el texto o destino
             const existingIdx = state.notifications.findIndex(existing => String(existing.id) === stringId);
             if (existingIdx !== -1) {
               const existingNotif = state.notifications[existingIdx];
-              if (existingNotif.title !== n.title || existingNotif.body !== n.body || existingNotif.seccion !== n.seccion) {
+              if (existingNotif.title !== n.title || existingNotif.body !== n.body || existingNotif.seccion !== n.seccion || existingNotif.url !== n.url) {
                 state.notifications[existingIdx] = n;
                 hasChanged = true;
               }
@@ -2962,6 +3029,16 @@
     updateNotifBadge();
   };
 
+  // Manejador centralizado y seguro para el clic en notificaciones
+  window.handleNotificationClick = function(notifId) {
+    const notif = state.notifications.find(item => String(item.id) === String(notifId));
+    if (!notif) return;
+    const target = (notif.seccion || notif.url || '').trim();
+    if (target) {
+      closeAppModal('modal-notifications');
+      navigateTo(target);
+    }
+  };
 
   // Renderizar la lista de notificaciones en el panel
   function renderNotifications() {
@@ -2983,15 +3060,16 @@
 
     // Configuración visual por sección destino
     const SECC_CFG = {
-      puntos:  { icon: 'fa-star',          color: '#f59e0b', badgeText: '⭐ Puntos',  badgeBg: '#fef3c7', badgeTxt: '#b45309' },
-      agenda:  { icon: 'fa-calendar-days', color: '#6366f1', badgeText: '📅 Agenda',  badgeBg: '#ede9fe', badgeTxt: '#5b21b6' },
-      promos:  { icon: 'fa-fire',          color: '#ef4444', badgeText: '🔥 Promo',   badgeBg: '#fee2e2', badgeTxt: '#b91c1c' },
-      default: { icon: 'fa-circle-info',   color: '#0ea5e9', badgeText: null,         badgeBg: null,      badgeTxt: null      }
+      puntos:   { icon: 'fa-star',          color: '#f59e0b', badgeText: '⭐ Puntos',  badgeBg: '#fef3c7', badgeTxt: '#b45309' },
+      agenda:   { icon: 'fa-calendar-days', color: '#6366f1', badgeText: '📅 Agenda',  badgeBg: '#ede9fe', badgeTxt: '#5b21b6' },
+      promos:   { icon: 'fa-fire',          color: '#ef4444', badgeText: '🔥 Promo',   badgeBg: '#fee2e2', badgeTxt: '#b91c1c' },
+      external: { icon: 'fa-arrow-up-right-from-square', color: '#005bbb', badgeText: '🌐 MGM Web ↗', badgeBg: '#e8f1ff', badgeTxt: '#005bbb' },
+      default:  { icon: 'fa-circle-info',   color: '#0ea5e9', badgeText: null,         badgeBg: null,      badgeTxt: null      }
     };
 
     list.innerHTML = state.notifications.map(n => {
-      // Usar campo seccion del backend; fallback: detectar por título (compatibilidad)
-      let seccion = (n.seccion || '').trim();
+      // Usar campo seccion o url del backend; fallback: detectar por título (compatibilidad)
+      let seccion = (n.seccion || n.url || '').trim();
       const titleLower = (n.title || '').toLowerCase();
       const bodyLower  = (n.body || '').toLowerCase();
 
@@ -3001,7 +3079,8 @@
         else if (titleLower.includes('evento') || titleLower.includes('webinar') || titleLower.includes('curso') || titleLower.includes('capacitación')) seccion = 'agenda';
       }
 
-      const tab = seccion.split(':')[0];
+      const isExternal = isExternalUrl(seccion);
+      const tab = isExternal ? 'external' : seccion.split(':')[0].toLowerCase();
       const baseCfg = SECC_CFG[tab] || SECC_CFG.default;
 
       // Icono y badge dinámicos por tipo de notificación
@@ -3011,7 +3090,34 @@
       let itemBadgeBg   = n.badgeBg   || baseCfg.badgeBg;
       let itemBadgeTxt  = n.badgeTxt  || baseCfg.badgeTxt;
 
-      if (!n.badgeText) {
+      if (isExternal) {
+        const lowerSec = seccion.toLowerCase();
+        if (lowerSec.includes('wa.me') || lowerSec.includes('whatsapp')) {
+          itemIcon      = 'fa-brands fa-whatsapp';
+          itemColor     = '#22c55e';
+          itemBadgeText = '💬 WhatsApp ↗';
+          itemBadgeBg   = '#dcfce7';
+          itemBadgeTxt  = '#15803d';
+        } else if (lowerSec.includes('meet.google') || lowerSec.includes('zoom.us') || lowerSec.includes('teams.live')) {
+          itemIcon      = 'fa-video';
+          itemColor     = '#0284c7';
+          itemBadgeText = '📹 Reunión ↗';
+          itemBadgeBg   = '#e0f2fe';
+          itemBadgeTxt  = '#0369a1';
+        } else if (lowerSec.includes('odoo') || lowerSec.includes('mgm') || seccion.startsWith('/')) {
+          itemIcon      = 'fa-arrow-up-right-from-square';
+          itemColor     = '#005bbb';
+          itemBadgeText = '🌐 MGM Web ↗';
+          itemBadgeBg   = '#e8f1ff';
+          itemBadgeTxt  = '#005bbb';
+        } else {
+          itemIcon      = 'fa-arrow-up-right-from-square';
+          itemColor     = '#0ea5e9';
+          itemBadgeText = '🌐 Ver enlace ↗';
+          itemBadgeBg   = '#f0f9ff';
+          itemBadgeTxt  = '#0284c7';
+        }
+      } else if (!n.badgeText) {
         if (titleLower.includes('redim') || titleLower.includes('canje') || bodyLower.includes('canjeado') || bodyLower.includes('redimi')) {
           itemIcon = 'fa-gift';
           itemColor = '#10b981';
@@ -3053,22 +3159,27 @@
       }
 
       const isClickable = !!seccion;
+      const safeId = String(n.id).replace(/'/g, "\\'");
 
       const clickAttr = isClickable
-        ? `onclick="closeAppModal('modal-notifications'); navigateTo('${seccion}');" style="cursor:pointer;"`
+        ? `onclick="handleNotificationClick('${safeId}')" style="cursor:pointer;"`
         : '';
 
       const hoverIn  = `this.style.boxShadow='0 4px 14px rgba(0,33,74,0.13)'; ${isClickable ? "this.style.transform='translateY(-1px)';" : ''}`;
       const hoverOut = `this.style.boxShadow='0 2px 6px rgba(0,33,74,0.05)'; this.style.transform='translateY(0)';`;
+
+      const iconClass = itemIcon.includes('fa-') && !itemIcon.includes('fa-solid') && !itemIcon.includes('fa-brands') && !itemIcon.includes('fa-regular')
+        ? `fa-solid ${itemIcon}`
+        : itemIcon;
 
       return `
       <div ${clickAttr}
         style="background:var(--bg-surface); border:1px solid var(--border-light); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:var(--shadow-xs); transition: box-shadow 0.2s, transform 0.2s;"
         onmouseover="${hoverIn}" onmouseout="${hoverOut}">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-          <i class="fa-solid ${itemIcon}" style="color:${itemColor}; font-size:14px;"></i>
+          <i class="${iconClass}" style="color:${itemColor}; font-size:14px;"></i>
           <div style="font-size:14px; font-weight:800; color:var(--text-dark); flex:1;">${n.title || 'Sin Título'}</div>
-          ${itemBadgeText ? `<span style="font-size:10px; background:${itemBadgeBg}; color:${itemBadgeTxt}; padding:2px 7px; border-radius:20px; font-weight:700; white-space:nowrap;">${itemBadgeText} →</span>` : ''}
+          ${itemBadgeText ? `<span style="font-size:10px; background:${itemBadgeBg}; color:${itemBadgeTxt}; padding:2px 7px; border-radius:20px; font-weight:700; white-space:nowrap;">${itemBadgeText}</span>` : ''}
         </div>
         <div style="font-size:13px; color:var(--text-muted); line-height:1.5;">${n.body || ''}</div>
         <div style="font-size:11px; color:var(--text-subtle); margin-top:8px; text-align:right;">${n.date || 'Reciente'}</div>
@@ -3127,6 +3238,15 @@
       setTimeout(() => navigateTo(_seccion), 400);
       // Limpiar la URL para que no se repita en recargas
       history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    // ── SERVICE WORKER: Escuchar mensajes de navegación desde notificaciones ─
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data && event.data.type === 'NAVIGATE_TO' && event.data.seccion) {
+          navigateTo(event.data.seccion);
+        }
+      });
     }
   }
 
