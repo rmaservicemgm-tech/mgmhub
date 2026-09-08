@@ -2981,7 +2981,7 @@
       if (feedbackEl) {
         feedbackEl.style.background = '#f0fdf4';
         feedbackEl.style.color = '#15803d';
-        feedbackEl.innerHTML = '<i class="fa-solid fa-cloud-arrow-up fa-fade"></i> Guardando en Google Drive...';
+        feedbackEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
       }
 
       // 3. Envío al backend de Google Apps Script (Carpeta Drive 1wKgyYIkGVUWz25DC9P56uTx9Pr92dsxb)
