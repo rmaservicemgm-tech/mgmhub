@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -2468,9 +2468,15 @@
           document.getElementById("resWattsUps").innerText=totalW+" W";
           document.getElementById("resTiempoUps").innerText=h+"h "+m+"m";
           document.querySelector("#tablaDetalleUps tbody").innerHTML=html;
-          document.getElementById("alertAreaUps").innerHTML=
-            totalW>maxW?'<div style="background:#fef2f2;color:#b91c1c;border-left:4px solid #ef4444;padding:12px;border-radius:8px;margin-bottom:12px;font-size:13px;"><strong>SOBRECARGA:</strong> La carga ('+totalW+'W) supera al UPS ('+maxW+'W).</div>':
-            totalW>maxW*0.8?'<div style="background:#fffbeb;color:#b45309;border-left:4px solid #f59e0b;padding:12px;border-radius:8px;margin-bottom:12px;font-size:13px;"><strong>LIMITE:</strong> Carga superior al 80%.</div>':"";
+          if(totalW>maxW) {
+            document.getElementById("alertAreaUps").innerHTML='<div style="background:#fef2f2;color:#b91c1c;border-left:4px solid #ef4444;padding:12px;border-radius:8px;margin-bottom:12px;font-size:13px;"><strong>SOBRECARGA:</strong> La carga ('+totalW+'W) supera al UPS ('+maxW+'W).</div>';
+            if(typeof showToast === 'function') showToast('Advertencia: Sobrecarga en el equipo.', 'fa-solid fa-triangle-exclamation');
+          } else if(totalW>maxW*0.8) {
+            document.getElementById("alertAreaUps").innerHTML='<div style="background:#fffbeb;color:#b45309;border-left:4px solid #f59e0b;padding:12px;border-radius:8px;margin-bottom:12px;font-size:13px;"><strong>LIMITE:</strong> Carga superior al 80%.</div>';
+            if(typeof showToast === 'function') showToast('Precaución: Carga cercana al límite.', 'fa-solid fa-circle-exclamation');
+          } else {
+            document.getElementById("alertAreaUps").innerHTML="";
+          }
         }
         function generarPDFUps(){
           var jsPDF=window.jspdf.jsPDF,doc=new jsPDF();
