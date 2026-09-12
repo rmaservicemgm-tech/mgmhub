@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -12,6 +12,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
   <link rel="stylesheet" href="styles.css?v=12">
+  <!-- jsPDF para exportacion de cotizaciones desde la Calculadora de Almacenamiento -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
   <!-- 🎉 canvas-confetti — celebraciones MGM Hub -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
@@ -186,6 +189,15 @@
           <div>
             <div class="card-title">Magie IA 24/7</div>
             <div class="card-desc">Asistente virtual de ventas y cotizaciones.</div>
+          </div>
+        </div>
+
+        <!-- ACCESO DIRECTO TOOLBOX -->
+        <div class="quick-card" onclick="switchMainTab('toolbox')">
+          <div class="card-icon-pill pill-toolbox" style="background:#1e293b; color:#38bdf8;"><i class="fa-solid fa-toolbox"></i></div>
+          <div>
+            <div class="card-title">MGM Toolbox</div>
+            <div class="card-desc">Herramientas pro para cálculos técnicos.</div>
           </div>
         </div>
       </div>
@@ -1994,7 +2006,6 @@
       </div>
     </div>
 
-  </div> <!-- FIN APP ROOT -->
 
   <!-- BOTPRESS WEBCHAT SDK v3.6 (mismo que funciona en la web MGM) -->
   <script src="https://cdn.botpress.cloud/webchat/v3.6/inject.js"></script>
@@ -2022,9 +2033,231 @@
   </script>
 
     <!-- ══════════════════════════════════════════════════════════════════════════
+         VISTA: TOOLBOX (DASHBOARD)
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <main id="view-toolbox" class="view-container">
+      <div class="mgm-calculadoras">
+        <div class="mgm-title">
+          <h2>Calculadoras Técnicas MGM</h2>
+          <p>Herramientas profesionales para dimensionar, diseñar y planificar proyectos.</p>
+        </div>
+        <div class="mgm-grid">
+          <!-- ACTIVA: Conversor Técnico -->
+          <div class="mgm-card activo" onclick="switchMainTab('toolbox-conversor-tecnico')">
+            <div class="mgm-icon"><i class="fas fa-exchange-alt"></i></div>
+            <h3>MGM Conversor Técnico</h3>
+            <p>Conversiones rápidas para instaladores de seguridad electrónica.</p>
+            <a class="mgm-btn">Usar Conversor →</a>
+          </div>
+
+          <!-- ACTIVA: Almacenamiento -->
+          <div class="mgm-card activo" onclick="switchMainTab('toolbox-calculadora-almacenamiento')">
+            <div class="mgm-icon">
+              <i class="fas fa-hdd"></i>
+            </div>
+            <h3>Calculadora de Almacenamiento CCTV</h3>
+            <p>Calcula la capacidad de disco duro necesaria para grabación de video vigilancia.</p>
+            <a class="mgm-btn">Usar Calculadora →</a>
+          </div>
+          
+          <!-- INACTIVAS -->
+          <div class="mgm-card inactivo">
+            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
+            <div class="mgm-icon"><i class="fas fa-network-wired"></i></div>
+            <h3>Calculadora de Ancho de Banda</h3>
+            <p>Estima el consumo total de red necesario para transmisión de video en tiempo real.</p>
+            <a class="mgm-btn">Disponible pronto</a>
+          </div>
+          
+          <div class="mgm-card inactivo">
+            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
+            <div class="mgm-icon"><i class="fas fa-bolt"></i></div>
+            <h3>Calculadora de Caída de Voltaje</h3>
+            <p>Determina la pérdida de voltaje en cables eléctricos según distancia.</p>
+            <a class="mgm-btn">Disponible pronto</a>
+          </div>
+          
+          <div class="mgm-card inactivo">
+            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
+            <div class="mgm-icon"><i class="fas fa-wifi"></i></div>
+            <h3>Calculadora de Enlaces Inalámbricos</h3>
+            <p>Evalúa la viabilidad de enlaces inalámbricos punto a punto.</p>
+            <a class="mgm-btn">Disponible pronto</a>
+          </div>
+          
+          <div class="mgm-card inactivo">
+            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
+            <div class="mgm-icon"><i class="fas fa-search"></i></div>
+            <h3>Calculadora de Lentes y Cobertura DORI</h3>
+            <p>Permite calcular el alcance de detección, observación, reconocimiento e identificación.</p>
+            <a class="mgm-btn">Disponible pronto</a>
+          </div>
+          
+          <div class="mgm-card inactivo">
+            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
+            <div class="mgm-icon"><i class="fas fa-battery-full"></i></div>
+            <h3>Calculadora de Autonomía UPS</h3>
+            <p>Calcula el tiempo de respaldo y la capacidad necesaria del UPS.</p>
+            <a class="mgm-btn">Disponible pronto</a>
+          </div>
+          
+          <div class="mgm-card inactivo">
+            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
+            <div class="mgm-icon"><i class="fas fa-plug"></i></div>
+            <h3>Calculadora de Potencia PoE</h3>
+            <p>Dimensiona la potencia total requerida para switches PoE.</p>
+            <a class="mgm-btn">Disponible pronto</a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VISTA: CALCULADORA ALMACENAMIENTO
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <main id="view-toolbox-calculadora-almacenamiento" class="view-container">
+      <div class="calc-module">
+        <div class="header-brand">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-hdd"></i> Calc. Almacenamiento CCTV</h2>
+            <span style="font-size: 12px; color: var(--text-muted);">MGM Tecno Sistemas — Calculadora Profesional</span>
+          </div>
+          <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
+        </div>
+
+        <div class="project-info">
+          <div style="display:flex; flex-direction:column;">
+            <label style="font-size:11px; font-weight:700; color: var(--text-muted); text-transform: uppercase; margin-bottom:5px;">Cliente / Proyecto:</label>
+            <input type="text" id="clientName" placeholder="Ej: Centro Comercial Albrook" style="padding: 10px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px; background:#fff; color:#333;">
+          </div>
+          <div style="display:flex; flex-direction:column;">
+            <label style="font-size:11px; font-weight:700; color: var(--text-muted); text-transform: uppercase; margin-bottom:5px;">Dias de Respaldo:</label>
+            <input type="number" id="days" min="1" value="15" style="padding: 10px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px; background:#fff; color:#333;">
+          </div>
+        </div>
+
+        <div id="camList"></div>
+
+        <div class="footer-controls">
+          <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button id="addCam" style="flex:1; min-width:120px; padding: 12px; border:none; border-radius:8px; background: #10b981; color: white; font-weight:700; cursor:pointer; font-size:14px;"><i class="fas fa-plus"></i> Agregar Camara</button>
+            <button id="btnCalcular" style="flex:1; min-width:120px; padding: 12px; border:none; border-radius:8px; background: var(--primary-blue); color: white; font-weight:700; cursor:pointer; font-size:14px;"><i class="fas fa-calculator"></i> Calcular</button>
+            <button id="btnPDF" style="flex:1; min-width:120px; padding: 12px; border:none; border-radius:8px; background: #6c757d; color: white; font-weight:700; cursor:pointer; font-size:14px;"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+          </div>
+        </div>
+
+        <div id="resultadoBox" style="margin-top:20px; display:none;">
+          <div style="background: #e0f2fe; border-left: 4px solid #0284c7; padding: 16px; border-radius: 10px; margin-bottom: 10px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size: 13px; color: #0369a1; font-weight:600;">Capacidad Neta de Video:</span>
+            <strong id="resNeto" style="font-size: 22px; color: #0c4a6e;">0 TB</strong>
+          </div>
+          <div style="background: #dcfce7; border-left: 4px solid #16a34a; padding: 16px; border-radius: 10px; margin-bottom: 10px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size: 13px; color: #15803d; font-weight:600;">Discos Sugeridos (Formateados):</span>
+            <strong id="resDiscos" style="font-size: 22px; color: #14532d;">0 TB</strong>
+          </div>
+
+          <div style="overflow-x: auto; margin-top: 15px; border-radius: 8px; border: 1px solid var(--border-light);">
+            <table id="tablaDetalle" style="width:100%; border-collapse: collapse; font-size:11px; background: white; white-space: nowrap;">
+              <thead style="background: #f1f5f9;">
+                <tr>
+                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:center;">#</th>
+                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:left;">Res.</th>
+                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:center;">Codec</th>
+                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:center;">FPS</th>
+                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:left;">Escena</th>
+                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:left;">Modo</th>
+                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:right;">Bitrate</th>
+                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:right; font-weight:800; color:#0284c7;">TB</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 15px; padding: 13px; background: #fffbeb; border-radius: 8px; border: 1px solid #fef3c7; line-height:1.6;">
+            <strong>IMPORTANTE:</strong> Este calculo es una referencia tecnica estimada. El almacenamiento real puede verse afectado por el ruido nocturno, la complejidad de la escena y el firmware del fabricante.<br>
+            <a href="javascript:void(0)" onclick="openAsesoriaModal()" style="display:inline-block; margin-top:8px; color: var(--primary-blue); font-weight: 700; text-decoration:none;">Solicitar cotizacion formal con un asesor MGM</a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
          MODAL 2: DETALLES DE PROMOCIÓN (INSTAGRAM STYLE FEED)
          ══════════════════════════════════════════════════════════════════════════ -->
-    <div class="cli-modal" id="modal-promo-feed">
+        <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+         VISTA: CONVERSOR TÃ‰CNICO
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <main id="view-toolbox-conversor-tecnico" class="view-container">
+      <div class="calc-module conversor-module">
+        <div class="header-brand">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-exchange-alt"></i> Conversor Técnico</h2>
+            <span style="font-size: 12px; color: var(--text-muted);">MGM Tecno Sistemas — Herramientas Profesionales</span>
+          </div>
+          <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
+        </div>
+
+        <div class="conv-tabs">
+          <button class="conv-tab active" data-tab="conv-panel">🔄 Conversor</button>
+          <button class="conv-tab" data-tab="calc-panel">🔢 Calculadora</button>
+        </div>
+
+        <section id="conv-panel" class="conv-panel active">
+          <input id="conv-search" class="conv-search" placeholder="🔍 Buscar una unidad o categoría…">
+          <div id="conv-categories" class="conv-grid"></div>
+
+          <div class="converter-box">
+            <div class="conv-field">
+              <label>DE</label>
+              <select id="conv-from"></select>
+            </div>
+            <button class="conv-swap" id="conv-swap" title="Intercambiar">⇄</button>
+            <div class="conv-field">
+              <label>A</label>
+              <select id="conv-to"></select>
+            </div>
+          </div>
+
+          <div class="conv-field" style="margin-top:14px">
+            <label>VALOR</label>
+            <input id="conv-value" type="number" step="any" value="1" inputmode="decimal">
+          </div>
+
+          <div class="conv-result">
+            <div class="conv-label" id="conv-resultLabel">Resultado</div>
+            <div class="conv-value-text" id="conv-result">—</div>
+          </div>
+          <div class="conv-hint" id="conv-hint"></div>
+        </section>
+
+        <section id="calc-panel" class="conv-panel">
+          <div class="conv-calc">
+            <input id="conv-calcDisplay" class="conv-calc-display" value="0" readonly>
+            <div class="conv-calc-grid">
+              <button class="conv-clear" onclick="calcClear()">C</button>
+              <button onclick="calcBack()">⌫</button>
+              <button onclick="calcInput('%')">%</button>
+              <button class="conv-op" onclick="calcInput('/')">÷</button>
+              <button onclick="calcInput('7')">7</button><button onclick="calcInput('8')">8</button>
+              <button onclick="calcInput('9')">9</button><button class="conv-op" onclick="calcInput('*')">×</button>
+              <button onclick="calcInput('4')">4</button><button onclick="calcInput('5')">5</button>
+              <button onclick="calcInput('6')">6</button><button class="conv-op" onclick="calcInput('-')">−</button>
+              <button onclick="calcInput('1')">1</button><button onclick="calcInput('2')">2</button>
+              <button onclick="calcInput('3')">3</button><button class="conv-op" onclick="calcInput('+')">+</button>
+              <button onclick="calcInput('0')">0</button><button onclick="calcInput('.')">.</button>
+              <button onclick="calcInput('(')">(</button><button onclick="calcInput(')')">)</button>
+              <button class="conv-equal" style="grid-column:1/5" onclick="calcEqual()">=</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+
+<div class="cli-modal" id="modal-promo-feed">
       <button class="cli-modal-close" onclick="closePromoDetail()">✕</button>
       <div class="cli-modal-feed" id="cli-modal-feed">
         <!-- Promo items injected here -->
@@ -2070,6 +2303,7 @@
       </div>
     </div>
 
+  </div> <!-- FIN APP ROOT -->
   <script src="app.js?v=14"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
