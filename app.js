@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MGM HUB MOBILE APP - app.js
  * Lógica principal de la WebApp Móvil PWA
  * Módulos: Navegación · MGM Puntos · Agenda & Cursos · Promociones · Asesoría & Magie IA · Multi-Audio Player Streaming
@@ -628,7 +628,7 @@
     if (s.startsWith('/')) return true; // Ruta relativa hacia la web externa (Odoo)
 
     // Si coincide con alguna pestaña interna conocida o deeplink interno, NO es externa
-    const internalTabs = ['home', 'inicio', 'puntos', 'agenda', 'promos', 'rma', 'asesoria', 'soporte', 'toolbox', 'toolbox-calculadora-almacenamiento', 'toolbox-conversor-tecnico'];
+    const internalTabs = ['home', 'inicio', 'puntos', 'agenda', 'promos', 'rma', 'asesoria', 'soporte', 'toolbox', 'toolbox-calculadora-almacenamiento', 'toolbox-conversor-tecnico', 'toolbox-calculadora-ups'];
     const prefix = s.split(':')[0].trim();
     if (internalTabs.includes(prefix)) return false;
 
@@ -4381,3 +4381,23 @@
 
 })();
 
+
+// ══════════════════════════════════════════════════════════════════════════
+//  CALCULADORA UPS — gancho de navegacion (mismo patron que almacenamiento)
+// ══════════════════════════════════════════════════════════════════════════
+(function() {
+  var _origSwitchUps = window.switchMainTab;
+  window.switchMainTab = function(tabName) {
+    if (_origSwitchUps) _origSwitchUps(tabName);
+    if (tabName === 'toolbox-calculadora-ups') {
+      var _authData = localStorage.getItem('mgm_auth_user');
+      if (!_authData) {
+        var viewEl = document.getElementById('view-toolbox');
+        document.querySelectorAll('.view-container').forEach(function(v){ v.classList.remove('active'); });
+        if (viewEl) viewEl.classList.add('active');
+        if (typeof showToast === 'function') showToast('Debes iniciar sesion para usar las Calculadoras Tecnicas.', 'fa-solid fa-lock');
+        return;
+      }
+    }
+  };
+})();

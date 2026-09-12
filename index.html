@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -2194,12 +2194,11 @@
             <a class="mgm-btn">Disponible pronto</a>
           </div>
           
-          <div class="mgm-card inactivo">
-            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
+          <div class="mgm-card activo" onclick="switchMainTab('toolbox-calculadora-ups')">
             <div class="mgm-icon"><i class="fas fa-battery-full"></i></div>
             <h3>Calculadora de Autonomía UPS</h3>
             <p>Calcula el tiempo de respaldo y la capacidad necesaria del UPS.</p>
-            <a class="mgm-btn">Disponible pronto</a>
+            <a class="mgm-btn">Usar Calculadora →</a>
           </div>
           
           <div class="mgm-card inactivo">
@@ -2356,6 +2355,145 @@
         </section>
       </div>
     </main>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VISTA: CALCULADORA DE AUTONOMÍA UPS
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <main id="view-toolbox-calculadora-ups" class="view-container">
+      <style>
+        .ups-grid-config { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .ups-grid-config div label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
+        .ups-grid-config div input, .ups-grid-config div select { width: 100%; padding: 10px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 13px; background:#fff; color:#333; outline: none; box-sizing: border-box; }
+        .ups-grid-config div input:focus { border-color: var(--primary-blue); }
+        .ups-cam-row { background: #f8fafc; padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border-light); }
+        .ups-cam-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 36px; gap: 8px; align-items: end; }
+        .ups-cam-grid label { font-size: 10px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; display: block; }
+        .ups-cam-grid input, .ups-cam-grid select { width: 100%; padding: 7px; border: 1px solid var(--border-light); border-radius: 6px; font-size: 12px; box-sizing: border-box; }
+        .ups-res-card { display: flex; justify-content: space-between; background: #fff; border: 2px solid var(--primary-blue); padding: 14px 18px; border-radius: 12px; margin-bottom: 14px; }
+      </style>
+      <div class="calc-module conversor-module">
+        <div class="header-brand">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-battery-full"></i> Calculadora Autonomia UPS</h2>
+            <span style="font-size: 12px; color: var(--text-muted);">MGM Tecno Sistemas - Herramientas Profesionales</span>
+          </div>
+          <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
+        </div>
+        <span style="font-size: 13px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; margin-bottom: 10px; display: block; letter-spacing: 0.5px;">Especificaciones del Sistema</span>
+        <div class="ups-grid-config">
+          <div><label>Capacidad UPS (VA)</label><input type="number" id="upsVA" value="1000" onchange="sugerirPF()"></div>
+          <div><label>Factor de Potencia</label><input type="number" id="upsPF" value="0.6" step="0.1" max="1"></div>
+          <div><label>Voltaje Banco (VDC)</label>
+            <select id="batV">
+              <option value="12">12V (1 Bateria)</option>
+              <option value="24" selected="">24V (2 Baterias)</option>
+              <option value="48">48V (4 Baterias)</option>
+              <option value="72">72V (6 Baterias)</option>
+            </select>
+          </div>
+          <div><label>Capacidad Ah</label><input type="number" id="batAh" value="9" step="0.1"></div>
+          <div><label>Eficiencia (%)</label><input type="number" id="upsEff" value="85"></div>
+        </div>
+        <div id="loadListUps"></div>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 16px;">
+          <button id="addLoadUps" style="flex:1; min-width:110px; padding: 11px; border:none; border-radius:8px; background: #10b981; color: white; font-weight:700; cursor:pointer; font-size:13px;"><i class="fas fa-plus"></i> Agregar Equipo</button>
+          <button id="btnCalcularUps" style="flex:1; min-width:110px; padding: 11px; border:none; border-radius:8px; background: var(--primary-blue); color: white; font-weight:700; cursor:pointer; font-size:13px;"><i class="fas fa-calculator"></i> Calcular</button>
+          <button id="btnPDFUps" style="flex:1; min-width:110px; padding: 11px; border:none; border-radius:8px; background: #6c757d; color: white; font-weight:700; cursor:pointer; font-size:13px;"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+        </div>
+        <div id="resultsContainerUps" style="margin-top: 20px; display: none;">
+          <div id="alertAreaUps"></div>
+          <div class="ups-res-card">
+            <div>
+              <span style="display:block; font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Autonomia Estimada</span>
+              <strong id="resTiempoUps" style="font-size: 24px; color:var(--primary-blue);">0h 0m</strong>
+            </div>
+            <div style="text-align: right;">
+              <span style="display:block; font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Consumo Total</span>
+              <strong id="resWattsUps" style="font-size: 20px; color:var(--text-dark);">0 W</strong>
+            </div>
+          </div>
+          <div style="overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-light);">
+            <table id="tablaDetalleUps" style="width:100%;border-collapse:collapse;background:white;font-size:11px;">
+              <thead style="background:#f1f5f9;">
+                <tr>
+                  <th style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:left;">Equipo</th>
+                  <th style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">Watts Unit.</th>
+                  <th style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">Cant.</th>
+                  <th style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">Total W</th>
+                  <th style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">Criticidad</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:14px;padding:12px;background:#fffbeb;border-radius:8px;border:1px solid #fef3c7;line-height:1.6;">
+            <strong>IMPORTANTE:</strong> Los calculos son estimaciones tecnicas basadas en condiciones ideales de bateria. MGM recomienda un margen de seguridad del 25-30%.<br>
+            <a href="javascript:void(0)" onclick="openAsesoriaModal()" style="display:inline-block;margin-top:8px;color:var(--primary-blue);font-weight:700;text-decoration:none;">Solicitar asesoria formal con MGM</a>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script>
+      (function() {
+        var presetsUps = {nvr:40,switch:15,cam:7,ptz:30,biomet:10,maglock:12,pc:150,router:10};
+        window.sugerirPF = function(){
+          document.getElementById("upsPF").value = parseFloat(document.getElementById("upsVA").value)>=2000?0.9:0.6;
+        };
+        window.aplicarPresetUps = function(el){
+          if(presetsUps[el.value]) el.parentElement.nextElementSibling.querySelector("input").value=presetsUps[el.value];
+        };
+        function addLoadRowUps(){
+          var c=document.getElementById("loadListUps"),d=document.createElement("div");
+          d.className="ups-cam-row";
+          d.innerHTML='<div class="ups-cam-grid"><div><label>Equipo</label><select class="tipo" onchange="aplicarPresetUps(this)"><option value="nvr">NVR (Promedio)</option><option value="switch">Switch PoE</option><option value="cam">Camara IP fija</option><option value="ptz">Domo PTZ</option><option value="maglock">Cerradura / Iman</option><option value="router">Router / Modem</option><option value="pc">PC de Monitoreo</option><option value="otro">Otro (Manual)</option></select></div><div><label>Watts</label><input type="number" class="watts" value="40"></div><div><label>Cant.</label><input type="number" class="cant" value="1" min="1"></div><div><label>Criticidad</label><select class="crit"><option value="Alta">Critica</option><option value="Media" selected>Media</option><option value="Baja">Baja</option></select></div><button onclick="this.closest(\'.ups-cam-row\').remove()" style="background:#ef4444;color:#fff;border:none;border-radius:6px;cursor:pointer;padding:6px;font-size:12px;"><i class="fas fa-times"></i></button></div>';
+          c.appendChild(d);
+        }
+        function calcularAutonomiaUps(){
+          var upsVA=parseFloat(document.getElementById("upsVA").value),
+              upsPF=parseFloat(document.getElementById("upsPF").value),
+              batV=parseFloat(document.getElementById("batV").value),
+              batAh=parseFloat(document.getElementById("batAh").value),
+              eff=parseFloat(document.getElementById("upsEff").value)/100,
+              totalW=0,html="";
+          document.querySelectorAll("#loadListUps .ups-cam-row").forEach(function(row){
+            var tipo=row.querySelector(".tipo").selectedOptions[0].text,
+                w=parseFloat(row.querySelector(".watts").value),
+                c=parseInt(row.querySelector(".cant").value),
+                crit=row.querySelector(".crit").value,sub=w*c;
+            totalW+=sub;
+            html+='<tr><td style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:left;">'+tipo+'</td><td style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">'+w+'W</td><td style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">'+c+'</td><td style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">'+sub+'W</td><td style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">'+crit+'</td></tr>';
+          });
+          var maxW=upsVA*upsPF,wh=batV*batAh*eff,horas=wh/(totalW||1),h=Math.floor(horas),m=Math.round((horas-h)*60);
+          document.getElementById("resultsContainerUps").style.display="block";
+          document.getElementById("resWattsUps").innerText=totalW+" W";
+          document.getElementById("resTiempoUps").innerText=h+"h "+m+"m";
+          document.querySelector("#tablaDetalleUps tbody").innerHTML=html;
+          document.getElementById("alertAreaUps").innerHTML=
+            totalW>maxW?'<div style="background:#fef2f2;color:#b91c1c;border-left:4px solid #ef4444;padding:12px;border-radius:8px;margin-bottom:12px;font-size:13px;"><strong>SOBRECARGA:</strong> La carga ('+totalW+'W) supera al UPS ('+maxW+'W).</div>':
+            totalW>maxW*0.8?'<div style="background:#fffbeb;color:#b45309;border-left:4px solid #f59e0b;padding:12px;border-radius:8px;margin-bottom:12px;font-size:13px;"><strong>LIMITE:</strong> Carga superior al 80%.</div>':"";
+        }
+        function generarPDFUps(){
+          var jsPDF=window.jspdf.jsPDF,doc=new jsPDF();
+          var render=function(){
+            doc.setFillColor(0,33,74);doc.rect(0,0,210,40,"F");
+            doc.setTextColor(255,255,255);doc.setFontSize(24);doc.text("MGM SEGURIDAD",15,18);
+            doc.setFontSize(10);doc.text("SOLUCIONES PROFESIONALES EN SEGURIDAD Y ENERGIA",15,28);
+            doc.setTextColor(0,0,0);doc.setFontSize(12);doc.setFont(undefined,"bold");
+            doc.text("COTIZACION TECNICA DE RESPALDO ELECTRICO",15,52);doc.setFont(undefined,"normal");
+            doc.text("Autonomia Sugerida: "+document.getElementById("resTiempoUps").innerText,15,60);
+            doc.text("Carga de Equipos: "+document.getElementById("resWattsUps").innerText,15,67);
+            doc.autoTable({html:"#tablaDetalleUps",startY:78,headStyles:{fillColor:[0,33,74],textColor:[255,255,255],fontStyle:"bold"},styles:{fontSize:9,cellPadding:3},columnStyles:{0:{cellWidth:80}}});
+            doc.save("Cotizacion_MGM_UPS.pdf");
+          };
+          render();
+        }
+        document.getElementById("addLoadUps").addEventListener("click",addLoadRowUps);
+        document.getElementById("btnCalcularUps").addEventListener("click",calcularAutonomiaUps);
+        document.getElementById("btnPDFUps").addEventListener("click",generarPDFUps);
+        addLoadRowUps();
+      })();
+    </script>
+
 
 
 <div class="cli-modal" id="modal-promo-feed">
