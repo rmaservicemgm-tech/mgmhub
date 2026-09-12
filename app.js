@@ -3235,6 +3235,25 @@
     }
   }
 
+  // Añadir notificación local (ej. Evaluación RMA)
+  window.addLocalNotification = function(notif) {
+    const stringId = String(notif.id);
+    const alreadyExists = state.notifications.some(n => String(n.id) === stringId);
+    if (!alreadyExists && !state.clearedNotifs.includes(stringId)) {
+      state.notifications.unshift({
+        id: notif.id,
+        title: notif.title,
+        body: notif.message,
+        date: new Date().toISOString(),
+        seccion: notif.seccion || '',
+        url: ''
+      });
+      localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
+      renderNotifications();
+      updateNotifBadge();
+    }
+  };
+
   // Limpiar cola de mensajes (Borrar todos) — abre modal elegante
   window.clearNotifications = function() {
     if (state.notifications.length === 0) return;

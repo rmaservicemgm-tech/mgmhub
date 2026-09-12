@@ -1527,6 +1527,33 @@
                 // Filtrar los que el usuario haya quitado de su lista
                 const rmasVisibles = data.rmas.filter(r => !dismissed.includes(String(r.rma).trim()));
 
+                // NUEVO: Verificar si hay algún RMA cerrado pendiente de evaluación
+                const rmaPendienteEval = rmasVisibles.find(r => {
+                  const estLower = (r.estado || '').toLowerCase();
+                  const isDone = estLower.includes('reparad') || estLower.includes('entregad') || estLower.includes('listo') || estLower.includes('cerrad') || estLower.includes('finalizad');
+                  return isDone && r.evaluado === false;
+                });
+
+                if (rmaPendienteEval) {
+                  // Mostrar el modal de manera insistente si no se ha evaluado
+                  setTimeout(() => {
+                    if (typeof window.mostrarModalEvaluacionRMA === 'function') {
+                      window.mostrarModalEvaluacionRMA(rmaPendienteEval.rma, API_URL, user.cedula || user.email || '');
+                    }
+                  }, 500);
+
+                  // AGREGAR NOTIFICACIÓN A LA CAMPANITA
+                  if (typeof window.addLocalNotification === 'function') {
+                     window.addLocalNotification({
+                        id: 'eval_' + rmaPendienteEval.rma,
+                        title: 'Evaluación Pendiente',
+                        message: 'Por favor, califica el servicio de tu equipo ' + rmaPendienteEval.rma,
+                        seccion: 'rma'
+                     });
+                  }
+                }
+
+
                 if (rmasVisibles.length === 0) {
                   listEl.innerHTML = `
                     <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:16px; padding:22px; text-align:center;">
@@ -1631,6 +1658,80 @@
                 if (res) res.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }, 400);
             }
+          };
+
+          // ==============================
+          // LOGICA MODAL EVALUACION RMA
+          // ==============================
+          window.mostrarModalEvaluacionRMA = function(rmaNumber, apiUrl, identificador) {
+            const modal = document.getElementById('eval-rma-modal');
+            const rmaLabel = document.getElementById('eval-rma-number');
+            const idInput = document.getElementById('eval-rma-id');
+            const form = document.getElementById('eval-rma-form');
+
+            if (!modal || !rmaLabel || !idInput || !form) return;
+
+            rmaLabel.textContent = rmaNumber;
+            idInput.value = rmaNumber;
+
+            // Bloquear scroll de fondo
+            document.body.style.overflow = 'hidden';
+            modal.style.display = 'flex';
+
+            // Remover el event listener anterior si existe para evitar multi-submit
+            form.replaceWith(form.cloneNode(true));
+            const newForm = document.getElementById('eval-rma-form');
+
+            newForm.addEventListener('submit', async function(e) {
+              e.preventDefault();
+              const btn = newForm.querySelector('button[type="submit"]');
+              const originalBtnHtml = btn.innerHTML;
+              btn.innerHTML = '<div class="spinner" style="width:16px; height:16px; display:inline-block; vertical-align:middle; margin-right:5px; border-color:#fff transparent transparent transparent;"></div> Enviando...';
+              btn.disabled = true;
+
+              const payload = {
+                action: "evaluar_rma",
+                rma: rmaNumber,
+                identificador: identificador,
+                p1: document.getElementById('eval-q1').value,
+                p2: document.getElementById('eval-q2').value,
+                p3: document.getElementById('eval-q3').value,
+                comentarios: document.getElementById('eval-q4').value
+              };
+
+              try {
+                const response = await fetch(apiUrl, {
+                  method: 'POST',
+                  mode: 'no-cors',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload)
+                });
+                
+                // Con no-cors no podemos validar response.json(), asumimos exito si no tira excepcion de red
+                document.body.style.overflow = '';
+                modal.style.display = 'none';
+                
+                if (window.showToast) {
+                  window.showToast("¡Gracias por evaluarnos!", "success");
+                }
+                
+                if (window.loadUserActiveRmas) {
+                  window.loadUserActiveRmas(); // Recargar para que ya no pida evaluar
+                }
+                
+                if (typeof confetti === 'function') {
+                  confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                }
+
+              } catch (err) {
+                console.error("Error enviando evaluación:", err);
+                if (window.showToast) {
+                  window.showToast("Ocurrió un error. Intenta de nuevo.", "error");
+                }
+                btn.innerHTML = originalBtnHtml;
+                btn.disabled = false;
+              }
+            });
           };
 
           // Inicializar al cargar
@@ -2384,6 +2485,62 @@
     };
   </script>
 
+  <!-- ==============================================
+       MODAL DE EVALUACIÓN RMA (INSISTENTE)
+  =============================================== -->
+  <div class="app-modal" id="eval-rma-modal" style="display: none; z-index: 10001;">
+    <div class="modal-content-card" style="max-width: 450px; margin: auto;">
+      <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center;">
+        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0;"><i class="fa-solid fa-star" style="color: var(--accent-gold-dark);"></i> Ayúdanos a Mejorar</h3>
+      </div>
+      <div style="padding: 20px; text-align: left;">
+        <p style="font-size: 14px; margin-bottom: 20px; color: var(--text-color);">
+          Tienes un servicio reciente (<strong id="eval-rma-number"></strong>) finalizado. Por favor, toma un minuto para evaluarnos.
+        </p>
+
+        <form id="eval-rma-form">
+          <input type="hidden" id="eval-rma-id" />
+          
+          <div style="margin-bottom: 15px;">
+            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">¿El equipo quedó funcionando correctamente y resolvió tu problema?</label>
+            <select id="eval-q1" required class="mgm-input" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-light); font-size: 14px;">
+              <option value="">Selecciona una opción...</option>
+              <option value="5">Sí, perfectamente</option>
+              <option value="1">Aún presenta fallas</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">¿Cómo calificas el tiempo que tardamos en entregarte el equipo?</label>
+            <select id="eval-q2" required class="mgm-input" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-light); font-size: 14px;">
+              <option value="">Selecciona una opción...</option>
+              <option value="5">Rápido y a tiempo</option>
+              <option value="3">Aceptable</option>
+              <option value="1">Muy demorado</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">¿La explicación técnica de la falla y la solución fue clara?</label>
+            <select id="eval-q3" required class="mgm-input" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-light); font-size: 14px;">
+              <option value="">Selecciona una opción...</option>
+              <option value="5">Sí, muy clara</option>
+              <option value="2">Confusa / Poco clara</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">¿Qué podemos mejorar en nuestro taller técnico?</label>
+            <textarea id="eval-q4" class="mgm-input" style="width: 100%; min-height: 70px; padding: 12px; border-radius: 10px; border: 1px solid var(--border-light); font-size: 14px; font-family: inherit;" placeholder="(Espacio abierto para comentarios)"></textarea>
+          </div>
+
+          <button type="submit" class="btn-submit" style="width: 100%; margin-top: 10px;">
+            <i class="fa-solid fa-paper-plane"></i> Enviar Evaluación
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <!-- TOAST GLOBAL — fuera de todo stacking context -->
   <div id="mgm-toast-el" class="mgm-toast"></div>
