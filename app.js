@@ -1,4 +1,4 @@
-﻿/**
+/**
  * MGM HUB MOBILE APP - app.js
  * Lógica principal de la WebApp Móvil PWA
  * Módulos: Navegación · MGM Puntos · Agenda & Cursos · Promociones · Asesoría & Magie IA · Multi-Audio Player Streaming
@@ -4087,6 +4087,9 @@
     doc.text(legal, 15, finalY, { maxWidth: 180 });
 
     doc.save(`MGM_Almacenamiento_${client.replace(/\s/g, '_')}.pdf`);
+    if (typeof showToast === 'function') {
+      showToast('¡PDF de almacenamiento generado y descargado exitosamente!', 'fa-solid fa-file-pdf');
+    }
   }
 
   // ─── Gancho: escuchar cambios de tab para inicializar la calculadora ──────
@@ -4319,6 +4322,9 @@
       const d = document.getElementById("conv-calcDisplay");
       if(d) d.value = "Error";
       calcExpr = "";
+      if (typeof showToast === 'function') {
+        showToast('Expresión matemática inválida', 'fa-solid fa-triangle-exclamation');
+      }
     }
   };
 

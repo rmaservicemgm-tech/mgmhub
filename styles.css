@@ -296,6 +296,7 @@ body::after {
 .pill-agenda  { background: var(--primary-blue-lt); color: var(--primary-blue); }
 .pill-promos  { background: #fff0e8; color: var(--accent-orange); }
 .pill-chat    { background: #e8f9f1; color: #18a85c; }
+.pill-toolbox { background: #e0f2fe; color: #0284c7; }
 
 .card-title  { font-size: 13.5px; font-weight: 800; color: var(--text-dark); margin-bottom: 3px; }
 .card-desc   { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
@@ -1378,17 +1379,22 @@ body::after {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: #fff;
-  padding: 12px 24px;
-  border-radius: 99px;
-  font-size: 13px;
-  font-weight: 700;
+  padding: 14px 24px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
   z-index: 10000;
   box-shadow: 0 8px 24px rgba(0,0,0,0.25);
   transition: bottom 0.4s cubic-bezier(0.34,1.56,0.64,1);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   border: 1px solid rgba(255,255,255,0.15);
+  width: max-content;
+  max-width: 92%;
+  text-align: left;
+  box-sizing: border-box;
 }
 .mgm-toast.show {
   bottom: 40px;
