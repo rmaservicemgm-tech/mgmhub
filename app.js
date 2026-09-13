@@ -1,4 +1,4 @@
-﻿/**
+/**
  * MGM HUB MOBILE APP - app.js
  * Lógica principal de la WebApp Móvil PWA
  * Módulos: Navegación · MGM Puntos · Agenda & Cursos · Promociones · Asesoría & Magie IA · Multi-Audio Player Streaming
@@ -159,12 +159,12 @@
     {
       id:'P001', nombre:'Sábados con Triple Puntos',
       descripcion:'Cada sábado acumula 3X MGM PUNTOS en todas tus compras.\n¡Aprovecha el fin de semana para maximizar tus beneficios!',
-      tipo:'puntos', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÍ', likes:24
+      tipo:'puntos', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÍ', likes:24, enlace: 'https://mgmpty.com'
     },
     {
       id:'P002', nombre:'Descuento de Cumpleaños 🎂',
       descripcion:'Disfruta un 10% de descuento especial el día de tu cumpleaños.\n(Si tu cumpleaños cae en domingo, tu descuento es válido el lunes siguiente).\nSolo presenta tu cédula en caja.',
-      tipo:'descuento', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÍ', likes:18
+      tipo:'descuento', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÍ', likes:18, enlace: ''
     },
     {
       id:'P003', nombre:'Días Especiales MGM — 5X Puntos',
@@ -1423,6 +1423,7 @@
           tipo: p.tipo || 'especial',
           fecha_inicio: p.fecha_inicio || '',
           fecha_fin: p.fecha_fin || '',
+          enlace: p.enlace || p.link || p.url || '',
           activa: 'SÍ',
           likes: parseInt(p.likes || (12 + idx * 5))
         }));
@@ -2162,7 +2163,8 @@
           <span class="cli-feed-type">${(p.tipo || 'Especial').toUpperCase()}</span>
           <div class="cli-feed-title">${p.nombre}</div>
           <div class="cli-feed-caption">${descPreview}</div>
-          <button class="cli-feed-more-btn" onclick="openCopySheet('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion || '')}', '${p.fecha_inicio || ''}', '${p.fecha_fin || ''}')">...más</button>
+          ${p.enlace ? `<a href="${p.enlace}" target="_blank" class="cli-feed-link-btn" onclick="event.stopPropagation()"><i class="fa-solid fa-link"></i> Ver enlace</a>` : ''}
+          <button class="cli-feed-more-btn" onclick="openCopySheet('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion || '')}', '${p.fecha_inicio || ''}', '${p.fecha_fin || ''}', '${encodeURIComponent(p.enlace || '')}')">...más</button>
         </div>
 
         <!-- Botones de acción derecha -->
@@ -2175,7 +2177,7 @@
           </button>
           <!-- Comentarios (abre el sheet) -->
           <button class="cli-action-btn"
-            onclick="openCopySheet('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion || '')}', '${p.fecha_inicio || ''}', '${p.fecha_fin || ''}')">
+            onclick="openCopySheet('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion || '')}', '${p.fecha_inicio || ''}', '${p.fecha_fin || ''}', '${encodeURIComponent(p.enlace || '')}')">
             <i class="fa-regular fa-comment"></i>
             <span>Comentar</span>
           </button>
@@ -2235,10 +2237,22 @@
   // — Abrir bottom sheet con copy completo
   let _activeCopyPromoId = null;
 
-  window.openCopySheet = function(id, encTitle, encDesc, fi, ff) {
+  window.openCopySheet = function(id, encTitle, encDesc, fi, ff, encEnlace) {
     _activeCopyPromoId = id;
     document.getElementById('cli-copy-title').textContent = decodeURIComponent(encTitle);
     document.getElementById('cli-copy-desc').textContent  = decodeURIComponent(encDesc);
+    
+    const enlaceDecoded = encEnlace ? decodeURIComponent(encEnlace) : '';
+    const linkEl = document.getElementById('cli-copy-link');
+    if (linkEl) {
+      if (enlaceDecoded) {
+        linkEl.href = enlaceDecoded;
+        linkEl.style.display = 'inline-flex';
+      } else {
+        linkEl.style.display = 'none';
+      }
+    }
+
     // Ocultar fechas si no las hay
     const datesEl = document.getElementById('cli-copy-dates');
     if (datesEl) datesEl.textContent = (fi && fi !== 'undefined') ? `📅 Válida: ${fi} — ${ff}` : '';
