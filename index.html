@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -934,6 +934,15 @@
             font-size: 15px; font-family: inherit; color: var(--text-main); padding: 0; margin: 0;
           }
           .mgm-consulta-module #consultaForm button[type="submit"],
+          .mgm-consulta-module .rma-qr-btn {
+            background: #FFFFFF; color: var(--primary); border: 2px solid var(--primary-light);
+            padding: 14px; width: 100%; border-radius: 14px; font-size: 15px; cursor: pointer; font-weight: 600;
+            font-family: inherit; display: flex; justify-content: center; align-items: center; gap: 10px;
+            transition: all 0.3s ease;
+          }
+          .mgm-consulta-module .rma-qr-btn:hover {
+            background: #EEF2FF; border-color: var(--primary);
+          }
           .mgm-consulta-module .rma-submit-btn {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white; border: none; padding: 14px; width: 100%; border-radius: 14px;
@@ -1200,6 +1209,15 @@
 
           <!-- FORMULARIO DE CONSULTA MANUAL -->
           <form id="consultaForm">
+            <button type="button" class="rma-qr-btn" onclick="openQrScannerModal()">
+              <span class="material-icons-round">qr_code_scanner</span>
+              <span>Escanear Código QR</span>
+            </button>
+            <div style="display:flex; align-items:center; margin: 15px 0;">
+              <div style="flex:1; height:1px; background:#E5E7EB;"></div>
+              <span style="padding:0 15px; font-size:13px; color:#9CA3AF; font-weight:500;">O escribe los datos</span>
+              <div style="flex:1; height:1px; background:#E5E7EB;"></div>
+            </div>
             <div class="field-group">
               <div class="field">
                 <span class="material-icons-round">qr_code_2</span>
@@ -1745,10 +1763,6 @@
             }, 300);
           });
         </script>
-          <!-- FLOATING QR SCANNER BUTTON -->
-          <button class="fab-qr-scanner" onclick="openQrScannerModal()">
-            <span class="material-icons-round">qr_code_scanner</span>
-          </button>
 
           <!-- QR SCANNER MODAL -->
           <div id="qrScannerModal" class="qr-scanner-modal">
@@ -1765,31 +1779,6 @@
           </div>
 
           <style>
-            .fab-qr-scanner {
-              position: fixed;
-              bottom: 85px; /* Above the bottom navigation */
-              right: 20px;
-              width: 56px;
-              height: 56px;
-              border-radius: 50%;
-              background-color: var(--primary);
-              color: white;
-              border: none;
-              box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              cursor: pointer;
-              z-index: 100;
-              transition: transform 0.2s, background-color 0.2s;
-            }
-            .fab-qr-scanner:hover {
-              transform: scale(1.05);
-              background-color: var(--primary-dark);
-            }
-            .fab-qr-scanner .material-icons-round {
-              font-size: 28px;
-            }
 
             .qr-scanner-modal {
               display: none;
