@@ -746,15 +746,19 @@
     // --- RMA: auto-llenar y buscar cuando viene número de RMA de notificación ---
     if (tab === 'rma' && sub) {
       setTimeout(() => {
-        // Si existe consultarRmaDirecto (función del módulo de consulta en index.html)
+        // Leer el email del QR si viene en la URL (?tab=rma&sub=RMA-...&email=...)
+        const _rmaEmail = window._pendingRmaEmail
+          || (state.authUser && state.authUser.email)
+          || '';
+        window._pendingRmaEmail = null; // consumir una sola vez
         if (typeof window.consultarRmaDirecto === 'function') {
-          const userEmail = (state.authUser && state.authUser.email) ? state.authUser.email : '';
-          window.consultarRmaDirecto(sub, userEmail);
+          window.consultarRmaDirecto(sub, _rmaEmail);
         } else {
           // Fallback: solo llenar el campo
           const form = document.getElementById('consultaForm');
           if (form && form.rma) {
             form.rma.value = sub;
+            if (_rmaEmail && form.email) form.email.value = _rmaEmail;
             form.rma.focus();
           }
         }
@@ -3571,12 +3575,16 @@
 
     checkAndShowSplash();
 
-    // ── DEEP LINK: Leer parámetros de URL al arrancar la app ─────────────────
+    // ── DEEP LINK: Leer parámetros de URL al arrancar la app ──────────────────────
     // Ejemplos: ?tab=puntos&sub=registro | ?tab=agenda&id=EV001 | ?tab=promos&id=P001
+    // QR RMA:   ?tab=rma&sub=RMA-2026-0001&email=cliente@email.com
     const _urlParams = new URLSearchParams(window.location.search);
     const _deepTab   = _urlParams.get('tab');
     const _deepSub   = _urlParams.get('sub') || _urlParams.get('id');
+    const _deepEmail = _urlParams.get('email') || '';
     if (_deepTab) {
+      // Si hay email en la URL (viene del QR), guardarlo para que navigateTo lo use
+      if (_deepEmail) window._pendingRmaEmail = _deepEmail;
       const _seccion = _deepSub ? `${_deepTab}:${_deepSub}` : _deepTab;
       // Pequeño delay para dejar que los datos carguen antes de navegar
       setTimeout(() => navigateTo(_seccion), 400);

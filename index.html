@@ -1743,6 +1743,204 @@
             }, 300);
           });
         </script>
+          <!-- FLOATING QR SCANNER BUTTON -->
+          <button class="fab-qr-scanner" onclick="openQrScannerModal()">
+            <span class="material-icons-round">qr_code_scanner</span>
+          </button>
+
+          <!-- QR SCANNER MODAL -->
+          <div id="qrScannerModal" class="qr-scanner-modal">
+            <div class="qr-scanner-content">
+              <div class="qr-scanner-header">
+                <h3>Escanear Código QR</h3>
+                <button onclick="closeQrScannerModal()" class="close-qr-btn">
+                  <span class="material-icons-round">close</span>
+                </button>
+              </div>
+              <div id="qr-reader" style="width:100%; border-radius: 12px; overflow: hidden; margin-top: 10px;"></div>
+              <p class="qr-hint">Apunta la cámara al código QR de tu orden de servicio o correo electrónico.</p>
+            </div>
+          </div>
+
+          <style>
+            .fab-qr-scanner {
+              position: fixed;
+              bottom: 85px; /* Above the bottom navigation */
+              right: 20px;
+              width: 56px;
+              height: 56px;
+              border-radius: 50%;
+              background-color: var(--primary);
+              color: white;
+              border: none;
+              box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              z-index: 100;
+              transition: transform 0.2s, background-color 0.2s;
+            }
+            .fab-qr-scanner:hover {
+              transform: scale(1.05);
+              background-color: var(--primary-dark);
+            }
+            .fab-qr-scanner .material-icons-round {
+              font-size: 28px;
+            }
+
+            .qr-scanner-modal {
+              display: none;
+              position: fixed;
+              top: 0; left: 0; right: 0; bottom: 0;
+              background: rgba(0,0,0,0.7);
+              z-index: 1000;
+              align-items: center;
+              justify-content: center;
+              padding: 20px;
+            }
+            .qr-scanner-modal.active {
+              display: flex;
+              animation: fadeIn 0.3s ease;
+            }
+            .qr-scanner-content {
+              background: white;
+              border-radius: 20px;
+              width: 100%;
+              max-width: 400px;
+              padding: 24px;
+              box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            }
+            .qr-scanner-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 16px;
+            }
+            .qr-scanner-header h3 {
+              margin: 0;
+              font-size: 18px;
+              color: #1F2937;
+            }
+            .close-qr-btn {
+              background: none;
+              border: none;
+              color: #9CA3AF;
+              cursor: pointer;
+              padding: 4px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border-radius: 50%;
+              transition: background 0.2s, color 0.2s;
+            }
+            .close-qr-btn:hover {
+              background: #F3F4F6;
+              color: #4B5563;
+            }
+            .qr-hint {
+              text-align: center;
+              font-size: 13px;
+              color: #6B7280;
+              margin: 16px 0 0 0;
+            }
+            /* html5-qrcode overrides */
+            #qr-reader {
+              border: none !important;
+            }
+            #qr-reader__scan_region {
+              background: #F9FAFB;
+            }
+            #qr-reader__dashboard {
+              padding: 10px !important;
+            }
+            #qr-reader button {
+              background: #4F46E5 !important;
+              color: white !important;
+              border: none !important;
+              padding: 8px 16px !important;
+              border-radius: 8px !important;
+              font-family: 'Outfit', sans-serif !important;
+              font-weight: 500 !important;
+              cursor: pointer;
+            }
+            #html5-qrcode-anchor-scan-type-change {
+              text-decoration: none !important;
+              color: #4F46E5 !important;
+              font-family: 'Outfit', sans-serif !important;
+            }
+          </style>
+
+          <script>
+            let html5QrcodeScanner = null;
+
+            window.openQrScannerModal = function() {
+              document.getElementById('qrScannerModal').classList.add('active');
+              
+              if (!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { 
+                  fps: 10, 
+                  qrbox: {width: 250, height: 250},
+                  aspectRatio: 1.0,
+                  showTorchButtonIfSupported: true
+                }, /* verbose= */ false);
+              }
+
+              html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+            };
+
+            window.closeQrScannerModal = function() {
+              document.getElementById('qrScannerModal').classList.remove('active');
+              if (html5QrcodeScanner) {
+                html5QrcodeScanner.clear().catch(error => {
+                  console.error("Failed to clear html5QrcodeScanner. ", error);
+                });
+              }
+            };
+
+            function onScanSuccess(decodedText, decodedResult) {
+              console.log("Scan result:", decodedText);
+              
+              try {
+                const url = new URL(decodedText);
+                const rma = url.searchParams.get('sub');
+                const email = url.searchParams.get('email');
+                
+                if (rma) {
+                  closeQrScannerModal();
+                  if (typeof window.consultarRmaDirecto === 'function') {
+                    window.consultarRmaDirecto(rma, email || '');
+                  } else {
+                    const form = document.getElementById('consultaForm');
+                    if (form && form.rma) {
+                      form.rma.value = rma;
+                      if (email && form.email) form.email.value = email;
+                      form.rma.focus();
+                    }
+                  }
+                  window.showToast('QR escaneado correctamente', 'success');
+                } else {
+                  window.showToast('El código QR no es válido para RMA', 'error');
+                }
+              } catch (e) {
+                if (decodedText.startsWith('RMA-')) {
+                  closeQrScannerModal();
+                  const form = document.getElementById('consultaForm');
+                  if (form && form.rma) {
+                    form.rma.value = decodedText;
+                    form.email.focus();
+                  }
+                  window.showToast('RMA escaneado. Por favor ingresa el correo.', 'success');
+                } else {
+                  window.showToast('El código QR no es válido o no pertenece a MGM', 'error');
+                }
+              }
+            }
+
+            function onScanFailure(error) {
+              // Ignore scan failures while seeking a QR code
+            }
+          </script>
       </div>
     </main>
 
