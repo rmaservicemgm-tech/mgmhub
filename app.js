@@ -2138,6 +2138,24 @@
     });
   };
 
+  window.handlePromoLinkClick = function(event, enlace) {
+    if (!enlace) return;
+    try {
+      const url = new URL(enlace);
+      if (url.searchParams.has('tab') && (url.hostname.includes('github.io') || url.hostname.includes('mgmpty') || url.pathname.includes('index.html'))) {
+        event.preventDefault();
+        event.stopPropagation();
+        const tab = url.searchParams.get('tab');
+        
+        if (typeof closeCopySheet === 'function') closeCopySheet();
+        if (typeof closePromoDetail === 'function') closePromoDetail();
+        if (typeof switchMainTab === 'function') switchMainTab(tab);
+        return;
+      }
+    } catch(e) {}
+    event.stopPropagation();
+  };
+
   window.openPromoDetail = function(idx) {
     const modal = document.getElementById('modal-promo-feed');
     const feed = document.getElementById('cli-modal-feed');
@@ -2163,7 +2181,7 @@
           <span class="cli-feed-type">${(p.tipo || 'Especial').toUpperCase()}</span>
           <div class="cli-feed-title">${p.nombre}</div>
           <div class="cli-feed-caption">${descPreview}</div>
-          ${p.enlace ? `<a href="${p.enlace}" target="_blank" class="cli-feed-link-btn" onclick="event.stopPropagation()"><i class="fa-solid fa-link"></i> Ver enlace</a>` : ''}
+          ${p.enlace ? `<a href="${p.enlace}" target="_blank" class="cli-feed-link-btn" onclick="handlePromoLinkClick(event, '${p.enlace}')"><i class="fa-solid fa-link"></i> Ver enlace</a>` : ''}
           <button class="cli-feed-more-btn" onclick="openCopySheet('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion || '')}', '${p.fecha_inicio || ''}', '${p.fecha_fin || ''}', '${encodeURIComponent(p.enlace || '')}')">...más</button>
         </div>
 
@@ -2247,9 +2265,11 @@
     if (linkEl) {
       if (enlaceDecoded) {
         linkEl.href = enlaceDecoded;
+        linkEl.onclick = (e) => handlePromoLinkClick(e, enlaceDecoded);
         linkEl.style.display = 'inline-flex';
       } else {
         linkEl.style.display = 'none';
+        linkEl.onclick = null;
       }
     }
 
