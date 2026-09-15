@@ -1512,19 +1512,28 @@
 
           // Quitar / ocultar RMA cerrado de la lista del cliente
           window.quitarRmaDeLista = function(rma) {
-            if (!confirm(`¿Deseas quitar el equipo ${rma} de tu lista de seguimiento? Ya está finalizado y podrás restaurarlo cuando quieras.`)) {
-              return;
+            // Mostrar modal de confirmación personalizado (en lugar de confirm() nativo)
+            const rmaLabel = document.getElementById('modal-quitar-rma-number');
+            if (rmaLabel) rmaLabel.textContent = rma;
+
+            // Asignar acción al botón de confirmar
+            const btnOk = document.getElementById('btn-quitar-rma-ok');
+            if (btnOk) {
+              btnOk.onclick = function() {
+                closeAppModal('modal-confirm-quitar-rma');
+                try {
+                  let dismissed = JSON.parse(localStorage.getItem('mgm_dismissed_rmas') || '[]');
+                  if (!dismissed.includes(rma)) {
+                    dismissed.push(rma);
+                    localStorage.setItem('mgm_dismissed_rmas', JSON.stringify(dismissed));
+                  }
+                  window.loadUserActiveRmas();
+                } catch(e) {
+                  console.error('Error archivando RMA:', e);
+                }
+              };
             }
-            try {
-              let dismissed = JSON.parse(localStorage.getItem('mgm_dismissed_rmas') || '[]');
-              if (!dismissed.includes(rma)) {
-                dismissed.push(rma);
-                localStorage.setItem('mgm_dismissed_rmas', JSON.stringify(dismissed));
-              }
-              window.loadUserActiveRmas();
-            } catch(e) {
-              console.error("Error archivando RMA:", e);
-            }
+            openAppModal('modal-confirm-quitar-rma');
           };
 
           // Restaurar todos los RMAs archivados
@@ -2397,9 +2406,72 @@
       </div>
     </div>
 
+    <!-- MODAL CONFIRMACIÓN — QUITAR EQUIPO DE LA LISTA -->
+    <div class="app-modal" id="modal-confirm-quitar-rma" style="z-index: 9500;">
+      <div class="modal-content-card" style="max-width: 320px; padding: 0; overflow: hidden; border-radius: 22px;">
+        <!-- Icono + encabezado -->
+        <div style="background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%); padding: 28px 24px 20px; text-align: center; border-bottom: 1px solid var(--border-light);">
+          <div style="
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            border: 2px solid #93c5fd;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 14px;
+            box-shadow: 0 4px 16px rgba(59,130,246,0.18);
+          ">
+            <i class="fa-solid fa-box-archive" style="font-size: 24px; color: #3b82f6;"></i>
+          </div>
+          <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">¿Quitar de la lista?</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
+            El equipo <strong id="modal-quitar-rma-number" style="color: var(--primary-blue);"></strong> será retirado de tu seguimiento.<br>Ya está finalizado y podrás restaurarlo cuando quieras.
+          </p>
+        </div>
+        <!-- Botones de acción -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; background: #fff;">
+          <button
+            onclick="closeAppModal('modal-confirm-quitar-rma')"
+            style="
+              padding: 16px 12px;
+              background: #fff;
+              border: none; border-right: 1px solid var(--border-light);
+              font-family: 'Outfit', sans-serif;
+              font-size: 14px; font-weight: 700;
+              color: var(--text-muted);
+              cursor: pointer;
+              transition: background 0.18s, color 0.18s;
+              border-radius: 0 0 0 22px;
+            "
+            onmouseover="this.style.background='#f8fafc'; this.style.color='var(--text-body)'"
+            onmouseout="this.style.background='#fff'; this.style.color='var(--text-muted)'"
+          >
+            <i class="fa-solid fa-xmark" style="margin-right: 5px; font-size: 12px;"></i>Cancelar
+          </button>
+          <button
+            id="btn-quitar-rma-ok"
+            style="
+              padding: 16px 12px;
+              background: #fff;
+              border: none;
+              font-family: 'Outfit', sans-serif;
+              font-size: 14px; font-weight: 800;
+              color: #3b82f6;
+              cursor: pointer;
+              transition: background 0.18s, color 0.18s;
+              border-radius: 0 0 22px 0;
+            "
+            onmouseover="this.style.background='#eff6ff'; this.style.color='#2563eb'"
+            onmouseout="this.style.background='#fff'; this.style.color='#3b82f6'"
+          >
+            <i class="fa-solid fa-box-archive" style="margin-right: 5px; font-size: 12px;"></i>Quitar
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- ══════════════════════════════════════════════════════════════════════════
          SPLASHSCREEN INTELIGENTE DE BIENVENIDA / OFERTAS
          ══════════════════════════════════════════════════════════════════════════ -->
+
     <div id="imou-splash">
       <div class="splash-card-inner">
         <div class="splash-actions-container">
