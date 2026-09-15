@@ -3259,17 +3259,30 @@
           }
         });
 
-        // Filtrar expiradas o no iniciadas
+        // Helper para parsear fechas robustamente (soporta YYYY-MM-DD, DD/MM/YYYY, y fechas ISO UTC)
+        const parseDateRobust = (dateStr, isEnd) => {
+          let str = String(dateStr || '').trim().split(' ')[0].split('T')[0];
+          if (!str) return null;
+          // Si viene en formato DD/MM/YYYY, convertirlo a YYYY-MM-DD
+          if (str.includes('/')) {
+            const parts = str.split('/');
+            if (parts.length === 3 && parts[0].length <= 2) {
+              str = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+          }
+          return new Date(str + (isEnd ? 'T23:59:59' : 'T00:00:00'));
+        };
+
         const todayForNotifs = new Date();
         const finalLength = state.notifications.length;
         state.notifications = state.notifications.filter(n => {
           if (n.fecha_inicio) {
-            const fi = new Date(n.fecha_inicio.toString().split(' ')[0].split('T')[0] + 'T00:00:00');
-            if (todayForNotifs < fi) return false;
+            const fi = parseDateRobust(n.fecha_inicio, false);
+            if (fi && !isNaN(fi.getTime()) && todayForNotifs < fi) return false;
           }
           if (n.fecha_fin) {
-            const ff = new Date(n.fecha_fin.toString().split(' ')[0].split('T')[0] + 'T23:59:59');
-            if (todayForNotifs > ff) return false;
+            const ff = parseDateRobust(n.fecha_fin, true);
+            if (ff && !isNaN(ff.getTime()) && todayForNotifs > ff) return false;
           }
           return true;
         });
