@@ -2920,5 +2920,101 @@
   <!-- TOAST GLOBAL — fuera de todo stacking context -->
   <div id="mgm-toast-el" class="mgm-toast"></div>
 
+  <!-- Modal de Recordatorio de Instalación -->
+  <div id="pwa-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 99999; align-items: center; justify-content: center;">
+    <div style="background: #ffffff; width: 90%; max-width: 400px; padding: 25px; border-radius: 12px; text-align: center; font-family: system-ui, -apple-system, sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+      
+      <div style="font-size: 40px; margin-bottom: 10px;">📲</div>
+      <h3 style="margin: 0 0 10px 0; color: #0f172a; font-size: 20px;">¡Instala MGM Hub!</h3>
+      <p style="color: #475569; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
+        Para consultar tus servicios RMA y recibir notificaciones en tiempo real, instala nuestra aplicación en tu celular.
+      </p>
+
+      <button id="btn-instalar-app" style="width: 100%; background: #2563eb; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; margin-bottom: 10px;">
+        Instalar WebApp
+      </button>
+      
+      <button id="btn-recordar-luego" style="background: transparent; color: #64748b; border: none; font-size: 13px; cursor: pointer; text-decoration: underline;">
+        Recordármelo más tarde
+      </button>
+      
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      let deferredPrompt;
+      let timerRecordatorio = null;
+      const pwaModal = document.getElementById('pwa-modal');
+      const btnInstalar = document.getElementById('btn-instalar-app');
+      const btnLuego = document.getElementById('btn-recordar-luego');
+
+      // Tiempo de repetición: 5 minutos
+      const TIEMPO_REPETICION_MS = 5 * 60 * 1000;
+
+      // 1. Detectar si el dispositivo es móvil (Smartphone o Tablet)
+      const esDispositivoMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+
+      // 2. Validar si ya está instalada o ejecutándose como PWA
+      const esAppInstalada = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+      // 3. Ejecutar solo si ES móvil y NO está instalada
+      if (esDispositivoMovil && !esAppInstalada) {
+        mostrarModal();
+      }
+
+      function mostrarModal() {
+        if (esAppInstalada || !esDispositivoMovil) return;
+        pwaModal.style.display = 'flex';
+      }
+
+      function ocultarYProgramar() {
+        pwaModal.style.display = 'none';
+        
+        if (timerRecordatorio) clearTimeout(timerRecordatorio);
+
+        // Reprogramar a los 5 minutos solo en móvil
+        timerRecordatorio = setTimeout(() => {
+          mostrarModal();
+        }, TIEMPO_REPETICION_MS);
+      }
+
+      // Capturar evento de instalación nativo de Android
+      window.addEventListener('beforeinstallprompt', (e) => {
+        if (!esDispositivoMovil) return;
+        e.preventDefault();
+        deferredPrompt = e;
+      });
+
+      // Botón "Instalar WebApp"
+      btnInstalar.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            pwaModal.style.display = 'none';
+            if (timerRecordatorio) clearTimeout(timerRecordatorio);
+          }
+          deferredPrompt = null;
+        } else {
+          // Guía para Safari en iOS u otros navegadores móviles
+          alert('Para instalar:\n1. Toca el botón Compartir 📤 de tu navegador.\n2. Selecciona "Agregar a inicio" ➕.');
+          ocultarYProgramar();
+        }
+      });
+
+      // Botón "Recordármelo más tarde"
+      btnLuego.addEventListener('click', () => {
+        ocultarYProgramar();
+      });
+
+      // Al completar la instalación
+      window.addEventListener('appinstalled', () => {
+        pwaModal.style.display = 'none';
+        if (timerRecordatorio) clearTimeout(timerRecordatorio);
+      });
+    })();
+  </script>
+
 </body>
 </html>
