@@ -3771,8 +3771,24 @@
             ${estado.label}
           </span>
         </div>
-        <div class="rma-progress-bar">
-          <div class="rma-progress-fill" style="width:${estado.progress}%;"></div>
+        <div class="rma-tracker">
+          <div class="rma-tracker-progress" style="width:${Math.min(estado.progress, 100)}%;"></div>
+          <div class="rma-step ${estado.progress >= 15 ? 'completed' : ''} ${estado.progress === 15 ? 'active' : ''}">
+            <div class="rma-step-icon"><i class="fa-solid fa-inbox"></i></div>
+            <div class="rma-step-label">Recibido</div>
+          </div>
+          <div class="rma-step ${estado.progress >= 35 ? 'completed' : ''} ${estado.progress === 35 ? 'active' : ''}">
+            <div class="rma-step-icon"><i class="fa-solid fa-microscope"></i></div>
+            <div class="rma-step-label">Diagnóstico</div>
+          </div>
+          <div class="rma-step ${estado.progress >= 50 ? 'completed' : ''} ${estado.progress === 50 || estado.progress === 55 ? 'active' : ''}">
+            <div class="rma-step-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+            <div class="rma-step-label">Reparación</div>
+          </div>
+          <div class="rma-step ${estado.progress >= 90 ? 'completed' : ''} ${estado.progress === 90 || estado.progress === 100 ? 'active' : ''}">
+            <div class="rma-step-icon"><i class="fa-solid fa-check-double"></i></div>
+            <div class="rma-step-label">Finalizado</div>
+          </div>
         </div>
         <div class="rma-card-body">
           <div class="rma-info-row">
@@ -4525,4 +4541,33 @@
       }
     }
   };
+})();
+
+// ══════════════════════════════════════════════════════════════════════════
+//  OFFLINE SUPPORT LOGIC
+// ══════════════════════════════════════════════════════════════════════════
+(function() {
+  function updateOnlineStatus() {
+    const offlineIcon = document.getElementById('offline-icon');
+    if (!navigator.onLine) {
+      if (offlineIcon) offlineIcon.style.display = 'inline-block';
+      if (typeof window.showToast === 'function') {
+        window.showToast("Estás desconectado. El contenido cargado está guardado.", "fa-solid fa-wifi-slash");
+      }
+    } else {
+      if (offlineIcon) offlineIcon.style.display = 'none';
+      if (typeof window.showToast === 'function') {
+        window.showToast("Conexión restaurada.", "success");
+      }
+    }
+  }
+
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  
+  // Initial check
+  if (!navigator.onLine) {
+    const offlineIcon = document.getElementById('offline-icon');
+    if (offlineIcon) offlineIcon.style.display = 'inline-block';
+  }
 })();

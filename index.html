@@ -110,6 +110,7 @@
         <div class="brand-titles">
           <div class="brand-app-name">
             MGM <span class="badge-box">HUB</span>
+            <i class="fa-solid fa-wifi-slash" id="offline-icon" title="Sin conexión"></i>
           </div>
           <div class="brand-tagline">Soluciones & Beneficios</div>
         </div>
@@ -1218,6 +1219,48 @@
             font-size: 13px; color: #475569; line-height: 1.45; background: #F8FAFC;
             padding: 8px 12px; border-radius: 8px; margin-top: 5px; border-left: 3px solid #CBD5E1;
           }
+          /* Tracker RMA */
+          .rma-tracker {
+            display: flex; justify-content: space-between; position: relative; margin: 20px 0; padding: 0 10px;
+          }
+          .rma-tracker::before {
+            content: ''; position: absolute; top: 12px; left: 20px; right: 20px; height: 3px;
+            background: #E2E8F0; z-index: 1; border-radius: 2px;
+          }
+          .rma-tracker-progress {
+            position: absolute; top: 12px; left: 20px; height: 3px;
+            background: var(--primary); z-index: 2; border-radius: 2px; transition: width 0.5s ease;
+          }
+          .rma-step {
+            position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 6px; width: 60px;
+          }
+          .rma-step-icon {
+            width: 28px; height: 28px; border-radius: 50%; background: #F1F5F9; border: 2px solid #E2E8F0;
+            display: flex; align-items: center; justify-content: center; color: #94A3B8; font-size: 11px;
+            transition: all 0.3s;
+          }
+          .rma-step.active .rma-step-icon {
+            background: var(--primary); border-color: var(--primary); color: white; box-shadow: 0 0 10px rgba(79, 70, 229, 0.4);
+          }
+          .rma-step.completed .rma-step-icon {
+            background: #10B981; border-color: #10B981; color: white;
+          }
+          .rma-step-label {
+            font-size: 10px; font-weight: 600; color: #64748B; text-align: center; text-transform: uppercase; line-height: 1.1;
+          }
+          .rma-step.active .rma-step-label, .rma-step.completed .rma-step-label {
+            color: #0F172A;
+          }
+          /* Estrellas Interactivas */
+          .star-rating-container { display: flex; gap: 8px; margin-top: 5px; }
+          .star-rating-container .fa-star {
+            font-size: 24px; color: #CBD5E1; cursor: pointer; transition: color 0.2s, transform 0.2s;
+          }
+          .star-rating-container .fa-star.active { color: #F59E0B; transform: scale(1.1); }
+          
+          /* Offline Toast & Icon */
+          #offline-icon { display: none; color: #DC2626; font-size: 14px; margin-left: 8px; animation: pulseOffline 2s infinite; }
+          @keyframes pulseOffline { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         </style>
 
         <div class="rma-consulta-card">
@@ -2878,30 +2921,38 @@
           
           <div style="margin-bottom: 15px;">
             <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">¿El equipo quedó funcionando correctamente y resolvió tu problema?</label>
-            <select id="eval-q1" required class="mgm-input" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-light); font-size: 14px;">
-              <option value="">Selecciona una opción...</option>
-              <option value="5">Sí, perfectamente</option>
-              <option value="1">Aún presenta fallas</option>
-            </select>
+            <input type="hidden" id="eval-q1" required>
+            <div class="star-rating-container" data-target="eval-q1">
+              <i class="fa-solid fa-star" data-val="1" title="Aún presenta fallas"></i>
+              <i class="fa-solid fa-star" data-val="2"></i>
+              <i class="fa-solid fa-star" data-val="3"></i>
+              <i class="fa-solid fa-star" data-val="4"></i>
+              <i class="fa-solid fa-star" data-val="5" title="Sí, perfectamente"></i>
+            </div>
           </div>
 
           <div style="margin-bottom: 15px;">
             <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">¿Cómo calificas el tiempo que tardamos en entregarte el equipo?</label>
-            <select id="eval-q2" required class="mgm-input" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-light); font-size: 14px;">
-              <option value="">Selecciona una opción...</option>
-              <option value="5">Rápido y a tiempo</option>
-              <option value="3">Aceptable</option>
-              <option value="1">Muy demorado</option>
-            </select>
+            <input type="hidden" id="eval-q2" required>
+            <div class="star-rating-container" data-target="eval-q2">
+              <i class="fa-solid fa-star" data-val="1" title="Muy demorado"></i>
+              <i class="fa-solid fa-star" data-val="2"></i>
+              <i class="fa-solid fa-star" data-val="3" title="Aceptable"></i>
+              <i class="fa-solid fa-star" data-val="4"></i>
+              <i class="fa-solid fa-star" data-val="5" title="Rápido y a tiempo"></i>
+            </div>
           </div>
 
           <div style="margin-bottom: 15px;">
             <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">¿La explicación técnica de la falla y la solución fue clara?</label>
-            <select id="eval-q3" required class="mgm-input" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-light); font-size: 14px;">
-              <option value="">Selecciona una opción...</option>
-              <option value="5">Sí, muy clara</option>
-              <option value="2">Confusa / Poco clara</option>
-            </select>
+            <input type="hidden" id="eval-q3" required>
+            <div class="star-rating-container" data-target="eval-q3">
+              <i class="fa-solid fa-star" data-val="1"></i>
+              <i class="fa-solid fa-star" data-val="2" title="Confusa / Poco clara"></i>
+              <i class="fa-solid fa-star" data-val="3"></i>
+              <i class="fa-solid fa-star" data-val="4"></i>
+              <i class="fa-solid fa-star" data-val="5" title="Sí, muy clara"></i>
+            </div>
           </div>
 
           <div style="margin-bottom: 15px;">
@@ -2913,6 +2964,27 @@
             <i class="fa-solid fa-paper-plane"></i> Enviar Evaluación
           </button>
         </form>
+        <script>
+          document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.star-rating-container').forEach(container => {
+              const stars = container.querySelectorAll('.fa-star');
+              const hiddenInput = document.getElementById(container.dataset.target);
+              stars.forEach(star => {
+                star.addEventListener('click', () => {
+                  const val = star.dataset.val;
+                  hiddenInput.value = val;
+                  stars.forEach(s => {
+                    if (parseInt(s.dataset.val) <= parseInt(val)) {
+                      s.classList.add('active');
+                    } else {
+                      s.classList.remove('active');
+                    }
+                  });
+                });
+              });
+            });
+          });
+        </script>
       </div>
     </div>
   </div>
@@ -2921,8 +2993,29 @@
   <div id="mgm-toast-el" class="mgm-toast"></div>
 
   <!-- Modal de Recordatorio de Instalación -->
-  <div id="pwa-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 99999; align-items: center; justify-content: center;">
-    <div style="background: #ffffff; width: 90%; max-width: 400px; padding: 25px; border-radius: 12px; text-align: center; font-family: system-ui, -apple-system, sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+  <style>
+    @keyframes pwaPopIn {
+      0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    #pwa-modal {
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+    #pwa-modal-content {
+      animation: pwaPopIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    #btn-instalar-app {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 15px rgba(37,99,235,0.4);
+    }
+    #btn-instalar-app:active {
+      transform: scale(0.96);
+    }
+  </style>
+  <div id="pwa-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 99999; align-items: center; justify-content: center;">
+    <div id="pwa-modal-content" style="background: #ffffff; width: 90%; max-width: 400px; padding: 25px; border-radius: 16px; text-align: center; font-family: system-ui, -apple-system, sans-serif; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
       
       <div style="font-size: 40px; margin-bottom: 10px;">📲</div>
       <h3 style="margin: 0 0 10px 0; color: #0f172a; font-size: 20px;">¡Instala MGM Hub!</h3>
