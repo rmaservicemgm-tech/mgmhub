@@ -1784,6 +1784,46 @@
             form.replaceWith(form.cloneNode(true));
             const newForm = document.getElementById('eval-rma-form');
 
+            // ─── Re-inicializar estrellas (cloneNode() borra los listeners) ────
+            newForm.querySelectorAll('.star-rating-container').forEach(function(container) {
+              var stars = container.querySelectorAll('.fa-star');
+              var hiddenInput = newForm.querySelector('#' + container.dataset.target);
+              if (!hiddenInput) return;
+
+              stars.forEach(function(star) {
+                star.addEventListener('click', function() {
+                  var val = parseInt(star.dataset.val);
+                  hiddenInput.value = val;
+                  stars.forEach(function(s) {
+                    if (parseInt(s.dataset.val) <= val) {
+                      s.classList.add('active');
+                    } else {
+                      s.classList.remove('active');
+                    }
+                  });
+                });
+                star.addEventListener('mouseenter', function() {
+                  var hoverVal = parseInt(star.dataset.val);
+                  stars.forEach(function(s) {
+                    s.style.color = parseInt(s.dataset.val) <= hoverVal ? '#F59E0B' : '';
+                  });
+                });
+              });
+
+              container.addEventListener('mouseleave', function() {
+                var fixedVal = parseInt(hiddenInput.value) || 0;
+                stars.forEach(function(s) {
+                  s.style.color = '';
+                  if (parseInt(s.dataset.val) <= fixedVal) {
+                    s.classList.add('active');
+                  } else {
+                    s.classList.remove('active');
+                  }
+                });
+              });
+            });
+            // ────────────────────────────────────────────────────────────────────
+
             newForm.addEventListener('submit', async function(e) {
               e.preventDefault();
               const btn = newForm.querySelector('button[type="submit"]');
