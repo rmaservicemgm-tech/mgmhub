@@ -2852,19 +2852,35 @@
   };
 
   function checkAndSendWelcomeNotification(nombre) {
-    // Si ya existe la bienvenida, no hacer nada
+    // Verificar si ya existe en la lista actual
     if (state.notifications.some(n => n.id === '0000')) return;
 
+    // Verificar si ya se envió la bienvenida a este usuario (por cédula) en este dispositivo
+    // Esto evita que se repita en cada logout/login
+    const cedula = state.authUser ? state.authUser.cedula : null;
+    const welcomeKey = cedula ? `mgm_welcomed_${cedula}` : null;
+    if (welcomeKey && localStorage.getItem(welcomeKey) === 'true') return;
+
     const primerNombre = (nombre || '').split(' ')[0] || 'Cliente';
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const hh = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
     const welcomeNotif = {
       id: '0000',
       title: '¡Bienvenido a MGM Hub! 🎉',
       body: `Hola ${primerNombre}, gracias por unirte a nuestro programa de beneficios. Te invitamos a seguir sumando puntos en todas tus compras y disfrutar de recompensas exclusivas.`,
-      date: new Date().toLocaleDateString('es-PA')
+      date: `${yyyy}-${mm}-${dd} ${hh}:${min}`
     };
 
     state.notifications.unshift(welcomeNotif);
     localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
+    
+    // Marcar como enviada para este usuario en este dispositivo
+    if (welcomeKey) localStorage.setItem(welcomeKey, 'true');
+
     updateNotifBadge();
     
     // Alerta visual local
@@ -3290,6 +3306,16 @@
         if (state.notifications.length !== finalLength) {
           hasChanged = true;
         }
+
+        // Ordenar: más recientes primero (por fecha parseada, fallback al ID)
+        state.notifications.sort((a, b) => {
+          const parseForSort = (d) => {
+            if (!d) return 0;
+            const parsed = new Date(String(d).replace(/^(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'));
+            return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+          };
+          return parseForSort(b.date) - parseForSort(a.date);
+        });
 
         if (hasChanged) {
           localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
