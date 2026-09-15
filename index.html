@@ -367,6 +367,39 @@
           return 'https://' + url;
         }
 
+        // Detecta si una URL apunta a la propia app MGM Hub
+        // Extrae el valor de ?tab= (y opcionalmente &sub=) para navegación interna
+        function extractInternalRoute(url) {
+          if (!url || url === '#') return null;
+          try {
+            const parsed = new URL(url, location.href);
+            // Es la misma app si comparte el mismo origin+pathname
+            const myOrigin = location.origin;
+            const myPath = location.pathname.replace(/\/[^/]*$/, '') || '/';
+            const isOwnApp =
+              (parsed.origin === myOrigin && parsed.pathname.startsWith(myPath)) ||
+              parsed.hostname === 'rmaservicemgm-tech.github.io';
+            if (!isOwnApp) return null;
+            const tab = parsed.searchParams.get('tab');
+            if (!tab) return null;
+            const sub = parsed.searchParams.get('sub');
+            return sub ? `${tab}:${sub}` : tab;
+          } catch(e) {
+            return null;
+          }
+        }
+
+        // Genera el onclick correcto: interno si es la propia app, externo si no
+        function buildAdClickAttr(link) {
+          if (!link || link === '#') return '';
+          const route = extractInternalRoute(link);
+          if (route) {
+            // Navegación interna sin abrir nueva pestaña
+            return `onclick="event.preventDefault(); if(typeof navigateTo==='function') navigateTo('${route.replace(/'/g,"\\'")}');" style="cursor:pointer;"`;
+          }
+          return `href="${link}" target="_blank" rel="noopener noreferrer"`;
+        }
+
         function getYoutubeId(url) {
           const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
           const match = url.match(regExp);
@@ -383,7 +416,13 @@
           if (fmt === 'imagen') {
             const hasLink = link && link !== '#';
             const imgTag = `<img src="${contenido}" alt="${ad.Nombre_Campaña || ad['Nombre_Campaña'] || 'Publicidad MGM'}" loading="lazy">`;
-            return hasLink ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${imgTag}</a>` : imgTag;
+            if (!hasLink) return imgTag;
+            const route = extractInternalRoute(link);
+            if (route) {
+              // Enlace interno: div clickeable sin abrir pestaña
+              return `<div onclick="if(typeof navigateTo==='function') navigateTo('${route.replace(/'/g,"\\'")}');" style="cursor:pointer;">${imgTag}</div>`;
+            }
+            return `<a href="${link}" target="_blank" rel="noopener noreferrer">${imgTag}</a>`;
           } 
           else if (fmt === 'video_yt') {
             const videoId = getYoutubeId(ad.Contenido);
