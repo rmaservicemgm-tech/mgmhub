@@ -2965,25 +2965,55 @@
           </button>
         </form>
         <script>
-          document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.star-rating-container').forEach(container => {
-              const stars = container.querySelectorAll('.fa-star');
-              const hiddenInput = document.getElementById(container.dataset.target);
-              stars.forEach(star => {
-                star.addEventListener('click', () => {
-                  const val = star.dataset.val;
+          // Inicializar estrellas interactivas
+          // No usamos DOMContentLoaded porque el DOM ya está listo cuando este script se ejecuta
+          (function initStarRating() {
+            document.querySelectorAll('.star-rating-container').forEach(function(container) {
+              var stars = container.querySelectorAll('.fa-star');
+              var hiddenInput = document.getElementById(container.dataset.target);
+              if (!hiddenInput) return;
+
+              stars.forEach(function(star) {
+                // Click: fijar calificación
+                star.addEventListener('click', function() {
+                  var val = parseInt(star.dataset.val);
                   hiddenInput.value = val;
-                  stars.forEach(s => {
-                    if (parseInt(s.dataset.val) <= parseInt(val)) {
+                  stars.forEach(function(s) {
+                    if (parseInt(s.dataset.val) <= val) {
                       s.classList.add('active');
                     } else {
                       s.classList.remove('active');
                     }
                   });
                 });
+
+                // Hover: preview de calificación
+                star.addEventListener('mouseenter', function() {
+                  var val = parseInt(star.dataset.val);
+                  stars.forEach(function(s) {
+                    if (parseInt(s.dataset.val) <= val) {
+                      s.style.color = '#F59E0B';
+                    } else {
+                      s.style.color = '';
+                    }
+                  });
+                });
+              });
+
+              // Al salir del contenedor, restaurar al valor fijado
+              container.addEventListener('mouseleave', function() {
+                var fixedVal = parseInt(hiddenInput.value) || 0;
+                stars.forEach(function(s) {
+                  s.style.color = '';
+                  if (parseInt(s.dataset.val) <= fixedVal) {
+                    s.classList.add('active');
+                  } else {
+                    s.classList.remove('active');
+                  }
+                });
               });
             });
-          });
+          })();
         </script>
       </div>
     </div>
