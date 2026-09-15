@@ -3211,6 +3211,7 @@
                 + ' ' + d.toLocaleTimeString('es-PA', { hour:'2-digit', minute:'2-digit', hour12: false });
             }
           }
+          const n = {
             id:      rawN.id,
             title:   rawN.title   || rawN.titulo  || '',
             body:    rawN.body    || rawN.mensaje  || '',
