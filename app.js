@@ -3202,14 +3202,25 @@
         // Normalizar campos: el GAS puede devolver titulo/mensaje o title/body, y seccion/url/enlace/link
           // Si no viene fecha, la extraemos del timestamp embebido en el ID (ej: RMA-2026-0018-1726344000000)
           let parsedDate = rawN.date || rawN.fecha || '';
-          if (!parsedDate) {
-            const tsMatch = String(rawN.id || '').match(/-(\d{10,13})$/);
-            if (tsMatch) {
-              const ts = parseInt(tsMatch[1]);
-              const d = new Date(ts.toString().length <= 10 ? ts * 1000 : ts);
-              parsedDate = d.toLocaleDateString('es-PA', { day:'2-digit', month:'2-digit', year:'numeric' })
-                + ' ' + d.toLocaleTimeString('es-PA', { hour:'2-digit', minute:'2-digit', hour12: false });
+          if (parsedDate) {
+            const d = new Date(parsedDate);
+            if (!isNaN(d.getTime())) {
+              const yyyy = d.getFullYear();
+              const mm = String(d.getMonth() + 1).padStart(2, '0');
+              const dd = String(d.getDate()).padStart(2, '0');
+              const hh = String(d.getHours()).padStart(2, '0');
+              const min = String(d.getMinutes()).padStart(2, '0');
+              parsedDate = `${yyyy}-${mm}-${dd} ${hh}:${min}`;
             }
+          } else {
+            const tsMatch = String(rawN.id || '').match(/-(\d{10,13})$/);
+            const d = tsMatch ? new Date(parseInt(tsMatch[1]).toString().length <= 10 ? parseInt(tsMatch[1]) * 1000 : parseInt(tsMatch[1])) : new Date();
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const hh = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
+            parsedDate = `${yyyy}-${mm}-${dd} ${hh}:${min}`;
           }
           const n = {
             id:      rawN.id,
