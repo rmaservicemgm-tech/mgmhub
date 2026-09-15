@@ -3211,13 +3211,14 @@
                 + ' ' + d.toLocaleTimeString('es-PA', { hour:'2-digit', minute:'2-digit', hour12: false });
             }
           }
-          const n = {
             id:      rawN.id,
             title:   rawN.title   || rawN.titulo  || '',
             body:    rawN.body    || rawN.mensaje  || '',
             date:    parsedDate,
             seccion: (rawN.seccion || rawN.enlace || rawN.url || rawN.link || '').trim(),
-            url:     (rawN.url || rawN.enlace || rawN.link || '').trim()
+            url:     (rawN.url || rawN.enlace || rawN.link || '').trim(),
+            fecha_inicio: rawN.fecha_inicio || rawN.inicio || '',
+            fecha_fin:    rawN.fecha_fin || rawN.fin || rawN.expiracion || ''
           };
 
           const stringId = String(n.id);
@@ -3245,6 +3246,25 @@
             }
           }
         });
+
+        // Filtrar expiradas o no iniciadas
+        const todayForNotifs = new Date();
+        const finalLength = state.notifications.length;
+        state.notifications = state.notifications.filter(n => {
+          if (n.fecha_inicio) {
+            const fi = new Date(n.fecha_inicio.toString().split(' ')[0].split('T')[0] + 'T00:00:00');
+            if (todayForNotifs < fi) return false;
+          }
+          if (n.fecha_fin) {
+            const ff = new Date(n.fecha_fin.toString().split(' ')[0].split('T')[0] + 'T23:59:59');
+            if (todayForNotifs > ff) return false;
+          }
+          return true;
+        });
+        
+        if (state.notifications.length !== finalLength) {
+          hasChanged = true;
+        }
 
         if (hasChanged) {
           localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
@@ -3540,7 +3560,7 @@
           ${itemBadgeText ? `<span style="font-size:10px; background:${itemBadgeBg}; color:${itemBadgeTxt}; padding:2px 7px; border-radius:20px; font-weight:700; white-space:nowrap;">${itemBadgeText}</span>` : ''}
         </div>
         <div style="font-size:13px; color:var(--text-muted); line-height:1.5;">${n.body || ''}</div>
-        <div style="font-size:11px; color:var(--text-subtle); margin-top:8px; text-align:right;">${n.date || 'Reciente'}</div>
+        <div style="font-size:11px; color:var(--text-subtle); margin-top:8px; text-align:right;">${n.date || ''}</div>
       </div>`;
     }).join('');
   }
