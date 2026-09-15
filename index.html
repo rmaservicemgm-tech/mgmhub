@@ -2960,7 +2960,9 @@
 
       // 3. Ejecutar solo si ES móvil y NO está instalada
       if (esDispositivoMovil && !esAppInstalada) {
-        mostrarModal();
+        setTimeout(() => {
+          mostrarModal();
+        }, 3000); // Retraso inicial de 3 segundos
       }
 
       function mostrarModal() {
