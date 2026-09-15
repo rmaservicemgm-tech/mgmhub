@@ -3199,15 +3199,27 @@
 
         // Agregar nuevas notificaciones o actualizar existentes
         res.notifications.forEach(rawN => {
-          // Normalizar campos: el GAS puede devolver titulo/mensaje o title/body, y seccion/url/enlace/link
+        // Normalizar campos: el GAS puede devolver titulo/mensaje o title/body, y seccion/url/enlace/link
+          // Si no viene fecha, la extraemos del timestamp embebido en el ID (ej: RMA-2026-0018-1726344000000)
+          let parsedDate = rawN.date || rawN.fecha || '';
+          if (!parsedDate) {
+            const tsMatch = String(rawN.id || '').match(/-(\d{10,13})$/);
+            if (tsMatch) {
+              const ts = parseInt(tsMatch[1]);
+              const d = new Date(ts.toString().length <= 10 ? ts * 1000 : ts);
+              parsedDate = d.toLocaleDateString('es-PA', { day:'2-digit', month:'2-digit', year:'numeric' })
+                + ' ' + d.toLocaleTimeString('es-PA', { hour:'2-digit', minute:'2-digit', hour12: false });
+            }
+          }
           const n = {
             id:      rawN.id,
             title:   rawN.title   || rawN.titulo  || '',
             body:    rawN.body    || rawN.mensaje  || '',
-            date:    rawN.date    || rawN.fecha    || '',
+            date:    parsedDate,
             seccion: (rawN.seccion || rawN.enlace || rawN.url || rawN.link || '').trim(),
             url:     (rawN.url || rawN.enlace || rawN.link || '').trim()
           };
+
           const stringId = String(n.id);
           const alreadyExists = state.notifications.some(existing => String(existing.id) === stringId);
           const isCleared = state.clearedNotifs.includes(stringId);
