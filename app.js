@@ -1424,27 +1424,62 @@
   }
 
   async function loadHomePromos() {
-    state.promos = await fetchPromosFromGAS();
-    const slider = document.getElementById('home-promos-slider');
-    if (!slider) return;
+    const render = () => {
+      const slider = document.getElementById('home-promos-slider');
+      if (!slider) return;
+
+      if (state.promos.length === 0) {
+        slider.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Próximamente promociones especiales.</div>`;
+        return;
+      }
+
+      slider.innerHTML = state.promos.map((p, idx) => `
+        <div class="promo-slide-item" onclick="openPromoDetail(${idx})" style="background:${promoPlaceholderBg(p.tipo)};">
+          ${p.imagen ? `<img src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">` : ''}
+          <div class="promo-slide-badge">${promoPlaceholderEmoji(p.tipo)} ${p.nombre}</div>
+        </div>`).join('');
+    };
 
     if (state.promos.length === 0) {
-      slider.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Próximamente promociones especiales.</div>`;
-      return;
+      const cached = localStorage.getItem('MGM_CACHE_PROMOS');
+      if (cached) {
+        try {
+          state.promos = JSON.parse(cached);
+          render();
+        } catch(e) {}
+      }
+      
+      fetchPromosFromGAS().then(fresh => {
+        if (fresh && fresh.length > 0) {
+          state.promos = fresh;
+          localStorage.setItem('MGM_CACHE_PROMOS', JSON.stringify(fresh));
+          render();
+        }
+      });
+    } else {
+      render();
     }
-
-    slider.innerHTML = state.promos.map((p, idx) => `
-      <div class="promo-slide-item" onclick="openPromoDetail(${idx})" style="background:${promoPlaceholderBg(p.tipo)};">
-        ${p.imagen ? `<img src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">` : ''}
-        <div class="promo-slide-badge">${promoPlaceholderEmoji(p.tipo)} ${p.nombre}</div>
-      </div>`).join('');
   }
 
   async function loadAllPromos() {
     if (state.promos.length === 0) {
-      state.promos = await fetchPromosFromGAS();
+      const cached = localStorage.getItem('MGM_CACHE_PROMOS');
+      if (cached) {
+        try {
+          state.promos = JSON.parse(cached);
+          renderPromosGallery();
+        } catch(e) {}
+      }
+      
+      const fresh = await fetchPromosFromGAS();
+      if (fresh && fresh.length > 0) {
+        state.promos = fresh;
+        localStorage.setItem('MGM_CACHE_PROMOS', JSON.stringify(fresh));
+        renderPromosGallery();
+      }
+    } else {
+      renderPromosGallery();
     }
-    renderPromosGallery();
   }
 
   function renderPromosGallery() {
@@ -1522,46 +1557,67 @@
   }
 
   window.loadHomeRewards = async function() {
-    state.rewards = await fetchRewardsFromGAS();
-    const slider = document.getElementById('home-premios-slider');
-    if (!slider) return;
+    const render = () => {
+      const slider = document.getElementById('home-premios-slider');
+      if (!slider) return;
+
+      if (!state.rewards || state.rewards.length === 0) {
+        slider.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Próximamente nuevo catálogo de premios disponibles.</div>`;
+        return;
+      }
+
+      slider.innerHTML = state.rewards.map((r, idx) => {
+        const validez = formatRewardValidez(r);
+        const ptsFormatted = Number(r.puntos || 0).toLocaleString('es-PA');
+
+        return `
+        <div class="premio-slide-card" onclick="openRewardDetail(${idx})">
+          <div class="premio-card-img-wrap">
+            ${r.imagen
+              ? `<img src="${r.imagen}" alt="${r.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                 <div style="display:none; font-size:42px; color:#cbd5e1; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
+              : `<div style="font-size:42px; color:#cbd5e1; display:flex; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
+            }
+            <div class="premio-pts-tag">
+              <i class="fa-solid fa-coins"></i> ${ptsFormatted} Pts
+            </div>
+          </div>
+
+          ${r.modelo ? `<div class="premio-model-tag">MOD. ${r.modelo}</div>` : ''}
+          <div class="premio-card-title">${r.nombre}</div>
+          <div class="premio-card-desc">${(r.descripcion || '').split('\n')[0]}</div>
+
+          <div class="premio-card-footer">
+            <div class="premio-validez-text" style="color:${validez.color};">
+              ${validez.text}
+            </div>
+            <button class="premio-btn-action" onclick="event.stopPropagation(); openRewardDetail(${idx});">
+              Canjear
+            </button>
+          </div>
+        </div>`;
+      }).join('');
+    };
 
     if (!state.rewards || state.rewards.length === 0) {
-      slider.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Próximamente nuevo catálogo de premios disponibles.</div>`;
-      return;
+      const cached = localStorage.getItem('MGM_CACHE_REWARDS');
+      if (cached) {
+        try {
+          state.rewards = JSON.parse(cached);
+          render();
+        } catch(e) {}
+      }
+      
+      fetchRewardsFromGAS().then(fresh => {
+        if (fresh && fresh.length > 0) {
+          state.rewards = fresh;
+          localStorage.setItem('MGM_CACHE_REWARDS', JSON.stringify(fresh));
+          render();
+        }
+      });
+    } else {
+      render();
     }
-
-    slider.innerHTML = state.rewards.map((r, idx) => {
-      const validez = formatRewardValidez(r);
-      const ptsFormatted = Number(r.puntos || 0).toLocaleString('es-PA');
-
-      return `
-      <div class="premio-slide-card" onclick="openRewardDetail(${idx})">
-        <div class="premio-card-img-wrap">
-          ${r.imagen
-            ? `<img src="${r.imagen}" alt="${r.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-               <div style="display:none; font-size:42px; color:#cbd5e1; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
-            : `<div style="font-size:42px; color:#cbd5e1; display:flex; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
-          }
-          <div class="premio-pts-tag">
-            <i class="fa-solid fa-coins"></i> ${ptsFormatted} Pts
-          </div>
-        </div>
-
-        ${r.modelo ? `<div class="premio-model-tag">MOD. ${r.modelo}</div>` : ''}
-        <div class="premio-card-title">${r.nombre}</div>
-        <div class="premio-card-desc">${(r.descripcion || '').split('\n')[0]}</div>
-
-        <div class="premio-card-footer">
-          <div class="premio-validez-text" style="color:${validez.color};">
-            ${validez.text}
-          </div>
-          <button class="premio-btn-action" onclick="event.stopPropagation(); openRewardDetail(${idx});">
-            Canjear
-          </button>
-        </div>
-      </div>`;
-    }).join('');
   };
 
   window.openRewardDetail = function(idx) {
@@ -1796,54 +1852,87 @@
   }
 
   async function loadAgendaEvents() {
-    state.agendaEvents = await fetchEventsFromGAS();
-    renderCalendar();
+    const cached = localStorage.getItem('MGM_CACHE_EVENTS');
+    if (cached) {
+      try {
+        state.agendaEvents = JSON.parse(cached);
+        renderCalendar();
+      } catch(e) {}
+    }
+    
+    const fresh = await fetchEventsFromGAS();
+    if (fresh && fresh !== DEMO_EVENTS) {
+      state.agendaEvents = fresh;
+      localStorage.setItem('MGM_CACHE_EVENTS', JSON.stringify(fresh));
+      renderCalendar();
+    } else if (!cached) {
+      state.agendaEvents = DEMO_EVENTS;
+      renderCalendar();
+    }
   }
 
   async function loadHomeNextEvent() {
-    if (state.agendaEvents.length === 0) {
-      state.agendaEvents = await fetchEventsFromGAS();
-    }
-    const events = state.agendaEvents;
+    const render = () => {
+      const events = state.agendaEvents;
+      const today = new Date(); today.setHours(0,0,0,0);
+      const upcoming = events
+        .filter(e => new Date(e.fecha + 'T00:00:00') >= today)
+        .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
-    const today = new Date(); today.setHours(0,0,0,0);
-    const upcoming = events
-      .filter(e => new Date(e.fecha + 'T00:00:00') >= today)
-      .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+      const banner = document.getElementById('home-event-banner');
+      if (!upcoming.length) {
+        if (banner) banner.style.display = 'none';
+        return;
+      } else {
+        if (banner) banner.style.display = '';
+      }
 
-    const banner = document.getElementById('home-event-banner');
-    if (!upcoming.length) {
-      if (banner) banner.style.display = 'none';
-      return;
-    } else {
-      if (banner) banner.style.display = ''; // Restaurar la visibilidad
-    }
+      const next = upcoming[0];
+      const diff = daysUntil(next.fecha);
 
-    const next = upcoming[0];
-    const diff = daysUntil(next.fecha);
+      const catMap = { webinar:'Webinar Online 📺', training:'Capacitación 🎯', curso:'Certificación 🏆' };
+      const catIconMap = {
+        webinar: '<i class="fa-solid fa-desktop"></i>',
+        training: '<i class="fa-solid fa-users"></i>',
+        curso: '<i class="fa-solid fa-award"></i>'
+      };
 
-    const catMap = { webinar:'Webinar Online 📺', training:'Capacitación 🎯', curso:'Certificación 🏆' };
-    const catIconMap = {
-      webinar: '<i class="fa-solid fa-desktop"></i>',
-      training: '<i class="fa-solid fa-users"></i>',
-      curso: '<i class="fa-solid fa-award"></i>'
+      const iconWrap = document.getElementById('home-event-icon-wrap');
+      const badgeEl = document.getElementById('home-event-badge');
+      const titleEl = document.getElementById('home-event-title');
+      const timeEl  = document.getElementById('home-event-time');
+
+      if (iconWrap) {
+        iconWrap.innerHTML = catIconMap[next.categoria] || '<i class="fa-solid fa-calendar-star"></i>';
+      }
+
+      if (badgeEl) badgeEl.innerHTML = `<i class="fa-solid fa-bolt"></i> ${catMap[next.categoria] || 'Evento MGM'}`;
+      if (titleEl) titleEl.textContent = next.titulo;
+      if (timeEl) {
+        if (diff === 0)      timeEl.textContent = `🔴 ¡HOY a las ${next.hora}!`;
+        else if (diff === 1) timeEl.textContent = `⏰ Mañana a las ${next.hora}`;
+        else                 timeEl.textContent = `En ${diff} días — ${next.hora}`;
+      }
     };
 
-    const iconWrap = document.getElementById('home-event-icon-wrap');
-    const badgeEl = document.getElementById('home-event-badge');
-    const titleEl = document.getElementById('home-event-title');
-    const timeEl  = document.getElementById('home-event-time');
-
-    if (iconWrap) {
-      iconWrap.innerHTML = catIconMap[next.categoria] || '<i class="fa-solid fa-calendar-star"></i>';
-    }
-
-    if (badgeEl) badgeEl.innerHTML = `<i class="fa-solid fa-bolt"></i> ${catMap[next.categoria] || 'Evento MGM'}`;
-    if (titleEl) titleEl.textContent = next.titulo;
-    if (timeEl) {
-      if (diff === 0)      timeEl.textContent = `🔴 ¡HOY a las ${next.hora}!`;
-      else if (diff === 1) timeEl.textContent = `⏰ Mañana a las ${next.hora}`;
-      else                 timeEl.textContent = `En ${diff} días — ${next.hora}`;
+    if (state.agendaEvents.length === 0) {
+      const cached = localStorage.getItem('MGM_CACHE_EVENTS');
+      if (cached) {
+        try {
+          state.agendaEvents = JSON.parse(cached);
+          render();
+        } catch(e) {}
+      }
+      
+      fetchEventsFromGAS().then(fresh => {
+        if (fresh && fresh !== DEMO_EVENTS) {
+          state.agendaEvents = fresh;
+          localStorage.setItem('MGM_CACHE_EVENTS', JSON.stringify(fresh));
+          render();
+        }
+      });
+    } else {
+      render();
     }
   }
 
@@ -4593,3 +4682,4 @@
     if (offlineIcon) offlineIcon.style.display = 'inline-block';
   }
 })();
+
