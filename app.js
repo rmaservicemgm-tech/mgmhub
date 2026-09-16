@@ -1740,8 +1740,9 @@
     if (/^https?:\/\//i.test(trimmed)) return trimmed;
     // Si inicia con /, unimos con el dominio de Odoo
     if (trimmed.startsWith('/')) return `https://mgmpty.odoo.com${trimmed}`;
-    // Si es un slug de Odoo
-    return `https://mgmpty.odoo.com/event/${trimmed}/register`;
+    
+    // Agregar dominio a ruta relativa que viene en Columna L sin '/' inicial
+    return `https://mgmpty.odoo.com/${trimmed}`;
   }
 
   async function fetchEventsFromGAS() {
@@ -1780,7 +1781,8 @@
             }
           }
         } else {
-          eventsList.push(...data.map(ev => ({
+          eventsList.push(...data.map((ev, idx) => ({
+            id: ev.id || `EV_${Date.now()}_${idx}`,
             ...ev,
             registro_url: formatEventUrl(ev.registro_url || ev.button_link)
           })));
@@ -1912,7 +1914,7 @@
   });
 
   window.openEventDetail = function(eventId) {
-    const ev = state.agendaEvents.find(e => e.id === eventId);
+    const ev = state.agendaEvents.find(e => String(e.id) === String(eventId));
     if (!ev) return;
     state.activeEventData = ev;
 
