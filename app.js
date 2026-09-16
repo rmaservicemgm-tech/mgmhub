@@ -703,7 +703,7 @@
       const tryOpenEvent = (attempts) => {
         if (state.agendaEvents.length > 0) {
           openEventDetail(sub);
-        } else if (attempts < 20) {
+        } else if (attempts < 40) {
           setTimeout(() => tryOpenEvent(attempts + 1), 300);
         }
       };
@@ -1782,7 +1782,7 @@
           }
         } else {
           eventsList.push(...data.map((ev, idx) => ({
-            id: ev.id || `EV_${Date.now()}_${idx}`,
+            id: ev.id || `EV_R_${idx}`,
             ...ev,
             registro_url: formatEventUrl(ev.registro_url || ev.button_link)
           })));
@@ -1815,6 +1815,8 @@
     if (!upcoming.length) {
       if (banner) banner.style.display = 'none';
       return;
+    } else {
+      if (banner) banner.style.display = ''; // Restaurar la visibilidad
     }
 
     const next = upcoming[0];
