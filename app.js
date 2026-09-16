@@ -795,10 +795,10 @@
     if (el) el.classList.remove('active');
   };
 
-  function openAppModal(modalId) {
+  window.openAppModal = function(modalId) {
     const el = document.getElementById(modalId);
     if (el) el.classList.add('active');
-  }
+  };
 
   document.addEventListener('click', e => {
     if (e.target.classList.contains('app-modal')) {

@@ -1512,7 +1512,7 @@
 
           // Quitar / ocultar RMA cerrado de la lista del cliente
           window.quitarRmaDeLista = function(rma) {
-            // Mostrar modal de confirmación personalizado (en lugar de confirm() nativo)
+            // Poner el número de RMA en el modal
             const rmaLabel = document.getElementById('modal-quitar-rma-number');
             if (rmaLabel) rmaLabel.textContent = rma;
 
@@ -1520,20 +1520,26 @@
             const btnOk = document.getElementById('btn-quitar-rma-ok');
             if (btnOk) {
               btnOk.onclick = function() {
-                closeAppModal('modal-confirm-quitar-rma');
+                // Cerrar modal
+                var m = document.getElementById('modal-confirm-quitar-rma');
+                if (m) m.classList.remove('active');
+                // Archivar en localStorage
                 try {
-                  let dismissed = JSON.parse(localStorage.getItem('mgm_dismissed_rmas') || '[]');
+                  var dismissed = JSON.parse(localStorage.getItem('mgm_dismissed_rmas') || '[]');
                   if (!dismissed.includes(rma)) {
                     dismissed.push(rma);
                     localStorage.setItem('mgm_dismissed_rmas', JSON.stringify(dismissed));
                   }
-                  window.loadUserActiveRmas();
+                  if (window.loadUserActiveRmas) window.loadUserActiveRmas();
                 } catch(e) {
                   console.error('Error archivando RMA:', e);
                 }
               };
             }
-            openAppModal('modal-confirm-quitar-rma');
+
+            // Abrir modal directamente (sin depender de openAppModal global)
+            var modal = document.getElementById('modal-confirm-quitar-rma');
+            if (modal) modal.classList.add('active');
           };
 
           // Restaurar todos los RMAs archivados
