@@ -702,12 +702,26 @@
     if (tab === 'agenda') {
       const tryOpenEvent = (attempts) => {
         if (state.agendaEvents.length > 0) {
-          openEventDetail(sub);
-        } else if (attempts < 40) {
+          // Intentar abrir; si no se encontró aún, reintentar (el fetch puede seguir corriendo)
+          const found = state.agendaEvents.find(e =>
+            String(e.id).toLowerCase().trim() === sub.toLowerCase().trim() ||
+            String(e.id).toLowerCase().includes(sub.toLowerCase()) ||
+            sub.toLowerCase().includes(String(e.id).toLowerCase().trim())
+          );
+          if (found || attempts >= 30) {
+            openEventDetail(sub);
+          } else {
+            setTimeout(() => tryOpenEvent(attempts + 1), 300);
+          }
+        } else if (attempts < 50) {
+          // Si todavía no hay eventos cargados, esperar más
           setTimeout(() => tryOpenEvent(attempts + 1), 300);
+        } else {
+          console.warn('[MGM] Deep link agenda: tiempo de espera agotado para id:', sub);
         }
       };
-      tryOpenEvent(0);
+      // Iniciar con pequeño delay para dar tiempo al caché de renderizar
+      setTimeout(() => tryOpenEvent(0), 200);
     }
 
     // --- Promos: abrir modal de la promo por ID ---
@@ -1817,8 +1831,12 @@
                     const monthNum = String(parseInt(m) + 1).padStart(2, '0');
                     const dayNum = String(d).padStart(2, '0');
                     const dateStr = `${y}-${monthNum}-${dayNum}`;
+                    // Prioridad de ID: campo id del GAS (col A del Sheet) → fallback generado
+                    const evId = (ev.id !== undefined && ev.id !== null && String(ev.id).trim() !== '')
+                      ? String(ev.id).trim()
+                      : `EV_${y}_${parseInt(m)+1}_${d}_${idx}`;
                     eventsList.push({
-                      id: `EV_${y}_${m}_${d}_${idx}`,
+                      id: evId,
                       titulo: ev.title || 'Evento MGM',
                       categoria: (ev.type || 'training').toLowerCase(),
                       fecha: dateStr,
@@ -1828,7 +1846,7 @@
                       costo: ev.price || 'Gratis',
                       lugar: ev.extra_2 || 'En línea',
                       cupos: ev.extra_1 || '20',
-                      registro_url: formatEventUrl(ev.button_link),
+                      registro_url: formatEventUrl(ev.registro_url || ev.button_link || ev.link || ev.url || ev.formulario || ''),
                       button_text: ev.button_text || 'Reservar Cupo'
                     });
                   });
@@ -2005,8 +2023,30 @@
   });
 
   window.openEventDetail = function(eventId) {
-    const ev = state.agendaEvents.find(e => String(e.id) === String(eventId));
-    if (!ev) return;
+    const searchId = String(eventId).toLowerCase().trim();
+
+    // 1) Coincidencia exacta por ID (case-insensitive)
+    let ev = state.agendaEvents.find(e => String(e.id).toLowerCase().trim() === searchId);
+
+    // 2) Coincidencia parcial: el ID del evento contiene el buscado o viceversa
+    if (!ev) {
+      ev = state.agendaEvents.find(e =>
+        String(e.id).toLowerCase().includes(searchId) ||
+        searchId.includes(String(e.id).toLowerCase().trim())
+      );
+    }
+
+    // 3) Búsqueda por título (útil cuando el ID no viene del GAS)
+    if (!ev) {
+      ev = state.agendaEvents.find(e =>
+        String(e.titulo).toLowerCase().includes(searchId)
+      );
+    }
+
+    if (!ev) {
+      console.warn('[MGM] openEventDetail: no se encontró evento con id:', eventId, '| eventos disponibles:', state.agendaEvents.map(e => e.id));
+      return;
+    }
     state.activeEventData = ev;
 
     document.getElementById('modal-event-cat').textContent   = ev.categoria?.toUpperCase() || 'EVENTO';
@@ -2023,7 +2063,23 @@
       btnReserve.innerHTML = `<i class="fa-solid fa-ticket"></i> ${ev.button_text || 'Reservar Cupo'}`;
     }
 
+    const deepLinkInput = document.getElementById('modal-event-deeplink-input');
+    if (deepLinkInput) {
+      deepLinkInput.value = `${window.location.origin}${window.location.pathname}?tab=agenda&id=${ev.id}`;
+    }
+
     openAppModal('modal-event-detail');
+  };
+
+  window.copyEventDeepLink = function() {
+    const input = document.getElementById('modal-event-deeplink-input');
+    if (input) {
+      navigator.clipboard.writeText(input.value).then(() => {
+        if (typeof showToast === 'function') {
+          showToast('¡Enlace directo copiado!', 'fa-solid fa-clipboard-check');
+        }
+      });
+    }
   };
 
   window.openEventQR = function() {
