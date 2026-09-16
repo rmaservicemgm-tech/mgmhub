@@ -1530,6 +1530,21 @@
                     dismissed.push(rma);
                     localStorage.setItem('mgm_dismissed_rmas', JSON.stringify(dismissed));
                   }
+                  
+                  // Sincronizar con el backend de Google Sheets
+                  let user = null;
+                  try { user = JSON.parse(localStorage.getItem('mgm_auth_user')) || (window.state && window.state.authUser); } catch(e) {}
+                  if (user && typeof API_URL !== 'undefined') {
+                    fetch(API_URL, {
+                      method: 'POST',
+                      body: JSON.stringify({
+                        action: 'archivar_rma',
+                        rma: rma,
+                        cedula: user.cedula || user.email || ''
+                      })
+                    }).catch(e => console.error('Error enviando archivar_rma:', e));
+                  }
+
                   if (window.loadUserActiveRmas) window.loadUserActiveRmas();
                 } catch(e) {
                   console.error('Error archivando RMA:', e);
@@ -1545,6 +1560,20 @@
           // Restaurar todos los RMAs archivados
           window.restaurarRmasOcultos = function() {
             localStorage.removeItem('mgm_dismissed_rmas');
+            
+            // Sincronizar con el backend de Google Sheets
+            let user = null;
+            try { user = JSON.parse(localStorage.getItem('mgm_auth_user')) || (window.state && window.state.authUser); } catch(e) {}
+            if (user && typeof API_URL !== 'undefined') {
+              fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                  action: 'restaurar_rmas',
+                  cedula: user.cedula || user.email || ''
+                })
+              }).catch(e => console.error('Error enviando restaurar_rmas:', e));
+            }
+            
             window.loadUserActiveRmas();
           };
 
@@ -1638,6 +1667,21 @@
               let dismissed = [];
               try {
                 dismissed = JSON.parse(localStorage.getItem('mgm_dismissed_rmas') || '[]');
+                
+                // Sincronizar los que el backend ya reporta como archivados
+                if (data.archivados && Array.isArray(data.archivados)) {
+                  let changed = false;
+                  data.archivados.forEach(a => {
+                    const cleanA = String(a).trim();
+                    if (!dismissed.includes(cleanA)) {
+                      dismissed.push(cleanA);
+                      changed = true;
+                    }
+                  });
+                  if (changed) {
+                    localStorage.setItem('mgm_dismissed_rmas', JSON.stringify(dismissed));
+                  }
+                }
               } catch(e) {}
 
               if (data.success && Array.isArray(data.rmas) && data.rmas.length > 0) {

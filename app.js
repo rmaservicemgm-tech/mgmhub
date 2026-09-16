@@ -120,6 +120,7 @@
   const K_AUTH    = 'mgm_auth_user';
   const K_NOTIFS  = 'mgm_notifications';
   const K_CLEARED_NOTIFS = 'mgm_cleared_notifs';
+  const K_SEEN_NOTIFS = 'mgm_seen_notifs';
   const K_NOTIFIED_TX    = 'mgm_notified_tx_v1';
   const K_MY_COURSES     = 'mgm_my_courses';
 
@@ -140,6 +141,7 @@
     activeRewardData: null,
     notifications: JSON.parse(localStorage.getItem(K_NOTIFS)) || [],
     clearedNotifs: JSON.parse(localStorage.getItem(K_CLEARED_NOTIFS)) || [],
+    seenNotifs: JSON.parse(localStorage.getItem(K_SEEN_NOTIFS)) || [],
     authUser: JSON.parse(localStorage.getItem(K_AUTH)) || null,
     clients: JSON.parse(localStorage.getItem(K_CLIENTS)) || [
       { cedula:'8-888-1234', nombre:'Juan Carlos Pérez', correo:'juan@email.com', telefono:'6254-0412', cumpleanos:'1990-08-15', fechaRegistro:'2026-01-10', puntos:2800, totalComprasAno:1400.00 },
@@ -841,7 +843,7 @@
   // GESTIÓN CENTRALIZADA DE SESIÓN (LOGIN, REGISTRO, AUTO-LOGIN & TRACKING)
   // ══════════════════════════════════════════════════════════════════════════════
 
-  function setClientSession(clientData, eventType = 'login') {
+  async function setClientSession(clientData, eventType = 'login') {
     if (!clientData) return;
     state.authUser = { ...state.authUser, ...clientData };
     localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
@@ -865,19 +867,16 @@
     // 5. Registrar en el Sheet de Tracking usando la acción 'track'
     trackUserActivity(state.authUser.cedula, state.authUser.nombre, eventType);
 
-    // 6. Enviar notificación interna de bienvenida (si es nueva)
-    checkAndSendWelcomeNotification(state.authUser.nombre);
+    // 6. Consultar notificaciones y sincronizar eliminadas desde el backend PRIMERO
+    await checkNotifications();
 
     // 7. Renderizar dashboard de puntos al instante
     renderDashboard(state.authUser);
 
     // 8. Detectar movimientos de puntos (acreditaciones, canjes/redenciones, ajustes del asesor)
-    checkAndNotifyNewPoints(state.authUser);
+    checkAndNotifyNewPoints(state.authUser, eventType);
 
-    // 9. Consultar notificaciones personalizadas desde el backend
-    checkNotifications();
-
-    // 10. Consultar cursos/capacitaciones en los que está inscrito el usuario
+    // 9. Consultar cursos/capacitaciones en los que está inscrito el usuario
     loadMyCourses();
 
     // 10. Actualizar catálogo de premios para reflejar puntos del usuario
@@ -1008,12 +1007,15 @@
   // DETECCIÓN AUTOMÁTICA DE MOVIMIENTOS: PUNTOS ACREDITADOS, REDIMIDOS Y AJUSTES
   // (Generados desde el panel de administración de los asesores o compras)
   // ══════════════════════════════════════════════════════════════════════════════
-  function checkAndNotifyNewPoints(freshClient) {
+  function checkAndNotifyNewPoints(freshClient, eventType = 'auto') {
     if (!freshClient) return;
     
     let notifiedTxs = JSON.parse(localStorage.getItem(K_NOTIFIED_TX)) || [];
     const historico = freshClient.historico || [];
     if (historico.length === 0) return;
+
+    // Si el dispositivo no tiene transacciones previas registradas (ej. inicio en nuevo dispositivo)
+    const isNewDevice = notifiedTxs.length === 0;
 
     let hasNewChanges = false;
     let newNotificationsToAdd = [];
@@ -1027,7 +1029,7 @@
       const ptsAbs = Math.abs(ptsNum);
       const isNewlyDiscovered = !notifiedTxs.includes(txKey);
 
-      // Determinar si ya está en la lista de notificaciones o fue borrada por el usuario
+      // Determinar si ya está en la lista de notificaciones o fue borrada por el usuario (sincronizada con backend)
       const alreadyInList = state.notifications.some(n => String(n.id) === String(notifId));
       const wasCleared = state.clearedNotifs.includes(String(notifId));
 
@@ -1134,7 +1136,9 @@
         // Si es una transacción recién descubierta en vivo
         if (isNewlyDiscovered) {
           notifiedTxs.push(txKey);
-          liveAlerts.push({ type: alertType, tx, notif: notifObj, ptsNum, ptsAbs });
+          if (!isNewDevice) {
+            liveAlerts.push({ type: alertType, tx, notif: notifObj, ptsNum, ptsAbs });
+          }
         }
       } else if (isNewlyDiscovered) {
         notifiedTxs.push(txKey);
@@ -2852,39 +2856,8 @@
   };
 
   function checkAndSendWelcomeNotification(nombre) {
-    // Verificar si ya existe en la lista actual
-    if (state.notifications.some(n => n.id === '0000')) return;
-
-    // Verificar si ya se envió la bienvenida a este usuario (por cédula) en este dispositivo
-    // Esto evita que se repita en cada logout/login
-    const cedula = state.authUser ? state.authUser.cedula : null;
-    const welcomeKey = cedula ? `mgm_welcomed_${cedula}` : null;
-    if (welcomeKey && localStorage.getItem(welcomeKey) === 'true') return;
-
-    const primerNombre = (nombre || '').split(' ')[0] || 'Cliente';
-    const now = new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    const hh = String(now.getHours()).padStart(2, '0');
-    const min = String(now.getMinutes()).padStart(2, '0');
-    const welcomeNotif = {
-      id: '0000',
-      title: '¡Bienvenido a MGM Hub! 🎉',
-      body: `Hola ${primerNombre}, gracias por unirte a nuestro programa de beneficios. Te invitamos a seguir sumando puntos en todas tus compras y disfrutar de recompensas exclusivas.`,
-      date: `${yyyy}-${mm}-${dd} ${hh}:${min}`
-    };
-
-    state.notifications.unshift(welcomeNotif);
-    localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
-    
-    // Marcar como enviada para este usuario en este dispositivo
-    if (welcomeKey) localStorage.setItem(welcomeKey, 'true');
-
-    updateNotifBadge();
-    
-    // Alerta visual local
-    fireNativeNotif(welcomeNotif.title, welcomeNotif.body);
+    // La bienvenida se gestiona de forma centralizada y única en el backend de Google Sheets (WELCOME_<CEDULA>)
+    // Se recibe sincronizada automáticamente vía checkNotifications() y se emite solo una vez.
   }
 
   window.logoutClient = function() {
@@ -2893,9 +2866,9 @@
     state.myCourses = [];
     localStorage.removeItem(K_MY_COURSES);
     renderMyCourses();
-    // Limpiar notificaciones de puntos de la sesión anterior (manteniendo bienvenida)
-    state.notifications = state.notifications.filter(n => String(n.id) === '0000');
-    localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
+    // Limpiar completamente las notificaciones al cerrar sesión
+    state.notifications = [];
+    localStorage.setItem(K_NOTIFS, '[]');
     updateNotifBadge();
     renderNotifications();
     updateHeaderUserIcon();
@@ -3191,22 +3164,40 @@
     try {
       const cedula = state.authUser ? state.authUser.cedula : 'ANONIMO';
       const email  = (state.authUser && state.authUser.email) ? state.authUser.email : '';
+      const nombre = (state.authUser && state.authUser.nombre) ? state.authUser.nombre : '';
       const res = await fetch(CFG.NOTIFS_GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'get_notifications', cedula, email })
+        body: JSON.stringify({ action: 'get_notifications', cedula, email, nombre })
       }).then(r => r.json());
 
-      if (res.success && Array.isArray(res.notifications)) {
+      if (res.success) {
         let hasChanged = false;
-        
-        // Sincronizar eliminaciones: borrar notificaciones de servidor obsoletas (preservar bienvenida y puntos acreditados)
-        const serverIds = res.notifications.map(n => String(n.id));
+
+        // 1. Sincronizar IDs borrados en otros dispositivos
+        if (Array.isArray(res.clearedIds)) {
+          let newCleared = false;
+          res.clearedIds.forEach(id => {
+            const sId = String(id);
+            if (!state.clearedNotifs.includes(sId)) {
+              state.clearedNotifs.push(sId);
+              newCleared = true;
+            }
+          });
+          if (newCleared) {
+            localStorage.setItem(K_CLEARED_NOTIFS, JSON.stringify(state.clearedNotifs));
+          }
+        }
+
+        // 2. Sincronizar eliminaciones: descartar cualquier notificación local que esté en clearedNotifs
+        // o que ya no exista en el servidor (salvo transacciones de puntos no borradas)
+        const serverIds = Array.isArray(res.notifications) ? res.notifications.map(n => String(n.id)) : [];
         const originalLength = state.notifications.length;
         state.notifications = state.notifications.filter(localNotif => {
           const localId = String(localNotif.id);
-          if (localId === '0000' || localId.startsWith('pts_')) return true; // Preservar bienvenida y transacciones de puntos
-          return serverIds.includes(localId);  // Mantener solo si sigue en el server
+          if (state.clearedNotifs.includes(localId)) return false;
+          if (localId.startsWith('pts_')) return true; // Mantener puntos si no fueron borrados
+          return serverIds.includes(localId);  // Mantener del server solo si sigue activa
         });
         
         if (state.notifications.length !== originalLength) {
@@ -3256,11 +3247,18 @@
           if (!alreadyExists && !isCleared) {
             state.notifications.unshift(n);
             hasChanged = true;
-            // Disparar notificación nativa del sistema
-            fireNativeNotif(n.title || 'MGM', n.body || '', n.seccion || n.url || '');
-            // Mostrar Toast visual en la app
-            if (typeof showToast === 'function') {
-              showToast(n.title || 'Nueva notificación de MGM', 'fa-solid fa-bell');
+            
+            // Solo disparar toast/nativo si nunca lo hemos visto en este dispositivo
+            if (!state.seenNotifs.includes(stringId)) {
+              state.seenNotifs.push(stringId);
+              localStorage.setItem(K_SEEN_NOTIFS, JSON.stringify(state.seenNotifs));
+              
+              // Disparar notificación nativa del sistema
+              fireNativeNotif(n.title || 'MGM', n.body || '', n.seccion || n.url || '');
+              // Mostrar Toast visual en la app
+              if (typeof showToast === 'function') {
+                showToast(n.title || 'Nueva notificación de MGM', 'fa-solid fa-bell');
+              }
             }
           } else if (alreadyExists) {
             // Actualizar si hay cambios en el texto o destino
@@ -3385,20 +3383,50 @@
     }
   };
 
-  // Ejecuta el borrado real (llamado desde el botón "Eliminar" del modal)
+  // Borrado individual de una sola notificación (una a la vez) con sincronización multidispositivo
+  window.dismissNotification = function(notifId, e) {
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
+    const stringId = String(notifId);
+
+    // Remover del estado local
+    state.notifications = state.notifications.filter(n => String(n.id) !== stringId);
+    if (!state.clearedNotifs.includes(stringId)) {
+      state.clearedNotifs.push(stringId);
+    }
+    localStorage.setItem(K_CLEARED_NOTIFS, JSON.stringify(state.clearedNotifs));
+    localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
+    renderNotifications();
+    updateNotifBadge();
+
+    // Sincronizar borrado con el backend para que los demás dispositivos no la muestren
+    if (state.authUser && state.authUser.cedula &&
+        CFG.NOTIFS_GAS_URL && CFG.NOTIFS_GAS_URL !== 'URL_TEMPORAL_PENDIENTE') {
+      fetch(CFG.NOTIFS_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'clear_notifications',
+          cedula: state.authUser.cedula,
+          notifIds: [stringId]
+        })
+      }).catch(err => console.warn('[MGM] Error sincronizando borrado individual:', err));
+    }
+  };
+
+  // Ejecuta el borrado masivo real (llamado desde el botón "Eliminar" del modal)
   window.confirmClearNotifications = function() {
     // Cerrar el modal de confirmación
     const modal = document.getElementById('modal-confirm-clear');
     if (modal) modal.classList.remove('active');
 
-    // Recopilar IDs antes de limpiar el array
-    const idsToClear = state.notifications
-      .map(n => String(n.id))
-      .filter(id => id !== '0000' && !id.startsWith('pts_')); // No enviar bienvenida ni puntos locales
+    // Recopilar TODOS los IDs antes de limpiar el array para sincronizar borrado completo
+    const idsToClear = state.notifications.map(n => String(n.id));
+    if (idsToClear.length === 0) return;
 
     // Guardar las IDs borradas localmente para que no vuelvan a aparecer del backend
-    state.notifications.forEach(n => {
-      const stringId = String(n.id);
+    idsToClear.forEach(stringId => {
       if (!state.clearedNotifs.includes(stringId)) {
         state.clearedNotifs.push(stringId);
       }
@@ -3410,8 +3438,8 @@
     renderNotifications();
     updateNotifBadge();
 
-    // Sincronizar borrado con el backend para que otros dispositivos no vean estas notificaciones
-    if (idsToClear.length > 0 && state.authUser && state.authUser.cedula &&
+    // Sincronizar borrado masivo con el backend para que otros dispositivos no vean estas notificaciones
+    if (state.authUser && state.authUser.cedula &&
         CFG.NOTIFS_GAS_URL && CFG.NOTIFS_GAS_URL !== 'URL_TEMPORAL_PENDIENTE') {
       fetch(CFG.NOTIFS_GAS_URL, {
         method: 'POST',
@@ -3421,7 +3449,7 @@
           cedula: state.authUser.cedula,
           notifIds: idsToClear
         })
-      }).catch(err => console.warn('[MGM] No se pudo sincronizar borrado de notificaciones:', err));
+      }).catch(err => console.warn('[MGM] No se pudo sincronizar borrado masivo de notificaciones:', err));
     }
   };
 
@@ -3603,12 +3631,18 @@
 
       return `
       <div ${clickAttr}
-        style="background:var(--bg-surface); border:1px solid var(--border-light); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:var(--shadow-xs); transition: box-shadow 0.2s, transform 0.2s;"
+        style="position:relative; background:var(--bg-surface); border:1px solid var(--border-light); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:var(--shadow-xs); transition: box-shadow 0.2s, transform 0.2s;"
         onmouseover="${hoverIn}" onmouseout="${hoverOut}">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
           <i class="${iconClass}" style="color:${itemColor}; font-size:14px;"></i>
-          <div style="font-size:14px; font-weight:800; color:var(--text-dark); flex:1;">${n.title || 'Sin Título'}</div>
+          <div style="font-size:14px; font-weight:800; color:var(--text-dark); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;">${n.title || 'Sin Título'}</div>
           ${itemBadgeText ? `<span style="font-size:10px; background:${itemBadgeBg}; color:${itemBadgeTxt}; padding:2px 7px; border-radius:20px; font-weight:700; white-space:nowrap;">${itemBadgeText}</span>` : ''}
+          <button type="button" onclick="dismissNotification('${safeId}', event)" title="Eliminar notificación"
+            style="background:none; border:none; color:var(--text-subtle); cursor:pointer; padding:3px 6px; border-radius:6px; font-size:13px; display:inline-flex; align-items:center; justify-content:center; transition:color 0.15s, background 0.15s; margin-left:4px;"
+            onmouseover="this.style.color='#ef4444'; this.style.background='rgba(239,68,68,0.1)';"
+            onmouseout="this.style.color='var(--text-subtle)'; this.style.background='none';">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
         <div style="font-size:13px; color:var(--text-muted); line-height:1.5;">${n.body || ''}</div>
         <div style="font-size:11px; color:var(--text-subtle); margin-top:8px; text-align:right;">${n.date || ''}</div>
