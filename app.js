@@ -84,7 +84,7 @@
     PUNTOS_GAS_URL: 'https://script.google.com/macros/s/AKfycbwV90SCVdMrMgE1Vlev3rdpcqMJlVwCV5du_MGJ-BtV5Di8LMY9UroYD7dXhWBXyI2yGw/exec',
 
     // 2. CALENDARIO & AGENDA (Eventos, Webinars, Capacitaciones)
-    AGENDA_GAS_URL: 'https://script.google.com/macros/s/AKfycbyxahYk-Hgmtn0E_npeCGdS99fIKLQhVmQLeEQbXz3N59KuSWmHoYnq5p2xypPUGIK2yA/exec',
+    AGENDA_GAS_URL: 'https://script.google.com/macros/s/AKfycbxdr46a9UuitHx8LyWDBHi3yZ-yAfRsQMqlwIhIwgeFRC_zm5CLMYO5HMuXwKMimBw4/exec',
 
     // 3. PROMOCIONES DEL MES (Slider & Rotator)
     PROMOS_GAS_URL: 'https://script.google.com/macros/s/AKfycbxP0mmc5rSsn6-b29iHM3HpgMKqAQL0auCRHGIoM7DfUxrkFvvMyzI4LTBueCHs6iDzyw/exec',
