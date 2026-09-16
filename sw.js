@@ -1,7 +1,7 @@
 // ─── MGM HUB SERVICE WORKER ──────────────────────────────────────────────────
 // Estrategia: Network First + Cache como respaldo offline.
 // Cambiar CACHE_VERSION fuerza actualización inmediata en todos los clientes.
-const CACHE_VERSION = 17;
+const CACHE_VERSION = 18;
 const CACHE_NAME    = `mgm-toolbox-v${CACHE_VERSION}`;
 
 // Archivos a pre-cachear (para funcionalidad offline básica)
@@ -41,17 +41,43 @@ self.addEventListener('activate', event => {
   );
 });
 
-// ── FETCH: Network First → si falla (offline) → Cache ───────────────────────
+// ── FETCH: Estrategias según el tipo de recurso ─────────────────────────────
 self.addEventListener('fetch', event => {
-  // Solo GET, y omitir peticiones externas (Google Scripts, APIs, CDNs)
+  // Solo GET
   if (event.request.method !== 'GET') return;
   
   const url = new URL(event.request.url);
   const isLocal = url.origin === self.location.origin;
+  const isCDN = url.origin.includes('cdnjs.cloudflare.com') ||
+                url.origin.includes('fonts.googleapis.com') ||
+                url.origin.includes('fonts.gstatic.com') ||
+                url.origin.includes('cdn.jsdelivr.net') ||
+                url.origin.includes('unpkg.com');
   
-  // Para recursos externos (fuentes, APIs, etc.) dejar pasar sin interceptar
-  if (!isLocal) return;
+  // Para APIs externas (Google Scripts, WhatsApp, Odoo, etc.) dejar pasar (sin SW cache)
+  if (!isLocal && !isCDN) return;
 
+  // 1. CDNs y Fuentes: Estrategia CACHE FIRST (Archivos estáticos que no cambian)
+  if (isCDN) {
+    event.respondWith(
+      caches.match(event.request).then(cachedResponse => {
+        if (cachedResponse) return cachedResponse;
+        return fetch(event.request).then(networkResponse => {
+          // Guardar en caché si es válido (soporta 'cors' para fuentes de Google)
+          if (networkResponse && networkResponse.status === 200 && (networkResponse.type === 'basic' || networkResponse.type === 'cors')) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return networkResponse;
+        }).catch(() => {
+          // Ignorar error si no hay red, aunque la fuente/script no cargará si no estaba en caché
+        });
+      })
+    );
+    return;
+  }
+
+  // 2. Archivos Locales (HTML, CSS, JS): Estrategia NETWORK FIRST (Para tener siempre la última versión)
   event.respondWith(
     fetch(event.request, { cache: 'no-cache' }) // Siempre pedir versión fresca
       .then(response => {

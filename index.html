@@ -8,16 +8,21 @@
   <meta name="theme-color" content="#ffffff">
   <link rel="manifest" href="manifest.json">
   
+  <!-- CDNs Preconnects para ganar velocidad -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  
   <!-- Google Fonts & FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
-  <link rel="stylesheet" href="styles.css?v=12">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap">
+  <link rel="stylesheet" href="styles.css?v=13">
   <!-- jsPDF para exportacion de cotizaciones desde la Calculadora de Almacenamiento -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
   <!-- 🎉 canvas-confetti — celebraciones MGM Hub -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <!-- Registro del Service Worker con auto-actualización -->
   <script>
@@ -51,7 +56,7 @@
     }
   </script>
   <!-- HTML5 QRCode Scanner -->
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script defer src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
 
@@ -2222,6 +2227,14 @@
           <div class="event-detail-item"><i class="fa-solid fa-clock"></i> <span id="modal-event-time">---</span></div>
           <div class="event-detail-item"><i class="fa-solid fa-dollar-sign"></i> <span id="modal-event-cost">---</span></div>
           <div class="event-detail-item"><i class="fa-solid fa-location-dot"></i> <span id="modal-event-place">---</span></div>
+        </div>
+
+        <div style="margin-top: 15px; padding: 10px; background: var(--bg-page); border: 1px dashed var(--border-light); border-radius: 8px; text-align: left;">
+           <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); display: block; margin-bottom: 6px;"><i class="fa-solid fa-link"></i> Enlace Directo (Compartir en App)</label>
+           <div style="display: flex; gap: 6px;">
+             <input type="text" id="modal-event-deeplink-input" readonly style="flex: 1; font-size: 11px; padding: 6px 8px; border: 1px solid var(--border-light); border-radius: 6px; background: #fff; color: var(--text-dark); outline: none;">
+             <button onclick="copyEventDeepLink()" style="background: var(--primary-blue); color: #fff; border: none; border-radius: 6px; padding: 0 12px; cursor: pointer; font-size: 13px;" title="Copiar enlace"><i class="fa-regular fa-copy"></i></button>
+           </div>
         </div>
 
         <div style="display: flex; gap: 8px; margin-top: 18px;">
