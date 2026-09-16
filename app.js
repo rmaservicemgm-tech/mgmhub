@@ -253,29 +253,7 @@
     }
   ];
 
-  const DEMO_EVENTS = [
-    {
-      id:'EV001', titulo:'Webinar Hikvision ColorVu 2026', categoria:'webinar',
-      fecha: buildDateStr(0, 5), hora:'10:00 AM', duracion:'2h',
-      descripcion:'Descubre las últimas innovaciones en cámaras ColorVu de Hikvision. Certificación disponible al finalizar.',
-      costo:'Gratis', lugar:'Zoom / Online', qr_url:'', registro_url:'https://mgmpty.odoo.com/mgm-puntos',
-      instructor:'Carlos Ruiz - Ing. Proyectos'
-    },
-    {
-      id:'EV002', titulo:'Capacitación Dahua Smart Dual Light', categoria:'training',
-      fecha: buildDateStr(0, 15), hora:'09:00 AM', duracion:'3h',
-      descripcion:'Instalación y configuración avanzada de cámaras Smart Dual Light para proyectos residenciales y corporativos.',
-      costo:'$25', lugar:'Sala MGM Panamá', qr_url:'', registro_url:'https://mgmpty.odoo.com/mgm-puntos',
-      instructor:'Ana Gómez - Soporte Técnico'
-    },
-    {
-      id:'EV003', titulo:'Certificación IMOU Oficial 2026', categoria:'curso',
-      fecha: buildDateStr(1, 8), hora:'08:00 AM', duracion:'4h',
-      descripcion:'Programa oficial de certificación técnica IMOU. Incluye material, evaluación y certificado digital.',
-      costo:'Gratis para distribuidores', lugar:'Online + MGM', qr_url:'', registro_url:'https://mgmpty.odoo.com/mgm-puntos',
-      instructor:'Especialista IMOU Panamá'
-    }
-  ];
+  const DEMO_EVENTS = [];
 
   // ══════════════════════════════════════════════════════════════════════════════
   // UTILITIES
@@ -1749,15 +1727,21 @@
   const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
   function formatEventUrl(rawLink) {
-    if (!rawLink || typeof rawLink !== 'string') return 'https://mgmpty.odoo.com/mgm-puntos';
-    const trimmed = rawLink.trim();
-    if (!trimmed) return 'https://mgmpty.odoo.com/mgm-puntos';
+    if (!rawLink) return 'https://mgmpty.odoo.com/event';
+    const trimmed = String(rawLink).trim();
+    if (!trimmed) return 'https://mgmpty.odoo.com/event';
+    
+    // Si el enlace es solo un ID numérico de evento de Odoo (ej. '15')
+    if (/^\d+$/.test(trimmed)) {
+      return `https://mgmpty.odoo.com/event/${trimmed}/register`;
+    }
+
     // Si ya tiene protocolo (https://, http://, wa.me, etc.) se respeta
     if (/^https?:\/\//i.test(trimmed)) return trimmed;
     // Si inicia con /, unimos con el dominio de Odoo
     if (trimmed.startsWith('/')) return `https://mgmpty.odoo.com${trimmed}`;
-    // Si es un slug de Odoo (ej. capacitacion-control-id-soluciones-para-gimnasios-y-colegios)
-    return `https://mgmpty.odoo.com/${trimmed}`;
+    // Si es un slug de Odoo
+    return `https://mgmpty.odoo.com/event/${trimmed}/register`;
   }
 
   async function fetchEventsFromGAS() {
