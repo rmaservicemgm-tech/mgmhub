@@ -2637,6 +2637,14 @@
             <p>Calcula la capacidad de disco duro necesaria para grabación de video vigilancia.</p>
             <a class="mgm-btn">Usar Calculadora →</a>
           </div>
+
+          <!-- ACTIVA: Cloud VSaaS -->
+          <div class="mgm-card activo" onclick="switchMainTab('toolbox-calculadora-cloud')">
+            <div class="mgm-icon"><i class="fas fa-cloud"></i></div>
+            <h3>Calculadora Cloud VSaaS</h3>
+            <p>Calcula el almacenamiento y ancho de banda para grabación en la nube.</p>
+            <a class="mgm-btn">Usar Calculadora →</a>
+          </div>
           
           <!-- INACTIVAS -->
           <div class="mgm-card inactivo">
@@ -2974,6 +2982,163 @@
         document.getElementById("btnCalcularUps").addEventListener("click",calcularAutonomiaUps);
         document.getElementById("btnPDFUps").addEventListener("click",generarPDFUps);
         addLoadRowUps();
+      })();
+    </script>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VISTA: CALCULADORA CLOUD VSAAS
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <main id="view-toolbox-calculadora-cloud" class="view-container">
+      <div class="calc-module">
+        <div class="header-brand">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-cloud"></i> Calc. Cloud VSaaS</h2>
+            <span style="font-size: 12px; color: var(--text-muted);">MGM Seguridad — Calculadora de Almacenamiento Cloud</span>
+          </div>
+          <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
+        </div>
+        
+        <div class="config-section" style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+          <span class="section-title" style="font-weight: bold; color: #1a73e8; margin-bottom: 15px; display: block; text-transform: uppercase; font-size: 13px;">Parámetros de Retención y Costos</span>
+          <div class="grid-config" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+            <div style="display: flex; flex-direction: column;">
+              <label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">Días de Retención</label>
+              <input type="number" id="retentionCloud" value="30" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+            </div>
+            <div style="display: flex; flex-direction: column;">
+              <label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">Margen de Seguridad (%)</label>
+              <input type="number" id="marginCloud" value="15" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+            </div>
+            <div style="display: flex; flex-direction: column;">
+              <label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">Precio TB/Mes (USD)</label>
+              <input type="number" id="priceTBCloud" value="12.00" step="0.5" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+            </div>
+          </div>
+        </div>
+
+        <div id="camListCloud"></div>
+
+        <div class="footer-controls" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 16px;">
+          <button id="addLoadCloud" style="flex:1; min-width:120px; padding: 12px; border:none; border-radius:8px; background: #10b981; color: white; font-weight:700; cursor:pointer; font-size:13px;"><i class="fas fa-plus"></i> Agregar Grupo</button>
+          <button id="btnCalcularCloud" style="flex:1; min-width:120px; padding: 12px; border:none; border-radius:8px; background: var(--primary-blue); color: white; font-weight:700; cursor:pointer; font-size:13px;"><i class="fas fa-calculator"></i> Calcular</button>
+          <button id="btnPDFCloud" style="flex:1; min-width:120px; padding: 12px; border:none; border-radius:8px; background: #6c757d; color: white; font-weight:700; cursor:pointer; font-size:13px;"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+        </div>
+
+        <div id="resultsContainerCloud" style="margin-top: 30px; display: none;">
+          <div id="alertAreaCloud"></div>
+          <div class="res-card" style="padding: 20px; border-radius: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #1a73e8; background: #e7f0fd;">
+            <div>
+              <span style="display:block; font-size:12px; color:#555; font-weight:700;">ALMACENAMIENTO TOTAL</span>
+              <strong id="resGBCloud" style="font-size: 24px; color:#1a73e8;">0 GB</strong>
+            </div>
+            <div style="text-align: right;">
+              <span style="display:block; font-size:12px; color:#555; font-weight:700;">COSTO MENSUAL EST.</span>
+              <strong id="resCostoCloud" style="font-size: 20px; color:#28a745;">$0.00 USD</strong>
+            </div>
+          </div>
+          <div style="overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-light);">
+            <table id="tablaDetalleCloud" style="width:100%; border-collapse: collapse; font-size: 12px; background: white;">
+              <thead style="background: #f1f1f1;">
+                <tr>
+                  <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Cámaras</th>
+                  <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Resolución</th>
+                  <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">FPS</th>
+                  <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Modo</th>
+                  <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Upload (Mbps)</th>
+                  <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">GB/Mes Grupo</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      (function() {
+        const brTableCloud = { 720: 1024, 1080: 2048, "4MP": 4096, "8MP": 8192 };
+        document.getElementById("addLoadCloud").addEventListener("click", addCameraRowCloud);
+        document.getElementById("btnCalcularCloud").addEventListener("click", calcularCloud);
+        document.getElementById("btnPDFCloud").addEventListener("click", generarPDFCloud);
+
+        function addCameraRowCloud() {
+          const container = document.getElementById("camListCloud");
+          const div = document.createElement("div");
+          div.className = "cam-row";
+          div.style.cssText = "background: #ffffff; border: 1px solid #dee2e6; border-radius: 12px; padding: 15px; margin-bottom: 15px; position: relative;";
+          div.innerHTML = `
+            <div class="cam-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; align-items: end;">
+              <div style="display:flex; flex-direction:column;"><label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">Cantidad</label><input type="number" class="count" value="4" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;"></div>
+              <div style="display:flex; flex-direction:column;"><label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">Resolución</label>
+                <select class="res" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                  <option value="720">720p</option>
+                  <option value="1080" selected>1080p (2MP)</option>
+                  <option value="4MP">4MP</option>
+                  <option value="8MP">8MP (4K)</option>
+                </select>
+              </div>
+              <div style="display:flex; flex-direction:column;"><label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">Codec</label>
+                <select class="codec" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                  <option value="1">H.264</option>
+                  <option value="0.7" selected>H.265 / Smart</option>
+                </select>
+              </div>
+              <div style="display:flex; flex-direction:column;"><label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">Modo</label>
+                <select class="mode" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                  <option value="1">Continuo</option>
+                  <option value="0.4">Movimiento</option>
+                  <option value="0.15">Eventos</option>
+                </select>
+              </div>
+              <button class="btn-danger" onclick="this.parentElement.parentElement.remove()" style="background: #dc3545; color: white; border:none; padding: 10px 12px; font-size: 11px; border-radius: 6px; cursor: pointer; height: 35px;"><i class="fas fa-trash"></i> Eliminar</button>
+            </div>
+          `;
+          container.appendChild(div);
+        }
+
+        function calcularCloud() {
+          const retention = parseInt(document.getElementById("retentionCloud").value);
+          const margin = 1 + (parseInt(document.getElementById("marginCloud").value) / 100);
+          const priceTB = parseFloat(document.getElementById("priceTBCloud").value);
+          let totalGB = 0;
+          let totalMbps = 0;
+          let htmlTabla = "";
+          document.querySelectorAll("#camListCloud .cam-row").forEach(row => {
+            const n = parseInt(row.querySelector(".count").value);
+            const res = row.querySelector(".res").value;
+            const codec = parseFloat(row.querySelector(".codec").value);
+            const mode = parseFloat(row.querySelector(".mode").value);
+            const brBase = brTableCloud[res] * codec;
+            const mbps = (brBase * n) / 1024;
+            const gb = (((brBase/8) * 3600 * 24 * retention * mode) / 1048576) * n;
+            totalGB += gb;
+            totalMbps += mbps;
+            htmlTabla += `<tr><td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${n}</td><td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${res}</td><td style="padding: 10px; border: 1px solid #ddd; text-align: center;">15</td><td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${row.querySelector(".mode").selectedOptions[0].text}</td><td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${mbps.toFixed(2)} Mbps</td><td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${gb.toFixed(1)} GB</td></tr>`;
+          });
+          const finalGB = totalGB * margin;
+          const finalTB = finalGB / 1024;
+          document.getElementById("resultsContainerCloud").style.display = "block";
+          document.getElementById("resGBCloud").innerText = finalGB.toFixed(1) + " GB";
+          document.getElementById("resCostoCloud").innerText = `$${(finalTB * priceTB).toFixed(2)} USD`;
+          document.querySelector("#tablaDetalleCloud tbody").innerHTML = htmlTabla;
+          let alertas = "";
+          if (totalMbps > 10) {
+            alertas = `<div class="alert alert-warning" style="background: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; line-height: 1.5;"><strong>⚠️ ATENCIÓN:</strong> El ancho de banda de subida requerido es de ${totalMbps.toFixed(1)} Mbps. Asegúrese de que el enlace de internet del cliente soporte esta carga constante.</div>`;
+          }
+          document.getElementById("alertAreaCloud").innerHTML = alertas;
+        }
+
+        function generarPDFCloud() {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+          doc.text("MGM Seguridad - Cálculo Cloud VSaaS", 15, 20);
+          doc.autoTable({ html: '#tablaDetalleCloud', startY: 30, headStyles: { fillColor: [26, 115, 232] } });
+          doc.save("MGM_Calculo_Cloud.pdf");
+        }
+        
+        // Inicializar con una fila
+        addCameraRowCloud();
       })();
     </script>
 
