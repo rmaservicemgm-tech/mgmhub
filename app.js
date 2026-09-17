@@ -1931,8 +1931,6 @@
         else if (diff === 1) timeEl.textContent = `⏰ Mañana a las ${next.hora}`;
         else                 timeEl.textContent = `En ${diff} días — ${next.hora}`;
       }
-        else                 timeEl.textContent = `En ${diff} días — ${next.hora}`;
-      }
     };
 
     if (state.agendaEvents.length === 0) {
@@ -4740,4 +4738,3 @@
     if (offlineIcon) offlineIcon.style.display = 'inline-block';
   }
 })();
-
