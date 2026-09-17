@@ -1455,15 +1455,6 @@
     };
 
     if (state.promos.length === 0) {
-      // Skeleton en promos
-      const container = document.getElementById('promos-rotator-container');
-      if (container) {
-        container.innerHTML = `
-          <div class="skeleton skeleton-card" style="height: 180px;"></div>
-          <div class="skeleton skeleton-card" style="height: 180px;"></div>
-        `;
-      }
-
       const cached = localStorage.getItem('MGM_CACHE_PROMOS');
       if (cached) {
         try {
@@ -1486,14 +1477,6 @@
 
   async function loadAllPromos() {
     if (state.promos.length === 0) {
-      const container = document.getElementById('all-promos-container');
-      if (container) {
-        container.innerHTML = `
-          <div class="skeleton skeleton-card" style="height: 200px;"></div>
-          <div class="skeleton skeleton-card" style="height: 200px;"></div>
-          <div class="skeleton skeleton-card" style="height: 200px;"></div>
-        `;
-      }
       const cached = localStorage.getItem('MGM_CACHE_PROMOS');
       if (cached) {
         try {
@@ -1631,15 +1614,6 @@
     };
 
     if (!state.rewards || state.rewards.length === 0) {
-      // Skeleton en premios
-      const slider = document.getElementById('home-premios-slider');
-      if (slider) {
-        slider.innerHTML = `
-          <div class="skeleton skeleton-card" style="height: 150px; min-width: 140px;"></div>
-          <div class="skeleton skeleton-card" style="height: 150px; min-width: 140px;"></div>
-          <div class="skeleton skeleton-card" style="height: 150px; min-width: 140px;"></div>
-        `;
-      }
       const cached = localStorage.getItem('MGM_CACHE_REWARDS');
       if (cached) {
         try {
@@ -1896,18 +1870,6 @@
   }
 
   async function loadAgendaEvents() {
-    // Skeleton en agenda si está vacío
-    if (state.agendaEvents.length === 0) {
-      const listEl = document.getElementById('cal-events-list');
-      if (listEl) {
-        listEl.innerHTML = `
-          <div class="skeleton skeleton-card" style="height: 90px;"></div>
-          <div class="skeleton skeleton-card" style="height: 90px;"></div>
-          <div class="skeleton skeleton-card" style="height: 90px;"></div>
-        `;
-      }
-    }
-
     const cached = localStorage.getItem('MGM_CACHE_EVENTS');
     if (cached) {
       try {
@@ -1963,17 +1925,8 @@
       }
 
       if (badgeEl) badgeEl.innerHTML = `<i class="fa-solid fa-bolt"></i> ${catMap[next.categoria] || 'Evento MGM'}`;
-      if (titleEl) {
-        titleEl.classList.remove('skeleton');
-        titleEl.style.width = 'auto';
-        titleEl.style.height = 'auto';
-        titleEl.style.marginBottom = '0';
-        titleEl.textContent = next.titulo;
-      }
+      if (titleEl) titleEl.textContent = next.titulo;
       if (timeEl) {
-        timeEl.classList.remove('skeleton');
-        timeEl.style.width = 'auto';
-        timeEl.style.height = 'auto';
         if (diff === 0)      timeEl.textContent = `🔴 ¡HOY a las ${next.hora}!`;
         else if (diff === 1) timeEl.textContent = `⏰ Mañana a las ${next.hora}`;
         else                 timeEl.textContent = `En ${diff} días — ${next.hora}`;

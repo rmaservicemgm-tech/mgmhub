@@ -144,9 +144,7 @@
     <main id="view-home" class="view-container active">
 
       <!-- BANNER INTELIGENTE DE BIENVENIDA / AUTENTICACIÓN (PUNTOS) -->
-      <div id="home-auth-banner" class="home-auth-banner">
-        <div class="skeleton skeleton-card" style="height: 100px; margin: 16px;"></div>
-      </div>
+      <div id="home-auth-banner" class="home-auth-banner"></div>
 
       <!-- HERO BANNER: PRÓXIMO EVENTO O EVENTO EN CURSO -->
       <div class="next-event-hero" id="home-event-banner" onclick="switchMainTab('agenda')">
@@ -157,8 +155,8 @@
           <div class="next-event-badge" id="home-event-badge">
             <i class="fa-solid fa-bolt"></i> Próximo Evento
           </div>
-          <div class="next-event-title-text skeleton" id="home-event-title" style="width: 80%; height: 18px; margin-bottom: 6px;">Cargando...</div>
-          <div class="next-event-countdown skeleton" id="home-event-time" style="width: 50%; height: 14px;">Calculando...</div>
+          <div class="next-event-title-text" id="home-event-title">Sincronizando agenda...</div>
+          <div class="next-event-countdown" id="home-event-time">Calculando fecha...</div>
         </div>
         <i class="fa-solid fa-chevron-right" style="color: rgba(255,255,255,0.6); font-size: 13px;"></i>
       </div>
