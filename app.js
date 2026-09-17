@@ -979,6 +979,7 @@
     e.preventDefault();
     const cedula = document.getElementById('login-cedula').value.trim();
     if (!cedula) { showAlert('puntos-login-alert', 'error', 'Por favor ingresa tu cédula.'); return; }
+    if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Iniciando sesión...');
     const btn = e.target.querySelector('[type="submit"]');
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Consultando...';
@@ -986,6 +987,8 @@
     const res = await api('get_client', { cedula });
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión / Ver Mis Puntos';
+
+    if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
 
     if (!res.success) {
       showAlert('puntos-login-alert', 'error', res.message || 'No se encontró tu cuenta. ¿Ya estás registrado/a?');
@@ -3836,8 +3839,12 @@
       // Si hay email en la URL (viene del QR), guardarlo para que navigateTo lo use
       if (_deepEmail) window._pendingRmaEmail = _deepEmail;
       const _seccion = _deepSub ? `${_deepTab}:${_deepSub}` : _deepTab;
+      if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Cargando sección...');
       // Pequeño delay para dejar que los datos carguen antes de navegar
-      setTimeout(() => navigateTo(_seccion), 400);
+      setTimeout(() => {
+        navigateTo(_seccion);
+        if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
+      }, 400);
       // Limpiar la URL para que no se repita en recargas
       history.replaceState({}, document.title, window.location.pathname);
     }
@@ -3985,6 +3992,7 @@
     }
     rmaHideError();
     rmaSetLoading(true);
+    if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Consultando equipo...');
 
     const url = `${RMA_GAS_URL}?action=get_rma&cedula=${encodeURIComponent(cedula)}`;
 
@@ -4000,6 +4008,7 @@
     fetch(url)
       .then(r => r.json())
       .then(data => {
+        if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
         rmaSetLoading(false);
 
         // Normalizar respuesta — admite { data: [...] } o array directo
@@ -4022,6 +4031,7 @@
         if (cardsList) cardsList.innerHTML = items.map(buildRmaCard).join('');
       })
       .catch(err => {
+        if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
         rmaSetLoading(false);
         console.error('[RMA]', err);
         if (resultSection) resultSection.style.display = 'none';
