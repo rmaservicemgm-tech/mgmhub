@@ -3863,7 +3863,7 @@
       } catch (e) { console.error('Error saving ref code', e); }
       // Navegar a registro si no hay sesión activa
       if (!state.authUser) {
-        navigateToSection('puntos:registro');
+        navigateTo('puntos:registro');
       } else {
         switchMainTab('home');
       }
