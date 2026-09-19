@@ -3861,9 +3861,15 @@
       try {
         sessionStorage.setItem('mgm_ref_code', refParam);
       } catch (e) { console.error('Error saving ref code', e); }
+      // Navegar a registro si no hay sesión activa
+      if (!state.authUser) {
+        navigateToSection('puntos:registro');
+      } else {
+        switchMainTab('home');
+      }
+    } else {
+      switchMainTab('home');
     }
-
-    switchMainTab('home');
 
     // Inicializar estado de UI autenticación
     updateHeaderUserIcon();
@@ -4837,6 +4843,13 @@ async function renderReferidosPanel(cedula, refCodeFromClient) {
   const link   = `${appUrl}?ref=${encodeURIComponent(refCode)}`;
   const msg    = encodeURIComponent(`¡Hola! Te invito a unirte al programa de puntos MGM. Usa mi código *${refCode}* al registrarte y gana 300 puntos de bienvenida 🎁:\n${link}`);
   if (shareBtn) shareBtn.href = `https://wa.me/?text=${msg}`;
+  
+  const qrContainer = document.getElementById('qr-code-container');
+  const qrImg = document.getElementById('ref-qr-img');
+  if (qrContainer && qrImg) {
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(link)}`;
+    qrContainer.style.display = 'block';
+  }
 
   // Guardar link para copyReferralCode
   try { sessionStorage.setItem('mgm_my_ref_link', link); } catch(e) {}

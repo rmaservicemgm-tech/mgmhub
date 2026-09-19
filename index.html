@@ -740,6 +740,10 @@
               <a href="#" id="btn-share-whatsapp" class="btn-whatsapp-share" target="_blank" style="margin-top: 10px;">
                 <i class="fa-brands fa-whatsapp"></i> Compartir por WhatsApp
               </a>
+              <div id="qr-code-container" style="margin-top: 15px; text-align: center; display: none;">
+                <img id="ref-qr-img" src="" alt="QR Referido" style="width: 120px; height: 120px; border-radius: 8px; border: 2px solid rgba(255,255,255,0.2);">
+                <div style="font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 5px;">Pídele a tu amigo que escanee este código</div>
+              </div>
             </div>
 
             <h4 style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin: 0 0 10px 0;">Mis Referidos</h4>
@@ -748,7 +752,7 @@
             </div>
             <div id="ref-list-container">
               <div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 13px; background: var(--bg-white); border-radius: 8px;">
-                <i class="fa-regular fa-user-group" style="font-size: 24px; color: #cbd5e1; margin-bottom: 10px; display: block;"></i>
+                <i class="fa-solid fa-users" style="font-size: 24px; color: #cbd5e1; margin-bottom: 10px; display: block;"></i>
                 Aún no has referido a nadie. ¡Comparte tu código para empezar a ganar!
               </div>
             </div>
@@ -818,9 +822,9 @@
                   🎁 Disfruta de un 10% de descuento especial el día de tu cumpleaños.
                 </div>
               </div>
-              <div class="form-group" id="reg-referrer-group" style="display: none;">
-                <label class="form-label" for="reg-referrer-code">Código de Invitación <span style="color:var(--status-green); font-size:11px;">(Referido)</span></label>
-                <input type="text" id="reg-referrer-code" class="form-control" style="background-color: var(--bg-body); font-weight: bold;" readonly>
+              <div class="form-group" id="reg-referrer-group">
+                <label class="form-label" for="reg-referrer-code">Código de Invitación <span style="color:var(--status-green); font-size:11px;">(Opcional)</span></label>
+                <input type="text" id="reg-referrer-code" class="form-control" placeholder="Ej: MGM-CARL-1234">
                 <div style="font-size: 11px; color: var(--status-green); margin-top: 4px;">
                   🎁 Ganarás 300 pts extra de bienvenida por usar este código.
                 </div>
