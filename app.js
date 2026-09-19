@@ -268,6 +268,7 @@
 
   function fmtCedula(v) {
     if (!v) return '';
+    if (v.includes('@')) return v.trim();
     let raw = v.toUpperCase().trim();
     if (raw.includes('-')) {
       let parts = raw.split('-').map(p => p.replace(/[^A-Z0-9]/g, ''));
@@ -516,13 +517,19 @@
         return resolve({ success:true, message:'✅ ¡Bienvenido/a al Programa MGM Puntos! Podrás acumular puntos en tu próxima compra.', client: newC });
       }
       if (action === 'get_client') {
-        const rawCed = (payload.cedula || '').toString().trim().toUpperCase();
+        const rawInput = (payload.cedula || '').toString().trim();
+        const rawCed = rawInput.toUpperCase();
         const cleanCed = rawCed.replace(/[^A-Z0-9]/g, '');
+        const searchEmail = rawInput.toLowerCase();
+        
         const c = state.clients.find(x => {
           const xCed = (x.cedula || '').toString().trim().toUpperCase();
+          const xCorreo = (x.correo || '').toString().trim().toLowerCase();
+          
+          if (xCorreo && xCorreo === searchEmail) return true;
           return xCed === rawCed || xCed.replace(/[^A-Z0-9]/g, '') === cleanCed;
         });
-        if (!c) return resolve({ success:false, message:`No encontramos ningún miembro registrado con la identificación: ${payload.cedula}` });
+        if (!c) return resolve({ success:false, message:`No encontramos ningún miembro registrado con la identificación o correo: ${payload.cedula}` });
         const txs = state.transactions.filter(t => (t.cedula || '').replace(/[^A-Z0-9]/g, '') === cleanCed).slice().reverse();
         return resolve({ success:true, client:{ ...c, historico:txs } });
       }
@@ -978,7 +985,7 @@
   document.getElementById('form-puntos-login')?.addEventListener('submit', async e => {
     e.preventDefault();
     const cedula = document.getElementById('login-cedula').value.trim();
-    if (!cedula) { showAlert('puntos-login-alert', 'error', 'Por favor ingresa tu cédula.'); return; }
+    if (!cedula) { showAlert('puntos-login-alert', 'error', 'Por favor ingresa tu cédula o correo.'); return; }
     if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Iniciando sesión...');
     const btn = e.target.querySelector('[type="submit"]');
     btn.disabled = true;
