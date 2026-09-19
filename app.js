@@ -84,7 +84,7 @@
     PUNTOS_GAS_URL: 'https://script.google.com/macros/s/AKfycbwV90SCVdMrMgE1Vlev3rdpcqMJlVwCV5du_MGJ-BtV5Di8LMY9UroYD7dXhWBXyI2yGw/exec',
 
     // 2. CALENDARIO & AGENDA (Eventos, Webinars, Capacitaciones)
-    AGENDA_GAS_URL: 'https://script.google.com/macros/s/AKfycbyxahYk-Hgmtn0E_npeCGdS99fIKLQhVmQLeEQbXz3N59KuSWmHoYnq5p2xypPUGIK2yA/exec',
+    AGENDA_GAS_URL: 'https://script.google.com/macros/s/AKfycbxdr46a9UuitHx8LyWDBHi3yZ-yAfRsQMqlwIhIwgeFRC_zm5CLMYO5HMuXwKMimBw4/exec',
 
     // 3. PROMOCIONES DEL MES (Slider & Rotator)
     PROMOS_GAS_URL: 'https://script.google.com/macros/s/AKfycbxP0mmc5rSsn6-b29iHM3HpgMKqAQL0auCRHGIoM7DfUxrkFvvMyzI4LTBueCHs6iDzyw/exec',
@@ -120,6 +120,7 @@
   const K_AUTH    = 'mgm_auth_user';
   const K_NOTIFS  = 'mgm_notifications';
   const K_CLEARED_NOTIFS = 'mgm_cleared_notifs';
+  const K_SEEN_NOTIFS = 'mgm_seen_notifs';
   const K_NOTIFIED_TX    = 'mgm_notified_tx_v1';
   const K_MY_COURSES     = 'mgm_my_courses';
 
@@ -140,6 +141,7 @@
     activeRewardData: null,
     notifications: JSON.parse(localStorage.getItem(K_NOTIFS)) || [],
     clearedNotifs: JSON.parse(localStorage.getItem(K_CLEARED_NOTIFS)) || [],
+    seenNotifs: JSON.parse(localStorage.getItem(K_SEEN_NOTIFS)) || [],
     authUser: JSON.parse(localStorage.getItem(K_AUTH)) || null,
     clients: JSON.parse(localStorage.getItem(K_CLIENTS)) || [
       { cedula:'8-888-1234', nombre:'Juan Carlos Pérez', correo:'juan@email.com', telefono:'6254-0412', cumpleanos:'1990-08-15', fechaRegistro:'2026-01-10', puntos:2800, totalComprasAno:1400.00 },
@@ -159,12 +161,12 @@
     {
       id:'P001', nombre:'Sábados con Triple Puntos',
       descripcion:'Cada sábado acumula 3X MGM PUNTOS en todas tus compras.\n¡Aprovecha el fin de semana para maximizar tus beneficios!',
-      tipo:'puntos', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÍ', likes:24
+      tipo:'puntos', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÍ', likes:24, enlace: 'https://mgmpty.com'
     },
     {
       id:'P002', nombre:'Descuento de Cumpleaños 🎂',
       descripcion:'Disfruta un 10% de descuento especial el día de tu cumpleaños.\n(Si tu cumpleaños cae en domingo, tu descuento es válido el lunes siguiente).\nSolo presenta tu cédula en caja.',
-      tipo:'descuento', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÍ', likes:18
+      tipo:'descuento', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÍ', likes:18, enlace: ''
     },
     {
       id:'P003', nombre:'Días Especiales MGM — 5X Puntos',
@@ -251,29 +253,7 @@
     }
   ];
 
-  const DEMO_EVENTS = [
-    {
-      id:'EV001', titulo:'Webinar Hikvision ColorVu 2026', categoria:'webinar',
-      fecha: buildDateStr(0, 5), hora:'10:00 AM', duracion:'2h',
-      descripcion:'Descubre las últimas innovaciones en cámaras ColorVu de Hikvision. Certificación disponible al finalizar.',
-      costo:'Gratis', lugar:'Zoom / Online', qr_url:'', registro_url:'https://mgmpty.odoo.com/mgm-puntos',
-      instructor:'Carlos Ruiz - Ing. Proyectos'
-    },
-    {
-      id:'EV002', titulo:'Capacitación Dahua Smart Dual Light', categoria:'training',
-      fecha: buildDateStr(0, 15), hora:'09:00 AM', duracion:'3h',
-      descripcion:'Instalación y configuración avanzada de cámaras Smart Dual Light para proyectos residenciales y corporativos.',
-      costo:'$25', lugar:'Sala MGM Panamá', qr_url:'', registro_url:'https://mgmpty.odoo.com/mgm-puntos',
-      instructor:'Ana Gómez - Soporte Técnico'
-    },
-    {
-      id:'EV003', titulo:'Certificación IMOU Oficial 2026', categoria:'curso',
-      fecha: buildDateStr(1, 8), hora:'08:00 AM', duracion:'4h',
-      descripcion:'Programa oficial de certificación técnica IMOU. Incluye material, evaluación y certificado digital.',
-      costo:'Gratis para distribuidores', lugar:'Online + MGM', qr_url:'', registro_url:'https://mgmpty.odoo.com/mgm-puntos',
-      instructor:'Especialista IMOU Panamá'
-    }
-  ];
+  const DEMO_EVENTS = [];
 
   // ══════════════════════════════════════════════════════════════════════════════
   // UTILITIES
@@ -288,6 +268,7 @@
 
   function fmtCedula(v) {
     if (!v) return '';
+    if (v.includes('@')) return v.trim();
     let raw = v.toUpperCase().trim();
     if (raw.includes('-')) {
       let parts = raw.split('-').map(p => p.replace(/[^A-Z0-9]/g, ''));
@@ -536,25 +517,20 @@
         return resolve({ success:true, message:'✅ ¡Bienvenido/a al Programa MGM Puntos! Podrás acumular puntos en tu próxima compra.', client: newC });
       }
       if (action === 'get_client') {
-        const inputBuscado = (payload.cedula || '').toString().trim();
-        const rawCedUpper = inputBuscado.toUpperCase();
-        const cleanCed = rawCedUpper.replace(/[^A-Z0-9]/g, '');
-        const c = state.clients.find(x => {
-          if (inputBuscado.includes('@')) {
-            return (x.correo || '').toLowerCase() === inputBuscado.toLowerCase();
-          } else {
-            const xCed = (x.cedula || '').toString().trim().toUpperCase();
-            return xCed === rawCedUpper || xCed.replace(/[^A-Z0-9]/g, '') === cleanCed;
-          }
-        });
-        if (!c) return resolve({ success:false, message:`No encontramos ningún miembro registrado con la identificación: ${payload.cedula}` });
+        const rawInput = (payload.cedula || '').toString().trim();
+        const rawCed = rawInput.toUpperCase();
+        const cleanCed = rawCed.replace(/[^A-Z0-9]/g, '');
+        const searchEmail = rawInput.toLowerCase();
         
-        let txs = [];
-        if (inputBuscado.includes('@')) {
-          txs = state.transactions.filter(t => (t.correo || '').toLowerCase() === inputBuscado.toLowerCase()).slice().reverse();
-        } else {
-          txs = state.transactions.filter(t => (t.cedula || '').replace(/[^A-Z0-9]/g, '') === cleanCed).slice().reverse();
-        }
+        const c = state.clients.find(x => {
+          const xCed = (x.cedula || '').toString().trim().toUpperCase();
+          const xCorreo = (x.correo || '').toString().trim().toLowerCase();
+          
+          if (xCorreo && xCorreo === searchEmail) return true;
+          return xCed === rawCed || xCed.replace(/[^A-Z0-9]/g, '') === cleanCed;
+        });
+        if (!c) return resolve({ success:false, message:`No encontramos ningún miembro registrado con la identificación o correo: ${payload.cedula}` });
+        const txs = state.transactions.filter(t => (t.cedula || '').replace(/[^A-Z0-9]/g, '') === cleanCed).slice().reverse();
         return resolve({ success:true, client:{ ...c, historico:txs } });
       }
       return resolve({ success:false, message:'Acción no reconocida.' });
@@ -639,7 +615,7 @@
     if (s.startsWith('/')) return true; // Ruta relativa hacia la web externa (Odoo)
 
     // Si coincide con alguna pestaña interna conocida o deeplink interno, NO es externa
-    const internalTabs = ['home', 'inicio', 'puntos', 'agenda', 'promos', 'rma', 'asesoria', 'soporte'];
+    const internalTabs = ['home', 'inicio', 'puntos', 'agenda', 'promos', 'rma', 'asesoria', 'soporte', 'toolbox', 'toolbox-calculadora-almacenamiento', 'toolbox-conversor-tecnico', 'toolbox-calculadora-ups'];
     const prefix = s.split(':')[0].trim();
     if (internalTabs.includes(prefix)) return false;
 
@@ -707,7 +683,12 @@
     document.querySelectorAll('.app-modal.active').forEach(m => m.classList.remove('active'));
 
     // Navegar al tab principal
-    switchMainTab(tab);
+    if (tab === 'toolbox' && sub) {
+        switchMainTab(tab + '-' + sub);
+        return;
+    } else {
+        switchMainTab(tab);
+    }
 
     if (!sub) return;
 
@@ -728,12 +709,26 @@
     if (tab === 'agenda') {
       const tryOpenEvent = (attempts) => {
         if (state.agendaEvents.length > 0) {
-          openEventDetail(sub);
-        } else if (attempts < 20) {
+          // Intentar abrir; si no se encontró aún, reintentar (el fetch puede seguir corriendo)
+          const found = state.agendaEvents.find(e =>
+            String(e.id).toLowerCase().trim() === sub.toLowerCase().trim() ||
+            String(e.id).toLowerCase().includes(sub.toLowerCase()) ||
+            sub.toLowerCase().includes(String(e.id).toLowerCase().trim())
+          );
+          if (found || attempts >= 30) {
+            openEventDetail(sub);
+          } else {
+            setTimeout(() => tryOpenEvent(attempts + 1), 300);
+          }
+        } else if (attempts < 50) {
+          // Si todavía no hay eventos cargados, esperar más
           setTimeout(() => tryOpenEvent(attempts + 1), 300);
+        } else {
+          console.warn('[MGM] Deep link agenda: tiempo de espera agotado para id:', sub);
         }
       };
-      tryOpenEvent(0);
+      // Iniciar con pequeño delay para dar tiempo al caché de renderizar
+      setTimeout(() => tryOpenEvent(0), 200);
     }
 
     // --- Promos: abrir modal de la promo por ID ---
@@ -752,15 +747,19 @@
     // --- RMA: auto-llenar y buscar cuando viene número de RMA de notificación ---
     if (tab === 'rma' && sub) {
       setTimeout(() => {
-        // Si existe consultarRmaDirecto (función del módulo de consulta en index.html)
+        // Leer el email del QR si viene en la URL (?tab=rma&sub=RMA-...&email=...)
+        const _rmaEmail = window._pendingRmaEmail
+          || (state.authUser && state.authUser.email)
+          || '';
+        window._pendingRmaEmail = null; // consumir una sola vez
         if (typeof window.consultarRmaDirecto === 'function') {
-          const userEmail = (state.authUser && state.authUser.email) ? state.authUser.email : '';
-          window.consultarRmaDirecto(sub, userEmail);
+          window.consultarRmaDirecto(sub, _rmaEmail);
         } else {
           // Fallback: solo llenar el campo
           const form = document.getElementById('consultaForm');
           if (form && form.rma) {
             form.rma.value = sub;
+            if (_rmaEmail && form.email) form.email.value = _rmaEmail;
             form.rma.focus();
           }
         }
@@ -797,10 +796,10 @@
     if (el) el.classList.remove('active');
   };
 
-  function openAppModal(modalId) {
+  window.openAppModal = function(modalId) {
     const el = document.getElementById(modalId);
     if (el) el.classList.add('active');
-  }
+  };
 
   document.addEventListener('click', e => {
     if (e.target.classList.contains('app-modal')) {
@@ -843,7 +842,7 @@
   // GESTIÓN CENTRALIZADA DE SESIÓN (LOGIN, REGISTRO, AUTO-LOGIN & TRACKING)
   // ══════════════════════════════════════════════════════════════════════════════
 
-  function setClientSession(clientData, eventType = 'login') {
+  async function setClientSession(clientData, eventType = 'login') {
     if (!clientData) return;
     state.authUser = { ...state.authUser, ...clientData };
     localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
@@ -867,19 +866,16 @@
     // 5. Registrar en el Sheet de Tracking usando la acción 'track'
     trackUserActivity(state.authUser.cedula, state.authUser.nombre, eventType);
 
-    // 6. Enviar notificación interna de bienvenida (si es nueva)
-    checkAndSendWelcomeNotification(state.authUser.nombre);
+    // 6. Consultar notificaciones y sincronizar eliminadas desde el backend PRIMERO
+    await checkNotifications();
 
     // 7. Renderizar dashboard de puntos al instante
     renderDashboard(state.authUser);
 
     // 8. Detectar movimientos de puntos (acreditaciones, canjes/redenciones, ajustes del asesor)
-    checkAndNotifyNewPoints(state.authUser);
+    checkAndNotifyNewPoints(state.authUser, eventType);
 
-    // 9. Consultar notificaciones personalizadas desde el backend
-    checkNotifications();
-
-    // 10. Consultar cursos/capacitaciones en los que está inscrito el usuario
+    // 9. Consultar cursos/capacitaciones en los que está inscrito el usuario
     loadMyCourses();
 
     // 10. Actualizar catálogo de premios para reflejar puntos del usuario
@@ -989,7 +985,8 @@
   document.getElementById('form-puntos-login')?.addEventListener('submit', async e => {
     e.preventDefault();
     const cedula = document.getElementById('login-cedula').value.trim();
-    if (!cedula) { showAlert('puntos-login-alert', 'error', 'Por favor ingresa tu cédula.'); return; }
+    if (!cedula) { showAlert('puntos-login-alert', 'error', 'Por favor ingresa tu cédula o correo.'); return; }
+    if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Iniciando sesión...');
     const btn = e.target.querySelector('[type="submit"]');
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Consultando...';
@@ -997,6 +994,8 @@
     const res = await api('get_client', { cedula });
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión / Ver Mis Puntos';
+
+    if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
 
     if (!res.success) {
       showAlert('puntos-login-alert', 'error', res.message || 'No se encontró tu cuenta. ¿Ya estás registrado/a?');
@@ -1010,12 +1009,15 @@
   // DETECCIÓN AUTOMÁTICA DE MOVIMIENTOS: PUNTOS ACREDITADOS, REDIMIDOS Y AJUSTES
   // (Generados desde el panel de administración de los asesores o compras)
   // ══════════════════════════════════════════════════════════════════════════════
-  function checkAndNotifyNewPoints(freshClient) {
+  function checkAndNotifyNewPoints(freshClient, eventType = 'auto') {
     if (!freshClient) return;
     
     let notifiedTxs = JSON.parse(localStorage.getItem(K_NOTIFIED_TX)) || [];
     const historico = freshClient.historico || [];
     if (historico.length === 0) return;
+
+    // Si el dispositivo no tiene transacciones previas registradas (ej. inicio en nuevo dispositivo)
+    const isNewDevice = notifiedTxs.length === 0;
 
     let hasNewChanges = false;
     let newNotificationsToAdd = [];
@@ -1029,7 +1031,7 @@
       const ptsAbs = Math.abs(ptsNum);
       const isNewlyDiscovered = !notifiedTxs.includes(txKey);
 
-      // Determinar si ya está en la lista de notificaciones o fue borrada por el usuario
+      // Determinar si ya está en la lista de notificaciones o fue borrada por el usuario (sincronizada con backend)
       const alreadyInList = state.notifications.some(n => String(n.id) === String(notifId));
       const wasCleared = state.clearedNotifs.includes(String(notifId));
 
@@ -1136,7 +1138,9 @@
         // Si es una transacción recién descubierta en vivo
         if (isNewlyDiscovered) {
           notifiedTxs.push(txKey);
-          liveAlerts.push({ type: alertType, tx, notif: notifObj, ptsNum, ptsAbs });
+          if (!isNewDevice) {
+            liveAlerts.push({ type: alertType, tx, notif: notifObj, ptsNum, ptsAbs });
+          }
         }
       } else if (isNewlyDiscovered) {
         notifiedTxs.push(txKey);
@@ -1273,12 +1277,12 @@
     }
     // 🎂 Cumpleaños — modal de regalo + notificación persistente en campanita
     if (bdayInfo.active) {
-      // Lanzar modal automático una vez por sesión
+      // Lanzar modal automático UNA vez por sesión
       if (!sessionStorage.getItem('mgm_bday_modal')) {
         sessionStorage.setItem('mgm_bday_modal', '1');
         setTimeout(() => { if (typeof window.showBirthdayModal === 'function') window.showBirthdayModal(bdayInfo.isSundayMoved); }, 700);
       }
-      // Inyectar notificación en campanita si aún no existe para hoy
+      // Inyectar notificación persistente en campanita (solo una vez por día)
       const todayKey = 'bday_' + new Date().toISOString().split('T')[0];
       if (!state.notifications.some(n => String(n.id) === todayKey)) {
         state.notifications.unshift({
@@ -1286,7 +1290,7 @@
           type: 'bday',
           isSundayMoved: bdayInfo.isSundayMoved,
           title: bdayInfo.isSundayMoved ? '¡Feliz Cumpleaños! 🎉🎂 (Beneficio Domingo)' : '¡Feliz Cumpleaños! 🎉🎂',
-          body: 'Toca aquí para ver tu regalo especial de cumpleaños — 10% OFF hoy en MGM.',
+          body: 'Toca aquí para ver tu regalo especial — 10% OFF hoy en MGM.',
           fecha: new Date().toISOString(),
         });
         localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
@@ -1446,6 +1450,7 @@
           tipo: p.tipo || 'especial',
           fecha_inicio: p.fecha_inicio || '',
           fecha_fin: p.fecha_fin || '',
+          enlace: p.enlace || p.link || p.url || '',
           activa: 'SÍ',
           likes: parseInt(p.likes || (12 + idx * 5))
         }));
@@ -1460,27 +1465,62 @@
   }
 
   async function loadHomePromos() {
-    state.promos = await fetchPromosFromGAS();
-    const slider = document.getElementById('home-promos-slider');
-    if (!slider) return;
+    const render = () => {
+      const slider = document.getElementById('home-promos-slider');
+      if (!slider) return;
+
+      if (state.promos.length === 0) {
+        slider.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Próximamente promociones especiales.</div>`;
+        return;
+      }
+
+      slider.innerHTML = state.promos.map((p, idx) => `
+        <div class="promo-slide-item" onclick="openPromoDetail(${idx})" style="background:${promoPlaceholderBg(p.tipo)};">
+          ${p.imagen ? `<img src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">` : ''}
+          <div class="promo-slide-badge">${promoPlaceholderEmoji(p.tipo)} ${p.nombre}</div>
+        </div>`).join('');
+    };
 
     if (state.promos.length === 0) {
-      slider.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Próximamente promociones especiales.</div>`;
-      return;
+      const cached = localStorage.getItem('MGM_CACHE_PROMOS');
+      if (cached) {
+        try {
+          state.promos = JSON.parse(cached);
+          render();
+        } catch(e) {}
+      }
+      
+      fetchPromosFromGAS().then(fresh => {
+        if (fresh && fresh.length > 0) {
+          state.promos = fresh;
+          localStorage.setItem('MGM_CACHE_PROMOS', JSON.stringify(fresh));
+          render();
+        }
+      });
+    } else {
+      render();
     }
-
-    slider.innerHTML = state.promos.map((p, idx) => `
-      <div class="promo-slide-item" onclick="openPromoDetail(${idx})" style="background:${promoPlaceholderBg(p.tipo)};">
-        ${p.imagen ? `<img src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">` : ''}
-        <div class="promo-slide-badge">${promoPlaceholderEmoji(p.tipo)} ${p.nombre}</div>
-      </div>`).join('');
   }
 
   async function loadAllPromos() {
     if (state.promos.length === 0) {
-      state.promos = await fetchPromosFromGAS();
+      const cached = localStorage.getItem('MGM_CACHE_PROMOS');
+      if (cached) {
+        try {
+          state.promos = JSON.parse(cached);
+          renderPromosGallery();
+        } catch(e) {}
+      }
+      
+      const fresh = await fetchPromosFromGAS();
+      if (fresh && fresh.length > 0) {
+        state.promos = fresh;
+        localStorage.setItem('MGM_CACHE_PROMOS', JSON.stringify(fresh));
+        renderPromosGallery();
+      }
+    } else {
+      renderPromosGallery();
     }
-    renderPromosGallery();
   }
 
   function renderPromosGallery() {
@@ -1558,46 +1598,67 @@
   }
 
   window.loadHomeRewards = async function() {
-    state.rewards = await fetchRewardsFromGAS();
-    const slider = document.getElementById('home-premios-slider');
-    if (!slider) return;
+    const render = () => {
+      const slider = document.getElementById('home-premios-slider');
+      if (!slider) return;
+
+      if (!state.rewards || state.rewards.length === 0) {
+        slider.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Próximamente nuevo catálogo de premios disponibles.</div>`;
+        return;
+      }
+
+      slider.innerHTML = state.rewards.map((r, idx) => {
+        const validez = formatRewardValidez(r);
+        const ptsFormatted = Number(r.puntos || 0).toLocaleString('es-PA');
+
+        return `
+        <div class="premio-slide-card" onclick="openRewardDetail(${idx})">
+          <div class="premio-card-img-wrap">
+            ${r.imagen
+              ? `<img src="${r.imagen}" alt="${r.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                 <div style="display:none; font-size:42px; color:#cbd5e1; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
+              : `<div style="font-size:42px; color:#cbd5e1; display:flex; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
+            }
+            <div class="premio-pts-tag">
+              <i class="fa-solid fa-coins"></i> ${ptsFormatted} Pts
+            </div>
+          </div>
+
+          ${r.modelo ? `<div class="premio-model-tag">MOD. ${r.modelo}</div>` : ''}
+          <div class="premio-card-title">${r.nombre}</div>
+          <div class="premio-card-desc">${(r.descripcion || '').split('\n')[0]}</div>
+
+          <div class="premio-card-footer">
+            <div class="premio-validez-text" style="color:${validez.color};">
+              ${validez.text}
+            </div>
+            <button class="premio-btn-action" onclick="event.stopPropagation(); openRewardDetail(${idx});">
+              Canjear
+            </button>
+          </div>
+        </div>`;
+      }).join('');
+    };
 
     if (!state.rewards || state.rewards.length === 0) {
-      slider.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Próximamente nuevo catálogo de premios disponibles.</div>`;
-      return;
+      const cached = localStorage.getItem('MGM_CACHE_REWARDS');
+      if (cached) {
+        try {
+          state.rewards = JSON.parse(cached);
+          render();
+        } catch(e) {}
+      }
+      
+      fetchRewardsFromGAS().then(fresh => {
+        if (fresh && fresh.length > 0) {
+          state.rewards = fresh;
+          localStorage.setItem('MGM_CACHE_REWARDS', JSON.stringify(fresh));
+          render();
+        }
+      });
+    } else {
+      render();
     }
-
-    slider.innerHTML = state.rewards.map((r, idx) => {
-      const validez = formatRewardValidez(r);
-      const ptsFormatted = Number(r.puntos || 0).toLocaleString('es-PA');
-
-      return `
-      <div class="premio-slide-card" onclick="openRewardDetail(${idx})">
-        <div class="premio-card-img-wrap">
-          ${r.imagen
-            ? `<img src="${r.imagen}" alt="${r.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-               <div style="display:none; font-size:42px; color:#cbd5e1; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
-            : `<div style="font-size:42px; color:#cbd5e1; display:flex; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
-          }
-          <div class="premio-pts-tag">
-            <i class="fa-solid fa-coins"></i> ${ptsFormatted} Pts
-          </div>
-        </div>
-
-        ${r.modelo ? `<div class="premio-model-tag">MOD. ${r.modelo}</div>` : ''}
-        <div class="premio-card-title">${r.nombre}</div>
-        <div class="premio-card-desc">${(r.descripcion || '').split('\n')[0]}</div>
-
-        <div class="premio-card-footer">
-          <div class="premio-validez-text" style="color:${validez.color};">
-            ${validez.text}
-          </div>
-          <button class="premio-btn-action" onclick="event.stopPropagation(); openRewardDetail(${idx});">
-            Canjear
-          </button>
-        </div>
-      </div>`;
-    }).join('');
   };
 
   window.openRewardDetail = function(idx) {
@@ -1763,14 +1824,21 @@
   const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
   function formatEventUrl(rawLink) {
-    if (!rawLink || typeof rawLink !== 'string') return 'https://mgmpty.odoo.com/mgm-puntos';
-    const trimmed = rawLink.trim();
-    if (!trimmed) return 'https://mgmpty.odoo.com/mgm-puntos';
+    if (!rawLink) return 'https://mgmpty.odoo.com/event';
+    const trimmed = String(rawLink).trim();
+    if (!trimmed) return 'https://mgmpty.odoo.com/event';
+    
+    // Si el enlace es solo un ID numérico de evento de Odoo (ej. '15')
+    if (/^\d+$/.test(trimmed)) {
+      return `https://mgmpty.odoo.com/event/${trimmed}/register`;
+    }
+
     // Si ya tiene protocolo (https://, http://, wa.me, etc.) se respeta
     if (/^https?:\/\//i.test(trimmed)) return trimmed;
     // Si inicia con /, unimos con el dominio de Odoo
     if (trimmed.startsWith('/')) return `https://mgmpty.odoo.com${trimmed}`;
-    // Si es un slug de Odoo (ej. capacitacion-control-id-soluciones-para-gimnasios-y-colegios)
+    
+    // Agregar dominio a ruta relativa que viene en Columna L sin '/' inicial
     return `https://mgmpty.odoo.com/${trimmed}`;
   }
 
@@ -1790,8 +1858,12 @@
                     const monthNum = String(parseInt(m) + 1).padStart(2, '0');
                     const dayNum = String(d).padStart(2, '0');
                     const dateStr = `${y}-${monthNum}-${dayNum}`;
+                    // Prioridad de ID: campo id del GAS (col A del Sheet) → fallback generado
+                    const evId = (ev.id !== undefined && ev.id !== null && String(ev.id).trim() !== '')
+                      ? String(ev.id).trim()
+                      : `EV_${y}_${parseInt(m)+1}_${d}_${idx}`;
                     eventsList.push({
-                      id: `EV_${y}_${m}_${d}_${idx}`,
+                      id: evId,
                       titulo: ev.title || 'Evento MGM',
                       categoria: (ev.type || 'training').toLowerCase(),
                       fecha: dateStr,
@@ -1801,7 +1873,7 @@
                       costo: ev.price || 'Gratis',
                       lugar: ev.extra_2 || 'En línea',
                       cupos: ev.extra_1 || '20',
-                      registro_url: formatEventUrl(ev.button_link),
+                      registro_url: formatEventUrl(ev.registro_url || ev.button_link || ev.link || ev.url || ev.formulario || ''),
                       button_text: ev.button_text || 'Reservar Cupo'
                     });
                   });
@@ -1810,7 +1882,8 @@
             }
           }
         } else {
-          eventsList.push(...data.map(ev => ({
+          eventsList.push(...data.map((ev, idx) => ({
+            id: ev.id || `EV_R_${idx}`,
             ...ev,
             registro_url: formatEventUrl(ev.registro_url || ev.button_link)
           })));
@@ -1824,52 +1897,87 @@
   }
 
   async function loadAgendaEvents() {
-    state.agendaEvents = await fetchEventsFromGAS();
-    renderCalendar();
+    const cached = localStorage.getItem('MGM_CACHE_EVENTS');
+    if (cached) {
+      try {
+        state.agendaEvents = JSON.parse(cached);
+        renderCalendar();
+      } catch(e) {}
+    }
+    
+    const fresh = await fetchEventsFromGAS();
+    if (fresh && fresh !== DEMO_EVENTS) {
+      state.agendaEvents = fresh;
+      localStorage.setItem('MGM_CACHE_EVENTS', JSON.stringify(fresh));
+      renderCalendar();
+    } else if (!cached) {
+      state.agendaEvents = DEMO_EVENTS;
+      renderCalendar();
+    }
   }
 
   async function loadHomeNextEvent() {
-    if (state.agendaEvents.length === 0) {
-      state.agendaEvents = await fetchEventsFromGAS();
-    }
-    const events = state.agendaEvents;
+    const render = () => {
+      const events = state.agendaEvents;
+      const today = new Date(); today.setHours(0,0,0,0);
+      const upcoming = events
+        .filter(e => new Date(e.fecha + 'T00:00:00') >= today)
+        .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
-    const today = new Date(); today.setHours(0,0,0,0);
-    const upcoming = events
-      .filter(e => new Date(e.fecha + 'T00:00:00') >= today)
-      .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+      const banner = document.getElementById('home-event-banner');
+      if (!upcoming.length) {
+        if (banner) banner.style.display = 'none';
+        return;
+      } else {
+        if (banner) banner.style.display = '';
+      }
 
-    const banner = document.getElementById('home-event-banner');
-    if (!upcoming.length) {
-      if (banner) banner.style.display = 'none';
-      return;
-    }
+      const next = upcoming[0];
+      const diff = daysUntil(next.fecha);
 
-    const next = upcoming[0];
-    const diff = daysUntil(next.fecha);
+      const catMap = { webinar:'Webinar Online 📺', training:'Capacitación 🎯', curso:'Certificación 🏆' };
+      const catIconMap = {
+        webinar: '<i class="fa-solid fa-desktop"></i>',
+        training: '<i class="fa-solid fa-users"></i>',
+        curso: '<i class="fa-solid fa-award"></i>'
+      };
 
-    const catMap = { webinar:'Webinar Online 📺', training:'Capacitación 🎯', curso:'Certificación 🏆' };
-    const catIconMap = {
-      webinar: '<i class="fa-solid fa-desktop"></i>',
-      training: '<i class="fa-solid fa-users"></i>',
-      curso: '<i class="fa-solid fa-award"></i>'
+      const iconWrap = document.getElementById('home-event-icon-wrap');
+      const badgeEl = document.getElementById('home-event-badge');
+      const titleEl = document.getElementById('home-event-title');
+      const timeEl  = document.getElementById('home-event-time');
+
+      if (iconWrap) {
+        iconWrap.innerHTML = catIconMap[next.categoria] || '<i class="fa-solid fa-calendar-star"></i>';
+      }
+
+      if (badgeEl) badgeEl.innerHTML = `<i class="fa-solid fa-bolt"></i> ${catMap[next.categoria] || 'Evento MGM'}`;
+      if (titleEl) titleEl.textContent = next.titulo;
+      if (timeEl) {
+        if (diff === 0)      timeEl.textContent = `🔴 ¡HOY a las ${next.hora}!`;
+        else if (diff === 1) timeEl.textContent = `⏰ Mañana a las ${next.hora}`;
+        else                 timeEl.textContent = `En ${diff} días — ${next.hora}`;
+      }
     };
 
-    const iconWrap = document.getElementById('home-event-icon-wrap');
-    const badgeEl = document.getElementById('home-event-badge');
-    const titleEl = document.getElementById('home-event-title');
-    const timeEl  = document.getElementById('home-event-time');
-
-    if (iconWrap) {
-      iconWrap.innerHTML = catIconMap[next.categoria] || '<i class="fa-solid fa-calendar-star"></i>';
-    }
-
-    if (badgeEl) badgeEl.innerHTML = `<i class="fa-solid fa-bolt"></i> ${catMap[next.categoria] || 'Evento MGM'}`;
-    if (titleEl) titleEl.textContent = next.titulo;
-    if (timeEl) {
-      if (diff === 0)      timeEl.textContent = `🔴 ¡HOY a las ${next.hora}!`;
-      else if (diff === 1) timeEl.textContent = `⏰ Mañana a las ${next.hora}`;
-      else                 timeEl.textContent = `En ${diff} días — ${next.hora}`;
+    if (state.agendaEvents.length === 0) {
+      const cached = localStorage.getItem('MGM_CACHE_EVENTS');
+      if (cached) {
+        try {
+          state.agendaEvents = JSON.parse(cached);
+          render();
+        } catch(e) {}
+      }
+      
+      fetchEventsFromGAS().then(fresh => {
+        if (fresh && fresh !== DEMO_EVENTS) {
+          state.agendaEvents = fresh;
+          localStorage.setItem('MGM_CACHE_EVENTS', JSON.stringify(fresh));
+          render();
+        }
+      });
+    } else {
+      render();
     }
   }
 
@@ -1942,8 +2050,30 @@
   });
 
   window.openEventDetail = function(eventId) {
-    const ev = state.agendaEvents.find(e => e.id === eventId);
-    if (!ev) return;
+    const searchId = String(eventId).toLowerCase().trim();
+
+    // 1) Coincidencia exacta por ID (case-insensitive)
+    let ev = state.agendaEvents.find(e => String(e.id).toLowerCase().trim() === searchId);
+
+    // 2) Coincidencia parcial: el ID del evento contiene el buscado o viceversa
+    if (!ev) {
+      ev = state.agendaEvents.find(e =>
+        String(e.id).toLowerCase().includes(searchId) ||
+        searchId.includes(String(e.id).toLowerCase().trim())
+      );
+    }
+
+    // 3) Búsqueda por título (útil cuando el ID no viene del GAS)
+    if (!ev) {
+      ev = state.agendaEvents.find(e =>
+        String(e.titulo).toLowerCase().includes(searchId)
+      );
+    }
+
+    if (!ev) {
+      console.warn('[MGM] openEventDetail: no se encontró evento con id:', eventId, '| eventos disponibles:', state.agendaEvents.map(e => e.id));
+      return;
+    }
     state.activeEventData = ev;
 
     document.getElementById('modal-event-cat').textContent   = ev.categoria?.toUpperCase() || 'EVENTO';
@@ -1960,7 +2090,23 @@
       btnReserve.innerHTML = `<i class="fa-solid fa-ticket"></i> ${ev.button_text || 'Reservar Cupo'}`;
     }
 
+    const deepLinkInput = document.getElementById('modal-event-deeplink-input');
+    if (deepLinkInput) {
+      deepLinkInput.value = `${window.location.origin}${window.location.pathname}?tab=agenda&id=${ev.id}`;
+    }
+
     openAppModal('modal-event-detail');
+  };
+
+  window.copyEventDeepLink = function() {
+    const input = document.getElementById('modal-event-deeplink-input');
+    if (input) {
+      navigator.clipboard.writeText(input.value).then(() => {
+        if (typeof showToast === 'function') {
+          showToast('¡Enlace directo copiado!', 'fa-solid fa-clipboard-check');
+        }
+      });
+    }
   };
 
   window.openEventQR = function() {
@@ -2160,6 +2306,24 @@
     });
   };
 
+  window.handlePromoLinkClick = function(event, enlace) {
+    if (!enlace) return;
+    try {
+      const url = new URL(enlace);
+      if (url.searchParams.has('tab') && (url.hostname.includes('github.io') || url.hostname.includes('mgmpty') || url.pathname.includes('index.html'))) {
+        event.preventDefault();
+        event.stopPropagation();
+        const tab = url.searchParams.get('tab');
+        
+        if (typeof closeCopySheet === 'function') closeCopySheet();
+        if (typeof closePromoDetail === 'function') closePromoDetail();
+        if (typeof switchMainTab === 'function') switchMainTab(tab);
+        return;
+      }
+    } catch(e) {}
+    event.stopPropagation();
+  };
+
   window.openPromoDetail = function(idx) {
     const modal = document.getElementById('modal-promo-feed');
     const feed = document.getElementById('cli-modal-feed');
@@ -2185,7 +2349,8 @@
           <span class="cli-feed-type">${(p.tipo || 'Especial').toUpperCase()}</span>
           <div class="cli-feed-title">${p.nombre}</div>
           <div class="cli-feed-caption">${descPreview}</div>
-          <button class="cli-feed-more-btn" onclick="openCopySheet('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion || '')}', '${p.fecha_inicio || ''}', '${p.fecha_fin || ''}')">...más</button>
+          ${p.enlace ? `<a href="${p.enlace}" target="_blank" class="cli-feed-link-btn" onclick="handlePromoLinkClick(event, '${p.enlace}')"><i class="fa-solid fa-link"></i> Ver enlace</a>` : ''}
+          <button class="cli-feed-more-btn" onclick="openCopySheet('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion || '')}', '${p.fecha_inicio || ''}', '${p.fecha_fin || ''}', '${encodeURIComponent(p.enlace || '')}')">...más</button>
         </div>
 
         <!-- Botones de acción derecha -->
@@ -2198,7 +2363,7 @@
           </button>
           <!-- Comentarios (abre el sheet) -->
           <button class="cli-action-btn"
-            onclick="openCopySheet('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion || '')}', '${p.fecha_inicio || ''}', '${p.fecha_fin || ''}')">
+            onclick="openCopySheet('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion || '')}', '${p.fecha_inicio || ''}', '${p.fecha_fin || ''}', '${encodeURIComponent(p.enlace || '')}')">
             <i class="fa-regular fa-comment"></i>
             <span>Comentar</span>
           </button>
@@ -2258,10 +2423,24 @@
   // — Abrir bottom sheet con copy completo
   let _activeCopyPromoId = null;
 
-  window.openCopySheet = function(id, encTitle, encDesc, fi, ff) {
+  window.openCopySheet = function(id, encTitle, encDesc, fi, ff, encEnlace) {
     _activeCopyPromoId = id;
     document.getElementById('cli-copy-title').textContent = decodeURIComponent(encTitle);
     document.getElementById('cli-copy-desc').textContent  = decodeURIComponent(encDesc);
+    
+    const enlaceDecoded = encEnlace ? decodeURIComponent(encEnlace) : '';
+    const linkEl = document.getElementById('cli-copy-link');
+    if (linkEl) {
+      if (enlaceDecoded) {
+        linkEl.href = enlaceDecoded;
+        linkEl.onclick = (e) => handlePromoLinkClick(e, enlaceDecoded);
+        linkEl.style.display = 'inline-flex';
+      } else {
+        linkEl.style.display = 'none';
+        linkEl.onclick = null;
+      }
+    }
+
     // Ocultar fechas si no las hay
     const datesEl = document.getElementById('cli-copy-dates');
     if (datesEl) datesEl.textContent = (fi && fi !== 'undefined') ? `📅 Válida: ${fi} — ${ff}` : '';
@@ -2837,23 +3016,8 @@
   };
 
   function checkAndSendWelcomeNotification(nombre) {
-    // Si ya existe la bienvenida, no hacer nada
-    if (state.notifications.some(n => n.id === '0000')) return;
-
-    const primerNombre = (nombre || '').split(' ')[0] || 'Cliente';
-    const welcomeNotif = {
-      id: '0000',
-      title: '¡Bienvenido a MGM Hub! 🎉',
-      body: `Hola ${primerNombre}, gracias por unirte a nuestro programa de beneficios. Te invitamos a seguir sumando puntos en todas tus compras y disfrutar de recompensas exclusivas.`,
-      date: new Date().toLocaleDateString('es-PA')
-    };
-
-    state.notifications.unshift(welcomeNotif);
-    localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
-    updateNotifBadge();
-    
-    // Alerta visual local
-    fireNativeNotif(welcomeNotif.title, welcomeNotif.body);
+    // La bienvenida se gestiona de forma centralizada y única en el backend de Google Sheets (WELCOME_<CEDULA>)
+    // Se recibe sincronizada automáticamente vía checkNotifications() y se emite solo una vez.
   }
 
   window.logoutClient = function() {
@@ -2862,9 +3026,9 @@
     state.myCourses = [];
     localStorage.removeItem(K_MY_COURSES);
     renderMyCourses();
-    // Limpiar notificaciones de puntos de la sesión anterior (manteniendo bienvenida)
-    state.notifications = state.notifications.filter(n => String(n.id) === '0000');
-    localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
+    // Limpiar completamente las notificaciones al cerrar sesión
+    state.notifications = [];
+    localStorage.setItem(K_NOTIFS, '[]');
     updateNotifBadge();
     renderNotifications();
     updateHeaderUserIcon();
@@ -3160,22 +3324,40 @@
     try {
       const cedula = state.authUser ? state.authUser.cedula : 'ANONIMO';
       const email  = (state.authUser && state.authUser.email) ? state.authUser.email : '';
+      const nombre = (state.authUser && state.authUser.nombre) ? state.authUser.nombre : '';
       const res = await fetch(CFG.NOTIFS_GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'get_notifications', cedula, email })
+        body: JSON.stringify({ action: 'get_notifications', cedula, email, nombre })
       }).then(r => r.json());
 
-      if (res.success && Array.isArray(res.notifications)) {
+      if (res.success) {
         let hasChanged = false;
-        
-        // Sincronizar eliminaciones: borrar notificaciones de servidor obsoletas (preservar bienvenida y puntos acreditados)
-        const serverIds = res.notifications.map(n => String(n.id));
+
+        // 1. Sincronizar IDs borrados en otros dispositivos
+        if (Array.isArray(res.clearedIds)) {
+          let newCleared = false;
+          res.clearedIds.forEach(id => {
+            const sId = String(id);
+            if (!state.clearedNotifs.includes(sId)) {
+              state.clearedNotifs.push(sId);
+              newCleared = true;
+            }
+          });
+          if (newCleared) {
+            localStorage.setItem(K_CLEARED_NOTIFS, JSON.stringify(state.clearedNotifs));
+          }
+        }
+
+        // 2. Sincronizar eliminaciones: descartar cualquier notificación local que esté en clearedNotifs
+        // o que ya no exista en el servidor (salvo transacciones de puntos no borradas)
+        const serverIds = Array.isArray(res.notifications) ? res.notifications.map(n => String(n.id)) : [];
         const originalLength = state.notifications.length;
         state.notifications = state.notifications.filter(localNotif => {
           const localId = String(localNotif.id);
-          if (localId === '0000' || localId.startsWith('pts_')) return true; // Preservar bienvenida y transacciones de puntos
-          return serverIds.includes(localId);  // Mantener solo si sigue en el server
+          if (state.clearedNotifs.includes(localId)) return false;
+          if (localId.startsWith('pts_')) return true; // Mantener puntos si no fueron borrados
+          return serverIds.includes(localId);  // Mantener del server solo si sigue activa
         });
         
         if (state.notifications.length !== originalLength) {
@@ -3184,15 +3366,40 @@
 
         // Agregar nuevas notificaciones o actualizar existentes
         res.notifications.forEach(rawN => {
-          // Normalizar campos: el GAS puede devolver titulo/mensaje o title/body, y seccion/url/enlace/link
+        // Normalizar campos: el GAS puede devolver titulo/mensaje o title/body, y seccion/url/enlace/link
+          // Si no viene fecha, la extraemos del timestamp embebido en el ID (ej: RMA-2026-0018-1726344000000)
+          let parsedDate = rawN.date || rawN.fecha || '';
+          if (parsedDate) {
+            const d = new Date(parsedDate);
+            if (!isNaN(d.getTime())) {
+              const yyyy = d.getFullYear();
+              const mm = String(d.getMonth() + 1).padStart(2, '0');
+              const dd = String(d.getDate()).padStart(2, '0');
+              const hh = String(d.getHours()).padStart(2, '0');
+              const min = String(d.getMinutes()).padStart(2, '0');
+              parsedDate = `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+            }
+          } else {
+            const tsMatch = String(rawN.id || '').match(/-(\d{10,13})$/);
+            const d = tsMatch ? new Date(parseInt(tsMatch[1]).toString().length <= 10 ? parseInt(tsMatch[1]) * 1000 : parseInt(tsMatch[1])) : new Date();
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const hh = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
+            parsedDate = `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+          }
           const n = {
             id:      rawN.id,
             title:   rawN.title   || rawN.titulo  || '',
             body:    rawN.body    || rawN.mensaje  || '',
-            date:    rawN.date    || rawN.fecha    || '',
+            date:    parsedDate,
             seccion: (rawN.seccion || rawN.enlace || rawN.url || rawN.link || '').trim(),
-            url:     (rawN.url || rawN.enlace || rawN.link || '').trim()
+            url:     (rawN.url || rawN.enlace || rawN.link || '').trim(),
+            fecha_inicio: rawN.fecha_inicio || rawN.inicio || '',
+            fecha_fin:    rawN.fecha_fin || rawN.fin || rawN.expiracion || ''
           };
+
           const stringId = String(n.id);
           const alreadyExists = state.notifications.some(existing => String(existing.id) === stringId);
           const isCleared = state.clearedNotifs.includes(stringId);
@@ -3200,11 +3407,18 @@
           if (!alreadyExists && !isCleared) {
             state.notifications.unshift(n);
             hasChanged = true;
-            // Disparar notificación nativa del sistema
-            fireNativeNotif(n.title || 'MGM', n.body || '', n.seccion || n.url || '');
-            // Mostrar Toast visual en la app
-            if (typeof showToast === 'function') {
-              showToast(n.title || 'Nueva notificación de MGM', 'fa-solid fa-bell');
+            
+            // Solo disparar toast/nativo si nunca lo hemos visto en este dispositivo
+            if (!state.seenNotifs.includes(stringId)) {
+              state.seenNotifs.push(stringId);
+              localStorage.setItem(K_SEEN_NOTIFS, JSON.stringify(state.seenNotifs));
+              
+              // Disparar notificación nativa del sistema
+              fireNativeNotif(n.title || 'MGM', n.body || '', n.seccion || n.url || '');
+              // Mostrar Toast visual en la app
+              if (typeof showToast === 'function') {
+                showToast(n.title || 'Nueva notificación de MGM', 'fa-solid fa-bell');
+              }
             }
           } else if (alreadyExists) {
             // Actualizar si hay cambios en el texto o destino
@@ -3217,6 +3431,48 @@
               }
             }
           }
+        });
+
+        // Helper para parsear fechas robustamente (soporta YYYY-MM-DD, DD/MM/YYYY, y fechas ISO UTC)
+        const parseDateRobust = (dateStr, isEnd) => {
+          let str = String(dateStr || '').trim().split(' ')[0].split('T')[0];
+          if (!str) return null;
+          // Si viene en formato DD/MM/YYYY, convertirlo a YYYY-MM-DD
+          if (str.includes('/')) {
+            const parts = str.split('/');
+            if (parts.length === 3 && parts[0].length <= 2) {
+              str = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+          }
+          return new Date(str + (isEnd ? 'T23:59:59' : 'T00:00:00'));
+        };
+
+        const todayForNotifs = new Date();
+        const finalLength = state.notifications.length;
+        state.notifications = state.notifications.filter(n => {
+          if (n.fecha_inicio) {
+            const fi = parseDateRobust(n.fecha_inicio, false);
+            if (fi && !isNaN(fi.getTime()) && todayForNotifs < fi) return false;
+          }
+          if (n.fecha_fin) {
+            const ff = parseDateRobust(n.fecha_fin, true);
+            if (ff && !isNaN(ff.getTime()) && todayForNotifs > ff) return false;
+          }
+          return true;
+        });
+        
+        if (state.notifications.length !== finalLength) {
+          hasChanged = true;
+        }
+
+        // Ordenar: más recientes primero (por fecha parseada, fallback al ID)
+        state.notifications.sort((a, b) => {
+          const parseForSort = (d) => {
+            if (!d) return 0;
+            const parsed = new Date(String(d).replace(/^(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'));
+            return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+          };
+          return parseForSort(b.date) - parseForSort(a.date);
         });
 
         if (hasChanged) {
@@ -3258,6 +3514,25 @@
     }
   }
 
+  // Añadir notificación local (ej. Evaluación RMA)
+  window.addLocalNotification = function(notif) {
+    const stringId = String(notif.id);
+    const alreadyExists = state.notifications.some(n => String(n.id) === stringId);
+    if (!alreadyExists && !state.clearedNotifs.includes(stringId)) {
+      state.notifications.unshift({
+        id: notif.id,
+        title: notif.title,
+        body: notif.message,
+        date: new Date().toISOString(),
+        seccion: notif.seccion || '',
+        url: ''
+      });
+      localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
+      renderNotifications();
+      updateNotifBadge();
+    }
+  };
+
   // Limpiar cola de mensajes (Borrar todos) — abre modal elegante
   window.clearNotifications = function() {
     if (state.notifications.length === 0) return;
@@ -3268,20 +3543,50 @@
     }
   };
 
-  // Ejecuta el borrado real (llamado desde el botón "Eliminar" del modal)
+  // Borrado individual de una sola notificación (una a la vez) con sincronización multidispositivo
+  window.dismissNotification = function(notifId, e) {
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
+    const stringId = String(notifId);
+
+    // Remover del estado local
+    state.notifications = state.notifications.filter(n => String(n.id) !== stringId);
+    if (!state.clearedNotifs.includes(stringId)) {
+      state.clearedNotifs.push(stringId);
+    }
+    localStorage.setItem(K_CLEARED_NOTIFS, JSON.stringify(state.clearedNotifs));
+    localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
+    renderNotifications();
+    updateNotifBadge();
+
+    // Sincronizar borrado con el backend para que los demás dispositivos no la muestren
+    if (state.authUser && state.authUser.cedula &&
+        CFG.NOTIFS_GAS_URL && CFG.NOTIFS_GAS_URL !== 'URL_TEMPORAL_PENDIENTE') {
+      fetch(CFG.NOTIFS_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'clear_notifications',
+          cedula: state.authUser.cedula,
+          notifIds: [stringId]
+        })
+      }).catch(err => console.warn('[MGM] Error sincronizando borrado individual:', err));
+    }
+  };
+
+  // Ejecuta el borrado masivo real (llamado desde el botón "Eliminar" del modal)
   window.confirmClearNotifications = function() {
     // Cerrar el modal de confirmación
     const modal = document.getElementById('modal-confirm-clear');
     if (modal) modal.classList.remove('active');
 
-    // Recopilar IDs antes de limpiar el array
-    const idsToClear = state.notifications
-      .map(n => String(n.id))
-      .filter(id => id !== '0000' && !id.startsWith('pts_')); // No enviar bienvenida ni puntos locales
+    // Recopilar TODOS los IDs antes de limpiar el array para sincronizar borrado completo
+    const idsToClear = state.notifications.map(n => String(n.id));
+    if (idsToClear.length === 0) return;
 
     // Guardar las IDs borradas localmente para que no vuelvan a aparecer del backend
-    state.notifications.forEach(n => {
-      const stringId = String(n.id);
+    idsToClear.forEach(stringId => {
       if (!state.clearedNotifs.includes(stringId)) {
         state.clearedNotifs.push(stringId);
       }
@@ -3293,8 +3598,8 @@
     renderNotifications();
     updateNotifBadge();
 
-    // Sincronizar borrado con el backend para que otros dispositivos no vean estas notificaciones
-    if (idsToClear.length > 0 && state.authUser && state.authUser.cedula &&
+    // Sincronizar borrado masivo con el backend para que otros dispositivos no vean estas notificaciones
+    if (state.authUser && state.authUser.cedula &&
         CFG.NOTIFS_GAS_URL && CFG.NOTIFS_GAS_URL !== 'URL_TEMPORAL_PENDIENTE') {
       fetch(CFG.NOTIFS_GAS_URL, {
         method: 'POST',
@@ -3304,7 +3609,7 @@
           cedula: state.authUser.cedula,
           notifIds: idsToClear
         })
-      }).catch(err => console.warn('[MGM] No se pudo sincronizar borrado de notificaciones:', err));
+      }).catch(err => console.warn('[MGM] No se pudo sincronizar borrado masivo de notificaciones:', err));
     }
   };
 
@@ -3313,7 +3618,7 @@
     const notif = state.notifications.find(item => String(item.id) === String(notifId));
     if (!notif) return;
 
-    // Notificación de cumpleaños — abrir modal especial
+    // Notificación de cumpleaños → abrir modal especial con confeti
     if (notif.type === 'bday' || String(notifId).startsWith('bday_')) {
       closeAppModal('modal-notifications');
       if (typeof window.showBirthdayModal === 'function') window.showBirthdayModal(notif.isSundayMoved);
@@ -3327,15 +3632,13 @@
     }
   };
 
-  // Lanzar modal de cumpleaños con mensaje personalizado y confeti
+  // Modal de cumpleaños: mensaje personalizado + confeti
   window.showBirthdayModal = function(isSundayMoved) {
     const textEl = document.getElementById('modal-birthday-text');
     if (textEl) {
-      if (isSundayMoved) {
-        textEl.innerHTML = 'Como tu cumpleaños cayó domingo, <strong>¡hoy lunes es tu día especial!</strong> Tienes un <strong>10% de descuento en todas tus compras hoy</strong> en nuestras sucursales de MGM.';
-      } else {
-        textEl.innerHTML = '¡Hoy es tu día especial! Queremos celebrarlo contigo otorgándote un <strong>10% de descuento en todas tus compras hoy</strong> en nuestras sucursales de MGM.';
-      }
+      textEl.innerHTML = isSundayMoved
+        ? 'Como tu cumpleaños cayó domingo, <strong>¡hoy lunes es tu día especial!</strong> Tienes un <strong>10% de descuento en todas tus compras hoy</strong> en nuestras sucursales de MGM.'
+        : '¡Hoy es tu día especial! Queremos celebrarlo contigo otorgándote un <strong>10% de descuento en todas tus compras hoy</strong> en nuestras sucursales de MGM.';
     }
     openAppModal('modal-birthday');
     setTimeout(() => { if (typeof mgmConfetti !== 'undefined' && mgmConfetti.birthday) mgmConfetti.birthday(); }, 400);
@@ -3508,15 +3811,21 @@
 
       return `
       <div ${clickAttr}
-        style="background:var(--bg-surface); border:1px solid var(--border-light); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:var(--shadow-xs); transition: box-shadow 0.2s, transform 0.2s;"
+        style="position:relative; background:var(--bg-surface); border:1px solid var(--border-light); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:var(--shadow-xs); transition: box-shadow 0.2s, transform 0.2s;"
         onmouseover="${hoverIn}" onmouseout="${hoverOut}">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
           <i class="${iconClass}" style="color:${itemColor}; font-size:14px;"></i>
-          <div style="font-size:14px; font-weight:800; color:var(--text-dark); flex:1;">${n.title || 'Sin Título'}</div>
+          <div style="font-size:14px; font-weight:800; color:var(--text-dark); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;">${n.title || 'Sin Título'}</div>
           ${itemBadgeText ? `<span style="font-size:10px; background:${itemBadgeBg}; color:${itemBadgeTxt}; padding:2px 7px; border-radius:20px; font-weight:700; white-space:nowrap;">${itemBadgeText}</span>` : ''}
+          <button type="button" onclick="dismissNotification('${safeId}', event)" title="Eliminar notificación"
+            style="background:none; border:none; color:var(--text-subtle); cursor:pointer; padding:3px 6px; border-radius:6px; font-size:13px; display:inline-flex; align-items:center; justify-content:center; transition:color 0.15s, background 0.15s; margin-left:4px;"
+            onmouseover="this.style.color='#ef4444'; this.style.background='rgba(239,68,68,0.1)';"
+            onmouseout="this.style.color='var(--text-subtle)'; this.style.background='none';">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
         <div style="font-size:13px; color:var(--text-muted); line-height:1.5;">${n.body || ''}</div>
-        <div style="font-size:11px; color:var(--text-subtle); margin-top:8px; text-align:right;">${n.date || 'Reciente'}</div>
+        <div style="font-size:11px; color:var(--text-subtle); margin-top:8px; text-align:right;">${n.date || ''}</div>
       </div>`;
     }).join('');
   }
@@ -3563,15 +3872,23 @@
 
     checkAndShowSplash();
 
-    // ── DEEP LINK: Leer parámetros de URL al arrancar la app ─────────────────
+    // ── DEEP LINK: Leer parámetros de URL al arrancar la app ──────────────────────
     // Ejemplos: ?tab=puntos&sub=registro | ?tab=agenda&id=EV001 | ?tab=promos&id=P001
+    // QR RMA:   ?tab=rma&sub=RMA-2026-0001&email=cliente@email.com
     const _urlParams = new URLSearchParams(window.location.search);
     const _deepTab   = _urlParams.get('tab');
     const _deepSub   = _urlParams.get('sub') || _urlParams.get('id');
+    const _deepEmail = _urlParams.get('email') || '';
     if (_deepTab) {
+      // Si hay email en la URL (viene del QR), guardarlo para que navigateTo lo use
+      if (_deepEmail) window._pendingRmaEmail = _deepEmail;
       const _seccion = _deepSub ? `${_deepTab}:${_deepSub}` : _deepTab;
+      if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Cargando sección...');
       // Pequeño delay para dejar que los datos carguen antes de navegar
-      setTimeout(() => navigateTo(_seccion), 400);
+      setTimeout(() => {
+        navigateTo(_seccion);
+        if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
+      }, 400);
       // Limpiar la URL para que no se repita en recargas
       history.replaceState({}, document.title, window.location.pathname);
     }
@@ -3672,8 +3989,24 @@
             ${estado.label}
           </span>
         </div>
-        <div class="rma-progress-bar">
-          <div class="rma-progress-fill" style="width:${estado.progress}%;"></div>
+        <div class="rma-tracker">
+          <div class="rma-tracker-progress" style="width:${Math.min(estado.progress, 100)}%;"></div>
+          <div class="rma-step ${estado.progress >= 15 ? 'completed' : ''} ${estado.progress === 15 ? 'active' : ''}">
+            <div class="rma-step-icon"><i class="fa-solid fa-inbox"></i></div>
+            <div class="rma-step-label">Recibido</div>
+          </div>
+          <div class="rma-step ${estado.progress >= 35 ? 'completed' : ''} ${estado.progress === 35 ? 'active' : ''}">
+            <div class="rma-step-icon"><i class="fa-solid fa-microscope"></i></div>
+            <div class="rma-step-label">Diagnóstico</div>
+          </div>
+          <div class="rma-step ${estado.progress >= 50 ? 'completed' : ''} ${estado.progress === 50 || estado.progress === 55 ? 'active' : ''}">
+            <div class="rma-step-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+            <div class="rma-step-label">Reparación</div>
+          </div>
+          <div class="rma-step ${estado.progress >= 90 ? 'completed' : ''} ${estado.progress === 90 || estado.progress === 100 ? 'active' : ''}">
+            <div class="rma-step-icon"><i class="fa-solid fa-check-double"></i></div>
+            <div class="rma-step-label">Finalizado</div>
+          </div>
         </div>
         <div class="rma-card-body">
           <div class="rma-info-row">
@@ -3703,6 +4036,7 @@
     }
     rmaHideError();
     rmaSetLoading(true);
+    if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Consultando equipo...');
 
     const url = `${RMA_GAS_URL}?action=get_rma&cedula=${encodeURIComponent(cedula)}`;
 
@@ -3718,6 +4052,7 @@
     fetch(url)
       .then(r => r.json())
       .then(data => {
+        if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
         rmaSetLoading(false);
 
         // Normalizar respuesta — admite { data: [...] } o array directo
@@ -3740,6 +4075,7 @@
         if (cardsList) cardsList.innerHTML = items.map(buildRmaCard).join('');
       })
       .catch(err => {
+        if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
         rmaSetLoading(false);
         console.error('[RMA]', err);
         if (resultSection) resultSection.style.display = 'none';
@@ -3770,4 +4106,689 @@
     }
   });
 
+})();
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MÓDULO: CALCULADORA DE ALMACENAMIENTO CCTV
+// Se inicializa cuando el usuario navega a la vista toolbox:calculadora-almacenamiento
+// ══════════════════════════════════════════════════════════════════════════════
+(function() {
+  'use strict';
+
+  // URL del Apps Script que devuelve discos del inventario MGM
+  const STORAGE_CALC_GAS = "https://script.google.com/macros/s/AKfycbwwSvsAwud-fzGHdr9ylMLaU24unDUE9ixcK1D0lPFVT9PVbgp6vEn0UkaQgZn5Bp4vpQ/exec";
+
+  // Tabla de bitrates base (kbps) por resolución y codec (cámaras IP)
+  const bitrateTable = {
+    digital: {
+      "720":   { h264: 2048,  h265: 1536,  h265p: 1024,  mjpeg: 8000  },
+      "1080":  { h264: 4096,  h265: 3072,  h265p: 2048,  mjpeg: 16000 },
+      "3000":  { h264: 6144,  h265: 4608,  h265p: 3072,  mjpeg: 24000 },
+      "4000":  { h264: 8192,  h265: 6144,  h265p: 4096,  mjpeg: 32000 },
+      "5000":  { h264: 10240, h265: 7168,  h265p: 5120,  mjpeg: 40000 },
+      "8000":  { h264: 16384, h265: 10240, h265p: 8192,  mjpeg: 64000 },
+      "12000": { h264: 24576, h265: 16384, h265p: 12288, mjpeg: 96000 }
+    },
+    analog: {
+      "720p": 2048, "1080p": 3072, "4MP": 5120, "5MP": 6144, "4K": 8192
+    }
+  };
+
+  // Factores de modo de grabación (porcentaje del tiempo activo)
+  const modeFactors = {
+    continuous: 1,
+    motion:     0.35,
+    events:     0.15,
+    work8:      0.33,
+    work12:     0.50
+  };
+
+  // Estado de la calculadora
+  let _discoSeleccionado = null;
+  let _mostrarPrecioEnPDF = false;
+  let _calcInitialized = false;
+
+  // ─── Inicializar calculadora cuando el usuario llega a esa vista ───────────
+  function initCalc() {
+    const addBtn  = document.getElementById('addCam');
+    const calcBtn = document.getElementById('btnCalcular');
+    const pdfBtn  = document.getElementById('btnPDF');
+
+    if (!addBtn) return; // DOM no listo todavia
+
+    // Limpiar listeners previos clonando el nodo (evita duplicados)
+    const newAdd  = addBtn.cloneNode(true);
+    const newCalc = calcBtn ? calcBtn.cloneNode(true) : null;
+    const newPdf  = pdfBtn  ? pdfBtn.cloneNode(true)  : null;
+    addBtn.parentNode.replaceChild(newAdd, addBtn);
+    if (calcBtn && newCalc) calcBtn.parentNode.replaceChild(newCalc, calcBtn);
+    if (pdfBtn  && newPdf)  pdfBtn.parentNode.replaceChild(newPdf, pdfBtn);
+
+    newAdd.addEventListener('click', addCameraRow);
+    if (newCalc) newCalc.addEventListener('click', calcularTotal);
+    if (newPdf)  newPdf.addEventListener('click', generarPDF);
+
+    // Limpiar lista y resultado de sesiones previas
+    const camList = document.getElementById('camList');
+    const resBox  = document.getElementById('resultadoBox');
+    if (camList) camList.innerHTML = '';
+    if (resBox)  resBox.style.display = 'none';
+
+    // Agregar primera fila de camara por defecto
+    addCameraRow();
+  }
+
+  // ─── Agregar una fila de cámara ───────────────────────────────────────────
+  function addCameraRow() {
+    const container = document.getElementById('camList');
+    if (!container) return;
+    const index = container.children.length + 1;
+    const div = document.createElement('div');
+    div.className = 'cam-row';
+    div.style.cssText = 'background:#fff; border:1px solid #dee2e6; border-radius:12px; padding:16px; margin-bottom:16px; position:relative; transition:0.2s;';
+    div.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:10px;">
+        <span style="font-weight:700; color:var(--primary-blue); font-size:13px;">CAMARA #${index}</span>
+        <button style="background:#dc3545; color:white; border:none; border-radius:6px; padding:5px 10px; cursor:pointer; font-size:12px; font-weight:600;" onclick="this.parentElement.parentElement.remove(); calcRenumerar();">Eliminar</button>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px;">
+        <div>
+          <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:#555; margin-bottom:4px; display:block;">Tecnologia</label>
+          <select class="tipo" onchange="calcActualizarRes(this)" style="width:100%; padding:9px; border-radius:6px; border:1px solid #ced4da; font-size:13px; background:#fff;">
+            <option value="digital">IP / Red</option>
+            <option value="analog">Analogica HD (TVI/CVI)</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:#555; margin-bottom:4px; display:block;">Resolucion</label>
+          <select class="res" style="width:100%; padding:9px; border-radius:6px; border:1px solid #ced4da; font-size:13px; background:#fff;"></select>
+        </div>
+        <div>
+          <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:#555; margin-bottom:4px; display:block;">Compresion</label>
+          <select class="codec" style="width:100%; padding:9px; border-radius:6px; border:1px solid #ced4da; font-size:13px; background:#fff;">
+            <option value="h265p">H.265+</option>
+            <option value="h265">H.265</option>
+            <option value="h264">H.264</option>
+            <option value="mjpeg">MJPEG</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:#555; margin-bottom:4px; display:block;">FPS</label>
+          <input type="number" class="fps" value="15" min="1" max="60" style="width:100%; padding:9px; border-radius:6px; border:1px solid #ced4da; font-size:13px; background:#fff;">
+        </div>
+        <div>
+          <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:#555; margin-bottom:4px; display:block;">Complejidad Escena</label>
+          <select class="scene" style="width:100%; padding:9px; border-radius:6px; border:1px solid #ced4da; font-size:13px; background:#fff;">
+            <option value="0.6">Baja (Pasillo)</option>
+            <option value="1" selected>Media (Oficina)</option>
+            <option value="1.4">Alta (Trafico)</option>
+            <option value="2.0">Extrema (Casino)</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:#555; margin-bottom:4px; display:block;">Modo Grabacion</label>
+          <select class="mode" style="width:100%; padding:9px; border-radius:6px; border:1px solid #ced4da; font-size:13px; background:#fff;">
+            <option value="continuous">24/7 Continua</option>
+            <option value="motion">Movimiento</option>
+            <option value="events">IA / Cruce Linea</option>
+            <option value="work8">Horario Laboral (8h)</option>
+            <option value="work12">Dia completo (12h)</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:#555; margin-bottom:4px; display:block;">Bitrate Manual (kbps)</label>
+          <input type="number" class="customBR" placeholder="Opcional" style="width:100%; padding:9px; border-radius:6px; border:1px solid #ced4da; font-size:13px; background:#fff;">
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+    // Inicializar las opciones de resolución
+    calcActualizarRes(div.querySelector('.tipo'));
+  }
+
+  // ─── Actualizar opciones de resolución según tecnología ───────────────────
+  window.calcActualizarRes = function(select) {
+    const row = select.closest('.cam-row');
+    const resSelect   = row.querySelector('.res');
+    const codecSelect = row.querySelector('.codec');
+    resSelect.innerHTML = '';
+    if (select.value === 'digital') {
+      const ops = [
+        {v:"720",   t:"1MP / 720p"},
+        {v:"1080",  t:"2MP / 1080p"},
+        {v:"3000",  t:"3MP"},
+        {v:"4000",  t:"4MP"},
+        {v:"5000",  t:"5MP"},
+        {v:"8000",  t:"8MP / 4K"},
+        {v:"12000", t:"12MP / Pro"}
+      ];
+      ops.forEach(o => resSelect.add(new Option(o.t, o.v)));
+      codecSelect.disabled = false;
+    } else {
+      const ops = [
+        {v:"720p",  t:"720p HD"},
+        {v:"1080p", t:"1080p HD"},
+        {v:"4MP",   t:"4MP HD"},
+        {v:"5MP",   t:"5MP HD"},
+        {v:"4K",    t:"8MP 4K"}
+      ];
+      ops.forEach(o => resSelect.add(new Option(o.t, o.v)));
+      codecSelect.value    = 'h264';
+      codecSelect.disabled = true;
+    }
+  };
+
+  // ─── Renumerar cámaras tras eliminar ─────────────────────────────────────
+  window.calcRenumerar = function() {
+    document.querySelectorAll('.cam-row').forEach((r, i) => {
+      const span = r.querySelector('span');
+      if (span) span.textContent = 'CAMARA #' + (i + 1);
+    });
+  };
+
+  // ─── Calcular total de almacenamiento ────────────────────────────────────
+  function calcularTotal() {
+    const days = parseInt(document.getElementById('days').value) || 1;
+    let totalNeto = 0;
+    const filas = [];
+
+    document.querySelectorAll('.cam-row').forEach((row, i) => {
+      const tipo   = row.querySelector('.tipo').value;
+      const res    = row.querySelector('.res').value;
+      const codec  = row.querySelector('.codec').value;
+      const fps    = parseInt(row.querySelector('.fps').value) || 1;
+      const scene  = parseFloat(row.querySelector('.scene').value);
+      const mode   = row.querySelector('.mode').value;
+      const custom = row.querySelector('.customBR').value;
+
+      let br = custom
+        ? parseInt(custom)
+        : (tipo === 'digital' ? bitrateTable.digital[res][codec] : bitrateTable.analog[res]);
+
+      br = br * (fps / 30) * scene;
+
+      const tb = (br * 3600 * 24 * days * modeFactors[mode]) / (8 * 1024 * 1024 * 1024);
+      totalNeto += tb;
+
+      filas.push([
+        i + 1,
+        row.querySelector('.res').selectedOptions[0].text,
+        tipo === 'analog' ? 'H.264/5 (DVR)' : codec.toUpperCase(),
+        fps,
+        row.querySelector('.scene').selectedOptions[0].text,
+        row.querySelector('.mode').selectedOptions[0].text,
+        Math.round(br).toLocaleString() + ' kbps',
+        tb.toFixed(2)
+      ]);
+    });
+
+    // Factor de seguridad: 9% overhead de formato de disco
+    const totalConSeguridad = totalNeto / 0.91;
+
+    // Mostrar resultados
+    const resultadoBox = document.getElementById('resultadoBox');
+    if (resultadoBox) resultadoBox.style.display = 'block';
+
+    const resNeto   = document.getElementById('resNeto');
+    const resDiscos = document.getElementById('resDiscos');
+    if (resNeto)   resNeto.textContent   = totalNeto.toFixed(2) + ' TB';
+    if (resDiscos) resDiscos.textContent = Math.ceil(totalConSeguridad) + ' TB Reales';
+
+    // Renderizar tabla de detalle
+    const tbody = document.querySelector('#tablaDetalle tbody');
+    if (tbody) {
+      tbody.innerHTML = filas.map(f =>
+        `<tr>${f.map((td, ci) => {
+          const align = ci === 0 || ci === 3 ? 'center' : ci >= 6 ? 'right' : 'left';
+          const bold  = ci === 7 ? 'font-weight:700; color:#0c4a6e;' : '';
+          return `<td style="padding:7px 8px; border-bottom:1px solid #f0f0f0; text-align:${align}; ${bold}">${td}</td>`;
+        }).join('')}</tr>`
+      ).join('');
+    }
+
+    // Consultar inventario MGM
+    halarInventarioMGM(totalConSeguridad * 1024);
+  }
+
+  // ─── Consultar inventario de discos en MGM ────────────────────────────────
+  function halarInventarioMGM(capGB) {
+    const container = document.getElementById('listaDiscos');
+    const loading   = document.getElementById('loadingMGM');
+    const titulo    = document.getElementById('tituloRecomendaciones');
+    if (!container) return;
+
+    if (loading) loading.style.display = 'block';
+    if (titulo)  titulo.style.display  = 'none';
+    container.innerHTML = '';
+    _discoSeleccionado  = null;
+
+    fetch(`${STORAGE_CALC_GAS}?gb=${Math.round(capGB)}`)
+      .then(r => r.json())
+      .then(discos => {
+        if (loading) loading.style.display = 'none';
+        if (!discos || !discos.length) return;
+
+        if (titulo) titulo.style.display = 'block';
+
+        discos.forEach(d => {
+          const unidades = Math.ceil(capGB / d.capacidad);
+          const card = document.createElement('div');
+          card.style.cssText = 'background:white; border:2px solid #e2e8f0; padding:14px; border-radius:10px; cursor:pointer; transition:0.2s;';
+          card.innerHTML = `
+            <div style="font-weight:700; font-size:13px; color:#333; margin-bottom:4px;">${d.modelo}</div>
+            <div style="font-size:11px; color:var(--primary-blue); margin-bottom:4px;">SKU: ${d.sku} | ${d.capacidad/1024}TB</div>
+            <div style="font-weight:700; color:#dc3545; font-size:12px; margin-bottom:4px;">Se requieren: <strong>${unidades}</strong> unidad(es)</div>
+            <div style="font-weight:700; color:#10b981; font-size:13px; margin-bottom:8px;">P. Unitario: $${parseFloat(d.precio).toFixed(2)}</div>
+            <label style="font-size:10px; display:flex; align-items:center; gap:5px; color:#555; cursor:pointer;">
+              <input type="checkbox" class="chk-precio" style="cursor:pointer;"> Incluir precio en PDF
+            </label>
+          `;
+
+          card.addEventListener('click', function(e) {
+            if (e.target.type === 'checkbox') {
+              _mostrarPrecioEnPDF = e.target.checked;
+              return;
+            }
+            document.querySelectorAll('#listaDiscos > div').forEach(c => {
+              c.style.border = '2px solid #e2e8f0';
+              c.style.background = 'white';
+            });
+            card.style.border     = '2px solid var(--primary-blue)';
+            card.style.background = '#eff6ff';
+            _discoSeleccionado = {...d, qty: unidades};
+            _mostrarPrecioEnPDF = card.querySelector('.chk-precio').checked;
+          });
+
+          container.appendChild(card);
+        });
+      })
+      .catch(err => {
+        if (loading) loading.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error al conectar con inventario MGM.';
+        console.error('[MGM Calc] Error inventario:', err);
+      });
+  }
+
+  // ─── Generar PDF de cotización ────────────────────────────────────────────
+  function generarPDF() {
+    if (typeof window.jspdf === 'undefined') {
+      if (typeof showToast === 'function') showToast('PDF no disponible: verifique conexion a internet.', 'fa-solid fa-triangle-exclamation');
+      return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const client  = (document.getElementById('clientName') || {}).value || 'Cliente General';
+    const logoUrl = 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png';
+
+    // Header azul
+    doc.setFillColor(26, 115, 232);
+    doc.rect(0, 0, 210, 45, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.text('MGM SEGURIDAD', 15, 20);
+    doc.setFontSize(10);
+    doc.text('REPORTE TECNICO DE ALMACENAMIENTO DIGITAL', 15, 30);
+    doc.text(`PROYECTO: ${client.toUpperCase()}`, 15, 38);
+
+    try { doc.addImage(logoUrl, 'PNG', 160, 8, 35, 30); } catch(e) {}
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
+    const dias          = (document.getElementById('days') || {}).value || '?';
+    const totalSugerido = (document.getElementById('resDiscos') || {}).textContent || '?';
+    doc.text(`Dias de Respaldo: ${dias}`, 15, 55);
+    doc.text(`Espacio Total Requerido: ${totalSugerido}`, 15, 63);
+
+    let startYTable = 75;
+    if (_discoSeleccionado) {
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'bold');
+      let txtEquipo = `EQUIPO SUGERIDO: (${_discoSeleccionado.qty}) ${_discoSeleccionado.modelo} [${_discoSeleccionado.sku}]`;
+      if (_mostrarPrecioEnPDF) {
+        const totalUSD = (_discoSeleccionado.qty * parseFloat(_discoSeleccionado.precio)).toFixed(2);
+        txtEquipo += ` | Total: $${totalUSD}`;
+      }
+      doc.text(txtEquipo, 15, 72);
+      doc.setFont(undefined, 'normal');
+      startYTable = 80;
+    }
+
+    doc.autoTable({
+      html: '#tablaDetalle',
+      startY: startYTable,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [26, 115, 232] },
+      margin: { top: startYTable }
+    });
+
+    const finalY = doc.lastAutoTable.finalY + 15;
+    doc.setFontSize(8);
+    doc.setTextColor(120);
+    const legal = 'AVISO TECNICO: Este calculo es una simulacion basada en algoritmos de compresion estandar. MGM no garantiza la duracion exacta. Consulte en mgmpty.odoo.com.';
+    doc.text(legal, 15, finalY, { maxWidth: 180 });
+
+    doc.save(`MGM_Almacenamiento_${client.replace(/\s/g, '_')}.pdf`);
+    if (typeof showToast === 'function') {
+      showToast('¡PDF de almacenamiento generado y descargado exitosamente!', 'fa-solid fa-file-pdf');
+    }
+  }
+
+  // ─── Gancho: escuchar cambios de tab para inicializar la calculadora ──────
+  const _origSwitch = window.switchMainTab;
+  window.switchMainTab = function(tabName) {
+    if (_origSwitch) _origSwitch(tabName);
+    if (tabName === 'toolbox-calculadora-almacenamiento') {
+      // Guard de autenticacion: usa localStorage como los demas modulos
+      const _authData = localStorage.getItem('mgm_auth_user');
+      if (!_authData) {
+        const viewEl = document.getElementById('view-toolbox');
+        document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+        if (viewEl) viewEl.classList.add('active');
+        if (typeof showToast === 'function') showToast('Debes iniciar sesion para usar las Calculadoras Tecnicas.', 'fa-solid fa-lock');
+        return;
+      }
+      // Usuario autenticado: inicializar calculadora cada vez que se abre
+      initCalc();
+    }
+  };
+
+  // Easter egg en consola (igual que la versión standalone)
+  (function() {
+    const fontP = "font-family:'Segoe UI',sans-serif;";
+    const fontM = "font-family:'Cascadia Code',monospace;";
+    console.log(
+      "%cDREAMS STORAGE%cCAPACITY ENGINE%cTIER-3 READY%c",
+      `${fontP} background:#001B2E; color:#2ECC71; padding:6px 12px; font-weight:900; border-radius:4px 0 0 4px;`,
+      `${fontP} background:#2ECC71; color:#001B2E; padding:6px 12px; font-weight:800;`,
+      `${fontP} background:#102A43; color:#FFF; padding:6px 12px; border-radius:0 4px 4px 0;`,
+      "padding-left:10px;"
+    );
+    console.log(
+      `%c» %cALGORITHM:%c Predictive Retention Modeling\n» %cPAYLOAD:%c Bitrate & Framerate Analysis\n» %cAUTHOR:%c Malloy Ruiz | MGM Tecno Sistemas 2026`,
+      `${fontM} color:#486581;`, `color:#2ECC71; font-weight:bold;`, `${fontM} color:#486581;`,
+      `${fontM} color:#486581;`, `color:#2ECC71; font-weight:bold;`, `${fontM} color:#486581;`,
+      `color:#2ECC71; font-weight:bold;`, `${fontM} color:#486581;`
+    );
+  })();
+
+})();
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════════════════════════════════════
+// MÓDULO: CONVERSOR TÉCNICO
+// ══════════════════════════════════════════════════════════════════════════
+(function() {
+  let _convInitialized = false;
+
+  const C = {
+   "Longitud":{ icon:"fa-ruler-horizontal", hint:"Longitudes habituales en instalación.", units:{ "Milímetros (mm)":1,"Centímetros (cm)":10,"Metros (m)":100,"Kilómetros (km)":100000,"Pulgadas (in)":25.4,"Pies (ft)":304.8,"Yardas (yd)":914.4,"Millas (mi)":1609344 } },
+   "Área":{ icon:"fa-vector-square", hint:"1 m² = 1,000,000 mm².", units:{ "mm²":1,"cm²":100,"m²":1000000,"pulgadas²":645.16,"pies²":92903.04,"hectáreas":100000000 } },
+   "Volumen":{ icon:"fa-cube", hint:"Conversión de volumen.", units:{ "mL":1,"Litros (L)":1000,"cm³":1,"m³":1000000,"Pulgadas³":16.387064,"Pies³":28316.846592,"Galones US":3785.411784 } },
+   "Peso":{ icon:"fa-weight-hanging", hint:"Masa/peso expresado en unidades habituales.", units:{ "Gramos (g)":1,"Kilogramos (kg)":1000,"Toneladas (t)":1000000,"Onzas (oz)":28.349523125,"Libras (lb)":453.59237 } },
+   "Temperatura":{ icon:"fa-thermometer-half", hint:"Conversión exacta entre °C, °F y Kelvin.", units:{"°C":"C","°F":"F","Kelvin (K)":"K"}, special:"temperature" },
+   "Voltaje":{ icon:"fa-bolt", hint:"Voltaje eléctrico.", units:{"Microvoltios (µV)":0.000001,"Milivoltios (mV)":0.001,"Voltios (V)":1,"Kilovoltios (kV)":1000} },
+   "Corriente":{ icon:"fa-wave-square", hint:"Corriente eléctrica.", units:{"Microamperios (µA)":0.000001,"Miliamperios (mA)":0.001,"Amperios (A)":1,"Kiloamperios (kA)":1000} },
+   "Potencia":{ icon:"fa-plug", hint:"Potencia eléctrica y mecánica.", units:{"Milivatios (mW)":0.001,"Vatios (W)":1,"Kilovatios (kW)":1000,"Megavatios (MW)":1000000,"Caballos de fuerza (HP)":745.699872} },
+   "Energía":{ icon:"fa-battery-three-quarters", hint:"Energía.", units:{"Milijulios (mJ)":0.001,"Julios (J)":1,"Wh":3600,"kWh":3600000,"MWh":3600000000} },
+   "Resistencia":{ icon:"fa-resistor" , hint:"Resistencia eléctrica.", units:{"Miliohmios (mΩ)":0.001,"Ohmios (Ω)":1,"Kiloohmios (kΩ)":1000,"Megaohmios (MΩ)":1000000} },
+   "Frecuencia":{ icon:"fa-signal", hint:"Frecuencia de señales y equipos.", units:{"Hz":1,"kHz":1000,"MHz":1000000,"GHz":1000000000} },
+   "Datos":{ icon:"fa-database", hint:"Conversión decimal de capacidad de datos.", units:{"bits":0.125,"Bytes (B)":1,"KB":1000,"MB":1000000,"GB":1000000000,"TB":1000000000000,"KiB":1024,"MiB":1048576,"GiB":1073741824,"TiB":1099511627776} },
+   "Velocidad de red":{ icon:"fa-network-wired", hint:"Velocidades de transmisión: bps, Kbps, Mbps y Gbps.", units:{"bps":1,"Kbps":1000,"Mbps":1000000,"Gbps":1000000000} },
+   "Tiempo":{ icon:"fa-clock", hint:"Tiempo.", units:{"Milisegundos (ms)":0.001,"Segundos (s)":1,"Minutos (min)":60,"Horas (h)":3600,"Días":86400} },
+   "Presión":{ icon:"fa-gauge", hint:"Presión.", units:{"Pa":1,"kPa":1000,"bar":100000,"PSI":6894.757293,"atm":101325} },
+   "Flujo":{ icon:"fa-faucet", hint:"Flujo volumétrico.", units:{"L/s":1,"L/min":0.0166666666667,"m³/h":0.277777777778,"CFM":0.471947443} },
+   "Iluminación":{ icon:"fa-lightbulb", hint:"Unidades fotométricas.", units:{"Lux (lx)":1,"Kilolux (klx)":1000} },
+   "Ángulo":{ icon:"fa-drafting-compass", hint:"Ángulos.", units:{"Grados (°)":1,"Radianes (rad)":57.2957795131} },
+   "dBm / potencia":{ icon:"fa-chart-bar", hint:"dBm es potencia logarítmica.", units:{"mW":1,"W":1000,"dBm":"dBm"}, special:"dbm" },
+   "AWG / cable":{ icon:"fa-cable-car", hint:"Equivalencias nominales AWG ↔ diámetro ↔ área del conductor.", units:{}, special:"awg" }
+  };
+
+  const awg = [
+    ["0000 (4/0)",11.684,107.219],["000 (3/0)",10.405,85.029],["00 (2/0)",9.266,67.431],["0 (1/0)",8.251,53.475],
+    ["1",7.348,42.408],["2",6.544,33.631],["3",5.827,26.670],["4",5.189,21.150],["5",4.621,16.770],["6",4.115,13.300],
+    ["7",3.665,10.550],["8",3.264,8.370],["9",2.906,6.630],["10",2.588,5.260],["11",2.305,4.170],["12",2.053,3.310],
+    ["13",1.828,2.620],["14",1.628,2.080],["15",1.450,1.650],["16",1.291,1.310],["17",1.150,1.040],["18",1.024,0.823],
+    ["19",0.912,0.653],["20",0.812,0.518],["21",0.723,0.410],["22",0.644,0.326],["23",0.573,0.258],["24",0.511,0.205],
+    ["25",0.455,0.162],["26",0.405,0.129],["27",0.361,0.102],["28",0.321,0.0810],["29",0.287,0.0642],["30",0.255,0.0509],
+    ["31",0.227,0.0404],["32",0.202,0.0320],["33",0.180,0.0254],["34",0.160,0.0201],["35",0.143,0.0169],["36",0.127,0.0127],
+    ["37",0.114,0.0100],["38",0.101,0.0080],["39",0.0897,0.0063],["40",0.0799,0.0050]
+  ];
+
+  let currentCat = "Longitud";
+
+  function populateCategories(filter="") {
+    const catEl = document.getElementById("conv-categories");
+    if (!catEl) return;
+    catEl.innerHTML = "";
+    Object.keys(C).filter(x => x.toLowerCase().includes(filter.toLowerCase()) || Object.keys(C[x].units).some(u=>u.toLowerCase().includes(filter.toLowerCase())))
+    .forEach(x => {
+      const b = document.createElement("button"); 
+      b.className = "cat" + (x === currentCat ? " active" : "");
+      const icon = C[x].icon || "fa-circle";
+      b.innerHTML = '<i class="fas ' + icon + ' cat-icon"></i><span>' + x + '</span>'; 
+      b.onclick = () => selectCategory(x); 
+      catEl.appendChild(b);
+    });
+  }
+
+  function selectCategory(cat) {
+    currentCat = cat; 
+    const searchEl = document.getElementById("conv-search");
+    if (searchEl) populateCategories(searchEl.value);
+    
+    const data = C[cat];
+    const fromEl = document.getElementById("conv-from");
+    const toEl = document.getElementById("conv-to");
+    if(!fromEl || !toEl) return;
+
+    fromEl.innerHTML = ""; toEl.innerHTML = "";
+    
+    if (data.special === "awg") {
+      ["AWG","Diámetro (mm)","Área (mm²)"].forEach(u => { fromEl.add(new Option(u,u)); toEl.add(new Option(u,u)); });
+    } else {
+      Object.keys(data.units).forEach(u => { fromEl.add(new Option(u,u)); toEl.add(new Option(u,u)); });
+    }
+    
+    if (toEl.options.length > 1) toEl.selectedIndex = 1;
+    const hintEl = document.getElementById("conv-hint");
+    if (hintEl) hintEl.textContent = data.hint || "";
+    
+    convert();
+  }
+
+  function tempConvert(v,a,b){
+    let c = a==="°C" ? v : a==="°F" ? (v-32)*5/9 : v-273.15;
+    return b==="°C" ? c : b==="°F" ? c*9/5+32 : c+273.15;
+  }
+  function dbmToMw(v){ return Math.pow(10, v/10); }
+  function mwToDbm(v){ return 10*Math.log10(v); }
+  function dbmConvert(v,a,b){
+    let mw = a==="dBm" ? dbmToMw(v) : a==="W" ? v*1000 : v;
+    return b==="dBm" ? mwToDbm(mw) : b==="W" ? mw/1000 : mw;
+  }
+  function awgConvert(v,a,b){
+    if (a===b) return v;
+    if (a==="AWG"){
+      const row = awg.find(r => Math.abs(parseFloat(r[0])===v));
+      if (!row) return NaN;
+      return b==="Diámetro (mm)" ? row[1] : row[2];
+    }
+    let row = awg.reduce((best,r) => Math.abs(r[b==="Diámetro (mm)"?1:2]-v) < Math.abs(best[b==="Diámetro (mm)"?1:2]-v) ? r : best, awg[0]);
+    return parseFloat(row[0].replace(/[^\d.-]/g,"")) || 0;
+  }
+
+  function formatNum(n) {
+    if (!Number.isFinite(n)) return "Valor no válido";
+    const abs = Math.abs(n);
+    if (abs !== 0 && (abs < 0.000001 || abs >= 1e12)) return n.toExponential(6);
+    return new Intl.NumberFormat("es-PA", { maximumFractionDigits: 8 }).format(n);
+  }
+
+  function convert() {
+    const valueEl = document.getElementById("conv-value");
+    const fromEl = document.getElementById("conv-from");
+    const toEl = document.getElementById("conv-to");
+    const resEl = document.getElementById("conv-result");
+    const resLbl = document.getElementById("conv-resultLabel");
+    if (!valueEl || !fromEl || !toEl || !resEl || !resLbl) return;
+
+    const data = C[currentCat], v = parseFloat(valueEl.value);
+    if (Number.isNaN(v)) { resEl.textContent = "—"; return; }
+    
+    let out;
+    if (data.special === "temperature") out = tempConvert(v, fromEl.value, toEl.value);
+    else if (data.special === "dbm") out = dbmConvert(v, fromEl.value, toEl.value);
+    else if (data.special === "awg") out = awgConvert(v, fromEl.value, toEl.value);
+    else {
+      const base = v * data.units[fromEl.value];
+      out = base / data.units[toEl.value];
+    }
+    
+    const formatted = formatNum(out);
+    resEl.textContent = formatted + " " + toEl.value;
+    resLbl.textContent = v + " " + fromEl.value + " =";
+  }
+
+  function initConversor() {
+    if (_convInitialized) return;
+    
+    const searchEl = document.getElementById("conv-search");
+    const valueEl = document.getElementById("conv-value");
+    const fromEl = document.getElementById("conv-from");
+    const toEl = document.getElementById("conv-to");
+    const swapEl = document.getElementById("conv-swap");
+    
+    if (searchEl) searchEl.addEventListener("input", e => populateCategories(e.target.value));
+    [valueEl, fromEl, toEl].forEach(e => { if (e) e.addEventListener("input", convert); });
+    
+    if (swapEl) {
+      swapEl.onclick = () => {
+        const x = fromEl.value; fromEl.value = toEl.value; toEl.value = x; convert();
+      };
+    }
+    
+    document.querySelectorAll(".conversor-module .conv-tab").forEach(t => {
+      t.onclick = () => {
+        document.querySelectorAll(".conversor-module .conv-tab").forEach(x => x.classList.remove("active"));
+        document.querySelectorAll(".conversor-module .conv-panel").forEach(x => x.classList.remove("active"));
+        t.classList.add("active");
+        document.getElementById(t.dataset.tab).classList.add("active");
+      };
+    });
+
+    populateCategories();
+    selectCategory(currentCat);
+    _convInitialized = true;
+  }
+
+  // Calculadora segura dentro del conversor
+  let calcExpr = "";
+  window.calcInput = function(x) {
+    if (x === "%") x = "/100";
+    calcExpr += x; 
+    const d = document.getElementById("conv-calcDisplay");
+    if(d) d.value = calcExpr || "0";
+  };
+  window.calcClear = function() { calcExpr = ""; const d = document.getElementById("conv-calcDisplay"); if(d) d.value = "0"; };
+  window.calcBack = function() { calcExpr = calcExpr.slice(0, -1); const d = document.getElementById("conv-calcDisplay"); if(d) d.value = calcExpr || "0"; };
+  window.calcEqual = function() {
+    try {
+      if (!/^[0-9+\-*/().\s]+$/.test(calcExpr)) throw Error();
+      const result = Function('"use strict";return (' + calcExpr + ')')();
+      if (!Number.isFinite(result)) throw Error();
+      calcExpr = String(result); 
+      const d = document.getElementById("conv-calcDisplay");
+      if(d) d.value = result;
+    } catch (e) {
+      const d = document.getElementById("conv-calcDisplay");
+      if(d) d.value = "Error";
+      calcExpr = "";
+      if (typeof showToast === 'function') {
+        showToast('Expresión matemática inválida', 'fa-solid fa-triangle-exclamation');
+      }
+    }
+  };
+
+  // Teclado para calculadora
+  document.addEventListener("keydown", e => {
+    // Solo si el tab activo es toolbox-conversor-tecnico y panel es calculadora
+    const mainView = document.getElementById("view-toolbox-conversor-tecnico");
+    const calcPanel = document.getElementById("calc-panel");
+    if (!mainView || !mainView.classList.contains("active")) return;
+    if (!calcPanel || !calcPanel.classList.contains("active")) return;
+    
+    if (document.activeElement.tagName === "INPUT" && document.activeElement.id !== "conv-calcDisplay") return;
+    if (/[0-9+\-*/().%]/.test(e.key)) calcInput(e.key);
+    else if (e.key === "Enter") calcEqual();
+    else if (e.key === "Backspace") calcBack();
+    else if (e.key === "Escape") calcClear();
+  });
+
+  // Guard e inicialización de la pestaña
+  const _origSwitchConv = window.switchMainTab;
+  window.switchMainTab = function(tabName) {
+    if (_origSwitchConv) _origSwitchConv(tabName);
+    if (tabName === 'toolbox-conversor-tecnico') {
+      const _authData = localStorage.getItem('mgm_auth_user');
+      if (!_authData) {
+        const viewEl = document.getElementById('view-toolbox');
+        document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+        if (viewEl) viewEl.classList.add('active');
+        if (typeof showToast === 'function') showToast('Debes iniciar sesion para usar las Calculadoras Tecnicas.', 'fa-solid fa-lock');
+        return;
+      }
+      setTimeout(initConversor, 50);
+    }
+  };
+
+})();
+
+
+// ══════════════════════════════════════════════════════════════════════════
+//  CALCULADORA UPS — gancho de navegacion (mismo patron que almacenamiento)
+// ══════════════════════════════════════════════════════════════════════════
+(function() {
+  var _origSwitchUps = window.switchMainTab;
+  window.switchMainTab = function(tabName) {
+    if (_origSwitchUps) _origSwitchUps(tabName);
+    if (tabName === 'toolbox-calculadora-ups') {
+      var _authData = localStorage.getItem('mgm_auth_user');
+      if (!_authData) {
+        var viewEl = document.getElementById('view-toolbox');
+        document.querySelectorAll('.view-container').forEach(function(v){ v.classList.remove('active'); });
+        if (viewEl) viewEl.classList.add('active');
+        if (typeof showToast === 'function') showToast('Debes iniciar sesion para usar las Calculadoras Tecnicas.', 'fa-solid fa-lock');
+        return;
+      }
+    }
+  };
+})();
+
+// ══════════════════════════════════════════════════════════════════════════
+//  OFFLINE SUPPORT LOGIC
+// ══════════════════════════════════════════════════════════════════════════
+(function() {
+  function updateOnlineStatus() {
+    const offlineIcon = document.getElementById('offline-icon');
+    if (!navigator.onLine) {
+      if (offlineIcon) offlineIcon.style.display = 'inline-block';
+      if (typeof window.showToast === 'function') {
+        window.showToast("Estás desconectado. El contenido cargado está guardado.", "fa-solid fa-wifi-slash");
+      }
+    } else {
+      if (offlineIcon) offlineIcon.style.display = 'none';
+      if (typeof window.showToast === 'function') {
+        window.showToast("Conexión restaurada.", "success");
+      }
+    }
+  }
+
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  
+  // Initial check
+  if (!navigator.onLine) {
+    const offlineIcon = document.getElementById('offline-icon');
+    if (offlineIcon) offlineIcon.style.display = 'inline-block';
+  }
 })();
