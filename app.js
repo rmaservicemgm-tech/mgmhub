@@ -930,6 +930,17 @@
       if (regFormWrap) regFormWrap.style.display = 'block';
       const loginInp = document.getElementById('login-cedula');
       if (loginInp) loginInp.value = '';
+      
+      // Mostrar y pre-llenar código de referido si existe
+      try {
+        const refCode = sessionStorage.getItem('mgm_ref_code');
+        const refGroup = document.getElementById('reg-referrer-group');
+        const refInput = document.getElementById('reg-referrer-code');
+        if (refCode && refGroup && refInput) {
+          refInput.value = refCode;
+          refGroup.style.display = 'block';
+        }
+      } catch (e) {}
     }
   }
 
@@ -1324,6 +1335,9 @@
 
     document.getElementById('puntos-login-box').style.display  = 'none';
     document.getElementById('puntos-dashboard-box').style.display = 'block';
+
+    // Cargar panel de referidos
+    renderReferidosPanel(c.cedula, c.ref_code);
   }
 
   window.resetPuntosLogin = function() {
@@ -1334,11 +1348,12 @@
   document.getElementById('form-puntos-register')?.addEventListener('submit', async e => {
     e.preventDefault();
     const data = {
-      nombre:     document.getElementById('reg-nombre').value.trim(),
-      cedula:     document.getElementById('reg-cedula').value.trim(),
-      correo:     document.getElementById('reg-correo').value.trim(),
-      telefono:   document.getElementById('reg-telefono').value.trim(),
-      cumpleanos: document.getElementById('reg-cumpleanos').value
+      nombre:        document.getElementById('reg-nombre').value.trim(),
+      cedula:        document.getElementById('reg-cedula').value.trim(),
+      correo:        document.getElementById('reg-correo').value.trim(),
+      telefono:      document.getElementById('reg-telefono').value.trim(),
+      cumpleanos:    document.getElementById('reg-cumpleanos').value,
+      referrer_code: document.getElementById('reg-referrer-code') ? document.getElementById('reg-referrer-code').value.trim() : ''
     };
     if (!data.nombre || !data.cedula || !data.correo || !data.telefono) {
       showAlert('reg-alert', 'error', 'Por favor completa todos los campos requeridos.');
@@ -3839,6 +3854,15 @@
     document.documentElement.removeAttribute('data-theme');
     try { localStorage.removeItem('mgm_theme'); } catch(e) {}
 
+    // Capturar código de referido de URL si existe
+    const urlParams = new URLSearchParams(window.location.search);
+    const refParam = urlParams.get('ref');
+    if (refParam) {
+      try {
+        sessionStorage.setItem('mgm_ref_code', refParam);
+      } catch (e) { console.error('Error saving ref code', e); }
+    }
+
     switchMainTab('home');
 
     // Inicializar estado de UI autenticación
@@ -4792,3 +4816,84 @@
     if (offlineIcon) offlineIcon.style.display = 'inline-block';
   }
 })();
+
+// ==========================================
+// MÓDULO DE REFERIDOS — Funciones Globales
+// ==========================================
+
+async function renderReferidosPanel(cedula, refCodeFromClient) {
+  if (!cedula) return;
+
+  // Mostrar código de referido en la tarjeta
+  const refCodeEl = document.getElementById('dash-ref-code');
+  const shareBtn  = document.getElementById('btn-share-whatsapp');
+
+  // Generar código local si el backend aún no lo devuelve
+  const refCode = refCodeFromClient || ('MGM-' + (cedula.toString().replace(/[^0-9]/g,'').slice(-4) || '0000'));
+
+  if (refCodeEl) refCodeEl.textContent = refCode;
+
+  const appUrl = window.location.origin + window.location.pathname;
+  const link   = `${appUrl}?ref=${encodeURIComponent(refCode)}`;
+  const msg    = encodeURIComponent(`¡Hola! Te invito a unirte al programa de puntos MGM. Usa mi código *${refCode}* al registrarte y gana 300 puntos de bienvenida 🎁:\n${link}`);
+  if (shareBtn) shareBtn.href = `https://wa.me/?text=${msg}`;
+
+  // Guardar link para copyReferralCode
+  try { sessionStorage.setItem('mgm_my_ref_link', link); } catch(e) {}
+
+  // Obtener lista de referidos del GAS
+  const container = document.getElementById('ref-list-container');
+  const statsEl   = document.getElementById('dash-ref-stats');
+  const ptsTotalEl = document.getElementById('dash-ref-pts-total');
+
+  try {
+    const CFG_URL = 'https://script.google.com/macros/s/AKfycbwV90SCVdMrMgE1Vlev3rdpcqMJlVwCV5du_MGJ-BtV5Di8LMY9UroYD7dXhWBXyI2yGw/exec';
+    if (!CFG_URL) return;
+
+    const res = await fetch(CFG_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'get_referidos', cedula })
+    }).then(r => r.json());
+
+    if (res.success && res.referidos && res.referidos.length > 0) {
+      let totalPts = 0;
+      container.innerHTML = res.referidos.map(r => {
+        const inicial = (r.nombre || '?')[0].toUpperCase();
+        const completado = r.estado === 'completado';
+        if (completado) totalPts += (r.puntosGanados || 0);
+        return `
+          <div class="ref-list-item">
+            <div class="ref-avatar">${inicial}</div>
+            <div class="ref-info">
+              <div class="ref-name">${r.nombre}</div>
+              <div class="ref-date">${r.fecha || ''} &nbsp; <span class="ref-status-badge ${completado ? 'completado' : 'pendiente'}">${completado ? 'Completado' : 'Pendiente'}</span></div>
+            </div>
+            <div class="ref-pts ${completado ? 'ganados' : 'pendientes'}">
+              ${completado ? '+' + (r.puntosGanados || 300) + ' pts' : 'Pendiente'}
+            </div>
+          </div>`;
+      }).join('');
+
+      if (totalPts > 0 && statsEl && ptsTotalEl) {
+        ptsTotalEl.textContent = totalPts.toLocaleString('es-PA');
+        statsEl.style.display = 'block';
+      }
+    }
+  } catch(e) {
+    console.warn('[MGM Referidos] Error cargando referidos:', e);
+  }
+}
+
+function copyReferralCode() {
+  try {
+    const link = sessionStorage.getItem('mgm_my_ref_link') || '';
+    if (!link) return;
+    navigator.clipboard.writeText(link).then(() => {
+      const el = document.getElementById('dash-ref-code');
+      const orig = el ? el.textContent : '';
+      if (el) el.textContent = '¡Copiado!';
+      setTimeout(() => { if (el) el.textContent = orig; }, 1800);
+    });
+  } catch(e) {}
+}

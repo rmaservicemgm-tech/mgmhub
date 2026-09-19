@@ -2048,3 +2048,125 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
   40% { transform: translateY(-18px); }
   60% { transform: translateY(-9px); }
 }
+
+/* =====================================================
+   PROGRAMA DE REFERIDOS
+   ===================================================== */
+.referidos-card {
+  background: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-navy-mid) 100%);
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0, 33, 74, 0.2);
+  text-align: center;
+}
+.referidos-card h4 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #e0e7ff;
+}
+.ref-code-display {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px dashed rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  padding: 15px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin: 10px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+.ref-code-display i {
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.ref-code-display i:hover {
+  color: #fffefa;
+}
+.btn-whatsapp-share {
+  background: #25D366;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+  text-decoration: none;
+}
+.btn-whatsapp-share:hover {
+  background: #128C7E;
+}
+.ref-list-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-white);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.ref-list-item:last-child {
+  border-bottom: none;
+}
+.ref-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary-blue-lt);
+  color: var(--primary-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  margin-right: 15px;
+}
+.ref-info {
+  flex: 1;
+}
+.ref-name {
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 14px;
+  margin-bottom: 3px;
+}
+.ref-date {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ref-pts {
+  font-weight: 700;
+  font-size: 14px;
+  text-align: right;
+}
+.ref-pts.ganados {
+  color: var(--status-green);
+}
+.ref-pts.pendientes {
+  color: var(--status-orange);
+}
+.ref-status-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.ref-status-badge.completado {
+  background: #dcfce7;
+  color: #166534;
+}
+.ref-status-badge.pendiente {
+  background: #ffedd5;
+  color: #9a3412;
+}

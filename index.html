@@ -726,6 +726,33 @@
               </tbody>
             </table>
           </div>
+          <!-- PANEL DE REFERIDOS -->
+          <div style="margin-top: 25px;">
+            <div class="referidos-card">
+              <h4>Gana Puntos por Referir</h4>
+              <p style="font-size: 13px; color: rgba(255,255,255,0.85); margin: 0 0 15px 0;">
+                Invita a tus amigos y gana <strong>300 pts</strong> cuando realicen su primera compra. ¡Ellos también ganarán 300 pts de bienvenida!
+              </p>
+              <div class="ref-code-display">
+                <span id="dash-ref-code">Cargando...</span>
+                <i class="fa-regular fa-copy" onclick="copyReferralCode()" title="Copiar Código"></i>
+              </div>
+              <a href="#" id="btn-share-whatsapp" class="btn-whatsapp-share" target="_blank" style="margin-top: 10px;">
+                <i class="fa-brands fa-whatsapp"></i> Compartir por WhatsApp
+              </a>
+            </div>
+
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin: 0 0 10px 0;">Mis Referidos</h4>
+            <div id="dash-ref-stats" style="font-size: 13px; color: var(--status-green); font-weight: 600; margin-bottom: 12px; display: none;">
+              ¡Has ganado <span id="dash-ref-pts-total">0</span> pts gracias a tus referidos!
+            </div>
+            <div id="ref-list-container">
+              <div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 13px; background: var(--bg-white); border-radius: 8px;">
+                <i class="fa-regular fa-user-group" style="font-size: 24px; color: #cbd5e1; margin-bottom: 10px; display: block;"></i>
+                Aún no has referido a nadie. ¡Comparte tu código para empezar a ganar!
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -789,6 +816,13 @@
                 <input type="date" id="reg-cumpleanos" class="form-control">
                 <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
                   🎁 Disfruta de un 10% de descuento especial el día de tu cumpleaños.
+                </div>
+              </div>
+              <div class="form-group" id="reg-referrer-group" style="display: none;">
+                <label class="form-label" for="reg-referrer-code">Código de Invitación <span style="color:var(--status-green); font-size:11px;">(Referido)</span></label>
+                <input type="text" id="reg-referrer-code" class="form-control" style="background-color: var(--bg-body); font-weight: bold;" readonly>
+                <div style="font-size: 11px; color: var(--status-green); margin-top: 4px;">
+                  🎁 Ganarás 300 pts extra de bienvenida por usar este código.
                 </div>
               </div>
 
