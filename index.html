@@ -1,30 +1,22 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>MGM Hub â€” Soluciones & Beneficios MGM</title>
-  <meta name="description" content="AplicaciÃ³n MÃ³vil MGM Hub: MGM Puntos, Calendario de Capacitaciones, Promociones del Mes y Asistente IA Magie.">
+  <title>MGM Hub — Soluciones & Beneficios MGM</title>
+  <meta name="description" content="Aplicación Móvil MGM Hub: MGM Puntos, Calendario de Capacitaciones, Promociones del Mes y Asistente IA Magie.">
   <meta name="theme-color" content="#ffffff">
   <link rel="manifest" href="manifest.json">
   
-  <!-- CDNs Preconnects para ganar velocidad -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-  
   <!-- Google Fonts & FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap">
-  <link rel="stylesheet" href="styles.css?v=13">
-  <!-- jsPDF para exportacion de cotizaciones desde la Calculadora de Almacenamiento -->
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
+  <link rel="stylesheet" href="styles.css?v=12">
 
-  <!-- ðŸŽ‰ canvas-confetti â€” celebraciones MGM Hub -->
-  <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <!-- 🎉 canvas-confetti — celebraciones MGM Hub -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
-  <!-- Registro del Service Worker con auto-actualizaciÃ³n -->
+  <!-- Registro del Service Worker con auto-actualización -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
@@ -34,8 +26,8 @@
             const newWorker = reg.installing;
             newWorker.addEventListener('statechange', function () {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // Hay una nueva versiÃ³n: forzar recarga automÃ¡tica
-                console.log('[MGM Hub] Nueva versiÃ³n disponible, actualizando...');
+                // Hay una nueva versión: forzar recarga automática
+                console.log('[MGM Hub] Nueva versión disponible, actualizando...');
                 newWorker.postMessage({ type: 'SKIP_WAITING' });
               }
             });
@@ -55,48 +47,18 @@
       });
     }
   </script>
-  <!-- HTML5 QRCode Scanner -->
-  <script defer src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
 
-  <!-- GLOBAL MGM LOADER -->
-  <div id="mgm-global-loader" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.7); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-    <div style="position: relative; width: 60px; height: 60px;">
-      <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 4px solid rgba(0, 33, 74, 0.1); border-radius: 50%;"></div>
-      <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 4px solid transparent; border-top-color: #00214a; border-radius: 50%; animation: mgm-spin-global 1s linear infinite;"></div>
-      <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: auto;">
-    </div>
-    <div id="mgm-global-loader-text" style="margin-top: 12px; font-weight: 600; color: #00214a; font-family: 'Inter', sans-serif; font-size: 14px;">Cargando...</div>
-  </div>
-  <style>
-    @keyframes mgm-spin-global {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
-  <script>
-    window.showMgmLoader = function(text = 'Cargando...') {
-      const loader = document.getElementById('mgm-global-loader');
-      const textEl = document.getElementById('mgm-global-loader-text');
-      if (textEl) textEl.textContent = text;
-      if (loader) loader.style.display = 'flex';
-    };
-    window.hideMgmLoader = function() {
-      const loader = document.getElementById('mgm-global-loader');
-      if (loader) loader.style.display = 'none';
-    };
-  </script>
-
-  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-       PANTALLA BIENVENIDA: INSTALAR WEBAPP (solo si no estÃ¡ ya instalada)
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  <!-- ══════════════════════════════════════════════════════════════════════════
+       PANTALLA BIENVENIDA: INSTALAR WEBAPP (solo si no está ya instalada)
+       ══════════════════════════════════════════════════════════════════════════ -->
   <div id="install-overlay" style="display:none;">
     <div id="install-card">
       <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" id="install-logo">
       <div id="install-badge">HUB</div>
       <h1 id="install-title">MGM Hub</h1>
-      <p id="install-sub">Tu centro de beneficios, promociones y puntos MGM â€” siempre a la mano.</p>
+      <p id="install-sub">Tu centro de beneficios, promociones y puntos MGM — siempre a la mano.</p>
       <div id="install-features">
         <div class="install-feature">
           <i class="fa-solid fa-star" style="color:#ffb800;"></i>
@@ -120,7 +82,7 @@
       </button>
       <div id="install-ios-hint" style="display:none;">
         <i class="fa-solid fa-arrow-up-from-bracket"></i>
-        <span>En Safari: toca <strong>Compartir</strong> â†’ <strong>AÃ±adir a inicio</strong></span>
+        <span>En Safari: toca <strong>Compartir</strong> → <strong>Añadir a inicio</strong></span>
       </div>
       <button id="btn-skip-install" onclick="skipInstallOverlay()">
         <i class="fa-solid fa-globe"></i> Continuar en el navegador
@@ -134,16 +96,15 @@
   <!-- APP MOBILE ROOT SHELL -->
   <div id="app-root">
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-         HEADER PRINCIPAL MÃ“VIL (BLANCO CON BOTÃ“N ASESORÃA)
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         HEADER PRINCIPAL MÓVIL (BLANCO CON BOTÓN ASESORÍA)
+         ══════════════════════════════════════════════════════════════════════════ -->
     <header class="app-header">
       <div class="brand-wrapper">
         <img src="https://mgmpty.odoo.com/web/image/website/1/logo/MGM?unique=44e5057" alt="MGM Logo" class="brand-logo-img" onerror="this.src='https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'">
         <div class="brand-titles">
           <div class="brand-app-name">
             MGM <span class="badge-box">HUB</span>
-            <i class="fa-solid fa-wifi-slash" id="offline-icon" title="Sin conexiÃ³n"></i>
           </div>
           <div class="brand-tagline">Soluciones & Beneficios</div>
         </div>
@@ -159,29 +120,29 @@
           <i class="fa-regular fa-user"></i>
         </button>
 
-        <button id="btn-open-chat-header" class="btn-header-wa-action" onclick="openAsesoriaModal()" aria-label="AsesorÃ­a WhatsApp">
+        <button id="btn-open-chat-header" class="btn-header-wa-action" onclick="openAsesoriaModal()" aria-label="Asesoría WhatsApp">
           <i class="fa-brands fa-whatsapp"></i>
-          <span>AsesorÃ­a</span>
+          <span>Asesoría</span>
         </button>
       </div>
     </header>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    <!-- ══════════════════════════════════════════════════════════════════════════
          VISTA 1: INICIO (DASHBOARD HUB)
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+         ══════════════════════════════════════════════════════════════════════════ -->
     <main id="view-home" class="view-container active">
 
-      <!-- BANNER INTELIGENTE DE BIENVENIDA / AUTENTICACIÃ“N (PUNTOS) -->
+      <!-- BANNER INTELIGENTE DE BIENVENIDA / AUTENTICACIÓN (PUNTOS) -->
       <div id="home-auth-banner" class="home-auth-banner"></div>
 
-      <!-- HERO BANNER: PRÃ“XIMO EVENTO O EVENTO EN CURSO -->
+      <!-- HERO BANNER: PRÓXIMO EVENTO O EVENTO EN CURSO -->
       <div class="next-event-hero" id="home-event-banner" onclick="switchMainTab('agenda')">
         <div class="next-event-icon-box" id="home-event-icon-wrap">
           <i class="fa-solid fa-calendar-star" id="home-event-icon"></i>
         </div>
         <div class="next-event-details">
           <div class="next-event-badge" id="home-event-badge">
-            <i class="fa-solid fa-bolt"></i> PrÃ³ximo Evento
+            <i class="fa-solid fa-bolt"></i> Próximo Evento
           </div>
           <div class="next-event-title-text" id="home-event-title">Sincronizando agenda...</div>
           <div class="next-event-countdown" id="home-event-time">Calculando fecha...</div>
@@ -189,9 +150,9 @@
         <i class="fa-solid fa-chevron-right" style="color: rgba(255,255,255,0.6); font-size: 13px;"></i>
       </div>
 
-      <!-- SECCIÃ“N: ACCESOS DIRECTOS RÃPIDOS -->
+      <!-- SECCIÓN: ACCESOS DIRECTOS RÁPIDOS -->
       <div class="section-header">
-        <h2 class="section-title"><i class="fa-solid fa-grip" style="color: var(--primary-blue);"></i> Servicios RÃ¡pidos</h2>
+        <h2 class="section-title"><i class="fa-solid fa-grip" style="color: var(--primary-blue);"></i> Servicios Rápidos</h2>
       </div>
 
       <div class="quick-grid">
@@ -227,38 +188,29 @@
             <div class="card-desc">Asistente virtual de ventas y cotizaciones.</div>
           </div>
         </div>
-
-        <!-- ACCESO DIRECTO TOOLBOX -->
-        <div class="quick-card" onclick="switchMainTab('toolbox')">
-          <div class="card-icon-pill pill-toolbox"><i class="fa-solid fa-toolbox"></i></div>
-          <div>
-            <div class="card-title">MGM Toolbox</div>
-            <div class="card-desc">Herramientas pro para cÃ¡lculos tÃ©cnicos.</div>
-          </div>
-        </div>
       </div>
 
-      <!-- SECCIÃ“N: PROMOCIONES DESTACADAS EN TIEMPO REAL -->
+      <!-- SECCIÓN: PROMOCIONES DESTACADAS EN TIEMPO REAL -->
       <div class="section-header">
         <h2 class="section-title"><i class="fa-solid fa-sparkles" style="color: var(--accent-gold-dark);"></i> Promos de este Mes</h2>
-        <span class="section-link" onclick="switchMainTab('promos')">Ver todas â†’</span>
+        <span class="section-link" onclick="switchMainTab('promos')">Ver todas →</span>
       </div>
 
       <div class="promos-slider-container" id="home-promos-slider">
         <div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Cargando promociones del mes...</div>
       </div>
 
-      <!-- SECCIÃ“N: PREMIOS CANJEABLES POR PUNTOS -->
+      <!-- SECCIÓN: PREMIOS CANJEABLES POR PUNTOS -->
       <div class="section-header" style="margin-top: 10px;">
         <h2 class="section-title"><i class="fa-solid fa-gift" style="color: #10b981;"></i> Premios por Puntos</h2>
-        <span class="section-link" onclick="switchMainTab('puntos')">Mis Puntos â†’</span>
+        <span class="section-link" onclick="switchMainTab('puntos')">Mis Puntos →</span>
       </div>
 
       <div class="premios-slider-container" id="home-premios-slider">
-        <div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Cargando catÃ¡logo de premios...</div>
+        <div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Cargando catálogo de premios...</div>
       </div>
 
-      <!-- SECCIÃ“N: BANNER PUBLICITARIO / DESTACADOS -->
+      <!-- SECCIÓN: BANNER PUBLICITARIO / DESTACADOS -->
       <style>
         .mgm-ad-container {
           width: 100%;
@@ -401,39 +353,6 @@
           return 'https://' + url;
         }
 
-        // Detecta si una URL apunta a la propia app MGM Hub
-        // Extrae el valor de ?tab= (y opcionalmente &sub=) para navegaciÃ³n interna
-        function extractInternalRoute(url) {
-          if (!url || url === '#') return null;
-          try {
-            const parsed = new URL(url, location.href);
-            // Es la misma app si comparte el mismo origin+pathname
-            const myOrigin = location.origin;
-            const myPath = location.pathname.replace(/\/[^/]*$/, '') || '/';
-            const isOwnApp =
-              (parsed.origin === myOrigin && parsed.pathname.startsWith(myPath)) ||
-              parsed.hostname === 'rmaservicemgm-tech.github.io';
-            if (!isOwnApp) return null;
-            const tab = parsed.searchParams.get('tab');
-            if (!tab) return null;
-            const sub = parsed.searchParams.get('sub');
-            return sub ? `${tab}:${sub}` : tab;
-          } catch(e) {
-            return null;
-          }
-        }
-
-        // Genera el onclick correcto: interno si es la propia app, externo si no
-        function buildAdClickAttr(link) {
-          if (!link || link === '#') return '';
-          const route = extractInternalRoute(link);
-          if (route) {
-            // NavegaciÃ³n interna sin abrir nueva pestaÃ±a
-            return `onclick="event.preventDefault(); if(typeof navigateTo==='function') navigateTo('${route.replace(/'/g,"\\'")}');" style="cursor:pointer;"`;
-          }
-          return `href="${link}" target="_blank" rel="noopener noreferrer"`;
-        }
-
         function getYoutubeId(url) {
           const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
           const match = url.match(regExp);
@@ -449,14 +368,8 @@
           const link = fixUrl(ad.Link_Click);
           if (fmt === 'imagen') {
             const hasLink = link && link !== '#';
-            const imgTag = `<img src="${contenido}" alt="${ad.Nombre_CampaÃ±a || ad['Nombre_CampaÃ±a'] || 'Publicidad MGM'}" loading="lazy">`;
-            if (!hasLink) return imgTag;
-            const route = extractInternalRoute(link);
-            if (route) {
-              // Enlace interno: div clickeable sin abrir pestaÃ±a
-              return `<div onclick="if(typeof navigateTo==='function') navigateTo('${route.replace(/'/g,"\\'")}');" style="cursor:pointer;">${imgTag}</div>`;
-            }
-            return `<a href="${link}" target="_blank" rel="noopener noreferrer">${imgTag}</a>`;
+            const imgTag = `<img src="${contenido}" alt="${ad.Nombre_Campaña || ad['Nombre_Campaña'] || 'Publicidad MGM'}" loading="lazy">`;
+            return hasLink ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${imgTag}</a>` : imgTag;
           } 
           else if (fmt === 'video_yt') {
             const videoId = getYoutubeId(ad.Contenido);
@@ -521,9 +434,9 @@
               return;
             }
 
-            // Filtrar por ubicaciÃ³n y estado activo
+            // Filtrar por ubicación y estado activo
             const validAds = allAds.filter(a => {
-              const u = (a.Ubicacion || a.UbicaciÃ³n || '').toLowerCase().trim();
+              const u = (a.Ubicacion || a.Ubicación || '').toLowerCase().trim();
               const est = (a.Estado || '').toLowerCase().trim();
               const isLoc = u === 'todos' || u === 'web' || u === 'inicio' || !u;
               const isActive = est !== 'inactivo' && est !== 'pausado';
@@ -541,7 +454,7 @@
               // Un solo anuncio: renderizado directo
               target.innerHTML = getAdHtml(validAds[0]);
             } else {
-              // MÃºltiples anuncios: Slider interactivo con autoplay
+              // Múltiples anuncios: Slider interactivo con autoplay
               const slidesHtml = validAds.map(ad => `
                 <div class="mgm-ad-slide-item">
                   ${getAdHtml(ad)}
@@ -565,7 +478,7 @@
                 </div>
               `;
 
-              // Soporte tÃ¡ctil / swipe en mÃ³vil
+              // Soporte táctil / swipe en móvil
               const wrapper = document.getElementById('mgm-ad-slider-wrapper');
               if (wrapper) {
                 let startX = 0;
@@ -601,7 +514,7 @@
       })();
       </script>
 
-      <!-- SECCIÃ“N: BENEFICIOS MGM (CON PADDING PARA SCROLL COMPLETO) -->
+      <!-- SECCIÓN: BENEFICIOS MGM (CON PADDING PARA SCROLL COMPLETO) -->
       <div class="section-header">
         <h2 class="section-title"><i class="fa-solid fa-shield-check" style="color: var(--primary-blue);"></i> Experiencia MGM</h2>
       </div>
@@ -610,14 +523,14 @@
         <div class="feature-item">
           <div class="feature-icon" style="color: var(--accent-gold-dark);"><i class="fa-solid fa-award"></i></div>
           <div class="feature-text">
-            <strong>GarantÃ­a & Respaldo Oficial</strong>
-            <span>DistribuciÃ³n autorizada de las mejores marcas de seguridad electrÃ³nica en PanamÃ¡.</span>
+            <strong>Garantía & Respaldo Oficial</strong>
+            <span>Distribución autorizada de las mejores marcas de seguridad electrónica en Panamá.</span>
           </div>
         </div>
         <div class="feature-item">
           <div class="feature-icon" style="color: var(--primary-blue);"><i class="fa-solid fa-user-tie"></i></div>
           <div class="feature-text">
-            <strong>AsesorÃ­a TÃ©cnica Especializada</strong>
+            <strong>Asesoría Técnica Especializada</strong>
             <span>Ingenieros de proyectos listos para dimensionar tus soluciones de CCTV y Control de Acceso.</span>
           </div>
         </div>
@@ -625,46 +538,46 @@
 
     </main>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    <!-- ══════════════════════════════════════════════════════════════════════════
          VISTA 2: MGM PUNTOS (PORTAL CLIENTE EXCLUSIVO)
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+         ══════════════════════════════════════════════════════════════════════════ -->
     <main id="view-puntos" class="view-container">
 
-      <!-- SUB-NAVEGACIÃ“N INTERNA MGM PUNTOS -->
+      <!-- SUB-NAVEGACIÓN INTERNA MGM PUNTOS -->
       <div class="puntos-subnav">
         <button class="puntos-subtab active" data-subview="subview-cuenta">Mi Cuenta</button>
         <button class="puntos-subtab" data-subview="subview-registro">Registrarme</button>
         <button class="puntos-subtab" data-subview="subview-promos">Beneficios</button>
-        <button class="puntos-subtab" data-subview="subview-terminos">TÃ©rminos</button>
+        <button class="puntos-subtab" data-subview="subview-terminos">Términos</button>
       </div>
 
       <!-- SUBVISTA 1: MI CUENTA / CONSULTA DE PUNTOS -->
       <div id="subview-cuenta" class="puntos-subview active">
 
-        <!-- CAJA DE LOGIN / CONSULTA POR CÃ‰DULA -->
+        <!-- CAJA DE LOGIN / CONSULTA POR CÉDULA -->
         <div id="puntos-login-box" class="app-form">
           <div style="text-align: center; margin-bottom: 16px;">
             <i class="fa-solid fa-address-card" style="font-size: 32px; color: var(--accent-gold-dark); margin-bottom: 8px;"></i>
             <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">Consulta tus MGM Puntos</h3>
-            <p style="font-size: 12px; color: var(--text-muted);">Ingresa tu cÃ©dula o RUC registrado para ver tu saldo acumulado.</p>
+            <p style="font-size: 12px; color: var(--text-muted);">Ingresa tu cédula o RUC registrado para ver tu saldo acumulado.</p>
           </div>
 
           <div id="puntos-login-alert" class="app-alert"></div>
 
           <form id="form-puntos-login">
             <div class="form-group">
-              <label class="form-label" for="login-cedula">CÃ©dula o Correo</label>
-              <input type="text" id="login-cedula" class="form-control" placeholder="Ej: 8-888-1234 o juan@email.com" data-fmt="cedula" required>
+              <label class="form-label" for="login-cedula">Cédula o Correo</label>
+              <input type="text" id="login-cedula" class="form-control" placeholder="Ej: 8-888-1234 o juan@email.com" required>
             </div>
             <button type="submit" class="btn-submit">
-              <i class="fa-solid fa-right-to-bracket"></i> Iniciar SesiÃ³n / Ver Mis Puntos
+              <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión / Ver Mis Puntos
             </button>
           </form>
 
           <div style="margin-top: 14px; text-align: center; font-size: 12.5px; color: var(--text-muted); border-top: 1px dashed var(--border-light); padding-top: 12px;">
-            Â¿AÃºn no eres miembro de MGM Puntos? 
+            ¿Aún no eres miembro de MGM Puntos? 
             <a href="javascript:void(0)" onclick="navigateTo('puntos:registro')" style="color: var(--primary-blue); font-weight: 700; text-decoration: underline;">
-              RegÃ­strate gratis aquÃ­
+              Regístrate gratis aquí
             </a>
           </div>
         </div>
@@ -672,7 +585,7 @@
         <!-- DASHBOARD DIGITAL DE SOCIO (SE REVELA TRAS CONSULTAR) -->
         <div id="puntos-dashboard-box" style="display: none;">
 
-          <!-- TARJETA DIGITAL DE MEMBRESÃA -->
+          <!-- TARJETA DIGITAL DE MEMBRESÍA -->
           <div class="member-card">
             <div class="member-card-header">
               <img src="https://mgmpty.odoo.com/web/image/website/1/logo/MGM?unique=44e5057" alt="MGM Logo" class="card-brand-logo">
@@ -694,18 +607,18 @@
             </div>
           </div>
 
-          <!-- BANNER ESPECIAL DE CUMPLEAÃ‘OS -->
+          <!-- BANNER ESPECIAL DE CUMPLEAÑOS -->
           <div id="dash-bday-banner" class="bday-banner" style="display: none;">
-            <div class="bday-icon">ðŸŽ‚</div>
+            <div class="bday-icon">🎂</div>
             <div class="bday-text">
-              <strong id="bday-banner-title">Â¡Feliz CumpleaÃ±os! ðŸŽ‰</strong>
-              <span id="bday-banner-sub">Â¡Hoy es tu dÃ­a especial! Disfruta de un 10% de descuento en tus compras hoy en MGM.</span>
+              <strong id="bday-banner-title">¡Feliz Cumpleaños! 🎉</strong>
+              <span id="bday-banner-sub">¡Hoy es tu día especial! Disfruta de un 10% de descuento en tus compras hoy en MGM.</span>
             </div>
           </div>
 
           <!-- HISTORIAL DE MOVIMIENTOS -->
           <div class="section-header" style="padding: 10px 0;">
-            <h3 class="section-title"><i class="fa-solid fa-receipt" style="color: var(--primary-blue);"></i> Ãšltimos Movimientos</h3>
+            <h3 class="section-title"><i class="fa-solid fa-receipt" style="color: var(--primary-blue);"></i> Últimos Movimientos</h3>
             <button class="btn-header-action" onclick="logoutClient()" style="width: auto; height: auto; padding: 4px 10px; border-radius: 6px; font-size: 11px; background: var(--bg-page); color: var(--text-dark); border-color: var(--border-light);">
               <i class="fa-solid fa-arrow-right-from-bracket"></i> Salir
             </button>
@@ -733,14 +646,14 @@
       <!-- SUBVISTA 2: REGISTRO DE CLIENTE -->
       <div id="subview-registro" class="puntos-subview">
         <div class="app-form">
-          <!-- Banner si ya estÃ¡ autenticado -->
+          <!-- Banner si ya está autenticado -->
           <div id="reg-already-auth" style="display: none; text-align: center; padding: 20px 10px;">
             <div style="width: 52px; height: 52px; border-radius: 50%; background: #ecfdf5; color: #10b981; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px; border: 2px solid #a7f3d0;">
               <i class="fa-solid fa-id-card-clip"></i>
             </div>
             <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px;">Ya eres Miembro de MGM Puntos</h3>
             <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
-              Tienes una sesiÃ³n activa como <strong id="reg-auth-name" style="color: var(--text-dark);">---</strong><br>
+              Tienes una sesión activa como <strong id="reg-auth-name" style="color: var(--text-dark);">---</strong><br>
               <span id="reg-auth-cedula" style="font-size: 11.5px; color: var(--text-subtle);"></span>
             </p>
             <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
@@ -757,7 +670,7 @@
           <div id="reg-form-wrap">
             <div style="text-align: center; margin-bottom: 16px;">
               <i class="fa-solid fa-user-plus" style="font-size: 30px; color: var(--primary-blue); margin-bottom: 6px;"></i>
-              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">Ãšnete al Programa MGM Puntos</h3>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">Únete al Programa MGM Puntos</h3>
               <p style="font-size: 12px; color: var(--text-muted);">Compra, acumula puntos y canjea por descuentos directos.</p>
             </div>
 
@@ -766,41 +679,41 @@
             <form id="form-puntos-register">
               <div class="form-group">
                 <label class="form-label" for="reg-nombre">Nombre Completo o Empresa</label>
-                <input type="text" id="reg-nombre" class="form-control" placeholder="Ej: Juan PÃ©rez" required>
+                <input type="text" id="reg-nombre" class="form-control" placeholder="Ej: Juan Pérez" required>
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="reg-cedula">CÃ©dula o RUC</label>
+                <label class="form-label" for="reg-cedula">Cédula o RUC</label>
                 <input type="text" id="reg-cedula" class="form-control" placeholder="Ej: 8-888-1234" data-fmt="cedula" required>
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="reg-correo">Correo ElectrÃ³nico</label>
+                <label class="form-label" for="reg-correo">Correo Electrónico</label>
                 <input type="email" id="reg-correo" class="form-control" placeholder="juan@ejemplo.com" required>
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="reg-telefono">TelÃ©fono / WhatsApp</label>
+                <label class="form-label" for="reg-telefono">Teléfono / WhatsApp</label>
                 <input type="tel" id="reg-telefono" class="form-control" placeholder="6254-0000" required>
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="reg-cumpleanos">Fecha de CumpleaÃ±os</label>
+                <label class="form-label" for="reg-cumpleanos">Fecha de Cumpleaños</label>
                 <input type="date" id="reg-cumpleanos" class="form-control">
                 <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-                  ðŸŽ Disfruta de un 10% de descuento especial el dÃ­a de tu cumpleaÃ±os.
+                  🎁 Disfruta de un 10% de descuento especial el día de tu cumpleaños.
                 </div>
               </div>
 
               <button type="submit" class="btn-submit">
-                <i class="fa-solid fa-badge-check"></i> Completar Registro & Iniciar SesiÃ³n
+                <i class="fa-solid fa-badge-check"></i> Completar Registro & Iniciar Sesión
               </button>
             </form>
 
             <div style="margin-top: 14px; text-align: center; font-size: 12.5px; color: var(--text-muted); border-top: 1px dashed var(--border-light); padding-top: 12px;">
-              Â¿Ya tienes una cuenta registrada? 
+              ¿Ya tienes una cuenta registrada? 
               <a href="javascript:void(0)" onclick="navigateTo('puntos:cuenta')" style="color: var(--primary-blue); font-weight: 700; text-decoration: underline;">
-                Inicia sesiÃ³n con tu cÃ©dula aquÃ­
+                Inicia sesión con tu cédula aquí
               </a>
             </div>
           </div>
@@ -810,29 +723,29 @@
       <!-- SUBVISTA 3: BENEFICIOS & MULTIPLICADORES -->
       <div id="subview-promos" class="puntos-subview">
         <div id="puntos-promos-container" style="display: flex; flex-direction: column; gap: 12px;">
-          <!-- Cargado dinÃ¡micamente -->
+          <!-- Cargado dinámicamente -->
         </div>
       </div>
 
-      <!-- SUBVISTA 4: TÃ‰RMINOS & CONDICIONES -->
+      <!-- SUBVISTA 4: TÉRMINOS & CONDICIONES -->
       <div id="subview-terminos" class="puntos-subview">
         <div class="app-form" id="puntos-terms-container">
           <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--text-dark);">Reglamento Oficial</h3>
           <div id="terms-list-content" style="font-size: 12.5px; color: var(--text-muted); line-height: 1.6; display: flex; flex-direction: column; gap: 10px;">
-            Cargando tÃ©rminos oficiales...
+            Cargando términos oficiales...
           </div>
         </div>
       </div>
 
     </main>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    <!-- ══════════════════════════════════════════════════════════════════════════
          VISTA 3: CALENDARIO & AGENDA MGM
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+         ══════════════════════════════════════════════════════════════════════════ -->
     <main id="view-agenda" class="view-container">
       <div class="calendar-wrap">
 
-        <!-- MES & NAVEGACIÃ“N -->
+        <!-- MES & NAVEGACIÓN -->
         <div class="calendar-top-bar">
           <div class="calendar-month-text">
             <i class="fa-solid fa-calendar-circle-user" style="color: var(--primary-blue);"></i>
@@ -844,7 +757,7 @@
           </div>
         </div>
 
-        <!-- FILTROS POR CATEGORÃA -->
+        <!-- FILTROS POR CATEGORÍA -->
         <div class="cal-filters">
           <div class="filter-pill active" onclick="filterEvents('all', this)"><i class="fa-solid fa-layer-group"></i> Todos</div>
           <div class="filter-pill" onclick="filterEvents('webinar', this)"><i class="fa-solid fa-desktop"></i> Webinars</div>
@@ -852,19 +765,19 @@
           <div class="filter-pill" onclick="filterEvents('curso', this)"><i class="fa-solid fa-award"></i> Certificaciones</div>
         </div>
 
-        <!-- DÃAS DE LA SEMANA -->
+        <!-- DÍAS DE LA SEMANA -->
         <div class="cal-grid-header">
-          <div>Dom</div><div>Lun</div><div>Mar</div><div>MiÃ©</div><div>Jue</div><div>Vie</div><div>SÃ¡b</div>
+          <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
         </div>
 
-        <!-- CUADRÃCULA DEL CALENDARIO -->
+        <!-- CUADRÍCULA DEL CALENDARIO -->
         <div class="cal-grid-days" id="cal-grid-days-container"></div>
 
       </div>
 
-      <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-           SECCIÃ“N: MIS CAPACITACIONES INSCRITAS (Cuenta del Usuario)
-           â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+      <!-- ══════════════════════════════════════════════════════════════════════
+           SECCIÓN: MIS CAPACITACIONES INSCRITAS (Cuenta del Usuario)
+           ══════════════════════════════════════════════════════════════════════ -->
       <div class="my-courses-wrap" id="my-courses-section">
         <div class="my-courses-header">
           <div class="my-courses-title-box">
@@ -881,24 +794,24 @@
       </div>
     </main>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-         VISTA 4: PROMOCIONES DEL MES (GALERÃA COMPLETA)
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VISTA 4: PROMOCIONES DEL MES (GALERÍA COMPLETA)
+         ══════════════════════════════════════════════════════════════════════════ -->
     <main id="view-promos" class="view-container">
       <div class="promos-gallery" id="promos-full-gallery">
-        <!-- Cargado dinÃ¡micamente desde Google Sheets -->
-        <div style="text-align: center; color: var(--text-muted); padding: 40px;">Cargando catÃ¡logo de promociones...</div>
+        <!-- Cargado dinámicamente desde Google Sheets -->
+        <div style="text-align: center; color: var(--text-muted); padding: 40px;">Cargando catálogo de promociones...</div>
       </div>
     </main>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    <!-- ══════════════════════════════════════════════════════════════════════════
          MINI AUDIO PLAYER (REPRODUCTOR STREAMING CON PLAYLIST MULTI-PISTA Y CIERRE 'X')
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+         ══════════════════════════════════════════════════════════════════════════ -->
     <div class="audio-mini-bar hidden" id="audio-mini-bar">
       <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="Track Cover" class="audio-cover-img" id="audio-cover">
       
       <div class="audio-info-wrap">
-        <div class="audio-track-title" id="audio-title">Cargando mÃºsica...</div>
+        <div class="audio-track-title" id="audio-title">Cargando música...</div>
         <div class="audio-track-artist" id="audio-artist">MGM Radio</div>
       </div>
 
@@ -909,7 +822,7 @@
           <i class="fa-solid fa-pause" id="audio-pause-icon" style="display: none;"></i>
         </button>
         <button class="btn-audio" id="audio-btn-next" aria-label="Siguiente"><i class="fa-solid fa-forward-step"></i></button>
-        <!-- BOTÃ“N DE CIERRE 'X' -->
+        <!-- BOTÓN DE CIERRE 'X' -->
         <button class="btn-audio btn-audio-close" id="audio-btn-close" aria-label="Cerrar reproductor" title="Cerrar reproductor">
           <i class="fa-solid fa-xmark"></i>
         </button>
@@ -918,9 +831,9 @@
       <audio id="audio-element" style="display: none;" preload="none"></audio>
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    <!-- ══════════════════════════════════════════════════════════════════════════
          VISTA 5: CONSULTA RMA
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+         ══════════════════════════════════════════════════════════════════════════ -->
     <main id="view-rma" class="view-container">
       <div class="mgm-consulta-module">
         <style>
@@ -1007,15 +920,6 @@
             font-size: 15px; font-family: inherit; color: var(--text-main); padding: 0; margin: 0;
           }
           .mgm-consulta-module #consultaForm button[type="submit"],
-          .mgm-consulta-module .rma-qr-btn {
-            background: #FFFFFF; color: var(--primary); border: 2px solid var(--primary-light);
-            padding: 14px; width: 100%; border-radius: 14px; font-size: 15px; cursor: pointer; font-weight: 600;
-            font-family: inherit; display: flex; justify-content: center; align-items: center; gap: 10px;
-            transition: all 0.3s ease;
-          }
-          .mgm-consulta-module .rma-qr-btn:hover {
-            background: #EEF2FF; border-color: var(--primary);
-          }
           .mgm-consulta-module .rma-submit-btn {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white; border: none; padding: 14px; width: 100%; border-radius: 14px;
@@ -1252,52 +1156,10 @@
             font-size: 13px; color: #475569; line-height: 1.45; background: #F8FAFC;
             padding: 8px 12px; border-radius: 8px; margin-top: 5px; border-left: 3px solid #CBD5E1;
           }
-          /* Tracker RMA */
-          .rma-tracker {
-            display: flex; justify-content: space-between; position: relative; margin: 20px 0; padding: 0 10px;
-          }
-          .rma-tracker::before {
-            content: ''; position: absolute; top: 12px; left: 20px; right: 20px; height: 3px;
-            background: #E2E8F0; z-index: 1; border-radius: 2px;
-          }
-          .rma-tracker-progress {
-            position: absolute; top: 12px; left: 20px; height: 3px;
-            background: var(--primary); z-index: 2; border-radius: 2px; transition: width 0.5s ease;
-          }
-          .rma-step {
-            position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 6px; width: 60px;
-          }
-          .rma-step-icon {
-            width: 28px; height: 28px; border-radius: 50%; background: #F1F5F9; border: 2px solid #E2E8F0;
-            display: flex; align-items: center; justify-content: center; color: #94A3B8; font-size: 11px;
-            transition: all 0.3s;
-          }
-          .rma-step.active .rma-step-icon {
-            background: var(--primary); border-color: var(--primary); color: white; box-shadow: 0 0 10px rgba(79, 70, 229, 0.4);
-          }
-          .rma-step.completed .rma-step-icon {
-            background: #10B981; border-color: #10B981; color: white;
-          }
-          .rma-step-label {
-            font-size: 10px; font-weight: 600; color: #64748B; text-align: center; text-transform: uppercase; line-height: 1.1;
-          }
-          .rma-step.active .rma-step-label, .rma-step.completed .rma-step-label {
-            color: #0F172A;
-          }
-          /* Estrellas Interactivas */
-          .star-rating-container { display: flex; gap: 8px; margin-top: 5px; }
-          .star-rating-container .fa-star {
-            font-size: 24px; color: #CBD5E1; cursor: pointer; transition: color 0.2s, transform 0.2s;
-          }
-          .star-rating-container .fa-star.active { color: #F59E0B; transform: scale(1.1); }
-          
-          /* Offline Toast & Icon */
-          #offline-icon { display: none; color: #DC2626; font-size: 14px; margin-left: 8px; animation: pulseOffline 2s infinite; }
-          @keyframes pulseOffline { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         </style>
 
         <div class="rma-consulta-card">
-          <!-- CABECERA DINÃMICA -->
+          <!-- CABECERA DINÁMICA -->
           <div class="header" id="rmaMainHeader">
             <div class="icon-wrapper" id="rmaHeaderIconWrapper">
               <span class="material-icons-round" id="rmaHeaderIcon">manage_search</span>
@@ -1307,36 +1169,27 @@
             <div id="rmaHeaderUserBadge"></div>
           </div>
 
-          <!-- BANNER INVITACIÃ“N LOGIN PARA CLIENTES NO AUTENTICADOS -->
+          <!-- BANNER INVITACIÓN LOGIN PARA CLIENTES NO AUTENTICADOS -->
           <div id="rmaLoginNotice" style="display:none;"></div>
 
           <!-- DASHBOARD DE EQUIPOS DEL USUARIO LOGUEADO -->
           <div id="rmaUserDashboard" style="display:none; margin-bottom: 16px;"></div>
 
-          <!-- BOTÃ“N DESPLEGABLE DE CONSULTA MANUAL (SOLO SI ESTÃ LOGUEADO) -->
+          <!-- BOTÓN DESPLEGABLE DE CONSULTA MANUAL (SOLO SI ESTÁ LOGUEADO) -->
           <div id="manualSearchToggleWrap" style="display:none; margin-bottom: 16px;">
             <button type="button" class="btn-toggle-manual" onclick="window.toggleManualRmaSearch()">
               <span class="material-icons-round" style="font-size:18px;">receipt_long</span>
-              <span>Â¿Consultar otra boleta fÃ­sica por nÃºmero RMA?</span>
+              <span>¿Consultar otra boleta física por número RMA?</span>
               <span class="material-icons-round" id="manualToggleIcon" style="font-size:20px;">expand_more</span>
             </button>
           </div>
 
           <!-- FORMULARIO DE CONSULTA MANUAL -->
           <form id="consultaForm">
-            <button type="button" class="rma-qr-btn" onclick="openQrScannerModal()">
-              <span class="material-icons-round">qr_code_scanner</span>
-              <span>Escanear CÃ³digo QR</span>
-            </button>
-            <div style="display:flex; align-items:center; margin: 15px 0;">
-              <div style="flex:1; height:1px; background:#E5E7EB;"></div>
-              <span style="padding:0 15px; font-size:13px; color:#9CA3AF; font-weight:500;">O escribe los datos</span>
-              <div style="flex:1; height:1px; background:#E5E7EB;"></div>
-            </div>
             <div class="field-group">
               <div class="field">
                 <span class="material-icons-round">qr_code_2</span>
-                <input name="rma" placeholder="NÃºmero RMA (Ej: RMA-2026-0001)" required autocomplete="off">
+                <input name="rma" placeholder="Número RMA (Ej: RMA-2026-0001)" required autocomplete="off">
               </div>
             </div>
             <div class="field-group">
@@ -1353,7 +1206,7 @@
 
           <div id="loader" class="loader hidden">
             <div class="spinner"></div>
-            <p>Buscando la informaciÃ³n de tu equipo...</p>
+            <p>Buscando la información de tu equipo...</p>
           </div>
           <div id="resultado" class="resultado"></div>
         </div>
@@ -1379,7 +1232,6 @@
 
             resultDiv.innerHTML = "";
             loader.classList.remove("hidden");
-            if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Consultando taller...');
             if (button) button.disabled = true;
             if (btnText) btnText.textContent = 'Buscando en Taller...';
 
@@ -1387,7 +1239,6 @@
               const res = await fetch(`${API_URL}?rma=${encodeURIComponent(rma)}&email=${encodeURIComponent(email)}`);
               const data = await res.json();
               loader.classList.add("hidden");
-              if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
               if (button) button.disabled = false;
               if (btnText) btnText.textContent = 'Consultar Estado';
 
@@ -1397,13 +1248,13 @@
                     <div class="error-icon"><span class="material-icons-round">error_outline</span></div>
                     <div>
                       <strong style="font-size:16px;">Equipo no encontrado</strong><br>
-                      <span style="font-size:14px;opacity:0.9;">Verifica que el nÃºmero RMA y el correo coincidan.</span>
+                      <span style="font-size:14px;opacity:0.9;">Verifica que el número RMA y el correo coincidan.</span>
                     </div>
                   </div>`;
                 return;
               }
 
-              const mostrarNotas  = data.notas && data.notas !== "Sin notas aÃºn" && data.notas.toString().trim() !== "";
+              const mostrarNotas  = data.notas && data.notas !== "Sin notas aún" && data.notas.toString().trim() !== "";
               const mostrarPrecio = data.precio && data.precio.toString().trim() !== "";
               const mostrarPdf    = data.pdf && data.pdf.trim() !== "";
               const stringEstado  = (data.estado || '').toLowerCase();
@@ -1427,7 +1278,7 @@
                   <div class="timeline-section">
                     <div class="timeline-title">
                       <span class="material-icons-round">history</span>
-                      Historial del Servicio &amp; DiagnÃ³sticos
+                      Historial del Servicio &amp; Diagnósticos
                     </div>
                     <div class="timeline-track">
                       ${historial.map((h, idx) => {
@@ -1442,7 +1293,7 @@
                               <span class="material-icons-round" style="font-size:11px;">${iconName}</span>
                             </div>
                             <div class="timeline-header">
-                              <span class="timeline-estado">${h.estado || 'ActualizaciÃ³n'}</span>
+                              <span class="timeline-estado">${h.estado || 'Actualización'}</span>
                               <span class="timeline-fecha">${h.fecha || ''}</span>
                             </div>
                             ${h.notas ? `<div class="timeline-notas">${h.notas}</div>` : ''}
@@ -1459,7 +1310,7 @@
                     <span class="rma-badge"><span class="material-icons-round" style="font-size:14px;vertical-align:middle;margin-right:4px;">tag</span>${data.rma}</span>
                     <span class="material-icons-round" style="color:${isComplete ? 'var(--success)' : 'var(--primary)'};opacity:0.2;font-size:32px;">verified</span>
                   </div>
-                  <div class="estado-title">Estado de la ReparaciÃ³n</div>
+                  <div class="estado-title">Estado de la Reparación</div>
                   <h3 class="estado-value" style="${isComplete ? 'background:linear-gradient(135deg,#059669,#10B981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;' : ''}">${data.estado}</h3>
                   <div class="info-list">
                     <div class="info-item">
@@ -1481,7 +1332,7 @@
                   <div class="notes-box">
                     <span class="material-icons-round info-icon">assignment</span>
                     <div class="info-content">
-                      <div class="info-label" style="color:#475569;">Informe de nuestro TÃ©cnico</div>
+                      <div class="info-label" style="color:#475569;">Informe de nuestro Técnico</div>
                       <p class="info-text" style="color:#334155;">${data.notas}</p>
                     </div>
                   </div>` : ''}
@@ -1497,7 +1348,7 @@
                   ${mostrarPdf ? `
                   <a href="${data.pdf}" target="_blank" class="pdf-btn">
                     <span class="material-icons-round">picture_as_pdf</span>
-                    Descargar Informe TÃ©cnico
+                    Descargar Informe Técnico
                   </a>` : ''}
                   <div style="text-align:center; margin-top:16px;">
                     <button type="button" onclick="window.cerrarDetalleRma()"
@@ -1509,14 +1360,13 @@
                 </div>`;
             } catch (err) {
               loader.classList.add("hidden");
-              if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
               if (button) button.disabled = false;
               if (btnText) btnText.textContent = 'Consultar Estado';
               resultDiv.innerHTML = `
                 <div class="error-msg">
                   <div class="error-icon"><span class="material-icons-round">wifi_off</span></div>
                   <div>
-                    <strong style="font-size:16px;">Error de conexiÃ³n</strong><br>
+                    <strong style="font-size:16px;">Error de conexión</strong><br>
                     <span style="font-size:14px;opacity:0.9;">Tuvimos un problema con el servidor, intenta nuevamente.</span>
                   </div>
                 </div>`;
@@ -1531,7 +1381,7 @@
             if (dashboard) dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
           };
 
-          // Alternar formulario manual (cuando estÃ¡ logueado)
+          // Alternar formulario manual (cuando está logueado)
           window.toggleManualRmaSearch = function() {
             const form = document.getElementById("consultaForm");
             const icon = document.getElementById("manualToggleIcon");
@@ -1548,72 +1398,28 @@
 
           // Quitar / ocultar RMA cerrado de la lista del cliente
           window.quitarRmaDeLista = function(rma) {
-            // Poner el nÃºmero de RMA en el modal
-            const rmaLabel = document.getElementById('modal-quitar-rma-number');
-            if (rmaLabel) rmaLabel.textContent = rma;
-
-            // Asignar acciÃ³n al botÃ³n de confirmar
-            const btnOk = document.getElementById('btn-quitar-rma-ok');
-            if (btnOk) {
-              btnOk.onclick = function() {
-                // Cerrar modal
-                var m = document.getElementById('modal-confirm-quitar-rma');
-                if (m) m.classList.remove('active');
-                // Archivar en localStorage
-                try {
-                  var dismissed = JSON.parse(localStorage.getItem('mgm_dismissed_rmas') || '[]');
-                  if (!dismissed.includes(rma)) {
-                    dismissed.push(rma);
-                    localStorage.setItem('mgm_dismissed_rmas', JSON.stringify(dismissed));
-                  }
-                  
-                  // Sincronizar con el backend de Google Sheets
-                  let user = null;
-                  try { user = JSON.parse(localStorage.getItem('mgm_auth_user')) || (window.state && window.state.authUser); } catch(e) {}
-                  if (user && typeof API_URL !== 'undefined') {
-                    fetch(API_URL, {
-                      method: 'POST',
-                      body: JSON.stringify({
-                        action: 'archivar_rma',
-                        rma: rma,
-                        cedula: user.cedula || user.email || ''
-                      })
-                    }).catch(e => console.error('Error enviando archivar_rma:', e));
-                  }
-
-                  if (window.loadUserActiveRmas) window.loadUserActiveRmas();
-                } catch(e) {
-                  console.error('Error archivando RMA:', e);
-                }
-              };
+            if (!confirm(`¿Deseas quitar el equipo ${rma} de tu lista de seguimiento? Ya está finalizado y podrás restaurarlo cuando quieras.`)) {
+              return;
             }
-
-            // Abrir modal directamente (sin depender de openAppModal global)
-            var modal = document.getElementById('modal-confirm-quitar-rma');
-            if (modal) modal.classList.add('active');
+            try {
+              let dismissed = JSON.parse(localStorage.getItem('mgm_dismissed_rmas') || '[]');
+              if (!dismissed.includes(rma)) {
+                dismissed.push(rma);
+                localStorage.setItem('mgm_dismissed_rmas', JSON.stringify(dismissed));
+              }
+              window.loadUserActiveRmas();
+            } catch(e) {
+              console.error("Error archivando RMA:", e);
+            }
           };
 
           // Restaurar todos los RMAs archivados
           window.restaurarRmasOcultos = function() {
             localStorage.removeItem('mgm_dismissed_rmas');
-            
-            // Sincronizar con el backend de Google Sheets
-            let user = null;
-            try { user = JSON.parse(localStorage.getItem('mgm_auth_user')) || (window.state && window.state.authUser); } catch(e) {}
-            if (user && typeof API_URL !== 'undefined') {
-              fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                  action: 'restaurar_rmas',
-                  cedula: user.cedula || user.email || ''
-                })
-              }).catch(e => console.error('Error enviando restaurar_rmas:', e));
-            }
-            
             window.loadUserActiveRmas();
           };
 
-          // Cargar automÃ¡ticamente los equipos activos del cliente logueado
+          // Cargar automáticamente los equipos activos del cliente logueado
           window.loadUserActiveRmas = async function() {
             const container = document.getElementById("rmaUserDashboard");
             const consultaForm = document.getElementById("consultaForm");
@@ -1630,7 +1436,7 @@
               user = JSON.parse(localStorage.getItem('mgm_auth_user')) || (window.state && window.state.authUser);
             } catch(e) {}
 
-            // â”€â”€ CASO A: CLIENTE NO LOGUEADO â”€â”€
+            // ── CASO A: CLIENTE NO LOGUEADO ──
             if (!user || (!user.cedula && !user.email)) {
               if (container) container.style.display = "none";
               if (toggleManualWrap) toggleManualWrap.style.display = "none";
@@ -1647,12 +1453,12 @@
                   <div class="rma-login-cta">
                     <span class="material-icons-round" style="color:var(--primary); font-size:24px; margin-top:2px;">account_circle</span>
                     <div style="flex:1;">
-                      <strong style="color:var(--text-main); font-size:13.5px;">Â¿Ya tienes cuenta en MGM Hub?</strong>
+                      <strong style="color:var(--text-main); font-size:13.5px;">¿Ya tienes cuenta en MGM Hub?</strong>
                       <p style="margin:3px 0 0 0; font-size:12px; color:var(--text-muted); line-height:1.4;">
-                        Inicia sesiÃ³n para ver el estado de todos tus equipos automÃ¡ticamente sin tener que ingresar el nÃºmero de RMA ni correo.
+                        Inicia sesión para ver el estado de todos tus equipos automáticamente sin tener que ingresar el número de RMA ni correo.
                       </p>
                       <button type="button" class="btn-login-cta" onclick="switchMainTab('puntos')">
-                        <span>Iniciar SesiÃ³n</span>
+                        <span>Iniciar Sesión</span>
                         <span class="material-icons-round" style="font-size:14px;">arrow_forward</span>
                       </button>
                     </div>
@@ -1661,14 +1467,14 @@
               return;
             }
 
-            // â”€â”€ CASO B: CLIENTE LOGUEADO DIRECTO EN LA APP â”€â”€
+            // ── CASO B: CLIENTE LOGUEADO DIRECTO EN LA APP ──
             if (loginNotice) loginNotice.style.display = "none";
             if (consultaForm) consultaForm.style.display = "none"; // Ocultar formulario manual directo
             if (toggleManualWrap) toggleManualWrap.style.display = "block"; // Permitir consultar otra boleta si quiere
 
             // Adaptar cabecera para el usuario
             if (headerTitle) headerTitle.textContent = "Mis Equipos en Taller";
-            if (headerSubtitle) headerSubtitle.textContent = "Seguimiento en vivo de tus equipos en servicio tÃ©cnico";
+            if (headerSubtitle) headerSubtitle.textContent = "Seguimiento en vivo de tus equipos en servicio técnico";
             if (headerIcon) headerIcon.textContent = "devices";
             if (headerBadge) {
               const labelUser = user.nombre ? user.nombre.split(' ')[0] : (user.cedula || user.email);
@@ -1689,7 +1495,7 @@
             container.innerHTML = `
               <div id="rmaUserList" style="font-size:13px; color:var(--text-muted); text-align:center; padding:16px 0;">
                 <div class="spinner" style="width:28px; height:28px; margin:0 auto 8px;"></div>
-                Cargando tus equipos en servicio tÃ©cnico...
+                Cargando tus equipos en servicio técnico...
               </div>`;
 
             try {
@@ -1703,53 +1509,11 @@
               let dismissed = [];
               try {
                 dismissed = JSON.parse(localStorage.getItem('mgm_dismissed_rmas') || '[]');
-                
-                // Sincronizar los que el backend ya reporta como archivados
-                if (data.archivados && Array.isArray(data.archivados)) {
-                  let changed = false;
-                  data.archivados.forEach(a => {
-                    const cleanA = String(a).trim();
-                    if (!dismissed.includes(cleanA)) {
-                      dismissed.push(cleanA);
-                      changed = true;
-                    }
-                  });
-                  if (changed) {
-                    localStorage.setItem('mgm_dismissed_rmas', JSON.stringify(dismissed));
-                  }
-                }
               } catch(e) {}
 
               if (data.success && Array.isArray(data.rmas) && data.rmas.length > 0) {
                 // Filtrar los que el usuario haya quitado de su lista
                 const rmasVisibles = data.rmas.filter(r => !dismissed.includes(String(r.rma).trim()));
-
-                // NUEVO: Verificar si hay algÃºn RMA cerrado pendiente de evaluaciÃ³n
-                const rmaPendienteEval = rmasVisibles.find(r => {
-                  const estLower = (r.estado || '').toLowerCase();
-                  const isDone = estLower.includes('reparad') || estLower.includes('entregad') || estLower.includes('listo') || estLower.includes('cerrad') || estLower.includes('finalizad');
-                  return isDone && r.evaluado === false;
-                });
-
-                if (rmaPendienteEval) {
-                  // Mostrar el modal de manera insistente si no se ha evaluado
-                  setTimeout(() => {
-                    if (typeof window.mostrarModalEvaluacionRMA === 'function') {
-                      window.mostrarModalEvaluacionRMA(rmaPendienteEval.rma, API_URL, user.cedula || user.email || '');
-                    }
-                  }, 500);
-
-                  // AGREGAR NOTIFICACIÃ“N A LA CAMPANITA
-                  if (typeof window.addLocalNotification === 'function') {
-                     window.addLocalNotification({
-                        id: 'eval_' + rmaPendienteEval.rma,
-                        title: 'EvaluaciÃ³n Pendiente',
-                        message: 'Por favor, califica el servicio de tu equipo ' + rmaPendienteEval.rma,
-                        seccion: 'rma'
-                     });
-                  }
-                }
-
 
                 if (rmasVisibles.length === 0) {
                   listEl.innerHTML = `
@@ -1806,7 +1570,7 @@
 
                             <div class="rma-card-actions">
                               <button type="button" class="btn-action-ver" onclick="window.consultarRmaDirecto('${safeRma}', '${safeEmail}')">
-                                <span>Ver DiagnÃ³stico</span>
+                                <span>Ver Diagnóstico</span>
                                 <span class="material-icons-round" style="font-size:14px;">arrow_forward</span>
                               </button>
                               ${isDone ? `
@@ -1833,13 +1597,13 @@
                   <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:16px; padding:22px; text-align:center;">
                     <span class="material-icons-round" style="font-size:32px; color:#10B981;">inventory_2</span>
                     <div style="font-size:14px; font-weight:700; color:var(--text-main); margin-top:6px;">No tienes equipos activos en taller</div>
-                    <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Si ingresaste un equipo con boleta fÃ­sica y no aparece, puedes consultarlo abajo.</div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Si ingresaste un equipo con boleta física y no aparece, puedes consultarlo abajo.</div>
                   </div>`;
               }
             } catch (err) {
               const listEl = document.getElementById("rmaUserList");
               if (listEl) {
-                listEl.innerHTML = `<div style="font-size:12px; color:var(--text-muted); padding:10px;">Puedes rastrear tu equipo ingresando el nÃºmero de RMA con el botÃ³n de abajo.</div>`;
+                listEl.innerHTML = `<div style="font-size:12px; color:var(--text-muted); padding:10px;">Puedes rastrear tu equipo ingresando el número de RMA con el botón de abajo.</div>`;
               }
             }
           };
@@ -1857,120 +1621,6 @@
             }
           };
 
-          // ==============================
-          // LOGICA MODAL EVALUACION RMA
-          // ==============================
-          window.mostrarModalEvaluacionRMA = function(rmaNumber, apiUrl, identificador) {
-            const modal = document.getElementById('eval-rma-modal');
-            const rmaLabel = document.getElementById('eval-rma-number');
-            const idInput = document.getElementById('eval-rma-id');
-            const form = document.getElementById('eval-rma-form');
-
-            if (!modal || !rmaLabel || !idInput || !form) return;
-
-            rmaLabel.textContent = rmaNumber;
-            idInput.value = rmaNumber;
-
-            // Bloquear scroll de fondo
-            document.body.style.overflow = 'hidden';
-            modal.style.display = 'flex';
-
-            // Remover el event listener anterior si existe para evitar multi-submit
-            form.replaceWith(form.cloneNode(true));
-            const newForm = document.getElementById('eval-rma-form');
-
-            // â”€â”€â”€ Re-inicializar estrellas (cloneNode() borra los listeners) â”€â”€â”€â”€
-            newForm.querySelectorAll('.star-rating-container').forEach(function(container) {
-              var stars = container.querySelectorAll('.fa-star');
-              var hiddenInput = newForm.querySelector('#' + container.dataset.target);
-              if (!hiddenInput) return;
-
-              stars.forEach(function(star) {
-                star.addEventListener('click', function() {
-                  var val = parseInt(star.dataset.val);
-                  hiddenInput.value = val;
-                  stars.forEach(function(s) {
-                    if (parseInt(s.dataset.val) <= val) {
-                      s.classList.add('active');
-                    } else {
-                      s.classList.remove('active');
-                    }
-                  });
-                });
-                star.addEventListener('mouseenter', function() {
-                  var hoverVal = parseInt(star.dataset.val);
-                  stars.forEach(function(s) {
-                    s.style.color = parseInt(s.dataset.val) <= hoverVal ? '#F59E0B' : '';
-                  });
-                });
-              });
-
-              container.addEventListener('mouseleave', function() {
-                var fixedVal = parseInt(hiddenInput.value) || 0;
-                stars.forEach(function(s) {
-                  s.style.color = '';
-                  if (parseInt(s.dataset.val) <= fixedVal) {
-                    s.classList.add('active');
-                  } else {
-                    s.classList.remove('active');
-                  }
-                });
-              });
-            });
-            // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-            newForm.addEventListener('submit', async function(e) {
-              e.preventDefault();
-              const btn = newForm.querySelector('button[type="submit"]');
-              const originalBtnHtml = btn.innerHTML;
-              btn.innerHTML = '<div class="spinner" style="width:16px; height:16px; display:inline-block; vertical-align:middle; margin-right:5px; border-color:#fff transparent transparent transparent;"></div> Enviando...';
-              btn.disabled = true;
-
-              const payload = {
-                action: "evaluar_rma",
-                rma: rmaNumber,
-                identificador: identificador,
-                p1: document.getElementById('eval-q1').value,
-                p2: document.getElementById('eval-q2').value,
-                p3: document.getElementById('eval-q3').value,
-                comentarios: document.getElementById('eval-q4').value
-              };
-
-              try {
-                const response = await fetch(apiUrl, {
-                  method: 'POST',
-                  mode: 'no-cors',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(payload)
-                });
-                
-                // Con no-cors no podemos validar response.json(), asumimos exito si no tira excepcion de red
-                document.body.style.overflow = '';
-                modal.style.display = 'none';
-                
-                if (window.showToast) {
-                  window.showToast("Â¡Gracias por evaluarnos!", "success");
-                }
-                
-                if (window.loadUserActiveRmas) {
-                  window.loadUserActiveRmas(); // Recargar para que ya no pida evaluar
-                }
-                
-                if (typeof confetti === 'function') {
-                  confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                }
-
-              } catch (err) {
-                console.error("Error enviando evaluaciÃ³n:", err);
-                if (window.showToast) {
-                  window.showToast("OcurriÃ³ un error. Intenta de nuevo.", "error");
-                }
-                btn.innerHTML = originalBtnHtml;
-                btn.disabled = false;
-              }
-            });
-          };
-
           // Inicializar al cargar
           document.addEventListener("DOMContentLoaded", function() {
             setTimeout(() => {
@@ -1980,175 +1630,6 @@
             }, 300);
           });
         </script>
-
-          <!-- QR SCANNER MODAL -->
-          <div id="qrScannerModal" class="qr-scanner-modal">
-            <div class="qr-scanner-content">
-              <div class="qr-scanner-header">
-                <h3>Escanear CÃ³digo QR</h3>
-                <button onclick="closeQrScannerModal()" class="close-qr-btn">
-                  <span class="material-icons-round">close</span>
-                </button>
-              </div>
-              <div id="qr-reader" style="width:100%; border-radius: 12px; overflow: hidden; margin-top: 10px;"></div>
-              <p class="qr-hint">Apunta la cÃ¡mara al cÃ³digo QR de tu orden de servicio o correo electrÃ³nico.</p>
-            </div>
-          </div>
-
-          <style>
-
-            .qr-scanner-modal {
-              display: none;
-              position: fixed;
-              top: 0; left: 0; right: 0; bottom: 0;
-              background: rgba(0,0,0,0.7);
-              z-index: 1000;
-              align-items: center;
-              justify-content: center;
-              padding: 20px;
-            }
-            .qr-scanner-modal.active {
-              display: flex;
-              animation: fadeIn 0.3s ease;
-            }
-            .qr-scanner-content {
-              background: white;
-              border-radius: 20px;
-              width: 100%;
-              max-width: 400px;
-              padding: 24px;
-              box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            }
-            .qr-scanner-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 16px;
-            }
-            .qr-scanner-header h3 {
-              margin: 0;
-              font-size: 18px;
-              color: #1F2937;
-            }
-            .close-qr-btn {
-              background: none;
-              border: none;
-              color: #9CA3AF;
-              cursor: pointer;
-              padding: 4px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              border-radius: 50%;
-              transition: background 0.2s, color 0.2s;
-            }
-            .close-qr-btn:hover {
-              background: #F3F4F6;
-              color: #4B5563;
-            }
-            .qr-hint {
-              text-align: center;
-              font-size: 13px;
-              color: #6B7280;
-              margin: 16px 0 0 0;
-            }
-            /* html5-qrcode overrides */
-            #qr-reader {
-              border: none !important;
-            }
-            #qr-reader__scan_region {
-              background: #F9FAFB;
-            }
-            #qr-reader__dashboard {
-              padding: 10px !important;
-            }
-            #qr-reader button {
-              background: #4F46E5 !important;
-              color: white !important;
-              border: none !important;
-              padding: 8px 16px !important;
-              border-radius: 8px !important;
-              font-family: 'Outfit', sans-serif !important;
-              font-weight: 500 !important;
-              cursor: pointer;
-            }
-            #html5-qrcode-anchor-scan-type-change {
-              text-decoration: none !important;
-              color: #4F46E5 !important;
-              font-family: 'Outfit', sans-serif !important;
-            }
-          </style>
-
-          <script>
-            let html5QrcodeScanner = null;
-
-            window.openQrScannerModal = function() {
-              document.getElementById('qrScannerModal').classList.add('active');
-              
-              if (!html5QrcodeScanner) {
-                html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { 
-                  fps: 10, 
-                  qrbox: {width: 250, height: 250},
-                  aspectRatio: 1.0,
-                  showTorchButtonIfSupported: true
-                }, /* verbose= */ false);
-              }
-
-              html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-            };
-
-            window.closeQrScannerModal = function() {
-              document.getElementById('qrScannerModal').classList.remove('active');
-              if (html5QrcodeScanner) {
-                html5QrcodeScanner.clear().catch(error => {
-                  console.error("Failed to clear html5QrcodeScanner. ", error);
-                });
-              }
-            };
-
-            function onScanSuccess(decodedText, decodedResult) {
-              console.log("Scan result:", decodedText);
-              
-              try {
-                const url = new URL(decodedText);
-                const rma = url.searchParams.get('sub');
-                const email = url.searchParams.get('email');
-                
-                if (rma) {
-                  closeQrScannerModal();
-                  if (typeof window.consultarRmaDirecto === 'function') {
-                    window.consultarRmaDirecto(rma, email || '');
-                  } else {
-                    const form = document.getElementById('consultaForm');
-                    if (form && form.rma) {
-                      form.rma.value = rma;
-                      if (email && form.email) form.email.value = email;
-                      form.rma.focus();
-                    }
-                  }
-                  window.showToast('QR escaneado correctamente', 'success');
-                } else {
-                  window.showToast('El cÃ³digo QR no es vÃ¡lido para RMA', 'error');
-                }
-              } catch (e) {
-                if (decodedText.startsWith('RMA-')) {
-                  closeQrScannerModal();
-                  const form = document.getElementById('consultaForm');
-                  if (form && form.rma) {
-                    form.rma.value = decodedText;
-                    form.email.focus();
-                  }
-                  window.showToast('RMA escaneado. Por favor ingresa el correo.', 'success');
-                } else {
-                  window.showToast('El cÃ³digo QR no es vÃ¡lido o no pertenece a MGM', 'error');
-                }
-              }
-            }
-
-            function onScanFailure(error) {
-              // Ignore scan failures while seeking a QR code
-            }
-          </script>
       </div>
     </main>
 
@@ -2180,19 +1661,19 @@
       </button>
     </nav>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-         MODAL PANTALLA COMPLETA: ASESORÃA MGM & CONTACTOS WHATSAPP
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         MODAL PANTALLA COMPLETA: ASESORÍA MGM & CONTACTOS WHATSAPP
+         ══════════════════════════════════════════════════════════════════════════ -->
     <div class="app-modal" id="modal-asesoria">
       <div class="modal-content-card full-screen">
-        <button class="modal-close-x" onclick="closeAppModal('modal-asesoria')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-asesoria')">✕</button>
 
         <div class="asesoria-banner-header">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
             <i class="fa-brands fa-whatsapp" style="font-size: 26px; color: #25d366;"></i>
-            <h3 style="font-size: 17px; font-weight: 800; color: #fff;">AsesorÃ­a MGM en LÃ­nea</h3>
+            <h3 style="font-size: 17px; font-weight: 800; color: #fff;">Asesoría MGM en Línea</h3>
           </div>
-          <p style="font-size: 12px; color: rgba(255,255,255,0.75);">Elige el canal de atenciÃ³n especializada segÃºn tu necesidad:</p>
+          <p style="font-size: 12px; color: rgba(255,255,255,0.75);">Elige el canal de atención especializada según tu necesidad:</p>
         </div>
 
         <div class="wa-contact-list-modal">
@@ -2211,7 +1692,7 @@
             <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" class="wa-avatar-img">
             <div class="wa-card-info" style="flex: 1;">
               <strong>Asesor de Ventas & Cotizaciones</strong>
-              <span>AtenciÃ³n directa para distribuidores y pedidos</span>
+              <span>Atención directa para distribuidores y pedidos</span>
             </div>
             <i class="fa-brands fa-whatsapp" style="color: var(--accent-green); font-size: 22px;"></i>
           </a>
@@ -2220,18 +1701,18 @@
           <a class="wa-card-item" target="_blank" href="https://wa.me/50764541476?text=Consulta%20Proyectos%20desde%20MGM%20Hub%20App">
             <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" class="wa-avatar-img">
             <div class="wa-card-info" style="flex: 1;">
-              <strong>IngenierÃ­a de Proyectos</strong>
+              <strong>Ingeniería de Proyectos</strong>
               <span>Dimensionamiento de CCTV y control de acceso</span>
             </div>
             <i class="fa-brands fa-whatsapp" style="color: var(--accent-green); font-size: 22px;"></i>
           </a>
 
-          <!-- SOPORTE TÃ‰CNICO -->
+          <!-- SOPORTE TÉCNICO -->
           <a class="wa-card-item" target="_blank" href="https://wa.me/50765843751?text=Soporte%20Tecnico%20desde%20MGM%20Hub%20App">
             <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" class="wa-avatar-img">
             <div class="wa-card-info" style="flex: 1;">
-              <strong>Soporte TÃ©cnico & GarantÃ­as</strong>
-              <span>ConfiguraciÃ³n, firmwares y servicio postventa</span>
+              <strong>Soporte Técnico & Garantías</strong>
+              <span>Configuración, firmwares y servicio postventa</span>
             </div>
             <i class="fa-brands fa-whatsapp" style="color: var(--accent-green); font-size: 22px;"></i>
           </a>
@@ -2239,15 +1720,15 @@
       </div>
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-         MODAL 1: DETALLES DE EVENTO & CAPACITACIÃ“N (LIGHTBOX)
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         MODAL 1: DETALLES DE EVENTO & CAPACITACIÓN (LIGHTBOX)
+         ══════════════════════════════════════════════════════════════════════════ -->
     <div class="app-modal" id="modal-event-detail">
       <div class="modal-content-card">
-        <button class="modal-close-x" onclick="closeAppModal('modal-event-detail')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-event-detail')">✕</button>
 
         <div style="display: inline-block; background: var(--primary-blue-lt); border: 1px solid var(--primary-blue); color: var(--primary-blue); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 12px; margin-bottom: 12px; text-transform: uppercase;" id="modal-event-cat">
-          CapacitaciÃ³n
+          Capacitación
         </div>
 
         <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;" id="modal-event-title">---</h3>
@@ -2260,19 +1741,11 @@
           <div class="event-detail-item"><i class="fa-solid fa-location-dot"></i> <span id="modal-event-place">---</span></div>
         </div>
 
-        <div style="margin-top: 15px; padding: 10px; background: var(--bg-page); border: 1px dashed var(--border-light); border-radius: 8px; text-align: left;">
-           <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); display: block; margin-bottom: 6px;"><i class="fa-solid fa-link"></i> Enlace Directo (Compartir en App)</label>
-           <div style="display: flex; gap: 6px;">
-             <input type="text" id="modal-event-deeplink-input" readonly style="flex: 1; font-size: 11px; padding: 6px 8px; border: 1px solid var(--border-light); border-radius: 6px; background: #fff; color: var(--text-dark); outline: none;">
-             <button onclick="copyEventDeepLink()" style="background: var(--primary-blue); color: #fff; border: none; border-radius: 6px; padding: 0 12px; cursor: pointer; font-size: 13px;" title="Copiar enlace"><i class="fa-regular fa-copy"></i></button>
-           </div>
-        </div>
-
         <div style="display: flex; gap: 8px; margin-top: 18px;">
           <a href="#" target="_blank" id="modal-event-btn-reserve" class="btn-submit" style="flex: 1; text-decoration: none;">
             <i class="fa-solid fa-ticket"></i> Reservar Cupo
           </a>
-          <button class="btn-header-action" onclick="openEventQR()" title="Ver cÃ³digo QR" style="background: var(--bg-page); color: var(--text-dark); border-color: var(--border-light);"><i class="fa-solid fa-qrcode"></i></button>
+          <button class="btn-header-action" onclick="openEventQR()" title="Ver código QR" style="background: var(--bg-page); color: var(--text-dark); border-color: var(--border-light);"><i class="fa-solid fa-qrcode"></i></button>
           <button class="btn-header-action" onclick="openEventShare()" title="Compartir" style="background: var(--bg-page); color: var(--text-dark); border-color: var(--border-light);"><i class="fa-solid fa-share-nodes"></i></button>
         </div>
       </div>
@@ -2281,7 +1754,7 @@
     <!-- MODAL QR DE EVENTO -->
     <div class="app-modal" id="modal-event-qr">
       <div class="modal-content-card" style="text-align: center;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-event-qr')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-event-qr')">✕</button>
         <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--text-dark);">Escanea para Registrarte</h4>
         <img id="qr-image-src" src="" alt="QR Code" style="width: 190px; height: 190px; border-radius: 12px; background: #f8fafc; padding: 8px; margin: 0 auto 16px; display: block; border: 1px solid var(--border-light);">
         <button class="btn-submit" onclick="closeAppModal('modal-event-qr')">Entendido</button>
@@ -2291,7 +1764,7 @@
     <!-- MODAL COMPARTIR EVENTO -->
     <div class="app-modal" id="modal-event-share">
       <div class="modal-content-card" style="text-align: center;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-event-share')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-event-share')">✕</button>
         <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 16px; color: var(--text-dark);">Compartir Evento</h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
           <div class="feature-item" style="cursor: pointer; justify-content: center;" onclick="shareAction('wa')">
@@ -2314,7 +1787,7 @@
     <!-- MODAL DETALLE DE PREMIO -->
     <div class="app-modal" id="modal-premio-detail">
       <div class="modal-content-card" style="max-height: 85vh; overflow-y: auto; padding: 20px; position: relative;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-premio-detail')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-premio-detail')">✕</button>
 
         <div style="text-align: center; margin-bottom: 14px; position: relative;">
           <div id="modal-premio-img-wrap" style="width: 100%; height: 185px; border-radius: 14px; background: #f8fafc; border: 1px solid var(--border-light); display: flex; align-items: center; justify-content: center; overflow: hidden;">
@@ -2327,7 +1800,7 @@
 
         <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
           <span id="modal-premio-model" style="font-size: 11px; font-weight: 800; background: #ede9fe; color: #6d28d9; padding: 3px 8px; border-radius: 6px;">MOD. ---</span>
-          <span id="modal-premio-validez" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">â±ï¸ Validez: ---</span>
+          <span id="modal-premio-validez" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">⏱️ Validez: ---</span>
           <span id="modal-premio-stock" style="font-size: 11px; font-weight: 700; color: #16a34a; background: #f0fdf4; padding: 2px 7px; border-radius: 5px;">Disponible</span>
         </div>
 
@@ -2362,13 +1835,13 @@
     <!-- MODAL LOGIN / PERFIL -->
     <div class="app-modal" id="modal-user-login">
       <div class="modal-content-card" style="position: relative;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-user-login')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-user-login')">✕</button>
         <div id="login-view-unauth">
-          <h4 style="font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--text-dark); text-align: center;">Iniciar SesiÃ³n</h4>
-          <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 16px;">Ingresa tu cÃ©dula o correo para acceder a tus beneficios y recibir notificaciones especiales.</p>
+          <h4 style="font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--text-dark); text-align: center;">Iniciar Sesión</h4>
+          <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 16px;">Ingresa tu cédula o correo para acceder a tus beneficios y recibir notificaciones especiales.</p>
           <div class="form-group" style="margin-bottom: 16px;">
-            <label style="display:block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">CÃ©dula o Correo</label>
-            <input type="text" id="login-cedula-input" placeholder="Ej: 8-888-1234 o juan@email.com" style="width:100%; padding: 12px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px; outline: none; background: #f8fafc;">
+            <label style="display:block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Cédula o Correo</label>
+            <input type="text" id="login-cedula-input" placeholder="Ej: 8-888-8888" style="width:100%; padding: 12px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px; outline: none; background: #f8fafc;">
           </div>
           <button class="btn-submit" onclick="submitLogin()" id="btn-login-submit" style="width: 100%;">
             Ingresar a MGM Hub
@@ -2376,7 +1849,7 @@
           <div id="login-error-msg" style="color: #ef4444; font-size: 12px; font-weight: 600; margin-top: 10px; text-align: center; display: none;"></div>
 
           <div style="margin-top: 14px; text-align: center; font-size: 12px; color: var(--text-muted); border-top: 1px dashed var(--border-light); padding-top: 12px;">
-            Â¿AÃºn no te has registrado? 
+            ¿Aún no te has registrado? 
             <a href="javascript:void(0)" onclick="closeAppModal('modal-user-login'); navigateTo('puntos:registro');" style="color: var(--primary-blue); font-weight: 700; text-decoration: underline;">
               Crear cuenta en MGM Puntos
             </a>
@@ -2410,26 +1883,26 @@
           <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;" id="auth-cedula">---</p>
           <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;"><i class="fa-solid fa-star" style="color: var(--accent-gold);"></i> <strong style="color: var(--text-dark);" id="auth-puntos">0</strong> Puntos MGM</p>
 
-          <!-- BotÃ³n Permisos -->
+          <!-- Botón Permisos -->
           <button id="btn-enable-notifs" class="btn-submit" onclick="requestNotificationPermission()" style="width: 100%; background: linear-gradient(135deg, #6366f1, #4f46e5); margin-bottom: 12px; font-size: 13px; display: none;">
             <i class="fa-solid fa-bell"></i> Activar Notificaciones
           </button>
 
-          <button class="btn-submit" onclick="logoutClient()" style="width: 100%; background: var(--bg-card-alt); border: 1px solid var(--border-light); color: var(--text-muted); font-size: 13px;">Cerrar SesiÃ³n</button>
+          <button class="btn-submit" onclick="logoutClient()" style="width: 100%; background: var(--bg-card-alt); border: 1px solid var(--border-light); color: var(--text-muted); font-size: 13px;">Cerrar Sesión</button>
         </div>
       </div>
     </div>
 
-        <!-- MODAL CUMPLEAÑOS -->
+    <!-- MODAL CUMPLEAÑOS -->
     <div class="app-modal" id="modal-birthday" style="z-index: 10000;">
       <div class="modal-content-card" style="text-align: center; max-width: 340px; padding: 30px 20px; position: relative;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-birthday')">?</button>
-        <div style="font-size: 60px; margin-bottom: 10px; animation: bounce 2s infinite;">????</div>
+        <button class="modal-close-x" onclick="closeAppModal('modal-birthday')">✕</button>
+        <div style="font-size: 60px; margin-bottom: 10px; animation: bounce 2s infinite;">🎉🎂</div>
         <h3 style="color: var(--text-dark); margin: 0 0 10px 0; font-size: 22px;">¡Feliz Cumpleaños!</h3>
         <p id="modal-birthday-text" style="color: var(--text-body); font-size: 15px; line-height: 1.5; margin: 0 0 20px 0;">
           ¡Hoy es tu día especial! Queremos celebrarlo contigo otorgándote un 10% de descuento en todas tus compras hoy en nuestras sucursales de MGM.
         </p>
-        <div style="background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-dark) 100%); color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(212,175,55,0.3);">
+        <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(212,175,55,0.3);">
           <h4 style="margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #fffefa;">Tu Regalo Especial</h4>
           <div style="font-size: 32px; font-weight: bold; margin: 5px 0;">10% OFF</div>
           <p style="margin: 0; font-size: 12px; color: rgba(255,255,255,0.9);">EN TODA LA TIENDA HOY</p>
@@ -2437,14 +1910,15 @@
         <button class="btn-submit" onclick="closeAppModal('modal-birthday')" style="background: var(--primary-blue);">¡Genial, Gracias!</button>
       </div>
     </div>
-<!-- MODAL NOTIFICACIONES -->
+
+    <!-- MODAL NOTIFICACIONES -->
     <div class="app-modal" id="modal-notifications">
       <div class="modal-content-card" style="padding: 0; display: flex; flex-direction: column; max-height: 80vh;">
         <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: #fff; z-index: 10; border-radius: 20px 20px 0 0;">
           <h4 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0;"><i class="fa-regular fa-bell" style="color: #ef4444; margin-right: 6px;"></i> Notificaciones</h4>
           <div style="display: flex; gap: 12px; align-items: center;">
             <button onclick="clearNotifications()" style="background: transparent; border: none; font-size: 12px; color: var(--primary-blue); font-weight: 700; cursor: pointer; padding: 4px 8px;">Limpiar</button>
-            <button onclick="closeAppModal('modal-notifications')" style="background: transparent; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;">âœ•</button>
+            <button onclick="closeAppModal('modal-notifications')" style="background: transparent; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;">✕</button>
           </div>
         </div>
         <div id="notif-list" style="padding: 12px; overflow-y: auto; flex: 1; background: #f8fafc; min-height: 200px;">
@@ -2453,7 +1927,7 @@
       </div>
     </div>
 
-    <!-- MODAL CONFIRMACIÃ“N â€” LIMPIAR NOTIFICACIONES -->
+    <!-- MODAL CONFIRMACIÓN — LIMPIAR NOTIFICACIONES -->
     <div class="app-modal" id="modal-confirm-clear" style="z-index: 9500;">
       <div class="modal-content-card" style="max-width: 320px; padding: 0; overflow: hidden; border-radius: 22px;">
         <!-- Icono + encabezado -->
@@ -2468,12 +1942,12 @@
           ">
             <i class="fa-solid fa-trash-can" style="font-size: 24px; color: #ef4444;"></i>
           </div>
-          <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">Â¿Limpiar notificaciones?</h3>
+          <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">¿Limpiar notificaciones?</h3>
           <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
-            Se eliminarÃ¡n <strong style="color: var(--text-dark);">todas</strong> tus notificaciones.<br>Esta acciÃ³n no se puede deshacer.
+            Se eliminarán <strong style="color: var(--text-dark);">todas</strong> tus notificaciones.<br>Esta acción no se puede deshacer.
           </p>
         </div>
-        <!-- Botones de acciÃ³n -->
+        <!-- Botones de acción -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; background: #fff;">
           <button
             id="btn-confirm-clear-cancel"
@@ -2517,104 +1991,42 @@
       </div>
     </div>
 
-    <!-- MODAL CONFIRMACIÃ“N â€” QUITAR EQUIPO DE LA LISTA -->
-    <div class="app-modal" id="modal-confirm-quitar-rma" style="z-index: 9500;">
-      <div class="modal-content-card" style="max-width: 320px; padding: 0; overflow: hidden; border-radius: 22px;">
-        <!-- Icono + encabezado -->
-        <div style="background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%); padding: 28px 24px 20px; text-align: center; border-bottom: 1px solid var(--border-light);">
-          <div style="
-            width: 60px; height: 60px; border-radius: 50%;
-            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-            border: 2px solid #93c5fd;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 14px;
-            box-shadow: 0 4px 16px rgba(59,130,246,0.18);
-          ">
-            <i class="fa-solid fa-box-archive" style="font-size: 24px; color: #3b82f6;"></i>
-          </div>
-          <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">Â¿Quitar de la lista?</h3>
-          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
-            El equipo <strong id="modal-quitar-rma-number" style="color: var(--primary-blue);"></strong> serÃ¡ retirado de tu seguimiento.<br>Ya estÃ¡ finalizado y podrÃ¡s restaurarlo cuando quieras.
-          </p>
-        </div>
-        <!-- Botones de acciÃ³n -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; background: #fff;">
-          <button
-            onclick="closeAppModal('modal-confirm-quitar-rma')"
-            style="
-              padding: 16px 12px;
-              background: #fff;
-              border: none; border-right: 1px solid var(--border-light);
-              font-family: 'Outfit', sans-serif;
-              font-size: 14px; font-weight: 700;
-              color: var(--text-muted);
-              cursor: pointer;
-              transition: background 0.18s, color 0.18s;
-              border-radius: 0 0 0 22px;
-            "
-            onmouseover="this.style.background='#f8fafc'; this.style.color='var(--text-body)'"
-            onmouseout="this.style.background='#fff'; this.style.color='var(--text-muted)'"
-          >
-            <i class="fa-solid fa-xmark" style="margin-right: 5px; font-size: 12px;"></i>Cancelar
-          </button>
-          <button
-            id="btn-quitar-rma-ok"
-            style="
-              padding: 16px 12px;
-              background: #fff;
-              border: none;
-              font-family: 'Outfit', sans-serif;
-              font-size: 14px; font-weight: 800;
-              color: #3b82f6;
-              cursor: pointer;
-              transition: background 0.18s, color 0.18s;
-              border-radius: 0 0 22px 0;
-            "
-            onmouseover="this.style.background='#eff6ff'; this.style.color='#2563eb'"
-            onmouseout="this.style.background='#fff'; this.style.color='#3b82f6'"
-          >
-            <i class="fa-solid fa-box-archive" style="margin-right: 5px; font-size: 12px;"></i>Quitar
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    <!-- ══════════════════════════════════════════════════════════════════════════
          SPLASHSCREEN INTELIGENTE DE BIENVENIDA / OFERTAS
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-
+         ══════════════════════════════════════════════════════════════════════════ -->
     <div id="imou-splash">
       <div class="splash-card-inner">
         <div class="splash-actions-container">
           <div class="splash-settings">
             <button class="splash-settings-btn" onclick="toggleSplashSettings()"><i class="fa-solid fa-gear"></i></button>
             <div class="splash-settings-menu" id="splash-settings-menu">
-              <div onclick="closeSplashOption('session')">No mostrar en esta sesiÃ³n</div>
+              <div onclick="closeSplashOption('session')">No mostrar en esta sesión</div>
               <div onclick="closeSplashOption('today')">No volver a mostrar hoy</div>
             </div>
           </div>
-          <button class="splash-close-btn" onclick="closeSplashOption('session')">âœ•</button>
+          <button class="splash-close-btn" onclick="closeSplashOption('session')">✕</button>
         </div>
         <div id="splash-content-wrap" style="cursor: pointer;">
-          <img id="splash-img" src="" alt="PromociÃ³n Especial">
+          <img id="splash-img" src="" alt="Promoción Especial">
         </div>
       </div>
     </div>
 
+  </div> <!-- FIN APP ROOT -->
 
   <!-- BOTPRESS WEBCHAT SDK v3.6 (mismo que funciona en la web MGM) -->
   <script src="https://cdn.botpress.cloud/webchat/v3.6/inject.js"></script>
 
   <script>
-    // Inicializar Botpress con los mismos parÃ¡metros que funcionan en la web MGM
-    // Se ejecuta inmediatamente despuÃ©s de cargar el SDK
+    // Inicializar Botpress con los mismos parámetros que funcionan en la web MGM
+    // Se ejecuta inmediatamente después de cargar el SDK
     if (window.botpress) {
       window.botpress.init({
         "botId": "e5a3c8a6-9aec-41a3-870d-d1985dc8c7df",
         "clientId": "defae30e-36d3-4f8e-91a9-5c524f7bc655",
         "configuration": {
           "version": "v2",
-          "botName": "Magie â€” Asistente IA MGM",
+          "botName": "Magie — Asistente IA MGM",
           "botAvatar": "https://mgmpty.odoo.com/web/image/69925-9cdb234e/magiechat.png",
           "color": "#143266",
           "variant": "solid",
@@ -2627,542 +2039,11 @@
     }
   </script>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-         VISTA: TOOLBOX (DASHBOARD)
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-    <main id="view-toolbox" class="view-container">
-      <div class="mgm-calculadoras">
-        <div class="mgm-title">
-          <h2>Calculadoras TÃ©cnicas MGM</h2>
-          <p>Herramientas profesionales para dimensionar, diseÃ±ar y planificar proyectos.</p>
-        </div>
-        <div class="mgm-grid">
-          <!-- ACTIVA: Conversor TÃ©cnico -->
-          <div class="mgm-card activo" onclick="switchMainTab('toolbox-conversor-tecnico')">
-            <div class="mgm-icon"><i class="fas fa-exchange-alt"></i></div>
-            <h3>MGM Conversor TÃ©cnico</h3>
-            <p>Conversiones rÃ¡pidas para instaladores de seguridad electrÃ³nica.</p>
-            <a class="mgm-btn">Usar Conversor â†’</a>
-          </div>
-
-          <!-- ACTIVA: Almacenamiento -->
-          <div class="mgm-card activo" onclick="switchMainTab('toolbox-calculadora-almacenamiento')">
-            <div class="mgm-icon">
-              <i class="fas fa-hdd"></i>
-            </div>
-            <h3>Calculadora de Almacenamiento CCTV</h3>
-            <p>Calcula la capacidad de disco duro necesaria para grabaciÃ³n de video vigilancia.</p>
-            <a class="mgm-btn">Usar Calculadora â†’</a>
-          </div>
-
-          <!-- ACTIVA: Cloud VSaaS -->
-          <div class="mgm-card activo" onclick="switchMainTab('toolbox-calculadora-cloud')">
-            <div class="mgm-icon"><i class="fas fa-cloud"></i></div>
-            <h3>Calculadora Cloud VSaaS</h3>
-            <p>Calcula el almacenamiento y ancho de banda para grabaciÃ³n en la nube.</p>
-            <a class="mgm-btn">Usar Calculadora â†’</a>
-          </div>
-          
-          <!-- INACTIVAS -->
-          <div class="mgm-card inactivo">
-            <div class="badge-lock"><i class="fas fa-lock"></i> PrÃ³ximamente</div>
-            <div class="mgm-icon"><i class="fas fa-network-wired"></i></div>
-            <h3>Calculadora de Ancho de Banda</h3>
-            <p>Estima el consumo total de red necesario para transmisiÃ³n de video en tiempo real.</p>
-            <a class="mgm-btn">Disponible pronto</a>
-          </div>
-          
-          <div class="mgm-card inactivo">
-            <div class="badge-lock"><i class="fas fa-lock"></i> PrÃ³ximamente</div>
-            <div class="mgm-icon"><i class="fas fa-bolt"></i></div>
-            <h3>Calculadora de CaÃ­da de Voltaje</h3>
-            <p>Determina la pÃ©rdida de voltaje en cables elÃ©ctricos segÃºn distancia.</p>
-            <a class="mgm-btn">Disponible pronto</a>
-          </div>
-          
-          <div class="mgm-card inactivo">
-            <div class="badge-lock"><i class="fas fa-lock"></i> PrÃ³ximamente</div>
-            <div class="mgm-icon"><i class="fas fa-wifi"></i></div>
-            <h3>Calculadora de Enlaces InalÃ¡mbricos</h3>
-            <p>EvalÃºa la viabilidad de enlaces inalÃ¡mbricos punto a punto.</p>
-            <a class="mgm-btn">Disponible pronto</a>
-          </div>
-          
-          <div class="mgm-card inactivo">
-            <div class="badge-lock"><i class="fas fa-lock"></i> PrÃ³ximamente</div>
-            <div class="mgm-icon"><i class="fas fa-search"></i></div>
-            <h3>Calculadora de Lentes y Cobertura DORI</h3>
-            <p>Permite calcular el alcance de detecciÃ³n, observaciÃ³n, reconocimiento e identificaciÃ³n.</p>
-            <a class="mgm-btn">Disponible pronto</a>
-          </div>
-          
-          <div class="mgm-card activo" onclick="switchMainTab('toolbox-calculadora-ups')">
-            <div class="mgm-icon"><i class="fas fa-battery-full"></i></div>
-            <h3>Calculadora de AutonomÃ­a UPS</h3>
-            <p>Calcula el tiempo de respaldo y la capacidad necesaria del UPS.</p>
-            <a class="mgm-btn">Usar Calculadora â†’</a>
-          </div>
-          
-          <div class="mgm-card inactivo">
-            <div class="badge-lock"><i class="fas fa-lock"></i> PrÃ³ximamente</div>
-            <div class="mgm-icon"><i class="fas fa-plug"></i></div>
-            <h3>Calculadora de Potencia PoE</h3>
-            <p>Dimensiona la potencia total requerida para switches PoE.</p>
-            <a class="mgm-btn">Disponible pronto</a>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-         VISTA: CALCULADORA ALMACENAMIENTO
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-    <main id="view-toolbox-calculadora-almacenamiento" class="view-container">
-      <div class="calc-module">
-        <div class="header-brand">
-          <div>
-            <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-hdd"></i> Calc. Almacenamiento CCTV</h2>
-            <span style="font-size: 12px; color: var(--text-muted);">MGM Tecno Sistemas â€” Calculadora Profesional</span>
-          </div>
-          <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
-        </div>
-
-        <div class="project-info">
-          <div style="display:flex; flex-direction:column;">
-            <label style="font-size:11px; font-weight:700; color: var(--text-muted); text-transform: uppercase; margin-bottom:5px;">Cliente / Proyecto:</label>
-            <input type="text" id="clientName" placeholder="Ej: Centro Comercial Albrook" style="padding: 10px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px; background:#fff; color:#333;">
-          </div>
-          <div style="display:flex; flex-direction:column;">
-            <label style="font-size:11px; font-weight:700; color: var(--text-muted); text-transform: uppercase; margin-bottom:5px;">Dias de Respaldo:</label>
-            <input type="number" id="days" min="1" value="15" style="padding: 10px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px; background:#fff; color:#333;">
-          </div>
-        </div>
-
-        <div id="camList"></div>
-
-        <div class="footer-controls">
-          <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-            <button id="addCam" style="flex:1; min-width:120px; padding: 12px; border:none; border-radius:8px; background: #10b981; color: white; font-weight:700; cursor:pointer; font-size:14px;"><i class="fas fa-plus"></i> Agregar Camara</button>
-            <button id="btnCalcular" style="flex:1; min-width:120px; padding: 12px; border:none; border-radius:8px; background: var(--primary-blue); color: white; font-weight:700; cursor:pointer; font-size:14px;"><i class="fas fa-calculator"></i> Calcular</button>
-            <button id="btnPDF" style="flex:1; min-width:120px; padding: 12px; border:none; border-radius:8px; background: #6c757d; color: white; font-weight:700; cursor:pointer; font-size:14px;"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
-          </div>
-        </div>
-
-        <div id="resultadoBox" style="margin-top:20px; display:none;">
-          <div style="background: #e0f2fe; border-left: 4px solid #0284c7; padding: 16px; border-radius: 10px; margin-bottom: 10px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size: 13px; color: #0369a1; font-weight:600;">Capacidad Neta de Video:</span>
-            <strong id="resNeto" style="font-size: 22px; color: #0c4a6e;">0 TB</strong>
-          </div>
-          <div style="background: #dcfce7; border-left: 4px solid #16a34a; padding: 16px; border-radius: 10px; margin-bottom: 10px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size: 13px; color: #15803d; font-weight:600;">Discos Sugeridos (Formateados):</span>
-            <strong id="resDiscos" style="font-size: 22px; color: #14532d;">0 TB</strong>
-          </div>
-
-          <div style="overflow-x: auto; margin-top: 15px; border-radius: 8px; border: 1px solid var(--border-light);">
-            <table id="tablaDetalle" style="width:100%; border-collapse: collapse; font-size:11px; background: white; white-space: nowrap;">
-              <thead style="background: #f1f5f9;">
-                <tr>
-                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:center;">#</th>
-                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:left;">Res.</th>
-                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:center;">Codec</th>
-                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:center;">FPS</th>
-                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:left;">Escena</th>
-                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:left;">Modo</th>
-                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:right;">Bitrate</th>
-                  <th style="padding:9px 8px; border-bottom:1px solid #e2e8f0; text-align:right; font-weight:800; color:#0284c7;">TB</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-
-
-          <div style="font-size: 11px; color: var(--text-muted); margin-top: 15px; padding: 13px; background: #fffbeb; border-radius: 8px; border: 1px solid #fef3c7; line-height:1.6;">
-            <strong>IMPORTANTE:</strong> Este calculo es una referencia tecnica estimada. El almacenamiento real puede verse afectado por el ruido nocturno, la complejidad de la escena y el firmware del fabricante.<br>
-            <a href="javascript:void(0)" onclick="openAsesoriaModal()" style="display:inline-block; margin-top:8px; color: var(--primary-blue); font-weight: 700; text-decoration:none;">Solicitar cotizacion formal con un asesor MGM</a>
-          </div>
-        </div>
-      </div>
-    </main>
-
-
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-         MODAL 2: DETALLES DE PROMOCIÃ“N (INSTAGRAM STYLE FEED)
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-        <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-         VISTA: CONVERSOR TÃƒâ€°CNICO
-         Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
-    <main id="view-toolbox-conversor-tecnico" class="view-container">
-      <div class="calc-module conversor-module">
-        <div class="header-brand">
-          <div>
-            <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-exchange-alt"></i> Conversor TÃ©cnico</h2>
-            <span style="font-size: 12px; color: var(--text-muted);">MGM Tecno Sistemas â€” Herramientas Profesionales</span>
-          </div>
-          <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
-        </div>
-
-        <div class="conv-tabs">
-          <button class="conv-tab active" data-tab="conv-panel">ðŸ”„ Conversor</button>
-          <button class="conv-tab" data-tab="calc-panel">ðŸ”¢ Calculadora</button>
-        </div>
-
-        <section id="conv-panel" class="conv-panel active">
-          <input id="conv-search" class="conv-search" placeholder="ðŸ” Buscar una unidad o categorÃ­aâ€¦">
-          <div id="conv-categories" class="conv-grid"></div>
-
-          <div class="converter-box">
-            <div class="conv-field">
-              <label>DE</label>
-              <select id="conv-from"></select>
-            </div>
-            <button class="conv-swap" id="conv-swap" title="Intercambiar">â‡„</button>
-            <div class="conv-field">
-              <label>A</label>
-              <select id="conv-to"></select>
-            </div>
-          </div>
-
-          <div class="conv-field" style="margin-top:14px">
-            <label>VALOR</label>
-            <input id="conv-value" type="number" step="any" value="1" inputmode="decimal">
-          </div>
-
-          <div class="conv-result">
-            <div class="conv-label" id="conv-resultLabel">Resultado</div>
-            <div class="conv-value-text" id="conv-result">â€”</div>
-          </div>
-          <div class="conv-hint" id="conv-hint"></div>
-        </section>
-
-        <section id="calc-panel" class="conv-panel">
-          <div class="conv-calc">
-            <input id="conv-calcDisplay" class="conv-calc-display" value="0" readonly>
-            <div class="conv-calc-grid">
-              <button class="conv-clear" onclick="calcClear()">C</button>
-              <button onclick="calcBack()">âŒ«</button>
-              <button onclick="calcInput('%')">%</button>
-              <button class="conv-op" onclick="calcInput('/')">Ã·</button>
-              <button onclick="calcInput('7')">7</button><button onclick="calcInput('8')">8</button>
-              <button onclick="calcInput('9')">9</button><button class="conv-op" onclick="calcInput('*')">Ã—</button>
-              <button onclick="calcInput('4')">4</button><button onclick="calcInput('5')">5</button>
-              <button onclick="calcInput('6')">6</button><button class="conv-op" onclick="calcInput('-')">âˆ’</button>
-              <button onclick="calcInput('1')">1</button><button onclick="calcInput('2')">2</button>
-              <button onclick="calcInput('3')">3</button><button class="conv-op" onclick="calcInput('+')">+</button>
-              <button onclick="calcInput('0')">0</button><button onclick="calcInput('.')">.</button>
-              <button onclick="calcInput('(')">(</button><button onclick="calcInput(')')">)</button>
-              <button class="conv-equal" style="grid-column:1/5" onclick="calcEqual()">=</button>
-            </div>
-          </div>
-        </section>
-      </div>
-    </main>
-
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-         VISTA: CALCULADORA DE AUTONOMÃA UPS
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-    <main id="view-toolbox-calculadora-ups" class="view-container">
-      <style>
-        .ups-grid-config { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .ups-grid-config div label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
-        .ups-grid-config div input, .ups-grid-config div select { width: 100%; padding: 10px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 13px; background:#fff; color:#333; outline: none; box-sizing: border-box; }
-        .ups-grid-config div input:focus { border-color: var(--primary-blue); }
-        .ups-cam-row { background: #f8fafc; padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border-light); }
-        .ups-cam-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 36px; gap: 8px; align-items: end; }
-        .ups-cam-grid label { font-size: 10px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; display: block; }
-        .ups-cam-grid input, .ups-cam-grid select { width: 100%; padding: 7px; border: 1px solid var(--border-light); border-radius: 6px; font-size: 12px; box-sizing: border-box; }
-        .ups-res-card { display: flex; justify-content: space-between; background: #fff; border: 2px solid var(--primary-blue); padding: 14px 18px; border-radius: 12px; margin-bottom: 14px; }
-      </style>
-      <div class="calc-module conversor-module">
-        <div class="header-brand">
-          <div>
-            <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-battery-full"></i> Calculadora Autonomia UPS</h2>
-            <span style="font-size: 12px; color: var(--text-muted);">MGM Tecno Sistemas - Herramientas Profesionales</span>
-          </div>
-          <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
-        </div>
-        <span style="font-size: 13px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; margin-bottom: 10px; display: block; letter-spacing: 0.5px;">Especificaciones del Sistema</span>
-        <div class="ups-grid-config">
-          <div><label>Capacidad UPS (VA)</label><input type="number" id="upsVA" value="1000" onchange="sugerirPF()"></div>
-          <div><label>Factor de Potencia</label><input type="number" id="upsPF" value="0.6" step="0.1" max="1"></div>
-          <div><label>Voltaje Banco (VDC)</label>
-            <select id="batV">
-              <option value="12">12V (1 Bateria)</option>
-              <option value="24" selected="">24V (2 Baterias)</option>
-              <option value="48">48V (4 Baterias)</option>
-              <option value="72">72V (6 Baterias)</option>
-            </select>
-          </div>
-          <div><label>Capacidad Ah</label><input type="number" id="batAh" value="9" step="0.1"></div>
-          <div><label>Eficiencia (%)</label><input type="number" id="upsEff" value="85"></div>
-        </div>
-        <div id="loadListUps"></div>
-        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 16px;">
-          <button id="addLoadUps" style="flex:1; min-width:110px; padding: 11px; border:none; border-radius:8px; background: #10b981; color: white; font-weight:700; cursor:pointer; font-size:13px;"><i class="fas fa-plus"></i> Agregar Equipo</button>
-          <button id="btnCalcularUps" style="flex:1; min-width:110px; padding: 11px; border:none; border-radius:8px; background: var(--primary-blue); color: white; font-weight:700; cursor:pointer; font-size:13px;"><i class="fas fa-calculator"></i> Calcular</button>
-          <button id="btnPDFUps" style="flex:1; min-width:110px; padding: 11px; border:none; border-radius:8px; background: #6c757d; color: white; font-weight:700; cursor:pointer; font-size:13px;"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
-        </div>
-        <div id="resultsContainerUps" style="margin-top: 20px; display: none;">
-          <div id="alertAreaUps"></div>
-          <div class="ups-res-card">
-            <div>
-              <span style="display:block; font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Autonomia Estimada</span>
-              <strong id="resTiempoUps" style="font-size: 24px; color:var(--primary-blue);">0h 0m</strong>
-            </div>
-            <div style="text-align: right;">
-              <span style="display:block; font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Consumo Total</span>
-              <strong id="resWattsUps" style="font-size: 20px; color:var(--text-dark);">0 W</strong>
-            </div>
-          </div>
-          <div style="overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-light);">
-            <table id="tablaDetalleUps" style="width:100%;border-collapse:collapse;background:white;font-size:11px;">
-              <thead style="background:#f1f5f9;">
-                <tr>
-                  <th style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:left;">Equipo</th>
-                  <th style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">Watts Unit.</th>
-                  <th style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">Cant.</th>
-                  <th style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">Total W</th>
-                  <th style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">Criticidad</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:14px;padding:12px;background:#fffbeb;border-radius:8px;border:1px solid #fef3c7;line-height:1.6;">
-            <strong>IMPORTANTE:</strong> Los calculos son estimaciones tecnicas basadas en condiciones ideales de bateria. MGM recomienda un margen de seguridad del 25-30%.<br>
-            <a href="javascript:void(0)" onclick="openAsesoriaModal()" style="display:inline-block;margin-top:8px;color:var(--primary-blue);font-weight:700;text-decoration:none;">Solicitar asesoria formal con MGM</a>
-          </div>
-        </div>
-      </div>
-    </main>
-    <script>
-      (function() {
-        var presetsUps = {nvr:40,switch:15,cam:7,ptz:30,biomet:10,maglock:12,pc:150,router:10};
-        window.sugerirPF = function(){
-          document.getElementById("upsPF").value = parseFloat(document.getElementById("upsVA").value)>=2000?0.9:0.6;
-        };
-        window.aplicarPresetUps = function(el){
-          if(presetsUps[el.value]) el.parentElement.nextElementSibling.querySelector("input").value=presetsUps[el.value];
-        };
-        function addLoadRowUps(){
-          var c=document.getElementById("loadListUps"),d=document.createElement("div");
-          d.className="ups-cam-row";
-          d.innerHTML='<div class="ups-cam-grid"><div><label>Equipo</label><select class="tipo" onchange="aplicarPresetUps(this)"><option value="nvr">NVR (Promedio)</option><option value="switch">Switch PoE</option><option value="cam">Camara IP fija</option><option value="ptz">Domo PTZ</option><option value="maglock">Cerradura / Iman</option><option value="router">Router / Modem</option><option value="pc">PC de Monitoreo</option><option value="otro">Otro (Manual)</option></select></div><div><label>Watts</label><input type="number" class="watts" value="40"></div><div><label>Cant.</label><input type="number" class="cant" value="1" min="1"></div><div><label>Criticidad</label><select class="crit"><option value="Alta">Critica</option><option value="Media" selected>Media</option><option value="Baja">Baja</option></select></div><button onclick="this.closest(\'.ups-cam-row\').remove()" style="background:#ef4444;color:#fff;border:none;border-radius:6px;cursor:pointer;padding:6px;font-size:12px;"><i class="fas fa-times"></i></button></div>';
-          c.appendChild(d);
-        }
-        function calcularAutonomiaUps(){
-          var upsVA=parseFloat(document.getElementById("upsVA").value),
-              upsPF=parseFloat(document.getElementById("upsPF").value),
-              batV=parseFloat(document.getElementById("batV").value),
-              batAh=parseFloat(document.getElementById("batAh").value),
-              eff=parseFloat(document.getElementById("upsEff").value)/100,
-              totalW=0,html="";
-          document.querySelectorAll("#loadListUps .ups-cam-row").forEach(function(row){
-            var tipo=row.querySelector(".tipo").selectedOptions[0].text,
-                w=parseFloat(row.querySelector(".watts").value),
-                c=parseInt(row.querySelector(".cant").value),
-                crit=row.querySelector(".crit").value,sub=w*c;
-            totalW+=sub;
-            html+='<tr><td style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:left;">'+tipo+'</td><td style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">'+w+'W</td><td style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">'+c+'</td><td style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">'+sub+'W</td><td style="padding:9px;border-bottom:1px solid #e2e8f0;text-align:center;">'+crit+'</td></tr>';
-          });
-          var maxW=upsVA*upsPF,wh=batV*batAh*eff,horas=wh/(totalW||1),h=Math.floor(horas),m=Math.round((horas-h)*60);
-          document.getElementById("resultsContainerUps").style.display="block";
-          document.getElementById("resWattsUps").innerText=totalW+" W";
-          document.getElementById("resTiempoUps").innerText=h+"h "+m+"m";
-          document.querySelector("#tablaDetalleUps tbody").innerHTML=html;
-          if(totalW>maxW) {
-            document.getElementById("alertAreaUps").innerHTML='<div style="background:#fef2f2;color:#b91c1c;border-left:4px solid #ef4444;padding:12px;border-radius:8px;margin-bottom:12px;font-size:13px;"><strong>SOBRECARGA:</strong> La carga ('+totalW+'W) supera al UPS ('+maxW+'W).</div>';
-            if(typeof showToast === 'function') showToast('Advertencia: Sobrecarga en el equipo.', 'fa-solid fa-triangle-exclamation');
-          } else if(totalW>maxW*0.8) {
-            document.getElementById("alertAreaUps").innerHTML='<div style="background:#fffbeb;color:#b45309;border-left:4px solid #f59e0b;padding:12px;border-radius:8px;margin-bottom:12px;font-size:13px;"><strong>LIMITE:</strong> Carga superior al 80%.</div>';
-            if(typeof showToast === 'function') showToast('PrecauciÃ³n: Carga cercana al lÃ­mite.', 'fa-solid fa-circle-exclamation');
-          } else {
-            document.getElementById("alertAreaUps").innerHTML="";
-          }
-        }
-        function generarPDFUps(){
-          var jsPDF=window.jspdf.jsPDF,doc=new jsPDF();
-          var render=function(){
-            doc.setFillColor(0,33,74);doc.rect(0,0,210,40,"F");
-            doc.setTextColor(255,255,255);doc.setFontSize(24);doc.text("MGM SEGURIDAD",15,18);
-            doc.setFontSize(10);doc.text("SOLUCIONES PROFESIONALES EN SEGURIDAD Y ENERGIA",15,28);
-            doc.setTextColor(0,0,0);doc.setFontSize(12);doc.setFont(undefined,"bold");
-            doc.text("COTIZACION TECNICA DE RESPALDO ELECTRICO",15,52);doc.setFont(undefined,"normal");
-            doc.text("Autonomia Sugerida: "+document.getElementById("resTiempoUps").innerText,15,60);
-            doc.text("Carga de Equipos: "+document.getElementById("resWattsUps").innerText,15,67);
-            doc.autoTable({html:"#tablaDetalleUps",startY:78,headStyles:{fillColor:[0,33,74],textColor:[255,255,255],fontStyle:"bold"},styles:{fontSize:9,cellPadding:3},columnStyles:{0:{cellWidth:80}}});
-            doc.save("Cotizacion_MGM_UPS.pdf");
-          };
-          render();
-        }
-        document.getElementById("addLoadUps").addEventListener("click",addLoadRowUps);
-        document.getElementById("btnCalcularUps").addEventListener("click",calcularAutonomiaUps);
-        document.getElementById("btnPDFUps").addEventListener("click",generarPDFUps);
-        addLoadRowUps();
-      })();
-    </script>
-
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-         VISTA: CALCULADORA CLOUD VSAAS
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-    <main id="view-toolbox-calculadora-cloud" class="view-container">
-      <div class="calc-module">
-        <div class="header-brand">
-          <div>
-            <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-cloud"></i> Calc. Cloud VSaaS</h2>
-            <span style="font-size: 12px; color: var(--text-muted);">MGM Seguridad â€” Calculadora de Almacenamiento Cloud</span>
-          </div>
-          <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
-        </div>
-        
-        <div class="config-section" style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #dee2e6;">
-          <span class="section-title" style="font-weight: bold; color: #1a73e8; margin-bottom: 15px; display: block; text-transform: uppercase; font-size: 13px;">ParÃ¡metros de RetenciÃ³n y Costos</span>
-          <div class="grid-config" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
-            <div style="display: flex; flex-direction: column;">
-              <label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">DÃ­as de RetenciÃ³n</label>
-              <input type="number" id="retentionCloud" value="30" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
-            </div>
-            <div style="display: flex; flex-direction: column;">
-              <label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">Margen de Seguridad (%)</label>
-              <input type="number" id="marginCloud" value="15" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
-            </div>
-            <div style="display: flex; flex-direction: column;">
-              <label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">Precio TB/Mes (USD)</label>
-              <input type="number" id="priceTBCloud" value="12.00" step="0.5" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
-            </div>
-          </div>
-        </div>
-
-        <div id="camListCloud"></div>
-
-        <div class="footer-controls" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 16px;">
-          <button id="addLoadCloud" style="flex:1; min-width:120px; padding: 12px; border:none; border-radius:8px; background: #10b981; color: white; font-weight:700; cursor:pointer; font-size:13px;"><i class="fas fa-plus"></i> Agregar Grupo</button>
-          <button id="btnCalcularCloud" style="flex:1; min-width:120px; padding: 12px; border:none; border-radius:8px; background: var(--primary-blue); color: white; font-weight:700; cursor:pointer; font-size:13px;"><i class="fas fa-calculator"></i> Calcular</button>
-          <button id="btnPDFCloud" style="flex:1; min-width:120px; padding: 12px; border:none; border-radius:8px; background: #6c757d; color: white; font-weight:700; cursor:pointer; font-size:13px;"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
-        </div>
-
-        <div id="resultsContainerCloud" style="margin-top: 30px; display: none;">
-          <div id="alertAreaCloud"></div>
-          <div class="res-card" style="padding: 20px; border-radius: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #1a73e8; background: #e7f0fd;">
-            <div>
-              <span style="display:block; font-size:12px; color:#555; font-weight:700;">ALMACENAMIENTO TOTAL</span>
-              <strong id="resGBCloud" style="font-size: 24px; color:#1a73e8;">0 GB</strong>
-            </div>
-            <div style="text-align: right;">
-              <span style="display:block; font-size:12px; color:#555; font-weight:700;">COSTO MENSUAL EST.</span>
-              <strong id="resCostoCloud" style="font-size: 20px; color:#28a745;">$0.00 USD</strong>
-            </div>
-          </div>
-          <div style="overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-light);">
-            <table id="tablaDetalleCloud" style="width:100%; border-collapse: collapse; font-size: 12px; background: white;">
-              <thead style="background: #f1f1f1;">
-                <tr>
-                  <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">CÃ¡maras</th>
-                  <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">ResoluciÃ³n</th>
-                  <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">FPS</th>
-                  <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Modo</th>
-                  <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Upload (Mbps)</th>
-                  <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">GB/Mes Grupo</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <script>
-      (function() {
-        const brTableCloud = { 720: 1024, 1080: 2048, "4MP": 4096, "8MP": 8192 };
-        document.getElementById("addLoadCloud").addEventListener("click", addCameraRowCloud);
-        document.getElementById("btnCalcularCloud").addEventListener("click", calcularCloud);
-        document.getElementById("btnPDFCloud").addEventListener("click", generarPDFCloud);
-
-        function addCameraRowCloud() {
-          const container = document.getElementById("camListCloud");
-          const div = document.createElement("div");
-          div.className = "cam-row";
-          div.style.cssText = "background: #ffffff; border: 1px solid #dee2e6; border-radius: 12px; padding: 15px; margin-bottom: 15px; position: relative;";
-          div.innerHTML = `
-            <div class="cam-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; align-items: end;">
-              <div style="display:flex; flex-direction:column;"><label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">Cantidad</label><input type="number" class="count" value="4" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;"></div>
-              <div style="display:flex; flex-direction:column;"><label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">ResoluciÃ³n</label>
-                <select class="res" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
-                  <option value="720">720p</option>
-                  <option value="1080" selected>1080p (2MP)</option>
-                  <option value="4MP">4MP</option>
-                  <option value="8MP">8MP (4K)</option>
-                </select>
-              </div>
-              <div style="display:flex; flex-direction:column;"><label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">Codec</label>
-                <select class="codec" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
-                  <option value="1">H.264</option>
-                  <option value="0.7" selected>H.265 / Smart</option>
-                </select>
-              </div>
-              <div style="display:flex; flex-direction:column;"><label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">Modo</label>
-                <select class="mode" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
-                  <option value="1">Continuo</option>
-                  <option value="0.4">Movimiento</option>
-                  <option value="0.15">Eventos</option>
-                </select>
-              </div>
-              <button class="btn-danger" onclick="this.parentElement.parentElement.remove()" style="background: #dc3545; color: white; border:none; padding: 10px 12px; font-size: 11px; border-radius: 6px; cursor: pointer; height: 35px;"><i class="fas fa-trash"></i> Eliminar</button>
-            </div>
-          `;
-          container.appendChild(div);
-        }
-
-        function calcularCloud() {
-          const retention = parseInt(document.getElementById("retentionCloud").value);
-          const margin = 1 + (parseInt(document.getElementById("marginCloud").value) / 100);
-          const priceTB = parseFloat(document.getElementById("priceTBCloud").value);
-          let totalGB = 0;
-          let totalMbps = 0;
-          let htmlTabla = "";
-          document.querySelectorAll("#camListCloud .cam-row").forEach(row => {
-            const n = parseInt(row.querySelector(".count").value);
-            const res = row.querySelector(".res").value;
-            const codec = parseFloat(row.querySelector(".codec").value);
-            const mode = parseFloat(row.querySelector(".mode").value);
-            const brBase = brTableCloud[res] * codec;
-            const mbps = (brBase * n) / 1024;
-            const gb = (((brBase/8) * 3600 * 24 * retention * mode) / 1048576) * n;
-            totalGB += gb;
-            totalMbps += mbps;
-            htmlTabla += `<tr><td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${n}</td><td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${res}</td><td style="padding: 10px; border: 1px solid #ddd; text-align: center;">15</td><td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${row.querySelector(".mode").selectedOptions[0].text}</td><td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${mbps.toFixed(2)} Mbps</td><td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${gb.toFixed(1)} GB</td></tr>`;
-          });
-          const finalGB = totalGB * margin;
-          const finalTB = finalGB / 1024;
-          document.getElementById("resultsContainerCloud").style.display = "block";
-          document.getElementById("resGBCloud").innerText = finalGB.toFixed(1) + " GB";
-          document.getElementById("resCostoCloud").innerText = `$${(finalTB * priceTB).toFixed(2)} USD`;
-          document.querySelector("#tablaDetalleCloud tbody").innerHTML = htmlTabla;
-          let alertas = "";
-          if (totalMbps > 10) {
-            alertas = `<div class="alert alert-warning" style="background: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; line-height: 1.5;"><strong>âš ï¸ ATENCIÃ“N:</strong> El ancho de banda de subida requerido es de ${totalMbps.toFixed(1)} Mbps. AsegÃºrese de que el enlace de internet del cliente soporte esta carga constante.</div>`;
-          }
-          document.getElementById("alertAreaCloud").innerHTML = alertas;
-        }
-
-        function generarPDFCloud() {
-          const { jsPDF } = window.jspdf;
-          const doc = new jsPDF();
-          doc.text("MGM Seguridad - CÃ¡lculo Cloud VSaaS", 15, 20);
-          doc.autoTable({ html: '#tablaDetalleCloud', startY: 30, headStyles: { fillColor: [26, 115, 232] } });
-          doc.save("MGM_Calculo_Cloud.pdf");
-        }
-        
-        // Inicializar con una fila
-        addCameraRowCloud();
-      })();
-    </script>
-
-
-
-<div class="cli-modal" id="modal-promo-feed">
-      <button class="cli-modal-close" onclick="closePromoDetail()">âœ•</button>
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         MODAL 2: DETALLES DE PROMOCIÓN (INSTAGRAM STYLE FEED)
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <div class="cli-modal" id="modal-promo-feed">
+      <button class="cli-modal-close" onclick="closePromoDetail()">✕</button>
       <div class="cli-modal-feed" id="cli-modal-feed">
         <!-- Promo items injected here -->
       </div>
@@ -3175,11 +2056,8 @@
         <div class="cli-copy-handle"></div>
         <div class="cli-copy-title" id="cli-copy-title"></div>
         <div class="cli-copy-desc" id="cli-copy-desc"></div>
-        <a id="cli-copy-link" href="#" target="_blank" style="display:none; align-items:center; gap:8px; margin-top:10px; color:var(--accent-gold); font-weight:700; text-decoration:none; padding:8px 16px; background:rgba(251, 191, 36, 0.1); border-radius:8px; width:fit-content;">
-          <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir Enlace
-        </a>
         <div class="cli-copy-dates" id="cli-copy-dates"></div>
-        <!-- SecciÃ³n comentarios dentro del sheet -->
+        <!-- Sección comentarios dentro del sheet -->
         <div id="cli-copy-comments">
           <div style="font-size: 13px; font-weight: 800; color: var(--text-dark); margin-bottom: 10px;">
             <i class="fa-regular fa-comment" style="margin-right: 5px;"></i> Comentarios
@@ -3194,13 +2072,13 @@
       </div>
     </div>
 
-    <!-- MODAL SELECTOR WHATSAPP â€” z-index alto, despuÃ©s del feed para ganar en DOM -->
+    <!-- MODAL SELECTOR WHATSAPP — z-index alto, después del feed para ganar en DOM -->
     <div class="app-modal" id="modal-wa-selector" style="z-index:9000;">
       <div class="modal-content-card" style="text-align: center; max-width: 300px;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-wa-selector')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-wa-selector')">✕</button>
         <div style="font-size: 32px; color: #25d366; margin-bottom: 12px;"><i class="fa-brands fa-whatsapp"></i></div>
-        <h4 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">Â¿A quiÃ©n deseas consultar?</h4>
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Elige uno de nuestros asesores para enviar tu consulta sobre la promociÃ³n.</p>
+        <h4 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">¿A quién deseas consultar?</h4>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Elige uno de nuestros asesores para enviar tu consulta sobre la promoción.</p>
         <button onclick="sendWaConsult('64541476')" style="width: 100%; background: #25d366; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
           <i class="fa-brands fa-whatsapp"></i> Asesor 1 (+507 6454-1476)
         </button>
@@ -3210,19 +2088,18 @@
       </div>
     </div>
 
-  </div> <!-- FIN APP ROOT -->
   <script src="app.js?v=14"></script>
 
-  <!-- LÃ“GICA DE INSTALACIÃ“N PWA -->
+  <!-- LÓGICA DE INSTALACIÓN PWA -->
   <script>
     (function() {
-      // Detectar si YA estÃ¡ instalada como PWA
+      // Detectar si YA está instalada como PWA
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches
                         || window.navigator.standalone === true;
 
       if (isStandalone) return; // Si ya es webapp, no mostrar nada
 
-      // Si ya la ignorÃ³, no mostrarla de nuevo
+      // Si ya la ignoró, no mostrarla de nuevo
       const skipped = localStorage.getItem('mgm_install_skipped');
       if (skipped) return;
 
@@ -3231,14 +2108,14 @@
       window.addEventListener('beforeinstallprompt', function(e) {
         e.preventDefault();
         window._pwaInstallEvent = e;
-        // Mostrar botÃ³n de instalaciÃ³n nativo
+        // Mostrar botón de instalación nativo
         const btn = document.getElementById('btn-install-app');
         if (btn) btn.style.display = 'flex';
         const iosHint = document.getElementById('install-ios-hint');
         if (iosHint) iosHint.style.display = 'none';
       });
 
-      // Detectar iOS (Safari) â€” no tiene beforeinstallprompt
+      // Detectar iOS (Safari) — no tiene beforeinstallprompt
       const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
                  && !window.MSStream;
       const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -3248,18 +2125,18 @@
       if (overlay) overlay.style.display = 'flex';
 
       if (isIOS && isSafari) {
-        // En iOS mostrar instrucciÃ³n manual
+        // En iOS mostrar instrucción manual
         const btn = document.getElementById('btn-install-app');
         if (btn) btn.style.display = 'none';
         const iosHint = document.getElementById('install-ios-hint');
         if (iosHint) iosHint.style.display = 'flex';
       } else {
-        // En Android/Chrome ocultamos el botÃ³n hasta recibir beforeinstallprompt
+        // En Android/Chrome ocultamos el botón hasta recibir beforeinstallprompt
         const btn = document.getElementById('btn-install-app');
-        if (btn) btn.style.display = 'none'; // Se mostrarÃ¡ cuando llegue el evento
+        if (btn) btn.style.display = 'none'; // Se mostrará cuando llegue el evento
       }
 
-      // Detectar si se instalÃ³ exitosamente
+      // Detectar si se instaló exitosamente
       window.addEventListener('appinstalled', function() {
         const overlay = document.getElementById('install-overlay');
         if (overlay) overlay.style.display = 'none';
@@ -3291,250 +2168,9 @@
     };
   </script>
 
-  <!-- ==============================================
-       MODAL DE EVALUACIÃ“N RMA (INSISTENTE)
-  =============================================== -->
-  <div class="app-modal" id="eval-rma-modal" style="display: none; z-index: 10001;">
-    <div class="modal-content-card" style="max-width: 450px; margin: auto;">
-      <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center;">
-        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0;"><i class="fa-solid fa-star" style="color: var(--accent-gold-dark);"></i> AyÃºdanos a Mejorar</h3>
-      </div>
-      <div style="padding: 20px; text-align: left;">
-        <p style="font-size: 14px; margin-bottom: 20px; color: var(--text-color);">
-          Tienes un servicio reciente (<strong id="eval-rma-number"></strong>) finalizado. Por favor, toma un minuto para evaluarnos.
-        </p>
 
-        <form id="eval-rma-form">
-          <input type="hidden" id="eval-rma-id" />
-          
-          <div style="margin-bottom: 15px;">
-            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">Â¿El equipo quedÃ³ funcionando correctamente y resolviÃ³ tu problema?</label>
-            <input type="hidden" id="eval-q1" required>
-            <div class="star-rating-container" data-target="eval-q1">
-              <i class="fa-solid fa-star" data-val="1" title="AÃºn presenta fallas"></i>
-              <i class="fa-solid fa-star" data-val="2"></i>
-              <i class="fa-solid fa-star" data-val="3"></i>
-              <i class="fa-solid fa-star" data-val="4"></i>
-              <i class="fa-solid fa-star" data-val="5" title="SÃ­, perfectamente"></i>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 15px;">
-            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">Â¿CÃ³mo calificas el tiempo que tardamos en entregarte el equipo?</label>
-            <input type="hidden" id="eval-q2" required>
-            <div class="star-rating-container" data-target="eval-q2">
-              <i class="fa-solid fa-star" data-val="1" title="Muy demorado"></i>
-              <i class="fa-solid fa-star" data-val="2"></i>
-              <i class="fa-solid fa-star" data-val="3" title="Aceptable"></i>
-              <i class="fa-solid fa-star" data-val="4"></i>
-              <i class="fa-solid fa-star" data-val="5" title="RÃ¡pido y a tiempo"></i>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 15px;">
-            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">Â¿La explicaciÃ³n tÃ©cnica de la falla y la soluciÃ³n fue clara?</label>
-            <input type="hidden" id="eval-q3" required>
-            <div class="star-rating-container" data-target="eval-q3">
-              <i class="fa-solid fa-star" data-val="1"></i>
-              <i class="fa-solid fa-star" data-val="2" title="Confusa / Poco clara"></i>
-              <i class="fa-solid fa-star" data-val="3"></i>
-              <i class="fa-solid fa-star" data-val="4"></i>
-              <i class="fa-solid fa-star" data-val="5" title="SÃ­, muy clara"></i>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 15px;">
-            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">Â¿QuÃ© podemos mejorar en nuestro taller tÃ©cnico?</label>
-            <textarea id="eval-q4" class="mgm-input" style="width: 100%; min-height: 70px; padding: 12px; border-radius: 10px; border: 1px solid var(--border-light); font-size: 14px; font-family: inherit;" placeholder="(Espacio abierto para comentarios)"></textarea>
-          </div>
-
-          <button type="submit" class="btn-submit" style="width: 100%; margin-top: 10px;">
-            <i class="fa-solid fa-paper-plane"></i> Enviar EvaluaciÃ³n
-          </button>
-        </form>
-        <script>
-          // Inicializar estrellas interactivas
-          // No usamos DOMContentLoaded porque el DOM ya estÃ¡ listo cuando este script se ejecuta
-          (function initStarRating() {
-            document.querySelectorAll('.star-rating-container').forEach(function(container) {
-              var stars = container.querySelectorAll('.fa-star');
-              var hiddenInput = document.getElementById(container.dataset.target);
-              if (!hiddenInput) return;
-
-              stars.forEach(function(star) {
-                // Click: fijar calificaciÃ³n
-                star.addEventListener('click', function() {
-                  var val = parseInt(star.dataset.val);
-                  hiddenInput.value = val;
-                  stars.forEach(function(s) {
-                    if (parseInt(s.dataset.val) <= val) {
-                      s.classList.add('active');
-                    } else {
-                      s.classList.remove('active');
-                    }
-                  });
-                });
-
-                // Hover: preview de calificaciÃ³n
-                star.addEventListener('mouseenter', function() {
-                  var val = parseInt(star.dataset.val);
-                  stars.forEach(function(s) {
-                    if (parseInt(s.dataset.val) <= val) {
-                      s.style.color = '#F59E0B';
-                    } else {
-                      s.style.color = '';
-                    }
-                  });
-                });
-              });
-
-              // Al salir del contenedor, restaurar al valor fijado
-              container.addEventListener('mouseleave', function() {
-                var fixedVal = parseInt(hiddenInput.value) || 0;
-                stars.forEach(function(s) {
-                  s.style.color = '';
-                  if (parseInt(s.dataset.val) <= fixedVal) {
-                    s.classList.add('active');
-                  } else {
-                    s.classList.remove('active');
-                  }
-                });
-              });
-            });
-          })();
-        </script>
-      </div>
-    </div>
-  </div>
-
-  <!-- TOAST GLOBAL â€” fuera de todo stacking context -->
+  <!-- TOAST GLOBAL — fuera de todo stacking context -->
   <div id="mgm-toast-el" class="mgm-toast"></div>
-
-  <!-- Modal de Recordatorio de InstalaciÃ³n -->
-  <style>
-    @keyframes pwaPopIn {
-      0% { opacity: 0; transform: scale(0.95) translateY(10px); }
-      100% { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    #pwa-modal {
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
-    }
-    #pwa-modal-content {
-      animation: pwaPopIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
-    #btn-instalar-app {
-      background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 15px rgba(37,99,235,0.4);
-    }
-    #btn-instalar-app:active {
-      transform: scale(0.96);
-    }
-  </style>
-  <div id="pwa-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 99999; align-items: center; justify-content: center;">
-    <div id="pwa-modal-content" style="background: #ffffff; width: 90%; max-width: 400px; padding: 25px; border-radius: 16px; text-align: center; font-family: system-ui, -apple-system, sans-serif; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
-      
-      <div style="font-size: 40px; margin-bottom: 10px;">ðŸ“²</div>
-      <h3 style="margin: 0 0 10px 0; color: #0f172a; font-size: 20px;">Â¡Instala MGM Hub!</h3>
-      <p style="color: #475569; font-size: 14px; line-height: 1.4; margin-bottom: 12px;">
-        Accede a todo nuestro ecosistema directamente desde tu celular:
-      </p>
-      <ul style="color: #475569; font-size: 13px; line-height: 1.6; text-align: left; margin-bottom: 20px; padding-left: 20px;">
-        <li>ðŸŽ <strong>Puntos y premios:</strong> Acumula y canjea fÃ¡cilmente.</li>
-        <li>ðŸ“… <strong>Capacitaciones:</strong> Mantente al dÃ­a con nuestra agenda.</li>
-        <li>ðŸ·ï¸ <strong>Promociones:</strong> Descuentos y beneficios exclusivos.</li>
-        <li>ðŸ› ï¸ <strong>RMA:</strong> GestiÃ³n y notificaciones en tiempo real.</li>
-        <li>ðŸš€ <strong>Ligera:</strong> SÃºper rÃ¡pida y no ocupa memoria.</li>
-      </ul>
-
-      <button id="btn-instalar-app" style="width: 100%; background: #2563eb; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; margin-bottom: 10px;">
-        Instalar WebApp
-      </button>
-      
-      <button id="btn-recordar-luego" style="background: transparent; color: #64748b; border: none; font-size: 13px; cursor: pointer; text-decoration: underline;">
-        RecordÃ¡rmelo mÃ¡s tarde
-      </button>
-      
-    </div>
-  </div>
-
-  <script>
-    (function() {
-      let deferredPrompt;
-      let timerRecordatorio = null;
-      const pwaModal = document.getElementById('pwa-modal');
-      const btnInstalar = document.getElementById('btn-instalar-app');
-      const btnLuego = document.getElementById('btn-recordar-luego');
-
-      // Tiempo de repeticiÃ³n: 5 minutos
-      const TIEMPO_REPETICION_MS = 5 * 60 * 1000;
-
-      // 1. Detectar si el dispositivo es mÃ³vil (Smartphone o Tablet)
-      const esDispositivoMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
-
-      // 2. Validar si ya estÃ¡ instalada o ejecutÃ¡ndose como PWA
-      const esAppInstalada = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-
-      // 3. Ejecutar solo si ES mÃ³vil y NO estÃ¡ instalada
-      if (esDispositivoMovil && !esAppInstalada) {
-        setTimeout(() => {
-          mostrarModal();
-        }, 3000); // Retraso inicial de 3 segundos
-      }
-
-      function mostrarModal() {
-        if (esAppInstalada || !esDispositivoMovil) return;
-        pwaModal.style.display = 'flex';
-      }
-
-      function ocultarYProgramar() {
-        pwaModal.style.display = 'none';
-        
-        if (timerRecordatorio) clearTimeout(timerRecordatorio);
-
-        // Reprogramar a los 5 minutos solo en mÃ³vil
-        timerRecordatorio = setTimeout(() => {
-          mostrarModal();
-        }, TIEMPO_REPETICION_MS);
-      }
-
-      // Capturar evento de instalaciÃ³n nativo de Android
-      window.addEventListener('beforeinstallprompt', (e) => {
-        if (!esDispositivoMovil) return;
-        e.preventDefault();
-        deferredPrompt = e;
-      });
-
-      // BotÃ³n "Instalar WebApp"
-      btnInstalar.addEventListener('click', async () => {
-        if (deferredPrompt) {
-          deferredPrompt.prompt();
-          const { outcome } = await deferredPrompt.userChoice;
-          if (outcome === 'accepted') {
-            pwaModal.style.display = 'none';
-            if (timerRecordatorio) clearTimeout(timerRecordatorio);
-          }
-          deferredPrompt = null;
-        } else {
-          // GuÃ­a para Safari en iOS u otros navegadores mÃ³viles
-          alert('Para instalar:\n1. Toca el botÃ³n Compartir ðŸ“¤ de tu navegador.\n2. Selecciona "Agregar a inicio" âž•.');
-          ocultarYProgramar();
-        }
-      });
-
-      // BotÃ³n "RecordÃ¡rmelo mÃ¡s tarde"
-      btnLuego.addEventListener('click', () => {
-        ocultarYProgramar();
-      });
-
-      // Al completar la instalaciÃ³n
-      window.addEventListener('appinstalled', () => {
-        pwaModal.style.display = 'none';
-        if (timerRecordatorio) clearTimeout(timerRecordatorio);
-      });
-    })();
-  </script>
 
 </body>
 </html>
