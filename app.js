@@ -1,14 +1,14 @@
-/**
+﻿/**
  * MGM HUB MOBILE APP - app.js
- * Lógica principal de la WebApp Móvil PWA
- * Módulos: Navegación · MGM Puntos · Agenda & Cursos · Promociones · Asesoría & Magie IA · Multi-Audio Player Streaming
+ * LÃ³gica principal de la WebApp MÃ³vil PWA
+ * MÃ³dulos: NavegaciÃ³n Â· MGM Puntos Â· Agenda & Cursos Â· Promociones Â· AsesorÃ­a & Magie IA Â· Multi-Audio Player Streaming
  */
 (function () {
   'use strict';
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // 🎉 MGM CONFETTI — Módulo de celebraciones con canvas-confetti
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ðŸŽ‰ MGM CONFETTI â€” MÃ³dulo de celebraciones con canvas-confetti
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const mgmConfetti = {
     // Colores MGM: azul marino, dorado, blanco, celeste
     _colors: ['#00214a', '#f59e0b', '#ffffff', '#0ea5e9', '#fbbf24', '#60a5fa'],
@@ -16,7 +16,7 @@
     _blueColors: ['#0ea5e9', '#38bdf8', '#bae6fd', '#ffffff', '#0284c7'],
     _birthdayColors: ['#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9', '#10b981', '#f472b6', '#ffffff'],
 
-    /** 🎊 Confeti bilateral grande — Registro nuevo exitoso */
+    /** ðŸŽŠ Confeti bilateral grande â€” Registro nuevo exitoso */
     celebrate() {
       if (typeof confetti === 'undefined') return;
       const opts = { particleCount: 80, spread: 70, startVelocity: 45, ticks: 300, colors: this._colors, zIndex: 99999 };
@@ -27,7 +27,7 @@
       }, 400);
     },
 
-    /** 🌟 Confeti dorado MGM — Login / bienvenida exitosa */
+    /** ðŸŒŸ Confeti dorado MGM â€” Login / bienvenida exitosa */
     gold() {
       if (typeof confetti === 'undefined') return;
       confetti({
@@ -38,7 +38,7 @@
       });
     },
 
-    /** 🎆 Fuegos artificiales de cumpleaños — disparados desde los costados */
+    /** ðŸŽ† Fuegos artificiales de cumpleaÃ±os â€” disparados desde los costados */
     birthday() {
       if (typeof confetti === 'undefined') return;
       const duration = 2500;
@@ -52,7 +52,7 @@
       frame();
     },
 
-    /** ❤️ Mini-burst para likes en promos */
+    /** â¤ï¸ Mini-burst para likes en promos */
     burst(x, y) {
       if (typeof confetti === 'undefined') return;
       const nx = typeof x === 'number' ? Math.min(Math.max(x / window.innerWidth, 0.05), 0.95) : 0.5;
@@ -64,7 +64,7 @@
       });
     },
 
-    /** 🔔 Confeti azul — Notificaciones activadas */
+    /** ðŸ”” Confeti azul â€” Notificaciones activadas */
     bell() {
       if (typeof confetti === 'undefined') return;
       confetti({
@@ -76,11 +76,11 @@
   };
 
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // CONFIGURACIÓN GLOBAL — ENDPOINTS OFICIALES DE GOOGLE APPS SCRIPT
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // CONFIGURACIÃ“N GLOBAL â€” ENDPOINTS OFICIALES DE GOOGLE APPS SCRIPT
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const CFG = {
-    // 1. MGM PUNTOS BACKEND (Clientes, Puntos, Términos, Promociones)
+    // 1. MGM PUNTOS BACKEND (Clientes, Puntos, TÃ©rminos, Promociones)
     PUNTOS_GAS_URL: 'https://script.google.com/macros/s/AKfycbwV90SCVdMrMgE1Vlev3rdpcqMJlVwCV5du_MGJ-BtV5Di8LMY9UroYD7dXhWBXyI2yGw/exec',
 
     // 2. CALENDARIO & AGENDA (Eventos, Webinars, Capacitaciones)
@@ -92,27 +92,27 @@
     // 4. AUDIO PLAYER (Playlist Streaming Multi-Pista)
     AUDIO_GAS_URL: 'https://script.google.com/macros/s/AKfycbwlzKNgocSThMfZJ5qPi1cJNrBreEeAVbvN-anObK3jW1vFnPIRadt77tMp4qTdBiAg/exec',
 
-    // 5. SPLASHSCREEN (Campañas IMOU / Promos)
+    // 5. SPLASHSCREEN (CampaÃ±as IMOU / Promos)
     SPLASH_GAS_URL: 'https://script.google.com/macros/s/AKfycbw3Aey_uya9yLM8xKrcQCBrlMcTSkAdnUBCQEq_kitdBN4-BZHnxbJP66lO5qgZgO8KAQ/exec',
 
-    // 6. NOTIFICACIONES & TRACKING (El usuario creará este nuevo GAS)
+    // 6. NOTIFICACIONES & TRACKING (El usuario crearÃ¡ este nuevo GAS)
     NOTIFS_GAS_URL: 'https://script.google.com/macros/s/AKfycby8EOl7-hZ1Q8rvPCjFB2ItFrRKqwVmDoPJrhX3sM_3-O8xeoWmuZ0RxbEgNUjLN_6dfA/exec',
 
-    // 7. CATÁLOGO DE PREMIOS & CANJES (Backend MGM Puntos o propio)
+    // 7. CATÃLOGO DE PREMIOS & CANJES (Backend MGM Puntos o propio)
     PREMIOS_GAS_URL: 'https://script.google.com/macros/s/AKfycbwV90SCVdMrMgE1Vlev3rdpcqMJlVwCV5du_MGJ-BtV5Di8LMY9UroYD7dXhWBXyI2yGw/exec',
 
     VAL_PUNTO: 0.01,
     BOTPRESS_BOT_ID: 'e5a3c8a6-9aec-41a3-870d-d1985dc8c7df',
     SPLASH_ENABLED: true,
 
-    // Playlist de audios: sólo se poblará si el backend devuelve pistas reales
+    // Playlist de audios: sÃ³lo se poblarÃ¡ si el backend devuelve pistas reales
     DEFAULT_AUDIO_TRACKS: [],
     AUDIO_TRACKS: []
   };
 
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // STATE LOCAL
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const K_CLIENTS = 'mgm_local_clients';
   const K_TX      = 'mgm_local_tx';
   const K_SPLASH  = 'mgm_splash_date_v2';
@@ -144,84 +144,84 @@
     seenNotifs: JSON.parse(localStorage.getItem(K_SEEN_NOTIFS)) || [],
     authUser: JSON.parse(localStorage.getItem(K_AUTH)) || null,
     clients: JSON.parse(localStorage.getItem(K_CLIENTS)) || [
-      { cedula:'8-888-1234', nombre:'Juan Carlos Pérez', correo:'juan@email.com', telefono:'6254-0412', cumpleanos:'1990-08-15', fechaRegistro:'2026-01-10', puntos:2800, totalComprasAno:1400.00 },
-      { cedula:'4-752-9812', nombre:'María Elena Rodríguez', correo:'maria@email.com', telefono:'6611-9988', cumpleanos:'1988-11-22', fechaRegistro:'2026-02-14', puntos:450, totalComprasAno:450.00 }
+      { cedula:'8-888-1234', nombre:'Juan Carlos PÃ©rez', correo:'juan@email.com', telefono:'6254-0412', cumpleanos:'1990-08-15', fechaRegistro:'2026-01-10', puntos:2800, totalComprasAno:1400.00 },
+      { cedula:'4-752-9812', nombre:'MarÃ­a Elena RodrÃ­guez', correo:'maria@email.com', telefono:'6611-9988', cumpleanos:'1988-11-22', fechaRegistro:'2026-02-14', puntos:450, totalComprasAno:450.00 }
     ],
     transactions: JSON.parse(localStorage.getItem(K_TX)) || [
-      { fecha:'2026-08-10 16:30', cedula:'8-888-1234', factura:'RED-492104', subtotal:-5.00, multiplicador:'REDENCIÓN (100 pts = $1)', puntos:-500, asesor:'Carlos Ruiz' },
-      { fecha:'2026-08-01 11:20', cedula:'8-888-1234', factura:'FAC-2026-0891', subtotal:1400.00, multiplicador:'2X Monto × 2X Día', puntos:5600, asesor:'Carlos Ruiz' },
-      { fecha:'2026-07-15 09:40', cedula:'8-888-1234', factura:'FAC-2026-0742', subtotal:200.00, multiplicador:'1X Estándar', puntos:200, asesor:'Ana Gómez' }
+      { fecha:'2026-08-10 16:30', cedula:'8-888-1234', factura:'RED-492104', subtotal:-5.00, multiplicador:'REDENCIÃ“N (100 pts = $1)', puntos:-500, asesor:'Carlos Ruiz' },
+      { fecha:'2026-08-01 11:20', cedula:'8-888-1234', factura:'FAC-2026-0891', subtotal:1400.00, multiplicador:'2X Monto Ã— 2X DÃ­a', puntos:5600, asesor:'Carlos Ruiz' },
+      { fecha:'2026-07-15 09:40', cedula:'8-888-1234', factura:'FAC-2026-0742', subtotal:200.00, multiplicador:'1X EstÃ¡ndar', puntos:200, asesor:'Ana GÃ³mez' }
     ]
   };
 
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // DATOS DE FALLBACK (DEMO / MODO OFFLINE)
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const DEMO_PROMOS = [
     {
-      id:'P001', nombre:'Sábados con Triple Puntos',
-      descripcion:'Cada sábado acumula 3X MGM PUNTOS en todas tus compras.\n¡Aprovecha el fin de semana para maximizar tus beneficios!',
-      tipo:'puntos', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÍ', likes:24, enlace: 'https://mgmpty.com'
+      id:'P001', nombre:'SÃ¡bados con Triple Puntos',
+      descripcion:'Cada sÃ¡bado acumula 3X MGM PUNTOS en todas tus compras.\nÂ¡Aprovecha el fin de semana para maximizar tus beneficios!',
+      tipo:'puntos', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÃ', likes:24, enlace: 'https://mgmpty.com'
     },
     {
-      id:'P002', nombre:'Descuento de Cumpleaños 🎂',
-      descripcion:'Disfruta un 10% de descuento especial el día de tu cumpleaños.\n(Si tu cumpleaños cae en domingo, tu descuento es válido el lunes siguiente).\nSolo presenta tu cédula en caja.',
-      tipo:'descuento', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÍ', likes:18, enlace: ''
+      id:'P002', nombre:'Descuento de CumpleaÃ±os ðŸŽ‚',
+      descripcion:'Disfruta un 10% de descuento especial el dÃ­a de tu cumpleaÃ±os.\n(Si tu cumpleaÃ±os cae en domingo, tu descuento es vÃ¡lido el lunes siguiente).\nSolo presenta tu cÃ©dula en caja.',
+      tipo:'descuento', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÃ', likes:18, enlace: ''
     },
     {
-      id:'P003', nombre:'Días Especiales MGM — 5X Puntos',
+      id:'P003', nombre:'DÃ­as Especiales MGM â€” 5X Puntos',
       descripcion:'En fechas especiales declaradas por MGM, acumulas hasta 5X tus puntos con cualquier compra.',
-      tipo:'especial', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÍ', likes:31
+      tipo:'especial', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÃ', likes:31
     }
   ];
 
   const DEMO_TERMS = [
-    '1. **Acumulación:** Los puntos se acumulan al registrar cada compra con el asesor MGM autorizado.',
-    '2. **Tasa estándar:** 1 MGM PUNTO por cada $1.00 USD de compra (subtotal sin ITBMS).',
-    '3. **Multiplicadores:** En días especiales o promociones, el asesor puede aplicar multiplicadores 2X, 3X o 5X.',
-    '4. **Redención:** 100 MGM PUNTOS = $1.00 USD de descuento directo en factura.',
-    '5. **Comprobante:** Toda redención genera un comprobante con firmas del asesor y del cliente.',
-    '6. **Vencimiento:** Los puntos vencen el 31 de diciembre de cada año calendario.',
+    '1. **AcumulaciÃ³n:** Los puntos se acumulan al registrar cada compra con el asesor MGM autorizado.',
+    '2. **Tasa estÃ¡ndar:** 1 MGM PUNTO por cada $1.00 USD de compra (subtotal sin ITBMS).',
+    '3. **Multiplicadores:** En dÃ­as especiales o promociones, el asesor puede aplicar multiplicadores 2X, 3X o 5X.',
+    '4. **RedenciÃ³n:** 100 MGM PUNTOS = $1.00 USD de descuento directo en factura.',
+    '5. **Comprobante:** Toda redenciÃ³n genera un comprobante con firmas del asesor y del cliente.',
+    '6. **Vencimiento:** Los puntos vencen el 31 de diciembre de cada aÃ±o calendario.',
     '7. **Intransferibilidad:** Los puntos son personales e intransferibles.'
   ];
 
   const DEMO_REWARDS = [
     {
       id: 'REW-001',
-      nombre: 'Cámara Wi-Fi IMOU Cue 2 (1080P)',
+      nombre: 'CÃ¡mara Wi-Fi IMOU Cue 2 (1080P)',
       modelo: 'IPC-C22EP-A',
-      descripcion: 'Cámara inteligente para interiores con audio bidireccional, visión nocturna y detección de humanos por inteligencia artificial.',
+      descripcion: 'CÃ¡mara inteligente para interiores con audio bidireccional, visiÃ³n nocturna y detecciÃ³n de humanos por inteligencia artificial.',
       puntos: 2500,
       imagen: 'https://www.imoulife.com/public/asset/v2/img/product/cue2/cue2-pic1.png',
       fecha_inicio: '2026-01-01',
       fecha_fin: '2026-12-31',
-      activo: 'SÍ',
+      activo: 'SÃ',
       stock: 'Disponible',
       link: 'https://mgmpty.odoo.com/shop/camara-wifi-imou-cue-2'
     },
     {
       id: 'REW-002',
-      nombre: 'Cámara Wi-Fi IMOU Ranger 2 (360°)',
+      nombre: 'CÃ¡mara Wi-Fi IMOU Ranger 2 (360Â°)',
       modelo: 'IPC-A22EN-G',
-      descripcion: 'Cobertura 360° con seguimiento inteligente de movimiento, sirena disuasoria y modo de privacidad.',
+      descripcion: 'Cobertura 360Â° con seguimiento inteligente de movimiento, sirena disuasoria y modo de privacidad.',
       puntos: 3500,
       imagen: 'https://www.imoulife.com/public/asset/v2/img/product/ranger2/ranger2-pic1.png',
       fecha_inicio: '2026-01-01',
       fecha_fin: '2026-12-31',
-      activo: 'SÍ',
+      activo: 'SÃ',
       stock: 'Disponible',
       link: 'https://mgmpty.odoo.com/shop/camara-wifi-imou-ranger-2'
     },
     {
       id: 'REW-003',
-      nombre: 'Cámara Exterior IMOU Cruiser Dual (10MP)',
+      nombre: 'CÃ¡mara Exterior IMOU Cruiser Dual (10MP)',
       modelo: 'IPC-S7XP-10M0WED',
-      descripcion: 'Doble lente PTZ exterior con visión nocturna Smart Dual Light a todo color y certificación de intemperie IP66.',
+      descripcion: 'Doble lente PTZ exterior con visiÃ³n nocturna Smart Dual Light a todo color y certificaciÃ³n de intemperie IP66.',
       puntos: 6500,
       imagen: '',
       fecha_inicio: '2026-01-01',
       fecha_fin: '2026-12-31',
-      activo: 'SÍ',
+      activo: 'SÃ',
       stock: 'Disponible',
       link: 'https://mgmpty.odoo.com/shop/camara-exterior-imou-cruiser-dual'
     },
@@ -229,12 +229,12 @@
       id: 'REW-004',
       nombre: 'Kit Ponchadora & Herramientas de Red Pro',
       modelo: 'TOOL-KIT-PRO',
-      descripcion: 'Ponchadora profesional RJ45/RJ11 con probador de cables UTP y pelador para técnicos e instaladores.',
+      descripcion: 'Ponchadora profesional RJ45/RJ11 con probador de cables UTP y pelador para tÃ©cnicos e instaladores.',
       puntos: 1800,
       imagen: '',
       fecha_inicio: '2026-01-01',
       fecha_fin: '',
-      activo: 'SÍ',
+      activo: 'SÃ',
       stock: 'Disponible',
       link: ''
     },
@@ -242,12 +242,12 @@
       id: 'REW-005',
       nombre: 'Gorra Oficial & Kit Merch MGM 2026',
       modelo: 'MERCH-MGM-2026',
-      descripcion: 'Gorra bordada de colección MGM + vaso térmico metálico y lanyard oficial.',
+      descripcion: 'Gorra bordada de colecciÃ³n MGM + vaso tÃ©rmico metÃ¡lico y lanyard oficial.',
       puntos: 800,
       imagen: '',
       fecha_inicio: '2026-01-01',
       fecha_fin: '',
-      activo: 'SÍ',
+      activo: 'SÃ',
       stock: 'Disponible',
       link: ''
     }
@@ -255,9 +255,9 @@
 
   const DEMO_EVENTS = [];
 
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // UTILITIES
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   function buildDateStr(monthOffset, dayOfMonth) {
     const d = new Date();
@@ -308,12 +308,12 @@
       const bdayThisYear = new Date(curYear, bMonth, bDate, 12, 0, 0);
       const bdayDayOfWeek = bdayThisYear.getDay(); // 0 = Domingo
 
-      // Caso 1: Su cumpleaños es HOY y NO es domingo
+      // Caso 1: Su cumpleaÃ±os es HOY y NO es domingo
       if (curMonth === bMonth && curDate === bDate && curDayOfWeek !== 0) {
         return { active: true, isSundayMoved: false };
       }
 
-      // Caso 2: Su cumpleaños cayó en DOMINGO y HOY es LUNES siguiente
+      // Caso 2: Su cumpleaÃ±os cayÃ³ en DOMINGO y HOY es LUNES siguiente
       if (bdayDayOfWeek === 0 && curDayOfWeek === 1) {
         const ayer = new Date(now);
         ayer.setDate(curDate - 1);
@@ -333,7 +333,7 @@
   }
 
   function isPromoActive(p) {
-    if (!['SÍ','SI','sí','si','1','true'].includes((p.activa||'').toString().toUpperCase().trim())) return false;
+    if (!['SÃ','SI','sÃ­','si','1','true'].includes((p.activa||'').toString().toUpperCase().trim())) return false;
     const today = new Date(); today.setHours(0,0,0,0);
     if (p.fecha_inicio) { const fi = new Date(p.fecha_inicio + 'T00:00:00'); if (today < fi) return false; }
     if (p.fecha_fin)    { const ff = new Date(p.fecha_fin    + 'T23:59:59'); if (today > ff) return false; }
@@ -342,8 +342,8 @@
 
   function isRewardActive(r) {
     if (!r) return false;
-    const act = (r.activo || r.activa || 'SÍ').toString().toUpperCase().trim();
-    if (!['SÍ','SI','1','TRUE','DISPONIBLE'].includes(act)) return false;
+    const act = (r.activo || r.activa || 'SÃ').toString().toUpperCase().trim();
+    if (!['SÃ','SI','1','TRUE','DISPONIBLE'].includes(act)) return false;
     if (r.stock && r.stock.toString().toUpperCase().trim() === 'AGOTADO') return false;
     const today = new Date(); today.setHours(0,0,0,0);
     if (r.fecha_inicio) {
@@ -361,7 +361,7 @@
     if (!r) return { text: 'Disponible', isExpiringSoon: false, color: 'var(--text-subtle)' };
     const finStr = (r.fecha_fin || '').toString().trim();
     if (!finStr || finStr.toLowerCase().includes('stock') || finStr.toLowerCase().includes('agot') || finStr.toLowerCase().includes('perman')) {
-      return { text: '🔥 Hasta agotar stock', isExpiringSoon: false, color: 'var(--text-subtle)' };
+      return { text: 'ðŸ”¥ Hasta agotar stock', isExpiringSoon: false, color: 'var(--text-subtle)' };
     }
     try {
       const ff = new Date(finStr.split('T')[0] + 'T23:59:59');
@@ -372,13 +372,13 @@
       const diffDays = Math.ceil((ff.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
       if (diffDays <= 7 && diffDays >= 0) {
         return {
-          text: diffDays === 0 ? '⚡ ¡Vence hoy!' : `⚡ ¡Últimos ${diffDays} días!`,
+          text: diffDays === 0 ? 'âš¡ Â¡Vence hoy!' : `âš¡ Â¡Ãšltimos ${diffDays} dÃ­as!`,
           isExpiringSoon: true,
           color: '#ef4444'
         };
       }
       const dateFmt = ff.toLocaleDateString('es-PA', { day: 'numeric', month: 'short', year: 'numeric' });
-      return { text: `⏱️ Válido hasta ${dateFmt}`, isExpiringSoon: false, color: 'var(--text-subtle)' };
+      return { text: `â±ï¸ VÃ¡lido hasta ${dateFmt}`, isExpiringSoon: false, color: 'var(--text-subtle)' };
     } catch(e) {
       return { text: finStr, isExpiringSoon: false, color: 'var(--text-subtle)' };
     }
@@ -425,7 +425,7 @@
 
   function formatDateDisplay(dateStr) {
     const d = parseSafeDate(dateStr);
-    if (!d) return dateStr ? String(dateStr) : '—';
+    if (!d) return dateStr ? String(dateStr) : 'â€”';
     try {
       const formatted = d.toLocaleDateString('es-PA', {
         weekday: 'long',
@@ -450,13 +450,13 @@
   }
 
   function promoPlaceholderEmoji(tipo) {
-    const map = { puntos:'⭐', descuento:'🏷️', oferta:'🛒', especial:'🎁' };
-    return map[tipo] || '🎁';
+    const map = { puntos:'â­', descuento:'ðŸ·ï¸', oferta:'ðŸ›’', especial:'ðŸŽ' };
+    return map[tipo] || 'ðŸŽ';
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // API CALL: MGM PUNTOS BACKEND
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   async function api(action, payload = {}) {
     if (['get_client', 'get_promotions', 'get_terms', 'get_rewards', 'get_premios'].includes(action)) {
       try {
@@ -473,7 +473,7 @@
           return data;
         }
       } catch (err) {
-        console.warn(`GET ${action} falló, intentando POST...`, err);
+        console.warn(`GET ${action} fallÃ³, intentando POST...`, err);
       }
     }
 
@@ -493,7 +493,7 @@
         return data;
       }
     } catch (err) {
-      console.warn(`POST ${action} falló, usando fallback local:`, err);
+      console.warn(`POST ${action} fallÃ³, usando fallback local:`, err);
     }
 
     return localFallback(action, payload);
@@ -509,12 +509,12 @@
         const rawCed = (payload.cedula || '').toString().trim().toUpperCase();
         const cleanCed = rawCed.replace(/[^A-Z0-9]/g, '');
         if (state.clients.some(c => (c.cedula || '').replace(/[^A-Z0-9]/g, '') === cleanCed)) {
-          return resolve({ success:false, message:`La cédula ${payload.cedula} ya está registrada en el sistema.` });
+          return resolve({ success:false, message:`La cÃ©dula ${payload.cedula} ya estÃ¡ registrada en el sistema.` });
         }
         const newC = { ...payload, puntos:0, totalComprasAno:0, fechaRegistro: new Date().toISOString().slice(0,10) };
         state.clients.push(newC);
         localStorage.setItem(K_CLIENTS, JSON.stringify(state.clients));
-        return resolve({ success:true, message:'✅ ¡Bienvenido/a al Programa MGM Puntos! Podrás acumular puntos en tu próxima compra.', client: newC });
+        return resolve({ success:true, message:'âœ… Â¡Bienvenido/a al Programa MGM Puntos! PodrÃ¡s acumular puntos en tu prÃ³xima compra.', client: newC });
       }
       if (action === 'get_client') {
         const rawInput = (payload.cedula || '').toString().trim();
@@ -529,17 +529,17 @@
           if (xCorreo && xCorreo === searchEmail) return true;
           return xCed === rawCed || xCed.replace(/[^A-Z0-9]/g, '') === cleanCed;
         });
-        if (!c) return resolve({ success:false, message:`No encontramos ningún miembro registrado con la identificación o correo: ${payload.cedula}` });
+        if (!c) return resolve({ success:false, message:`No encontramos ningÃºn miembro registrado con la identificaciÃ³n o correo: ${payload.cedula}` });
         const txs = state.transactions.filter(t => (t.cedula || '').replace(/[^A-Z0-9]/g, '') === cleanCed).slice().reverse();
         return resolve({ success:true, client:{ ...c, historico:txs } });
       }
-      return resolve({ success:false, message:'Acción no reconocida.' });
+      return resolve({ success:false, message:'AcciÃ³n no reconocida.' });
     }, 200));
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // MÓDULO DE NAVEGACIÓN PRINCIPAL (Bottom Nav Tabs)
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // MÃ“DULO DE NAVEGACIÃ“N PRINCIPAL (Bottom Nav Tabs)
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   window.switchMainTab = function(tabName) {
     document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
@@ -572,7 +572,7 @@
       if (state.promos.length === 0) loadHomePromos();
       if (state.agendaEvents.length === 0) loadHomeNextEvent();
     }
-    // AUTO-LOGIN PUNTOS: si hay sesión activa, cargar dashboard directo; si no, preparar login
+    // AUTO-LOGIN PUNTOS: si hay sesiÃ³n activa, cargar dashboard directo; si no, preparar login
     if (tabName === 'puntos') {
       if (state.authUser) {
         autoLoadPuntosDashboard();
@@ -586,12 +586,12 @@
     }
     if (tabName === 'rma') {
       setTimeout(() => {
-        // Pre-llenar el email en el form manual si el usuario está logueado
+        // Pre-llenar el email en el form manual si el usuario estÃ¡ logueado
         const emailInp = document.querySelector('#consultaForm input[name="email"]');
         if (emailInp && !emailInp.value && state.authUser && state.authUser.email) {
           emailInp.value = state.authUser.email;
         }
-        // Cargar automáticamente los equipos activos del usuario logueado
+        // Cargar automÃ¡ticamente los equipos activos del usuario logueado
         if (typeof window.loadUserActiveRmas === 'function') {
           window.loadUserActiveRmas();
         }
@@ -599,22 +599,22 @@
     }
   };
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // HELPER: DETECCIÓN Y FORMATEO DE ENLACES EXTERNOS VS INTERNOS
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // HELPER: DETECCIÃ“N Y FORMATEO DE ENLACES EXTERNOS VS INTERNOS
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   function isExternalUrl(str) {
     if (!str || typeof str !== 'string') return false;
     const s = str.trim().toLowerCase();
     if (!s) return false;
 
-    // Prefijos explícitos comunes
+    // Prefijos explÃ­citos comunes
     if (s.startsWith('http://') || s.startsWith('https://')) return true;
     if (s.startsWith('www.') || s.startsWith('wa.me/')) return true;
     if (s.startsWith('ext:') || s.startsWith('url:') || s.startsWith('link:') || s.startsWith('odoo:')) return true;
     if (s.startsWith('/')) return true; // Ruta relativa hacia la web externa (Odoo)
 
-    // Si coincide con alguna pestaña interna conocida o deeplink interno, NO es externa
+    // Si coincide con alguna pestaÃ±a interna conocida o deeplink interno, NO es externa
     const internalTabs = ['home', 'inicio', 'puntos', 'agenda', 'promos', 'rma', 'asesoria', 'soporte', 'toolbox', 'toolbox-calculadora-almacenamiento', 'toolbox-conversor-tecnico', 'toolbox-calculadora-ups'];
     const prefix = s.split(':')[0].trim();
     if (internalTabs.includes(prefix)) return false;
@@ -630,7 +630,7 @@
     let s = str.trim();
     if (!s) return '';
 
-    // Remover prefijos explícitos si existen
+    // Remover prefijos explÃ­citos si existen
     if (/^ext:/i.test(s)) s = s.substring(4).trim();
     else if (/^url:/i.test(s)) s = s.substring(4).trim();
     else if (/^link:/i.test(s)) s = s.substring(5).trim();
@@ -658,17 +658,17 @@
     return `https://${s}`;
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // DEEP LINK NAVIGATION — navigateTo(seccion)
-  // Formato: 'tab' o 'tab:sub_o_id' — Ej: 'puntos:registro', 'agenda:EV001'
-  // O Enlace Externo — Ej: 'https://mgmpty.odoo.com', 'mgmpty.odoo.com', 'wa.me/...'
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // DEEP LINK NAVIGATION â€” navigateTo(seccion)
+  // Formato: 'tab' o 'tab:sub_o_id' â€” Ej: 'puntos:registro', 'agenda:EV001'
+  // O Enlace Externo â€” Ej: 'https://mgmpty.odoo.com', 'mgmpty.odoo.com', 'wa.me/...'
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   window.navigateTo = function(seccion) {
     if (!seccion) return;
     const trimmed = String(seccion).trim();
     if (!trimmed) return;
 
-    // Si la sección es una URL externa (ej: enlace a Odoo, WhatsApp, Meet, web externa)
+    // Si la secciÃ³n es una URL externa (ej: enlace a Odoo, WhatsApp, Meet, web externa)
     if (isExternalUrl(trimmed)) {
       const finalUrl = formatExternalUrl(trimmed);
       window.open(finalUrl, '_blank', 'noopener,noreferrer');
@@ -709,7 +709,7 @@
     if (tab === 'agenda') {
       const tryOpenEvent = (attempts) => {
         if (state.agendaEvents.length > 0) {
-          // Intentar abrir; si no se encontró aún, reintentar (el fetch puede seguir corriendo)
+          // Intentar abrir; si no se encontrÃ³ aÃºn, reintentar (el fetch puede seguir corriendo)
           const found = state.agendaEvents.find(e =>
             String(e.id).toLowerCase().trim() === sub.toLowerCase().trim() ||
             String(e.id).toLowerCase().includes(sub.toLowerCase()) ||
@@ -721,13 +721,13 @@
             setTimeout(() => tryOpenEvent(attempts + 1), 300);
           }
         } else if (attempts < 50) {
-          // Si todavía no hay eventos cargados, esperar más
+          // Si todavÃ­a no hay eventos cargados, esperar mÃ¡s
           setTimeout(() => tryOpenEvent(attempts + 1), 300);
         } else {
           console.warn('[MGM] Deep link agenda: tiempo de espera agotado para id:', sub);
         }
       };
-      // Iniciar con pequeño delay para dar tiempo al caché de renderizar
+      // Iniciar con pequeÃ±o delay para dar tiempo al cachÃ© de renderizar
       setTimeout(() => tryOpenEvent(0), 200);
     }
 
@@ -744,7 +744,7 @@
       tryOpenPromo(0);
     }
 
-    // --- RMA: auto-llenar y buscar cuando viene número de RMA de notificación ---
+    // --- RMA: auto-llenar y buscar cuando viene nÃºmero de RMA de notificaciÃ³n ---
     if (tab === 'rma' && sub) {
       setTimeout(() => {
         // Leer el email del QR si viene en la URL (?tab=rma&sub=RMA-...&email=...)
@@ -767,20 +767,20 @@
     }
   };
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // MAGIE IA — BOTPRESS WIDGET OFICIAL (misma lógica que funciona en la web)
-  // ══════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // MAGIE IA â€” BOTPRESS WIDGET OFICIAL (misma lÃ³gica que funciona en la web)
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   window.openAsesoriaModal = function() {
     openAppModal('modal-asesoria');
   };
 
   /**
-   * openBot() — Abre el chat oficial de Botpress (Asistente de Ventas MGM)
-   * Lógica idéntica al archivo de referencia que funciona en la web.
+   * openBot() â€” Abre el chat oficial de Botpress (Asistente de Ventas MGM)
+   * LÃ³gica idÃ©ntica al archivo de referencia que funciona en la web.
    */
   window.openBot = function() {
-    // Cerrar modales internos si están abiertos
+    // Cerrar modales internos si estÃ¡n abiertos
     closeAppModal('modal-asesoria');
 
     if (window.botpress) {
@@ -808,9 +808,9 @@
   });
 
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // MÓDULO MGM PUNTOS — CLIENTE
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // MÃ“DULO MGM PUNTOS â€” CLIENTE
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   document.querySelectorAll('.puntos-subtab').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -838,9 +838,9 @@
     });
   });
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // GESTIÓN CENTRALIZADA DE SESIÓN (LOGIN, REGISTRO, AUTO-LOGIN & TRACKING)
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // GESTIÃ“N CENTRALIZADA DE SESIÃ“N (LOGIN, REGISTRO, AUTO-LOGIN & TRACKING)
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   async function setClientSession(clientData, eventType = 'login') {
     if (!clientData) return;
@@ -856,14 +856,14 @@
     // 3. Sincronizar formularios y estados de la vista de Puntos
     updatePuntosAuthViews();
 
-    // 4. Celebración visual
+    // 4. CelebraciÃ³n visual
     if (eventType === 'registro') {
       mgmConfetti.celebrate();
     } else {
       mgmConfetti.gold();
     }
 
-    // 5. Registrar en el Sheet de Tracking usando la acción 'track'
+    // 5. Registrar en el Sheet de Tracking usando la acciÃ³n 'track'
     trackUserActivity(state.authUser.cedula, state.authUser.nombre, eventType);
 
     // 6. Consultar notificaciones y sincronizar eliminadas desde el backend PRIMERO
@@ -875,10 +875,10 @@
     // 8. Detectar movimientos de puntos (acreditaciones, canjes/redenciones, ajustes del asesor)
     checkAndNotifyNewPoints(state.authUser, eventType);
 
-    // 9. Consultar cursos/capacitaciones en los que está inscrito el usuario
+    // 9. Consultar cursos/capacitaciones en los que estÃ¡ inscrito el usuario
     loadMyCourses();
 
-    // 10. Actualizar catálogo de premios para reflejar puntos del usuario
+    // 10. Actualizar catÃ¡logo de premios para reflejar puntos del usuario
     loadHomeRewards();
 
     // 11. Sincronizar foto de perfil desde el backend (siempre, para reflejar cambios de otros dispositivos)
@@ -906,7 +906,7 @@
     }
   }
 
-  // Sincronizar estado visual de las pestañas de Puntos (Mi Cuenta y Registro)
+  // Sincronizar estado visual de las pestaÃ±as de Puntos (Mi Cuenta y Registro)
   function updatePuntosAuthViews() {
     const isAuth = !!state.authUser;
     const loginBox = document.getElementById('puntos-login-box');
@@ -922,7 +922,7 @@
       if (regAlreadyAuth) regAlreadyAuth.style.display = 'block';
       if (regFormWrap) regFormWrap.style.display = 'none';
       if (regAuthName) regAuthName.textContent = state.authUser.nombre || '';
-      if (regAuthCedula) regAuthCedula.textContent = `Cédula: ${state.authUser.cedula || ''}`;
+      if (regAuthCedula) regAuthCedula.textContent = `CÃ©dula: ${state.authUser.cedula || ''}`;
     } else {
       if (loginBox) loginBox.style.display = 'block';
       if (dashBox) dashBox.style.display = 'none';
@@ -933,7 +933,7 @@
     }
   }
 
-  // Banner dinámico inteligente en la pantalla de Inicio
+  // Banner dinÃ¡mico inteligente en la pantalla de Inicio
   function updateHomeAuthBanner() {
     const banner = document.getElementById('home-auth-banner');
     if (!banner) return;
@@ -952,7 +952,7 @@
           <div class="hab-left">
             ${avatarHtml}
             <div>
-              <div class="hab-user-greeting">¡Hola, ${primerNombre}! 👋</div>
+              <div class="hab-user-greeting">Â¡Hola, ${primerNombre}! ðŸ‘‹</div>
               <div class="hab-points-line">
                 <span class="hab-pts-num">${pts.toLocaleString('es-PA')}</span> Puntos MGM
                 <span class="hab-pts-usd">($${valUsd} USD)</span>
@@ -969,11 +969,11 @@
         <div class="home-auth-banner-card unauth">
           <div class="hab-badge"><i class="fa-solid fa-crown"></i> MGM PUNTOS</div>
           <div class="hab-body">
-            <h3 class="hab-title">¿Tienes puntos por canjear?</h3>
-            <p class="hab-sub">Inicia sesión con tu cédula o regístrate para consultar tu saldo acumulado y beneficios.</p>
+            <h3 class="hab-title">Â¿Tienes puntos por canjear?</h3>
+            <p class="hab-sub">Inicia sesiÃ³n con tu cÃ©dula o regÃ­strate para consultar tu saldo acumulado y beneficios.</p>
           </div>
           <div class="hab-actions">
-            <button type="button" class="hab-btn primary" onclick="openLoginModal()"><i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</button>
+            <button type="button" class="hab-btn primary" onclick="openLoginModal()"><i class="fa-solid fa-right-to-bracket"></i> Iniciar SesiÃ³n</button>
             <button type="button" class="hab-btn secondary" onclick="navigateTo('puntos:registro')"><i class="fa-solid fa-user-plus"></i> Registrarme</button>
           </div>
         </div>
@@ -981,34 +981,34 @@
     }
   }
 
-  // Consulta por cédula en la pestaña de Puntos
+  // Consulta por cÃ©dula en la pestaÃ±a de Puntos
   document.getElementById('form-puntos-login')?.addEventListener('submit', async e => {
     e.preventDefault();
     const cedula = document.getElementById('login-cedula').value.trim();
-    if (!cedula) { showAlert('puntos-login-alert', 'error', 'Por favor ingresa tu cédula o correo.'); return; }
-    if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Iniciando sesión...');
+    if (!cedula) { showAlert('puntos-login-alert', 'error', 'Por favor ingresa tu cÃ©dula o correo.'); return; }
+    if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Iniciando sesiÃ³n...');
     const btn = e.target.querySelector('[type="submit"]');
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Consultando...';
 
     const res = await api('get_client', { cedula });
     btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión / Ver Mis Puntos';
+    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Iniciar SesiÃ³n / Ver Mis Puntos';
 
     if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
 
     if (!res.success) {
-      showAlert('puntos-login-alert', 'error', res.message || 'No se encontró tu cuenta. ¿Ya estás registrado/a?');
+      showAlert('puntos-login-alert', 'error', res.message || 'No se encontrÃ³ tu cuenta. Â¿Ya estÃ¡s registrado/a?');
       return;
     }
-    // Guardar sesión persistente, auto-login y registrar tracking
+    // Guardar sesiÃ³n persistente, auto-login y registrar tracking
     setClientSession(res.client, 'login');
   });
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // DETECCIÓN AUTOMÁTICA DE MOVIMIENTOS: PUNTOS ACREDITADOS, REDIMIDOS Y AJUSTES
-  // (Generados desde el panel de administración de los asesores o compras)
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // DETECCIÃ“N AUTOMÃTICA DE MOVIMIENTOS: PUNTOS ACREDITADOS, REDIMIDOS Y AJUSTES
+  // (Generados desde el panel de administraciÃ³n de los asesores o compras)
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   function checkAndNotifyNewPoints(freshClient, eventType = 'auto') {
     if (!freshClient) return;
     
@@ -1024,14 +1024,14 @@
     let liveAlerts = [];
 
     historico.forEach(tx => {
-      // Clave identificadora única de la transacción (fecha + factura + puntos)
+      // Clave identificadora Ãºnica de la transacciÃ³n (fecha + factura + puntos)
       const txKey = `${tx.fecha || ''}_${tx.factura || ''}_${tx.puntos || 0}`;
       const notifId = 'pts_' + txKey.replace(/[^a-zA-Z0-9]/g, '_');
       const ptsNum = Number(tx.puntos) || 0;
       const ptsAbs = Math.abs(ptsNum);
       const isNewlyDiscovered = !notifiedTxs.includes(txKey);
 
-      // Determinar si ya está en la lista de notificaciones o fue borrada por el usuario (sincronizada con backend)
+      // Determinar si ya estÃ¡ en la lista de notificaciones o fue borrada por el usuario (sincronizada con backend)
       const alreadyInList = state.notifications.some(n => String(n.id) === String(notifId));
       const wasCleared = state.clearedNotifs.includes(String(notifId));
 
@@ -1044,7 +1044,7 @@
       let alertType = null; // 'redemption', 'earned', 'adjustment_pos', 'adjustment_neg', 'nc'
 
       if (ptsNum < 0) {
-        // Movimiento negativo: ¿Redención, Devolución/NC o Ajuste en contra?
+        // Movimiento negativo: Â¿RedenciÃ³n, DevoluciÃ³n/NC o Ajuste en contra?
         const isNC = fac.startsWith('NC-') || mult.includes('DEVOLUCI') || mult.includes('NOTA DE CR');
         const isAjusteNeg = mult.includes('AJUSTE EN CONTRA') || mult.includes('AJUSTE (-)') || mult.includes('AJUSTE NEG');
 
@@ -1052,13 +1052,13 @@
           alertType = 'nc';
           notifObj = {
             id: notifId,
-            title: `📋 Ajuste por Devolución / Nota de Crédito`,
-            body: `Se debitaron ${ptsAbs.toLocaleString('es-PA')} puntos (${tx.factura || 'NC'}). Detalle: ${tx.multiplicador || 'Devolución'}. Asesor: ${asesor}. Tu saldo actual es de ${saldoActual} Pts.`,
+            title: `ðŸ“‹ Ajuste por DevoluciÃ³n / Nota de CrÃ©dito`,
+            body: `Se debitaron ${ptsAbs.toLocaleString('es-PA')} puntos (${tx.factura || 'NC'}). Detalle: ${tx.multiplicador || 'DevoluciÃ³n'}. Asesor: ${asesor}. Tu saldo actual es de ${saldoActual} Pts.`,
             date: tx.fecha || new Date().toLocaleDateString('es-PA'),
             seccion: 'puntos:cuenta',
             icon: 'fa-file-invoice-dollar',
             iconColor: '#ef4444',
-            badgeText: '📋 Devolución',
+            badgeText: 'ðŸ“‹ DevoluciÃ³n',
             badgeBg: '#fee2e2',
             badgeTxt: '#991b1b'
           };
@@ -1066,48 +1066,48 @@
           alertType = 'adjustment_neg';
           notifObj = {
             id: notifId,
-            title: `⚠️ Ajuste de Puntos Aplicado`,
+            title: `âš ï¸ Ajuste de Puntos Aplicado`,
             body: `Se debitaron ${ptsAbs.toLocaleString('es-PA')} puntos de tu cuenta (${tx.factura || 'Ajuste'}). Detalle: ${tx.multiplicador}. Asesor: ${asesor}. Tu saldo es de ${saldoActual} Pts.`,
             date: tx.fecha || new Date().toLocaleDateString('es-PA'),
             seccion: 'puntos:cuenta',
             icon: 'fa-sliders',
             iconColor: '#f59e0b',
-            badgeText: '⚠️ Ajuste (-)',
+            badgeText: 'âš ï¸ Ajuste (-)',
             badgeBg: '#fef3c7',
             badgeTxt: '#92400e'
           };
         } else {
-          // REDENCIÓN DE PUNTOS (Canje por descuento en compras)
+          // REDENCIÃ“N DE PUNTOS (Canje por descuento en compras)
           alertType = 'redemption';
           const usdVal = Math.abs(Number(tx.subtotal) || (ptsAbs * CFG.VAL_PUNTO)).toFixed(2);
           notifObj = {
             id: notifId,
-            title: `🎁 ¡${ptsAbs.toLocaleString('es-PA')} Puntos MGM Redimidos! ✨`,
+            title: `ðŸŽ Â¡${ptsAbs.toLocaleString('es-PA')} Puntos MGM Redimidos! âœ¨`,
             body: `Has canjeado ${ptsAbs.toLocaleString('es-PA')} puntos por $${usdVal} USD de descuento (Comprobante: ${tx.factura || 'MGM'}). Asesor: ${asesor}. Saldo disponible: ${saldoActual} Pts.`,
             date: tx.fecha || new Date().toLocaleDateString('es-PA'),
             seccion: 'puntos:cuenta',
             icon: 'fa-gift',
             iconColor: '#10b981',
-            badgeText: '🎁 Canje',
+            badgeText: 'ðŸŽ Canje',
             badgeBg: '#d1fae5',
             badgeTxt: '#065f46'
           };
         }
       } else if (ptsNum > 0) {
-        // Movimiento positivo: ¿Ajuste a favor o Acreditación por compra?
+        // Movimiento positivo: Â¿Ajuste a favor o AcreditaciÃ³n por compra?
         const isAjustePos = mult.includes('AJUSTE A FAVOR') || mult.includes('AJUSTE (+)') || mult.includes('AJUSTE POS') || mult.includes('BONIFICAC');
 
         if (isAjustePos) {
           alertType = 'adjustment_pos';
           notifObj = {
             id: notifId,
-            title: `✨ ¡Ajuste de Puntos a tu Favor! 🌟`,
+            title: `âœ¨ Â¡Ajuste de Puntos a tu Favor! ðŸŒŸ`,
             body: `El asesor ${asesor} ha acreditado +${ptsNum.toLocaleString('es-PA')} puntos a tu favor (${tx.factura || 'Ajuste'}). Detalle: ${tx.multiplicador}. Tu saldo es de ${saldoActual} Pts.`,
             date: tx.fecha || new Date().toLocaleDateString('es-PA'),
             seccion: 'puntos:cuenta',
             icon: 'fa-award',
             iconColor: '#8b5cf6',
-            badgeText: '✨ Ajuste (+)',
+            badgeText: 'âœ¨ Ajuste (+)',
             badgeBg: '#ede9fe',
             badgeTxt: '#5b21b6'
           };
@@ -1115,13 +1115,13 @@
           alertType = 'earned';
           notifObj = {
             id: notifId,
-            title: `⭐ ¡+${ptsNum.toLocaleString('es-PA')} Puntos MGM Acreditados! 🎉`,
-            body: `Se han acreditado ${ptsNum.toLocaleString('es-PA')} puntos a tu cuenta por tu compra (Factura: ${tx.factura || 'MGM'}). Asesor: ${asesor}. ¡Tu nuevo saldo es de ${saldoActual} Pts!`,
+            title: `â­ Â¡+${ptsNum.toLocaleString('es-PA')} Puntos MGM Acreditados! ðŸŽ‰`,
+            body: `Se han acreditado ${ptsNum.toLocaleString('es-PA')} puntos a tu cuenta por tu compra (Factura: ${tx.factura || 'MGM'}). Asesor: ${asesor}. Â¡Tu nuevo saldo es de ${saldoActual} Pts!`,
             date: tx.fecha || new Date().toLocaleDateString('es-PA'),
             seccion: 'puntos:cuenta',
             icon: 'fa-star',
             iconColor: '#f59e0b',
-            badgeText: '⭐ Puntos',
+            badgeText: 'â­ Puntos',
             badgeBg: '#fef3c7',
             badgeTxt: '#b45309'
           };
@@ -1135,7 +1135,7 @@
           hasNewChanges = true;
         }
 
-        // Si es una transacción recién descubierta en vivo
+        // Si es una transacciÃ³n reciÃ©n descubierta en vivo
         if (isNewlyDiscovered) {
           notifiedTxs.push(txKey);
           if (!isNewDevice) {
@@ -1161,7 +1161,7 @@
       renderNotifications();
     }
 
-    // Disparar alertas en vivo (Toasts, Push, Confetti) solo si hay transacciones recién detectadas
+    // Disparar alertas en vivo (Toasts, Push, Confetti) solo si hay transacciones reciÃ©n detectadas
     if (liveAlerts.length > 0) {
       const latest = liveAlerts[0];
       const { type, tx, notif, ptsNum, ptsAbs } = latest;
@@ -1169,59 +1169,59 @@
       if (type === 'redemption') {
         const usdVal = Math.abs(Number(tx.subtotal) || (ptsAbs * CFG.VAL_PUNTO)).toFixed(2);
         fireNativeNotif(
-          `🎁 ¡Puntos MGM Redimidos!`,
+          `ðŸŽ Â¡Puntos MGM Redimidos!`,
           `Canjeaste ${ptsAbs.toLocaleString('es-PA')} puntos ($${usdVal} USD). Saldo actual: ${freshClient.puntos} Pts.`
         );
         mgmConfetti.celebrate();
         if (typeof showToast === 'function') {
-          showToast(`🎁 ¡Has redimido ${ptsAbs.toLocaleString('es-PA')} Puntos MGM ($${usdVal} USD)!`, 'fa-solid fa-gift');
+          showToast(`ðŸŽ Â¡Has redimido ${ptsAbs.toLocaleString('es-PA')} Puntos MGM ($${usdVal} USD)!`, 'fa-solid fa-gift');
         }
       } else if (type === 'earned') {
         fireNativeNotif(
-          `🎉 ¡+${ptsNum.toLocaleString('es-PA')} Puntos MGM Acreditados!`,
+          `ðŸŽ‰ Â¡+${ptsNum.toLocaleString('es-PA')} Puntos MGM Acreditados!`,
           `Se cargaron ${ptsNum.toLocaleString('es-PA')} puntos a tu cuenta. Nuevo saldo: ${freshClient.puntos} Pts.`
         );
         mgmConfetti.gold();
         if (typeof showToast === 'function') {
-          showToast(`⭐ ¡Has recibido +${ptsNum.toLocaleString('es-PA')} Puntos MGM!`, 'fa-solid fa-coins');
+          showToast(`â­ Â¡Has recibido +${ptsNum.toLocaleString('es-PA')} Puntos MGM!`, 'fa-solid fa-coins');
         }
       } else if (type === 'adjustment_pos') {
         fireNativeNotif(
-          `✨ ¡Ajuste de +${ptsNum.toLocaleString('es-PA')} Puntos Acreditado!`,
-          `El asesor acreditó puntos a tu favor. Nuevo saldo: ${freshClient.puntos} Pts.`
+          `âœ¨ Â¡Ajuste de +${ptsNum.toLocaleString('es-PA')} Puntos Acreditado!`,
+          `El asesor acreditÃ³ puntos a tu favor. Nuevo saldo: ${freshClient.puntos} Pts.`
         );
         mgmConfetti.gold();
         if (typeof showToast === 'function') {
-          showToast(`✨ ¡Ajuste de +${ptsNum.toLocaleString('es-PA')} Puntos a tu favor!`, 'fa-solid fa-award');
+          showToast(`âœ¨ Â¡Ajuste de +${ptsNum.toLocaleString('es-PA')} Puntos a tu favor!`, 'fa-solid fa-award');
         }
       } else if (type === 'nc') {
         fireNativeNotif(
-          `📋 Ajuste por Nota de Crédito / Devolución`,
+          `ðŸ“‹ Ajuste por Nota de CrÃ©dito / DevoluciÃ³n`,
           `Se debitaron ${ptsAbs.toLocaleString('es-PA')} puntos (${tx.factura}). Saldo: ${freshClient.puntos} Pts.`
         );
         if (typeof showToast === 'function') {
-          showToast(`📋 Ajuste por Devolución: -${ptsAbs.toLocaleString('es-PA')} Pts (${tx.factura})`, 'fa-solid fa-file-invoice-dollar');
+          showToast(`ðŸ“‹ Ajuste por DevoluciÃ³n: -${ptsAbs.toLocaleString('es-PA')} Pts (${tx.factura})`, 'fa-solid fa-file-invoice-dollar');
         }
       } else if (type === 'adjustment_neg') {
         fireNativeNotif(
-          `⚠️ Ajuste de Puntos en Cuenta`,
+          `âš ï¸ Ajuste de Puntos en Cuenta`,
           `Se debitaron ${ptsAbs.toLocaleString('es-PA')} puntos (${tx.factura}). Saldo: ${freshClient.puntos} Pts.`
         );
         if (typeof showToast === 'function') {
-          showToast(`⚠️ Ajuste aplicado: -${ptsAbs.toLocaleString('es-PA')} Pts`, 'fa-solid fa-sliders');
+          showToast(`âš ï¸ Ajuste aplicado: -${ptsAbs.toLocaleString('es-PA')} Pts`, 'fa-solid fa-sliders');
         }
       }
     }
   }
 
-  // AUTO-LOAD: si el usuario ya está autenticado, carga dashboard y refresca datos frescos
+  // AUTO-LOAD: si el usuario ya estÃ¡ autenticado, carga dashboard y refresca datos frescos
   async function autoLoadPuntosDashboard() {
     if (!state.authUser) {
       updatePuntosAuthViews();
       return;
     }
     updatePuntosAuthViews();
-    // Usar datos guardados primero (instantáneo)
+    // Usar datos guardados primero (instantÃ¡neo)
     renderDashboard(state.authUser);
     // Luego refrescar desde el GAS en segundo plano
     try {
@@ -1231,7 +1231,7 @@
         body: JSON.stringify({ action: 'get_client', cedula: state.authUser.cedula })
       }).then(r => r.json());
       if (res.success && res.client) {
-        // Detectar si entraron puntos o transacciones nuevas y disparar notificación
+        // Detectar si entraron puntos o transacciones nuevas y disparar notificaciÃ³n
         checkAndNotifyNewPoints(res.client);
 
         state.authUser = { ...state.authUser, ...res.client };
@@ -1264,18 +1264,18 @@
         const titleEl = document.getElementById('bday-banner-title');
         const subEl = document.getElementById('bday-banner-sub');
         if (titleEl) {
-          titleEl.textContent = bdayInfo.isSundayMoved ? '¡Feliz Cumpleaños! 🎉🎂 (Beneficio Domingo)' : '¡Feliz Cumpleaños! 🎉🎂';
+          titleEl.textContent = bdayInfo.isSundayMoved ? 'Â¡Feliz CumpleaÃ±os! ðŸŽ‰ðŸŽ‚ (Beneficio Domingo)' : 'Â¡Feliz CumpleaÃ±os! ðŸŽ‰ðŸŽ‚';
         }
         if (subEl) {
           subEl.textContent = bdayInfo.isSundayMoved
-            ? 'Como tu cumpleaños cayó domingo, ¡hoy lunes es tu día especial para disfrutar de tu 10% de descuento en MGM!'
-            : '¡Hoy es tu día! Disfruta de un 10% de descuento en tus compras hoy en MGM.';
+            ? 'Como tu cumpleaÃ±os cayÃ³ domingo, Â¡hoy lunes es tu dÃ­a especial para disfrutar de tu 10% de descuento en MGM!'
+            : 'Â¡Hoy es tu dÃ­a! Disfruta de un 10% de descuento en tus compras hoy en MGM.';
         }
       } else {
         bdayEl.style.display = 'none';
       }
     }
-    // 🎂 Fuegos artificiales de cumpleaños — una vez por sesión el día del beneficio
+    // ðŸŽ‚ Fuegos artificiales de cumpleaÃ±os â€” una vez por sesiÃ³n el dÃ­a del beneficio
     if (bdayInfo.active && !sessionStorage.getItem('mgm_bday_confetti')) {
       sessionStorage.setItem('mgm_bday_confetti', '1');
       setTimeout(() => mgmConfetti.birthday(), 600);
@@ -1290,7 +1290,7 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td style="color: var(--text-muted); white-space: nowrap; font-size: 11px;">${tx.fecha || ''}</td>
-          <td style="font-size: 11px;"><strong>${tx.factura || '—'}</strong><br>
+          <td style="font-size: 11px;"><strong>${tx.factura || 'â€”'}</strong><br>
             <span style="font-size: 10px; color: var(--text-muted);">${tx.multiplicador || ''}</span>
           </td>
           <td style="font-size: 12px;">$${parseFloat(tx.subtotal || 0).toFixed(2)}</td>
@@ -1302,7 +1302,7 @@
         tbody.appendChild(tr);
       });
     } else {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 20px; font-size: 12px;">Sin movimientos registrados aún.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 20px; font-size: 12px;">Sin movimientos registrados aÃºn.</td></tr>`;
     }
 
     document.getElementById('puntos-login-box').style.display  = 'none';
@@ -1333,10 +1333,10 @@
 
     const res = await api('register_client', data);
     btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-badge-check"></i> Completar Registro & Iniciar Sesión';
+    btn.innerHTML = '<i class="fa-solid fa-badge-check"></i> Completar Registro & Iniciar SesiÃ³n';
 
     if (res.success) {
-      showAlert('reg-alert', 'success', res.message || '¡Registro exitoso! Iniciando tu sesión...');
+      showAlert('reg-alert', 'success', res.message || 'Â¡Registro exitoso! Iniciando tu sesiÃ³n...');
       
       const clientData = res.client || {
         nombre: data.nombre,
@@ -1349,11 +1349,11 @@
         historico: []
       };
 
-      // 🌟 Auto Login instantáneo + Registro en el Tracking Sheet + Confeti + Notificación
+      // ðŸŒŸ Auto Login instantÃ¡neo + Registro en el Tracking Sheet + Confeti + NotificaciÃ³n
       setClientSession(clientData, 'registro');
       e.target.reset();
 
-      // Transición fluida a Mi Cuenta para ver puntos y tarjeta virtual
+      // TransiciÃ³n fluida a Mi Cuenta para ver puntos y tarjeta virtual
       setTimeout(() => {
         navigateTo('puntos:cuenta');
       }, 1200);
@@ -1370,8 +1370,8 @@
     if (promos.length === 0) {
       container.innerHTML = `<div style="text-align:center; padding: 30px; color: var(--text-muted);">
         <i class="fa-solid fa-star" style="font-size: 30px; color: var(--accent-gold); margin-bottom: 10px; display: block;"></i>
-        <strong style="color: var(--text-dark); display: block; margin-bottom: 6px;">¡Pronto habrá beneficios especiales!</strong>
-        <span style="font-size: 12px;">Regístrate en MGM Puntos y sé el primero en conocerlos.</span>
+        <strong style="color: var(--text-dark); display: block; margin-bottom: 6px;">Â¡Pronto habrÃ¡ beneficios especiales!</strong>
+        <span style="font-size: 12px;">RegÃ­strate en MGM Puntos y sÃ© el primero en conocerlos.</span>
       </div>`;
       return;
     }
@@ -1396,7 +1396,7 @@
           <div style="font-size: 13.5px; font-weight: 800; color: var(--text-dark); margin-bottom: 3px;">${p.nombre}</div>
           <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">${p.descripcion}</div>
           <div style="font-size: 10.5px; color: var(--text-subtle); margin-top: 5px;">
-            📅 Válida: ${p.fecha_inicio || ''} — ${p.fecha_fin || ''}
+            ðŸ“… VÃ¡lida: ${p.fecha_inicio || ''} â€” ${p.fecha_fin || ''}
           </div>
         </div>
       </div>`).join('');
@@ -1416,9 +1416,9 @@
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // MÓDULO PROMOCIONES DEL MES (PROMOS_GAS_URL)
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // MÃ“DULO PROMOCIONES DEL MES (PROMOS_GAS_URL)
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   async function fetchPromosFromGAS() {
     try {
@@ -1427,14 +1427,14 @@
       if (Array.isArray(data) && data.length > 0) {
         return data.map((p, idx) => ({
           id: p.id || 'P_GAS_' + idx,
-          nombre: p.nombre || p.title || `Promoción MGM #${idx + 1}`,
+          nombre: p.nombre || p.title || `PromociÃ³n MGM #${idx + 1}`,
           descripcion: p.copy || p.descripcion || 'Conoce nuestras mejores ofertas en equipos de seguridad.',
           imagen: p.img || p.imagen || p.imagen_url || '',
           tipo: p.tipo || 'especial',
           fecha_inicio: p.fecha_inicio || '',
           fecha_fin: p.fecha_fin || '',
           enlace: p.enlace || p.link || p.url || '',
-          activa: 'SÍ',
+          activa: 'SÃ',
           likes: parseInt(p.likes || (12 + idx * 5))
         }));
       }
@@ -1453,7 +1453,7 @@
       if (!slider) return;
 
       if (state.promos.length === 0) {
-        slider.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Próximamente promociones especiales.</div>`;
+        slider.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; padding: 20px;">PrÃ³ximamente promociones especiales.</div>`;
         return;
       }
 
@@ -1514,7 +1514,7 @@
     if (state.promos.length === 0) {
       gallery.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--text-muted);">
         <i class="fa-solid fa-sparkles" style="font-size: 36px; margin-bottom: 12px; color: var(--accent-gold);"></i>
-        <p>Próximamente promociones exclusivas para ti.</p>
+        <p>PrÃ³ximamente promociones exclusivas para ti.</p>
       </div>`;
       return;
     }
@@ -1533,7 +1533,7 @@
             <div class="promo-card-title">${p.nombre}</div>
             <div class="promo-card-desc">${(p.descripcion || '').split('\n')[0]}</div>
             <div class="promo-card-footer">
-              <span style="font-size: 11px; color: var(--text-muted);">📅 Promoción vigente</span>
+              <span style="font-size: 11px; color: var(--text-muted);">ðŸ“… PromociÃ³n vigente</span>
               <button class="btn-like ${likes[p.id] ? 'liked' : ''}" onclick="togglePromoLike('${p.id}', this, event)">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="${likes[p.id] ? '#ef4444' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 ${promoLikes}
@@ -1544,13 +1544,13 @@
     }).join('');
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // MÓDULO CATÁLOGO DE PREMIOS (CANJES POR PUNTOS)
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // MÃ“DULO CATÃLOGO DE PREMIOS (CANJES POR PUNTOS)
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   async function fetchRewardsFromGAS() {
     try {
-      // Intentar primero vía GET al backend de puntos o URL dedicada
+      // Intentar primero vÃ­a GET al backend de puntos o URL dedicada
       let url = `${CFG.PREMIOS_GAS_URL}?action=get_rewards`;
       const res = await fetch(url);
       const data = await res.json();
@@ -1566,12 +1566,12 @@
           link:         r.link || r.url || r.enlace || r.ficha || '',
           fecha_inicio: r.fecha_inicio || '',
           fecha_fin:    r.fecha_fin || r.validez || '',
-          activo:       r.activo || r.activa || 'SÍ',
+          activo:       r.activo || r.activa || 'SÃ',
           stock:        r.stock || 'Disponible'
         })).filter(isRewardActive);
       }
     } catch (err) {
-      console.warn('Error al conectar con PREMIOS_GAS_URL vía GET, intentando fallback:', err);
+      console.warn('Error al conectar con PREMIOS_GAS_URL vÃ­a GET, intentando fallback:', err);
     }
 
     const resApi = await api('get_rewards');
@@ -1586,7 +1586,7 @@
       if (!slider) return;
 
       if (!state.rewards || state.rewards.length === 0) {
-        slider.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Próximamente nuevo catálogo de premios disponibles.</div>`;
+        slider.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; padding: 20px;">PrÃ³ximamente nuevo catÃ¡logo de premios disponibles.</div>`;
         return;
       }
 
@@ -1650,7 +1650,7 @@
     state.activeRewardData = r;
 
     document.getElementById('modal-premio-title').textContent = r.nombre;
-    document.getElementById('modal-premio-desc').textContent  = r.descripcion || 'Sin descripción detallada disponible.';
+    document.getElementById('modal-premio-desc').textContent  = r.descripcion || 'Sin descripciÃ³n detallada disponible.';
     
     const modelEl = document.getElementById('modal-premio-model');
     if (modelEl) {
@@ -1696,7 +1696,7 @@
       }
     }
 
-    // Comparación dinámica con los puntos del usuario autenticado
+    // ComparaciÃ³n dinÃ¡mica con los puntos del usuario autenticado
     const statusBox = document.getElementById('modal-premio-user-status');
     if (statusBox) {
       if (state.authUser) {
@@ -1713,7 +1713,7 @@
               <strong style="font-size:14px; color:#15803d;">${userPts.toLocaleString('es-PA')} Pts</strong>
             </div>
             <div style="font-size:12.5px; color:#16a34a; font-weight:800;">
-              🎉 ¡Te alcanza para canjear este premio! Te sobrarán ${diff.toLocaleString('es-PA')} Pts.
+              ðŸŽ‰ Â¡Te alcanza para canjear este premio! Te sobrarÃ¡n ${diff.toLocaleString('es-PA')} Pts.
             </div>
           `;
         } else {
@@ -1725,7 +1725,7 @@
               <strong style="font-size:14px; color:#b45309;">${userPts.toLocaleString('es-PA')} Pts</strong>
             </div>
             <div style="font-size:12.5px; color:#d97706; font-weight:700;">
-              Te faltan <strong style="color:#b45309;">${Math.abs(diff).toLocaleString('es-PA')} Pts</strong> para alcanzar este premio. ¡Sigue acumulando en tus compras!
+              Te faltan <strong style="color:#b45309;">${Math.abs(diff).toLocaleString('es-PA')} Pts</strong> para alcanzar este premio. Â¡Sigue acumulando en tus compras!
             </div>
           `;
         }
@@ -1734,16 +1734,16 @@
         statusBox.style.borderColor = 'var(--border-light)';
         statusBox.innerHTML = `
           <div style="display:flex; align-items:center; justify-content:space-between;">
-            <span style="font-size:12px; color:var(--text-muted);">¿Tienes puntos acumulados?</span>
+            <span style="font-size:12px; color:var(--text-muted);">Â¿Tienes puntos acumulados?</span>
             <button onclick="closeAppModal('modal-premio-detail'); openLoginModal();" style="background:transparent; border:none; color:var(--primary-blue); font-weight:800; font-size:12px; cursor:pointer; text-decoration:underline;">
-              Iniciar sesión →
+              Iniciar sesiÃ³n â†’
             </button>
           </div>
         `;
       }
     }
 
-    // Botón 'Ver en tienda': mostrar u ocultar según si hay link
+    // BotÃ³n 'Ver en tienda': mostrar u ocultar segÃºn si hay link
     const btnTienda = document.getElementById('modal-premio-btn-tienda');
     if (btnTienda) {
       if (r.link) {
@@ -1766,15 +1766,15 @@
     const clientePuntos = state.authUser ? (state.authUser.puntos || 0).toLocaleString('es-PA') : 'Por verificar';
     const usdEquiv = (Number(r.puntos || 0) * CFG.VAL_PUNTO).toFixed(2);
 
-    const msg = `*MGM HUB | SOLICITUD DE CANJE DE PREMIO* 🎁\n\n` +
-      `¡Hola equipo MGM! Deseo solicitar el canje de este producto con mis puntos:\n\n` +
-      `• *Premio:* ${r.nombre}\n` +
-      (r.modelo ? `• *Modelo:* ${r.modelo}\n` : '') +
-      `• *Costo:* ${Number(r.puntos).toLocaleString('es-PA')} Pts (Eq. $${usdEquiv} USD)\n` +
-      `• *Cliente:* ${clienteNombre}\n` +
-      `• *Cédula:* ${clienteCedula}\n` +
-      `• *Saldo en cuenta:* ${clientePuntos} Pts\n\n` +
-      `¿Me confirman por favor la disponibilidad en sucursal y la entrega? ¡Muchas gracias!`;
+    const msg = `*MGM HUB | SOLICITUD DE CANJE DE PREMIO* ðŸŽ\n\n` +
+      `Â¡Hola equipo MGM! Deseo solicitar el canje de este producto con mis puntos:\n\n` +
+      `â€¢ *Premio:* ${r.nombre}\n` +
+      (r.modelo ? `â€¢ *Modelo:* ${r.modelo}\n` : '') +
+      `â€¢ *Costo:* ${Number(r.puntos).toLocaleString('es-PA')} Pts (Eq. $${usdEquiv} USD)\n` +
+      `â€¢ *Cliente:* ${clienteNombre}\n` +
+      `â€¢ *CÃ©dula:* ${clienteCedula}\n` +
+      `â€¢ *Saldo en cuenta:* ${clientePuntos} Pts\n\n` +
+      `Â¿Me confirman por favor la disponibilidad en sucursal y la entrega? Â¡Muchas gracias!`;
 
     // Asesor 1 (+507 6454-1476)
     const phone = '50764541476';
@@ -1785,7 +1785,7 @@
   window.sharePremio = function() {
     const r = state.activeRewardData;
     if (!r) return;
-    const shareText = `🎁 ¡Mira este premio en MGM Hub! ${r.nombre} (${r.modelo || ''}) canjeable por ${Number(r.puntos).toLocaleString('es-PA')} MGM Puntos.`;
+    const shareText = `ðŸŽ Â¡Mira este premio en MGM Hub! ${r.nombre} (${r.modelo || ''}) canjeable por ${Number(r.puntos).toLocaleString('es-PA')} MGM Puntos.`;
     const shareUrl = r.link || window.location.href;
     if (navigator.share) {
       navigator.share({
@@ -1800,9 +1800,9 @@
     }
   };
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // MÓDULO AGENDA & CALENDARIO (AGENDA_GAS_URL)
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // MÃ“DULO AGENDA & CALENDARIO (AGENDA_GAS_URL)
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
@@ -1811,7 +1811,7 @@
     const trimmed = String(rawLink).trim();
     if (!trimmed) return 'https://mgmpty.odoo.com/event';
     
-    // Si el enlace es solo un ID numérico de evento de Odoo (ej. '15')
+    // Si el enlace es solo un ID numÃ©rico de evento de Odoo (ej. '15')
     if (/^\d+$/.test(trimmed)) {
       return `https://mgmpty.odoo.com/event/${trimmed}/register`;
     }
@@ -1841,7 +1841,7 @@
                     const monthNum = String(parseInt(m) + 1).padStart(2, '0');
                     const dayNum = String(d).padStart(2, '0');
                     const dateStr = `${y}-${monthNum}-${dayNum}`;
-                    // Prioridad de ID: campo id del GAS (col A del Sheet) → fallback generado
+                    // Prioridad de ID: campo id del GAS (col A del Sheet) â†’ fallback generado
                     const evId = (ev.id !== undefined && ev.id !== null && String(ev.id).trim() !== '')
                       ? String(ev.id).trim()
                       : `EV_${y}_${parseInt(m)+1}_${d}_${idx}`;
@@ -1854,7 +1854,7 @@
                       duracion: '2h',
                       descripcion: ev.description || '',
                       costo: ev.price || 'Gratis',
-                      lugar: ev.extra_2 || 'En línea',
+                      lugar: ev.extra_2 || 'En lÃ­nea',
                       cupos: ev.extra_1 || '20',
                       registro_url: formatEventUrl(ev.registro_url || ev.button_link || ev.link || ev.url || ev.formulario || ''),
                       button_text: ev.button_text || 'Reservar Cupo'
@@ -1918,7 +1918,7 @@
       const next = upcoming[0];
       const diff = daysUntil(next.fecha);
 
-      const catMap = { webinar:'Webinar Online 📺', training:'Capacitación 🎯', curso:'Certificación 🏆' };
+      const catMap = { webinar:'Webinar Online ðŸ“º', training:'CapacitaciÃ³n ðŸŽ¯', curso:'CertificaciÃ³n ðŸ†' };
       const catIconMap = {
         webinar: '<i class="fa-solid fa-desktop"></i>',
         training: '<i class="fa-solid fa-users"></i>',
@@ -1937,9 +1937,9 @@
       if (badgeEl) badgeEl.innerHTML = `<i class="fa-solid fa-bolt"></i> ${catMap[next.categoria] || 'Evento MGM'}`;
       if (titleEl) titleEl.textContent = next.titulo;
       if (timeEl) {
-        if (diff === 0)      timeEl.textContent = `🔴 ¡HOY a las ${next.hora}!`;
-        else if (diff === 1) timeEl.textContent = `⏰ Mañana a las ${next.hora}`;
-        else                 timeEl.textContent = `En ${diff} días — ${next.hora}`;
+        if (diff === 0)      timeEl.textContent = `ðŸ”´ Â¡HOY a las ${next.hora}!`;
+        else if (diff === 1) timeEl.textContent = `â° MaÃ±ana a las ${next.hora}`;
+        else                 timeEl.textContent = `En ${diff} dÃ­as â€” ${next.hora}`;
       }
     };
 
@@ -2005,7 +2005,7 @@
         <div class="cal-day-num">${d}</div>
         ${eventsToday.map(ev => `
           <div class="cal-event-pill ${ev.categoria}" onclick="openEventDetail('${ev.id}')" title="${ev.titulo}">
-            ${ev.titulo.substring(0, 10)}…
+            ${ev.titulo.substring(0, 10)}â€¦
           </div>`).join('')}
       </div>`;
     }
@@ -2046,7 +2046,7 @@
       );
     }
 
-    // 3) Búsqueda por título (útil cuando el ID no viene del GAS)
+    // 3) BÃºsqueda por tÃ­tulo (Ãºtil cuando el ID no viene del GAS)
     if (!ev) {
       ev = state.agendaEvents.find(e =>
         String(e.titulo).toLowerCase().includes(searchId)
@@ -2054,7 +2054,7 @@
     }
 
     if (!ev) {
-      console.warn('[MGM] openEventDetail: no se encontró evento con id:', eventId, '| eventos disponibles:', state.agendaEvents.map(e => e.id));
+      console.warn('[MGM] openEventDetail: no se encontrÃ³ evento con id:', eventId, '| eventos disponibles:', state.agendaEvents.map(e => e.id));
       return;
     }
     state.activeEventData = ev;
@@ -2063,9 +2063,9 @@
     document.getElementById('modal-event-title').textContent = ev.titulo;
     document.getElementById('modal-event-desc').textContent  = ev.descripcion;
     document.getElementById('modal-event-date').innerHTML    = `<strong>${formatDateDisplay(ev.fecha)}</strong>`;
-    document.getElementById('modal-event-time').innerHTML    = `<strong>${ev.hora || '—'} (${ev.duracion || '—'})</strong>`;
-    document.getElementById('modal-event-cost').innerHTML    = `<strong>${ev.costo || '—'}</strong>`;
-    document.getElementById('modal-event-place').innerHTML   = `<strong>${ev.lugar || '—'}</strong>`;
+    document.getElementById('modal-event-time').innerHTML    = `<strong>${ev.hora || 'â€”'} (${ev.duracion || 'â€”'})</strong>`;
+    document.getElementById('modal-event-cost').innerHTML    = `<strong>${ev.costo || 'â€”'}</strong>`;
+    document.getElementById('modal-event-place').innerHTML   = `<strong>${ev.lugar || 'â€”'}</strong>`;
 
     const btnReserve = document.getElementById('modal-event-btn-reserve');
     if (btnReserve) {
@@ -2086,7 +2086,7 @@
     if (input) {
       navigator.clipboard.writeText(input.value).then(() => {
         if (typeof showToast === 'function') {
-          showToast('¡Enlace directo copiado!', 'fa-solid fa-clipboard-check');
+          showToast('Â¡Enlace directo copiado!', 'fa-solid fa-clipboard-check');
         }
       });
     }
@@ -2111,11 +2111,11 @@
     const ev = state.activeEventData;
     if (!ev) return;
     const url = formatEventUrl(ev.registro_url || ev.button_link);
-    const text = `📅 ${ev.titulo}\n🗓️ ${formatDateDisplay(ev.fecha)} · ${ev.hora}\n📍 ${ev.lugar}\n\nRegistro: ${url}`;
+    const text = `ðŸ“… ${ev.titulo}\nðŸ—“ï¸ ${formatDateDisplay(ev.fecha)} Â· ${ev.hora}\nðŸ“ ${ev.lugar}\n\nRegistro: ${url}`;
     const encoded = encodeURIComponent(text);
     if (platform === 'wa')   window.open(`https://wa.me/?text=${encoded}`, '_blank');
     if (platform === 'mail') window.open(`mailto:?subject=${encodeURIComponent(ev.titulo)}&body=${encoded}`, '_blank');
-    if (platform === 'copy') { navigator.clipboard.writeText(text).then(() => showToast('¡Texto copiado!', 'fa-solid fa-clipboard-check')); }
+    if (platform === 'copy') { navigator.clipboard.writeText(text).then(() => showToast('Â¡Texto copiado!', 'fa-solid fa-clipboard-check')); }
     if (platform === 'cal') {
       const dateStart = ev.fecha.replace(/-/g,'');
       window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.titulo)}&dates=${dateStart}T000000Z/${dateStart}T235959Z&details=${encodeURIComponent(ev.descripcion)}`, '_blank');
@@ -2123,12 +2123,12 @@
     closeAppModal('modal-event-share');
   };
 
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // MIS CAPACITACIONES INSCRITAS (Cuenta del Usuario con cuenta regresiva & Meet)
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   async function loadMyCourses() {
-    renderMyCourses(); // Renderizar lo que haya en caché inmediatamente
+    renderMyCourses(); // Renderizar lo que haya en cachÃ© inmediatamente
 
     if (!state.authUser || !state.authUser.cedula) return;
     if (CFG.NOTIFS_GAS_URL === 'URL_TEMPORAL_PENDIENTE') return;
@@ -2161,12 +2161,12 @@
       listEl.innerHTML = `
         <div class="my-courses-unauth">
           <div class="my-courses-empty-icon"><i class="fa-solid fa-id-card" style="color: #6366f1;"></i></div>
-          <div class="my-courses-empty-title">¿Ya te inscribiste a un curso?</div>
+          <div class="my-courses-empty-title">Â¿Ya te inscribiste a un curso?</div>
           <div class="my-courses-empty-desc">
-            Inicia sesión con tu cédula en <strong>MGM Puntos</strong> para ver aquí tus cursos confirmados, enlaces a Google Meet y recordatorios en vivo.
+            Inicia sesiÃ³n con tu cÃ©dula en <strong>MGM Puntos</strong> para ver aquÃ­ tus cursos confirmados, enlaces a Google Meet y recordatorios en vivo.
           </div>
           <button class="btn-submit" onclick="switchMainTab('puntos')" style="margin-top: 14px; width: auto; padding: 9px 18px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-arrow-right-to-bracket"></i> Iniciar Sesión con mi Cédula
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> Iniciar SesiÃ³n con mi CÃ©dula
           </button>
         </div>
       `;
@@ -2178,10 +2178,10 @@
       if (countEl) countEl.style.display = 'none';
       listEl.innerHTML = `
         <div class="my-courses-empty">
-          <div class="my-courses-empty-icon">📅</div>
-          <div class="my-courses-empty-title">Aún no tienes cursos inscritos</div>
+          <div class="my-courses-empty-icon">ðŸ“…</div>
+          <div class="my-courses-empty-title">AÃºn no tienes cursos inscritos</div>
           <div class="my-courses-empty-desc">
-            Elige una capacitación en el calendario de arriba y toca <strong>"Reservar Cupo"</strong> para registrarte. Tus eventos aparecerán aquí automáticamente.
+            Elige una capacitaciÃ³n en el calendario de arriba y toca <strong>"Reservar Cupo"</strong> para registrarte. Tus eventos aparecerÃ¡n aquÃ­ automÃ¡ticamente.
           </div>
         </div>
       `;
@@ -2208,20 +2208,20 @@
         const diffDias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
         if (diffMs <= 0 && diffMs > -7200000) {
-          countdownHtml = `<div class="my-course-countdown-pill days-live"><i class="fa-solid fa-satellite-dish"></i> ¡EN VIVO AHORA!</div>`;
+          countdownHtml = `<div class="my-course-countdown-pill days-live"><i class="fa-solid fa-satellite-dish"></i> Â¡EN VIVO AHORA!</div>`;
         } else if (diffMs <= -7200000) {
           countdownHtml = `<div class="my-course-countdown-pill days-past"><i class="fa-solid fa-check"></i> Evento Finalizado</div>`;
         } else if (diffHoras < 1) {
           const minRestantes = Math.max(1, Math.round(diffMs / 60000));
-          countdownHtml = `<div class="my-course-countdown-pill days-today"><i class="fa-solid fa-bell"></i> ¡Inicia en ${minRestantes} min!</div>`;
+          countdownHtml = `<div class="my-course-countdown-pill days-today"><i class="fa-solid fa-bell"></i> Â¡Inicia en ${minRestantes} min!</div>`;
         } else if (diffHoras < 24) {
-          countdownHtml = `<div class="my-course-countdown-pill days-today"><i class="fa-solid fa-fire"></i> ¡HOY a las ${formatEventTime(course.fecha)}!</div>`;
+          countdownHtml = `<div class="my-course-countdown-pill days-today"><i class="fa-solid fa-fire"></i> Â¡HOY a las ${formatEventTime(course.fecha)}!</div>`;
         } else if (diffDias === 1) {
-          countdownHtml = `<div class="my-course-countdown-pill days-soon"><i class="fa-solid fa-clock"></i> Mañana a las ${formatEventTime(course.fecha)}</div>`;
+          countdownHtml = `<div class="my-course-countdown-pill days-soon"><i class="fa-solid fa-clock"></i> MaÃ±ana a las ${formatEventTime(course.fecha)}</div>`;
         } else if (diffDias <= 3) {
-          countdownHtml = `<div class="my-course-countdown-pill days-soon"><i class="fa-solid fa-hourglass-half"></i> Faltan ${diffDias} días</div>`;
+          countdownHtml = `<div class="my-course-countdown-pill days-soon"><i class="fa-solid fa-hourglass-half"></i> Faltan ${diffDias} dÃ­as</div>`;
         } else {
-          countdownHtml = `<div class="my-course-countdown-pill days-normal"><i class="fa-regular fa-calendar"></i> Faltan ${diffDias} días</div>`;
+          countdownHtml = `<div class="my-course-countdown-pill days-normal"><i class="fa-regular fa-calendar"></i> Faltan ${diffDias} dÃ­as</div>`;
         }
       }
 
@@ -2230,7 +2230,7 @@
           <i class="fa-solid fa-video"></i> Entrar a Google Meet
         </a>
       ` : `
-        <button class="btn-meet-join" onclick="showToast('Enlace de Meet disponible próximamente', 'fa-solid fa-circle-info')">
+        <button class="btn-meet-join" onclick="showToast('Enlace de Meet disponible prÃ³ximamente', 'fa-solid fa-circle-info')">
           <i class="fa-solid fa-circle-info"></i> Enlace disponible pronto
         </button>
       `;
@@ -2241,7 +2241,7 @@
             <span class="my-course-badge-enrolled">
               <i class="fa-solid fa-circle-check"></i> Cupo Confirmado
             </span>
-            ${course.codigo ? `<span class="my-course-code" title="Código de registro">${course.codigo}</span>` : ''}
+            ${course.codigo ? `<span class="my-course-code" title="CÃ³digo de registro">${course.codigo}</span>` : ''}
           </div>
 
           <div class="my-course-title">${course.nombre}</div>
@@ -2285,7 +2285,7 @@
   window.copyEventMeet = function(url) {
     if (!url) return;
     navigator.clipboard.writeText(url).then(() => {
-      showToast('¡Enlace de Meet copiado!', 'fa-solid fa-clipboard-check');
+      showToast('Â¡Enlace de Meet copiado!', 'fa-solid fa-clipboard-check');
     });
   };
 
@@ -2333,10 +2333,10 @@
           <div class="cli-feed-title">${p.nombre}</div>
           <div class="cli-feed-caption">${descPreview}</div>
           ${p.enlace ? `<a href="${p.enlace}" target="_blank" class="cli-feed-link-btn" onclick="handlePromoLinkClick(event, '${p.enlace}')"><i class="fa-solid fa-link"></i> Ver enlace</a>` : ''}
-          <button class="cli-feed-more-btn" onclick="openCopySheet('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion || '')}', '${p.fecha_inicio || ''}', '${p.fecha_fin || ''}', '${encodeURIComponent(p.enlace || '')}')">...más</button>
+          <button class="cli-feed-more-btn" onclick="openCopySheet('${p.id}', '${encodeURIComponent(p.nombre)}', '${encodeURIComponent(p.descripcion || '')}', '${p.fecha_inicio || ''}', '${p.fecha_fin || ''}', '${encodeURIComponent(p.enlace || '')}')">...mÃ¡s</button>
         </div>
 
-        <!-- Botones de acción derecha -->
+        <!-- Botones de acciÃ³n derecha -->
         <div class="cli-feed-actions">
           <!-- Like -->
           <button class="cli-action-btn ${isLiked ? 'liked' : ''}" id="like-btn-${i}"
@@ -2373,7 +2373,7 @@
     }, 50);
   };
 
-  // — Like dentro del feed Reels (sin confetti de posición ya que es overlay)
+  // â€” Like dentro del feed Reels (sin confetti de posiciÃ³n ya que es overlay)
   window.toggleReelsLike = function(promoId, itemIdx, currentCount, btn) {
     const likes = JSON.parse(localStorage.getItem(K_LIKES) || '{}');
     const wasLiked = !!likes[promoId];
@@ -2403,7 +2403,7 @@
     }
   };
 
-  // — Abrir bottom sheet con copy completo
+  // â€” Abrir bottom sheet con copy completo
   let _activeCopyPromoId = null;
 
   window.openCopySheet = function(id, encTitle, encDesc, fi, ff, encEnlace) {
@@ -2426,7 +2426,7 @@
 
     // Ocultar fechas si no las hay
     const datesEl = document.getElementById('cli-copy-dates');
-    if (datesEl) datesEl.textContent = (fi && fi !== 'undefined') ? `📅 Válida: ${fi} — ${ff}` : '';
+    if (datesEl) datesEl.textContent = (fi && fi !== 'undefined') ? `ðŸ“… VÃ¡lida: ${fi} â€” ${ff}` : '';
     
     // Cargar comentarios
     const listEl = document.getElementById('cli-copy-comments-list');
@@ -2449,7 +2449,7 @@
     // 1. Mostrar comentarios locales inmediatamente (sin esperar la red)
     const renderList = (comments) => {
       if (!comments || comments.length === 0) {
-        listEl.innerHTML = '<div style="color:var(--text-muted);text-align:center;font-size:12px;padding:16px;">Sin comentarios aún. ¡Sé el primero!</div>';
+        listEl.innerHTML = '<div style="color:var(--text-muted);text-align:center;font-size:12px;padding:16px;">Sin comentarios aÃºn. Â¡SÃ© el primero!</div>';
         return;
       }
       listEl.innerHTML = comments.map(c =>
@@ -2489,7 +2489,7 @@
     }
   }
 
-  // — Sistema de Toasts
+  // â€” Sistema de Toasts
   window.showToast = function(msg, icon = 'fa-solid fa-circle-info') {
     let toast = document.getElementById('mgm-toast-el');
     if (!toast) {
@@ -2499,7 +2499,7 @@
       document.body.appendChild(toast);
     }
     toast.innerHTML = `<i class="${icon}"></i> <span>${msg}</span>`;
-    // Forzar reflow para que la animación funcione si ya estaba en pantalla
+    // Forzar reflow para que la animaciÃ³n funcione si ya estaba en pantalla
     void toast.offsetWidth; 
     toast.classList.add('show');
     
@@ -2512,7 +2512,7 @@
 
   window.postCommentFromSheet = async function() {
     if (!state.authUser) {
-      showToast('Inicia sesión para comentar.', 'fa-solid fa-lock');
+      showToast('Inicia sesiÃ³n para comentar.', 'fa-solid fa-lock');
       openLoginModal();   // Se abre encima del feed (z-index 8000 > 3000)
       return;
     }
@@ -2565,16 +2565,16 @@
       const base = parseInt(promo.likes || 0);
       btn.querySelector('span') && (btn.lastChild.textContent = base + (likes[promoId] ? 1 : 0));
     }
-    // ❤️ Mini-burst en el punto del click al dar like
+    // â¤ï¸ Mini-burst en el punto del click al dar like
     if (!wasLiked && likes[promoId]) {
       const rect = btn.getBoundingClientRect();
       mgmConfetti.burst(rect.left + rect.width / 2, rect.top + rect.height / 2);
     }
   };
 
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // PROMOS: COMPARTIR, WHATSAPP Y COMENTARIOS
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   
   window.sharePromo = function(id, encTitle, encDesc) {
     const title = decodeURIComponent(encTitle);
@@ -2584,7 +2584,7 @@
     if (navigator.share) {
       navigator.share({
         title,
-        text: `¡Mira esta promo en MGM Hub!\n${title}\n${text}`,
+        text: `Â¡Mira esta promo en MGM Hub!\n${title}\n${text}`,
         url
       }).catch(err => console.warn('Share error:', err));
     } else {
@@ -2624,7 +2624,7 @@
 
     const renderList = (comments) => {
       if (!comments || comments.length === 0) {
-        listEl.innerHTML = `<div style="color: var(--text-muted); text-align: center; font-size: 12px; padding: 10px;">Aún no hay comentarios. Sé el primero.</div>`;
+        listEl.innerHTML = `<div style="color: var(--text-muted); text-align: center; font-size: 12px; padding: 10px;">AÃºn no hay comentarios. SÃ© el primero.</div>`;
         return;
       }
       listEl.innerHTML = comments.map(c => `
@@ -2664,7 +2664,7 @@
 
   window.postComment = async function(promoId) {
     if (!state.authUser) {
-      showToast('Debes iniciar sesión para comentar.', 'fa-solid fa-lock');
+      showToast('Debes iniciar sesiÃ³n para comentar.', 'fa-solid fa-lock');
       openLoginModal();
       return;
     }
@@ -2675,9 +2675,9 @@
     
     input.value = '';
     
-    // UI instantánea (Optimistic UI)
+    // UI instantÃ¡nea (Optimistic UI)
     const listEl = document.getElementById('comments-list-' + promoId);
-    if (listEl.innerHTML.includes('Aún no hay comentarios')) listEl.innerHTML = '';
+    if (listEl.innerHTML.includes('AÃºn no hay comentarios')) listEl.innerHTML = '';
     listEl.innerHTML += `
       <div style="margin-bottom: 6px; opacity: 0.7;">
         <strong style="color: var(--text-dark);">${state.authUser.nombre}:</strong> <span style="color: var(--text-body);">${texto}</span>
@@ -2712,9 +2712,9 @@
     document.getElementById('modal-promo-like-btn').classList.toggle('liked', !!likes[p.id]);
   };
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // MÓDULO AUDIO PLAYER — REPRODUCCIÓN SECUENCIAL & MULTI-PISTA
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // MÃ“DULO AUDIO PLAYER â€” REPRODUCCIÃ“N SECUENCIAL & MULTI-PISTA
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   const audioEl    = document.getElementById('audio-element');
   const audioBar   = document.getElementById('audio-mini-bar');
@@ -2773,7 +2773,7 @@
         }
       }
 
-      // Si no hay pistas válidas en el GAS, dejar vacío y ocultar completamente el reproductor
+      // Si no hay pistas vÃ¡lidas en el GAS, dejar vacÃ­o y ocultar completamente el reproductor
       CFG.AUDIO_TRACKS = [];
       if (audioBar) audioBar.classList.add('hidden');
       if (audioEl) {
@@ -2832,9 +2832,9 @@
     });
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // SPLASHSCREEN / PROMO INTERSTITIAL (SPLASH_GAS_URL)
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   window.closeSplashOption = function(option) {
     const el = document.getElementById('imou-splash');
@@ -2853,7 +2853,7 @@
   };
 
   window.closeSplashWidget = function() {
-    closeSplashOption('session'); // Por defecto se oculta en esta sesión
+    closeSplashOption('session'); // Por defecto se oculta en esta sesiÃ³n
   };
 
   async function checkAndShowSplash() {
@@ -2917,9 +2917,9 @@
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // PWA: SERVICE WORKER
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -2927,9 +2927,9 @@
     });
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // AUTHENTICATION & LOGIN (MGM PUNTOS)
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   
   window.openLoginModal = function() {
     const isAuth = !!state.authUser;
@@ -2939,7 +2939,7 @@
     if (isAuth) {
       updateAuthModalProfile();
       
-      // Mostrar botón de notificaciones si no tienen permiso concedido
+      // Mostrar botÃ³n de notificaciones si no tienen permiso concedido
       const btnNotifs = document.getElementById('btn-enable-notifs');
       if (btnNotifs && Notification.permission !== 'granted') {
         btnNotifs.style.display = 'block';
@@ -2958,7 +2958,7 @@
     const btn = document.getElementById('btn-login-submit');
     
     if (!input) {
-      errorMsg.textContent = 'Por favor ingresa tu cédula o correo.';
+      errorMsg.textContent = 'Por favor ingresa tu cÃ©dula o correo.';
       errorMsg.style.display = 'block';
       return;
     }
@@ -2982,14 +2982,14 @@
         errorMsg.style.display = 'block';
       }
     } catch (err) {
-      // Fallback offline / demo para propósitos de prueba si GAS falla
+      // Fallback offline / demo para propÃ³sitos de prueba si GAS falla
       console.warn('Fallback login');
       const c = state.clients.find(x => x.cedula === input || x.correo === input);
       if (c) {
         setClientSession(c, 'login');
         openLoginModal();
       } else {
-        errorMsg.textContent = 'Error de conexión. Intenta nuevamente.';
+        errorMsg.textContent = 'Error de conexiÃ³n. Intenta nuevamente.';
         errorMsg.style.display = 'block';
       }
     }
@@ -2999,8 +2999,8 @@
   };
 
   function checkAndSendWelcomeNotification(nombre) {
-    // La bienvenida se gestiona de forma centralizada y única en el backend de Google Sheets (WELCOME_<CEDULA>)
-    // Se recibe sincronizada automáticamente vía checkNotifications() y se emite solo una vez.
+    // La bienvenida se gestiona de forma centralizada y Ãºnica en el backend de Google Sheets (WELCOME_<CEDULA>)
+    // Se recibe sincronizada automÃ¡ticamente vÃ­a checkNotifications() y se emite solo una vez.
   }
 
   window.logoutClient = function() {
@@ -3009,7 +3009,7 @@
     state.myCourses = [];
     localStorage.removeItem(K_MY_COURSES);
     renderMyCourses();
-    // Limpiar completamente las notificaciones al cerrar sesión
+    // Limpiar completamente las notificaciones al cerrar sesiÃ³n
     state.notifications = [];
     localStorage.setItem(K_NOTIFS, '[]');
     updateNotifBadge();
@@ -3050,7 +3050,7 @@
     const ptosEl = document.getElementById('auth-puntos');
 
     if (nameEl) nameEl.textContent = state.authUser.nombre || '---';
-    if (cedEl) cedEl.textContent = state.authUser.cedula ? `Cédula: ${state.authUser.cedula}` : '---';
+    if (cedEl) cedEl.textContent = state.authUser.cedula ? `CÃ©dula: ${state.authUser.cedula}` : '---';
     if (ptosEl) ptosEl.textContent = (state.authUser.puntos || 0).toLocaleString('es-PA');
 
     if (state.authUser.avatar) {
@@ -3069,13 +3069,13 @@
   }
 
   /**
-   * Comprime y recorta la imagen en el cliente para que pese lo mínimo posible (~15KB - 25KB)
-   * Recorte centrado 1:1, resolución 256x256 px, compresión JPEG 80%.
+   * Comprime y recorta la imagen en el cliente para que pese lo mÃ­nimo posible (~15KB - 25KB)
+   * Recorte centrado 1:1, resoluciÃ³n 256x256 px, compresiÃ³n JPEG 80%.
    */
   function compressAndCropAvatar(file, targetSize = 256, quality = 0.8) {
     return new Promise((resolve, reject) => {
       if (!file || !file.type.startsWith('image/')) {
-        return reject(new Error('Por favor selecciona un archivo de imagen válido (JPG, PNG, WebP).'));
+        return reject(new Error('Por favor selecciona un archivo de imagen vÃ¡lido (JPG, PNG, WebP).'));
       }
       const reader = new FileReader();
       reader.onerror = () => reject(new Error('No se pudo leer el archivo seleccionado.'));
@@ -3119,7 +3119,7 @@
     if (!file) return;
 
     if (!state.authUser) {
-      alert('Debes iniciar sesión para actualizar tu foto de perfil.');
+      alert('Debes iniciar sesiÃ³n para actualizar tu foto de perfil.');
       return;
     }
 
@@ -3135,7 +3135,7 @@
     }
 
     try {
-      // 1. Tratamiento y compresión en cliente a peso mínimo (~20KB)
+      // 1. Tratamiento y compresiÃ³n en cliente a peso mÃ­nimo (~20KB)
       const compressedDataUrl = await compressAndCropAvatar(file, 256, 0.8);
 
       // 2. Feedback inmediato en toda la interfaz (0ms de latencia)
@@ -3157,7 +3157,7 @@
         feedbackEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
       }
 
-      // 3. Envío al backend de Google Apps Script (Carpeta Drive 1wKgyYIkGVUWz25DC9P56uTx9Pr92dsxb)
+      // 3. EnvÃ­o al backend de Google Apps Script (Carpeta Drive 1wKgyYIkGVUWz25DC9P56uTx9Pr92dsxb)
       const cedula = (state.authUser.cedula || '').toString().trim();
       const payload = {
         action: 'upload_avatar',
@@ -3183,13 +3183,13 @@
           localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
         }
       } catch (uploadErr) {
-        console.warn('Aviso: guardado local completado; sincronización en segundo plano con Drive pendiente:', uploadErr);
+        console.warn('Aviso: guardado local completado; sincronizaciÃ³n en segundo plano con Drive pendiente:', uploadErr);
       }
 
       if (feedbackEl) {
         feedbackEl.style.background = '#f0fdf4';
         feedbackEl.style.color = '#15803d';
-        feedbackEl.innerHTML = '✅ ¡Foto de perfil guardada exitosamente!';
+        feedbackEl.innerHTML = 'âœ… Â¡Foto de perfil guardada exitosamente!';
         setTimeout(() => {
           if (feedbackEl) feedbackEl.style.display = 'none';
         }, 3500);
@@ -3200,7 +3200,7 @@
       if (feedbackEl) {
         feedbackEl.style.background = '#fef2f2';
         feedbackEl.style.color = '#b91c1c';
-        feedbackEl.innerHTML = '❌ ' + (err.message || 'Error al procesar la imagen');
+        feedbackEl.innerHTML = 'âŒ ' + (err.message || 'Error al procesar la imagen');
       }
     } finally {
       event.target.value = '';
@@ -3209,8 +3209,8 @@
 
   /**
    * Sincroniza la foto de perfil desde el backend de Notificaciones.
-   * Siempre sobrescribe el caché local con la versión del servidor,
-   * para que los cambios hechos en PC aparezcan en el móvil y viceversa.
+   * Siempre sobrescribe el cachÃ© local con la versiÃ³n del servidor,
+   * para que los cambios hechos en PC aparezcan en el mÃ³vil y viceversa.
    */
   async function syncUserAvatarFromBackend(cedula) {
     if (!cedula || !CFG.NOTIFS_GAS_URL || CFG.NOTIFS_GAS_URL === 'URL_TEMPORAL_PENDIENTE') return;
@@ -3229,13 +3229,13 @@
         }
       }
     } catch(err) {
-      console.warn('[MGM] Sincronización de avatar no disponible:', err);
+      console.warn('[MGM] SincronizaciÃ³n de avatar no disponible:', err);
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // NOTIFICATIONS (LOCAL + TRACKING BACKEND)
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   window.openNotificationsPanel = function() {
     openAppModal('modal-notifications');
@@ -3253,10 +3253,10 @@
     }
     Notification.requestPermission().then(permission => {
       if (permission === 'granted') {
-        // 🔔 ¡Celebrar activación de notificaciones!
+        // ðŸ”” Â¡Celebrar activaciÃ³n de notificaciones!
         mgmConfetti.bell();
-        fireNativeNotif('MGM Hub', '¡Notificaciones activadas! 🔔 Recibirás alertas exclusivas.');
-        openLoginModal(); // Refrescar modal para ocultar el botón
+        fireNativeNotif('MGM Hub', 'Â¡Notificaciones activadas! ðŸ”” RecibirÃ¡s alertas exclusivas.');
+        openLoginModal(); // Refrescar modal para ocultar el botÃ³n
         if (state.authUser) {
           registerDeviceForNotifs(state.authUser.cedula, state.authUser.nombre);
         }
@@ -3264,7 +3264,7 @@
     });
   };
 
-  // Disparar una notificación nativa del navegador/sistema
+  // Disparar una notificaciÃ³n nativa del navegador/sistema
   function fireNativeNotif(title, body, targetUrl) {
     if (Notification.permission !== 'granted') return;
     try {
@@ -3276,7 +3276,7 @@
         data: { url: targetUrl || '' }
       };
 
-      // Service Worker notification (funciona en móvil como PWA)
+      // Service Worker notification (funciona en mÃ³vil como PWA)
       if (navigator.serviceWorker && navigator.serviceWorker.controller) {
         navigator.serviceWorker.ready.then(reg => {
           reg.showNotification(title, options);
@@ -3332,7 +3332,7 @@
           }
         }
 
-        // 2. Sincronizar eliminaciones: descartar cualquier notificación local que esté en clearedNotifs
+        // 2. Sincronizar eliminaciones: descartar cualquier notificaciÃ³n local que estÃ© en clearedNotifs
         // o que ya no exista en el servidor (salvo transacciones de puntos no borradas)
         const serverIds = Array.isArray(res.notifications) ? res.notifications.map(n => String(n.id)) : [];
         const originalLength = state.notifications.length;
@@ -3396,11 +3396,11 @@
               state.seenNotifs.push(stringId);
               localStorage.setItem(K_SEEN_NOTIFS, JSON.stringify(state.seenNotifs));
               
-              // Disparar notificación nativa del sistema
+              // Disparar notificaciÃ³n nativa del sistema
               fireNativeNotif(n.title || 'MGM', n.body || '', n.seccion || n.url || '');
               // Mostrar Toast visual en la app
               if (typeof showToast === 'function') {
-                showToast(n.title || 'Nueva notificación de MGM', 'fa-solid fa-bell');
+                showToast(n.title || 'Nueva notificaciÃ³n de MGM', 'fa-solid fa-bell');
               }
             }
           } else if (alreadyExists) {
@@ -3448,7 +3448,7 @@
           hasChanged = true;
         }
 
-        // Ordenar: más recientes primero (por fecha parseada, fallback al ID)
+        // Ordenar: mÃ¡s recientes primero (por fecha parseada, fallback al ID)
         state.notifications.sort((a, b) => {
           const parseForSort = (d) => {
             if (!d) return 0;
@@ -3461,7 +3461,7 @@
         if (hasChanged) {
           localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
           updateNotifBadge();
-          renderNotifications(); // Re-renderizar por si el panel está abierto
+          renderNotifications(); // Re-renderizar por si el panel estÃ¡ abierto
         }
       }
     } catch(e) {
@@ -3477,7 +3477,7 @@
     }
   });
 
-  // Chequeo periódico en segundo plano cada 20 segundos si la app está visible
+  // Chequeo periÃ³dico en segundo plano cada 20 segundos si la app estÃ¡ visible
   setInterval(() => {
     if (state.authUser && document.visibilityState === 'visible') {
       autoLoadPuntosDashboard();
@@ -3497,7 +3497,7 @@
     }
   }
 
-  // Añadir notificación local (ej. Evaluación RMA)
+  // AÃ±adir notificaciÃ³n local (ej. EvaluaciÃ³n RMA)
   window.addLocalNotification = function(notif) {
     const stringId = String(notif.id);
     const alreadyExists = state.notifications.some(n => String(n.id) === stringId);
@@ -3516,17 +3516,17 @@
     }
   };
 
-  // Limpiar cola de mensajes (Borrar todos) — abre modal elegante
+  // Limpiar cola de mensajes (Borrar todos) â€” abre modal elegante
   window.clearNotifications = function() {
     if (state.notifications.length === 0) return;
-    // Abre el modal de confirmación elegante (en lugar del confirm() nativo)
+    // Abre el modal de confirmaciÃ³n elegante (en lugar del confirm() nativo)
     const modal = document.getElementById('modal-confirm-clear');
     if (modal) {
       modal.classList.add('active');
     }
   };
 
-  // Borrado individual de una sola notificación (una a la vez) con sincronización multidispositivo
+  // Borrado individual de una sola notificaciÃ³n (una a la vez) con sincronizaciÃ³n multidispositivo
   window.dismissNotification = function(notifId, e) {
     if (e && e.stopPropagation) {
       e.stopPropagation();
@@ -3543,7 +3543,7 @@
     renderNotifications();
     updateNotifBadge();
 
-    // Sincronizar borrado con el backend para que los demás dispositivos no la muestren
+    // Sincronizar borrado con el backend para que los demÃ¡s dispositivos no la muestren
     if (state.authUser && state.authUser.cedula &&
         CFG.NOTIFS_GAS_URL && CFG.NOTIFS_GAS_URL !== 'URL_TEMPORAL_PENDIENTE') {
       fetch(CFG.NOTIFS_GAS_URL, {
@@ -3558,9 +3558,9 @@
     }
   };
 
-  // Ejecuta el borrado masivo real (llamado desde el botón "Eliminar" del modal)
+  // Ejecuta el borrado masivo real (llamado desde el botÃ³n "Eliminar" del modal)
   window.confirmClearNotifications = function() {
-    // Cerrar el modal de confirmación
+    // Cerrar el modal de confirmaciÃ³n
     const modal = document.getElementById('modal-confirm-clear');
     if (modal) modal.classList.remove('active');
 
@@ -3600,6 +3600,15 @@
   window.handleNotificationClick = function(notifId) {
     const notif = state.notifications.find(item => String(item.id) === String(notifId));
     if (!notif) return;
+    
+    // Si es notificacion de cumpleanos, mostrar modal
+    if (notif.type === 'bday' || String(notifId).startsWith('bday_')) {
+      closeAppModal('modal-notifications');
+      const isSundayMoved = notif.title.includes('(Beneficio Domingo)');
+      window.showBirthdayModal(isSundayMoved);
+      return;
+    }
+
     const target = (notif.seccion || notif.url || '').trim();
     if (target) {
       closeAppModal('modal-notifications');
@@ -3615,23 +3624,23 @@
     if (state.notifications.length === 0) {
       list.innerHTML = `
         <div style="text-align:center; padding:40px 20px;">
-          <div style="font-size:40px; margin-bottom:12px;">✅</div>
-          <div style="font-size:15px; font-weight:800; color:var(--text-dark); margin-bottom:8px;">¡Estás al día!</div>
+          <div style="font-size:40px; margin-bottom:12px;">âœ…</div>
+          <div style="font-size:15px; font-weight:800; color:var(--text-dark); margin-bottom:8px;">Â¡EstÃ¡s al dÃ­a!</div>
           <div style="font-size:13px; color:var(--text-muted); line-height:1.7;">
             No tienes notificaciones pendientes.<br>
-            Aquí aparecerán promociones exclusivas,<br>alertas de puntos y mensajes de MGM.
+            AquÃ­ aparecerÃ¡n promociones exclusivas,<br>alertas de puntos y mensajes de MGM.
           </div>
         </div>`;
       return;
     }
 
-    // Configuración visual por sección destino
+    // ConfiguraciÃ³n visual por secciÃ³n destino
     const SECC_CFG = {
-      puntos:   { icon: 'fa-star',          color: '#f59e0b', badgeText: '⭐ Puntos',  badgeBg: '#fef3c7', badgeTxt: '#b45309' },
-      agenda:   { icon: 'fa-calendar-days', color: '#6366f1', badgeText: '📅 Agenda',  badgeBg: '#ede9fe', badgeTxt: '#5b21b6' },
-      promos:   { icon: 'fa-fire',          color: '#ef4444', badgeText: '🔥 Promo',   badgeBg: '#fee2e2', badgeTxt: '#b91c1c' },
-      rma:      { icon: 'fa-screwdriver-wrench', color: '#0f766e', badgeText: '🔧 Mi RMA', badgeBg: '#ccfbf1', badgeTxt: '#0f766e' },
-      external: { icon: 'fa-arrow-up-right-from-square', color: '#005bbb', badgeText: '🌐 MGM Web ↗', badgeBg: '#e8f1ff', badgeTxt: '#005bbb' },
+      puntos:   { icon: 'fa-star',          color: '#f59e0b', badgeText: 'â­ Puntos',  badgeBg: '#fef3c7', badgeTxt: '#b45309' },
+      agenda:   { icon: 'fa-calendar-days', color: '#6366f1', badgeText: 'ðŸ“… Agenda',  badgeBg: '#ede9fe', badgeTxt: '#5b21b6' },
+      promos:   { icon: 'fa-fire',          color: '#ef4444', badgeText: 'ðŸ”¥ Promo',   badgeBg: '#fee2e2', badgeTxt: '#b91c1c' },
+      rma:      { icon: 'fa-screwdriver-wrench', color: '#0f766e', badgeText: 'ðŸ”§ Mi RMA', badgeBg: '#ccfbf1', badgeTxt: '#0f766e' },
+      external: { icon: 'fa-arrow-up-right-from-square', color: '#005bbb', badgeText: 'ðŸŒ MGM Web â†—', badgeBg: '#e8f1ff', badgeTxt: '#005bbb' },
       default:  { icon: 'fa-circle-info',   color: '#0ea5e9', badgeText: null,         badgeBg: null,      badgeTxt: null      }
     };
 
@@ -3645,15 +3654,15 @@
       // Helper para comprobar palabras completas de forma segura
       const hasWord = (rx) => rx.test(combinedText);
 
-      // Si no viene sección del backend, inferirla por palabras clave
+      // Si no viene secciÃ³n del backend, inferirla por palabras clave
       if (!seccion) {
-        if (hasWord(/\b(rma|garant[ií]a|garantias|taller|reparaci[oó]n|reparar|equipo)\b/i)) {
+        if (hasWord(/\b(rma|garant[iÃ­]a|garantias|taller|reparaci[oÃ³]n|reparar|equipo)\b/i)) {
           seccion = 'rma';
-        } else if (hasWord(/\b(punto|puntos|cumplea[nñ]os|redim|canje|canjear|saldo|acredit|ajuste)\b/i)) {
+        } else if (hasWord(/\b(punto|puntos|cumplea[nÃ±]os|redim|canje|canjear|saldo|acredit|ajuste)\b/i)) {
           seccion = 'puntos:cuenta';
         } else if (hasWord(/\b(promo|oferta|descuento|rebaja|remate)\b/i)) {
           seccion = 'promos';
-        } else if (hasWord(/\b(evento|webinar|curso|capacitaci[oó]n|charla|certificaci[oó]n)\b/i)) {
+        } else if (hasWord(/\b(evento|webinar|curso|capacitaci[oÃ³]n|charla|certificaci[oÃ³]n)\b/i)) {
           seccion = 'agenda';
         }
       }
@@ -3674,36 +3683,36 @@
         if (lowerSec.includes('wa.me') || lowerSec.includes('whatsapp')) {
           itemIcon      = 'fa-brands fa-whatsapp';
           itemColor     = '#22c55e';
-          itemBadgeText = '💬 WhatsApp ↗';
+          itemBadgeText = 'ðŸ’¬ WhatsApp â†—';
           itemBadgeBg   = '#dcfce7';
           itemBadgeTxt  = '#15803d';
         } else if (lowerSec.includes('meet.google') || lowerSec.includes('zoom.us') || lowerSec.includes('teams.live')) {
           itemIcon      = 'fa-video';
           itemColor     = '#0284c7';
-          itemBadgeText = '📹 Reunión ↗';
+          itemBadgeText = 'ðŸ“¹ ReuniÃ³n â†—';
           itemBadgeBg   = '#e0f2fe';
           itemBadgeTxt  = '#0369a1';
         } else if (lowerSec.includes('odoo') || lowerSec.includes('mgm') || seccion.startsWith('/')) {
           itemIcon      = 'fa-arrow-up-right-from-square';
           itemColor     = '#005bbb';
-          itemBadgeText = '🌐 MGM Web ↗';
+          itemBadgeText = 'ðŸŒ MGM Web â†—';
           itemBadgeBg   = '#e8f1ff';
           itemBadgeTxt  = '#005bbb';
         } else {
           itemIcon      = 'fa-arrow-up-right-from-square';
           itemColor     = '#0ea5e9';
-          itemBadgeText = '🌐 Ver enlace ↗';
+          itemBadgeText = 'ðŸŒ Ver enlace â†—';
           itemBadgeBg   = '#f0f9ff';
           itemBadgeTxt  = '#0284c7';
         }
       } else if (!n.badgeText) {
-        // Refinar insignia y estilo visual según el tipo específico de evento/alerta interna
+        // Refinar insignia y estilo visual segÃºn el tipo especÃ­fico de evento/alerta interna
 
-        // 1. RMA / Garantías / Taller técnico
-        if (tab === 'rma' || hasWord(/\b(rma|garant[ií]a|garantias|taller\s+rma|taller|reparaci[oó]n)\b/i)) {
+        // 1. RMA / GarantÃ­as / Taller tÃ©cnico
+        if (tab === 'rma' || hasWord(/\b(rma|garant[iÃ­]a|garantias|taller\s+rma|taller|reparaci[oÃ³]n)\b/i)) {
           itemIcon      = 'fa-screwdriver-wrench';
           itemColor     = '#0f766e';
-          itemBadgeText = '🔧 Mi RMA';
+          itemBadgeText = 'ðŸ”§ Mi RMA';
           itemBadgeBg   = '#ccfbf1';
           itemBadgeTxt  = '#0f766e';
         }
@@ -3711,15 +3720,15 @@
         else if (hasWord(/\b(redim|canje|canjeado|canjeaste|canjear|recompensa)\b/i)) {
           itemIcon      = 'fa-gift';
           itemColor     = '#10b981';
-          itemBadgeText = '🎁 Canje';
+          itemBadgeText = 'ðŸŽ Canje';
           itemBadgeBg   = '#d1fae5';
           itemBadgeTxt  = '#065f46';
         }
-        // 3. Devolución de mercadería / Nota de crédito comercial (\bnc\b como palabra entera, ¡NUNCA .includes('nc')!)
-        else if (hasWord(/\b(devoluci[oó]n|devoluciones|nota(?:s)? de cr[eé]dito|\bnc\b)\b/i)) {
+        // 3. DevoluciÃ³n de mercaderÃ­a / Nota de crÃ©dito comercial (\bnc\b como palabra entera, Â¡NUNCA .includes('nc')!)
+        else if (hasWord(/\b(devoluci[oÃ³]n|devoluciones|nota(?:s)? de cr[eÃ©]dito|\bnc\b)\b/i)) {
           itemIcon      = 'fa-file-invoice-dollar';
           itemColor     = '#ef4444';
-          itemBadgeText = '📋 Devolución';
+          itemBadgeText = 'ðŸ“‹ DevoluciÃ³n';
           itemBadgeBg   = '#fee2e2';
           itemBadgeTxt  = '#991b1b';
         }
@@ -3728,15 +3737,15 @@
           const isFavor = hasWord(/\b(favor|acredit|bono|\(\+\))\b/i);
           itemIcon      = isFavor ? 'fa-award' : 'fa-sliders';
           itemColor     = isFavor ? '#8b5cf6' : '#f59e0b';
-          itemBadgeText = isFavor ? '✨ Ajuste (+)' : '⚠️ Ajuste (-)';
+          itemBadgeText = isFavor ? 'âœ¨ Ajuste (+)' : 'âš ï¸ Ajuste (-)';
           itemBadgeBg   = isFavor ? '#ede9fe' : '#fef3c7';
           itemBadgeTxt  = isFavor ? '#5b21b6' : '#92400e';
         }
-        // 5. Cumpleaños del cliente
-        else if (hasWord(/\b(cumplea[nñ]os|aniversario)\b/i)) {
+        // 5. CumpleaÃ±os del cliente
+        else if (hasWord(/\b(cumplea[nÃ±]os|aniversario)\b/i)) {
           itemIcon      = 'fa-cake-candles';
           itemColor     = '#ec4899';
-          itemBadgeText = '🎂 Cumpleaños';
+          itemBadgeText = 'ðŸŽ‚ CumpleaÃ±os';
           itemBadgeBg   = '#fce7f3';
           itemBadgeTxt  = '#9d174d';
         }
@@ -3744,15 +3753,15 @@
         else if (hasWord(/\b(bienvenid[oa]s?)\b/i)) {
           itemIcon      = 'fa-hand-peace';
           itemColor     = '#6366f1';
-          itemBadgeText = '🎉 Bienvenida';
+          itemBadgeText = 'ðŸŽ‰ Bienvenida';
           itemBadgeBg   = '#e0e7ff';
           itemBadgeTxt  = '#4338ca';
         }
         // 7. Cursos y capacitaciones
-        else if (hasWord(/\b(curso|cursos|capacitaci[oó]n|capacitaciones|certificaci[oó]n|webinar)\b/i)) {
+        else if (hasWord(/\b(curso|cursos|capacitaci[oÃ³]n|capacitaciones|certificaci[oÃ³]n|webinar)\b/i)) {
           itemIcon      = 'fa-graduation-cap';
           itemColor     = '#005bbb';
-          itemBadgeText = '🎓 Capacitación';
+          itemBadgeText = 'ðŸŽ“ CapacitaciÃ³n';
           itemBadgeBg   = '#e8f1ff';
           itemBadgeTxt  = '#005bbb';
         }
@@ -3778,9 +3787,9 @@
         onmouseover="${hoverIn}" onmouseout="${hoverOut}">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
           <i class="${iconClass}" style="color:${itemColor}; font-size:14px;"></i>
-          <div style="font-size:14px; font-weight:800; color:var(--text-dark); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;">${n.title || 'Sin Título'}</div>
+          <div style="font-size:14px; font-weight:800; color:var(--text-dark); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;">${n.title || 'Sin TÃ­tulo'}</div>
           ${itemBadgeText ? `<span style="font-size:10px; background:${itemBadgeBg}; color:${itemBadgeTxt}; padding:2px 7px; border-radius:20px; font-weight:700; white-space:nowrap;">${itemBadgeText}</span>` : ''}
-          <button type="button" onclick="dismissNotification('${safeId}', event)" title="Eliminar notificación"
+          <button type="button" onclick="dismissNotification('${safeId}', event)" title="Eliminar notificaciÃ³n"
             style="background:none; border:none; color:var(--text-subtle); cursor:pointer; padding:3px 6px; border-radius:6px; font-size:13px; display:inline-flex; align-items:center; justify-content:center; transition:color 0.15s, background 0.15s; margin-left:4px;"
             onmouseover="this.style.color='#ef4444'; this.style.background='rgba(239,68,68,0.1)';"
             onmouseout="this.style.color='var(--text-subtle)'; this.style.background='none';">
@@ -3793,23 +3802,23 @@
     }).join('');
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // INIT — ARRANCA LA APP MGM HUB
-  // ══════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // INIT â€” ARRANCA LA APP MGM HUB
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   async function init() {
-    // Asegurar tema estándar limpio (sin modo oscuro residual)
+    // Asegurar tema estÃ¡ndar limpio (sin modo oscuro residual)
     document.documentElement.removeAttribute('data-theme');
     try { localStorage.removeItem('mgm_theme'); } catch(e) {}
 
     switchMainTab('home');
 
-    // Inicializar estado de UI autenticación
+    // Inicializar estado de UI autenticaciÃ³n
     updateHeaderUserIcon();
     updateHomeAuthBanner();
     updatePuntosAuthViews();
     
-    // Si el usuario está autenticado, registrar visita en tracking sheet y refrescar puntos
+    // Si el usuario estÃ¡ autenticado, registrar visita en tracking sheet y refrescar puntos
     if (state.authUser) {
       trackUserActivity(state.authUser.cedula, state.authUser.nombre, 'app_open');
       autoLoadPuntosDashboard();
@@ -3835,7 +3844,7 @@
 
     checkAndShowSplash();
 
-    // ── DEEP LINK: Leer parámetros de URL al arrancar la app ──────────────────────
+    // â”€â”€ DEEP LINK: Leer parÃ¡metros de URL al arrancar la app â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Ejemplos: ?tab=puntos&sub=registro | ?tab=agenda&id=EV001 | ?tab=promos&id=P001
     // QR RMA:   ?tab=rma&sub=RMA-2026-0001&email=cliente@email.com
     const _urlParams = new URLSearchParams(window.location.search);
@@ -3846,8 +3855,8 @@
       // Si hay email en la URL (viene del QR), guardarlo para que navigateTo lo use
       if (_deepEmail) window._pendingRmaEmail = _deepEmail;
       const _seccion = _deepSub ? `${_deepTab}:${_deepSub}` : _deepTab;
-      if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Cargando sección...');
-      // Pequeño delay para dejar que los datos carguen antes de navegar
+      if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Cargando secciÃ³n...');
+      // PequeÃ±o delay para dejar que los datos carguen antes de navegar
       setTimeout(() => {
         navigateTo(_seccion);
         if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
@@ -3856,7 +3865,7 @@
       history.replaceState({}, document.title, window.location.pathname);
     }
 
-    // ── SERVICE WORKER: Escuchar mensajes de navegación desde notificaciones ─
+    // â”€â”€ SERVICE WORKER: Escuchar mensajes de navegaciÃ³n desde notificaciones â”€
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', event => {
         if (event.data && event.data.type === 'NAVIGATE_TO' && event.data.seccion) {
@@ -3876,28 +3885,28 @@
 })();
 
 /* ==========================================================================
-   MÓDULO RMA — CONSULTA DE GARANTÍA (Global, fuera del IIFE principal)
+   MÃ“DULO RMA â€” CONSULTA DE GARANTÃA (Global, fuera del IIFE principal)
    Endpoint: mismo GAS de Notificaciones (action=get_rma)
    ========================================================================== */
 (function() {
   'use strict';
 
-  // URL del backend — usa el mismo GAS de Notificaciones
+  // URL del backend â€” usa el mismo GAS de Notificaciones
   const RMA_GAS_URL = 'https://script.google.com/macros/s/AKfycby8EOl7-hZ1Q8rvPCjFB2ItFrRKqwVmDoPJrhX3sM_3-O8xeoWmuZ0RxbEgNUjLN_6dfA/exec';
 
-  // Mapa de estados → { clase CSS, icono, progreso % }
+  // Mapa de estados â†’ { clase CSS, icono, progreso % }
   const ESTADO_MAP = {
     'recibido':          { cls: 'recibido',        icon: 'fa-inbox',            progress: 15,  label: 'Recibido' },
-    'en diagnóstico':    { cls: 'diagnostico',     icon: 'fa-microscope',       progress: 35,  label: 'En Diagnóstico' },
-    'en diagnóstico':    { cls: 'diagnostico',     icon: 'fa-microscope',       progress: 35,  label: 'En Diagnóstico' },
-    'en diagnostico':    { cls: 'diagnostico',     icon: 'fa-microscope',       progress: 35,  label: 'En Diagnóstico' },
-    'en reparación':     { cls: 'reparacion',      icon: 'fa-screwdriver-wrench', progress: 55, label: 'En Reparación' },
-    'en reparacion':     { cls: 'reparacion',      icon: 'fa-screwdriver-wrench', progress: 55, label: 'En Reparación' },
+    'en diagnÃ³stico':    { cls: 'diagnostico',     icon: 'fa-microscope',       progress: 35,  label: 'En DiagnÃ³stico' },
+    'en diagnÃ³stico':    { cls: 'diagnostico',     icon: 'fa-microscope',       progress: 35,  label: 'En DiagnÃ³stico' },
+    'en diagnostico':    { cls: 'diagnostico',     icon: 'fa-microscope',       progress: 35,  label: 'En DiagnÃ³stico' },
+    'en reparaciÃ³n':     { cls: 'reparacion',      icon: 'fa-screwdriver-wrench', progress: 55, label: 'En ReparaciÃ³n' },
+    'en reparacion':     { cls: 'reparacion',      icon: 'fa-screwdriver-wrench', progress: 55, label: 'En ReparaciÃ³n' },
     'espera de repuesto':{ cls: 'espera-repuesto', icon: 'fa-clock',            progress: 50,  label: 'Espera Repuesto' },
     'listo para retirar':{ cls: 'listo',           icon: 'fa-circle-check',     progress: 90,  label: 'Listo para Retirar' },
     'entregado':         { cls: 'entregado',       icon: 'fa-check-double',     progress: 100, label: 'Entregado' },
-    'sin garantía':      { cls: 'sin-garantia',    icon: 'fa-triangle-exclamation', progress: 0, label: 'Sin Garantía' },
-    'sin garantia':      { cls: 'sin-garantia',    icon: 'fa-triangle-exclamation', progress: 0, label: 'Sin Garantía' },
+    'sin garantÃ­a':      { cls: 'sin-garantia',    icon: 'fa-triangle-exclamation', progress: 0, label: 'Sin GarantÃ­a' },
+    'sin garantia':      { cls: 'sin-garantia',    icon: 'fa-triangle-exclamation', progress: 0, label: 'Sin GarantÃ­a' },
   };
 
   function getEstadoInfo(rawEstado) {
@@ -3929,11 +3938,11 @@
 
   function buildRmaCard(item) {
     const estado = getEstadoInfo(item.estado);
-    const fechaIngreso = item.fecha_ingreso || item.fecha || '—';
-    const modelo      = item.modelo || item.producto || item.equipo || '—';
+    const fechaIngreso = item.fecha_ingreso || item.fecha || 'â€”';
+    const modelo      = item.modelo || item.producto || item.equipo || 'â€”';
     const serial      = item.serial || item.numero_serie || item.serie || '';
-    const falla       = item.falla || item.descripcion || '—';
-    const tecnico     = item.tecnico || item.responsable || '—';
+    const falla       = item.falla || item.descripcion || 'â€”';
+    const tecnico     = item.tecnico || item.responsable || 'â€”';
     const rmaNum      = item.rma || item.numero_rma || item.id || '';
 
     return `
@@ -3960,11 +3969,11 @@
           </div>
           <div class="rma-step ${estado.progress >= 35 ? 'completed' : ''} ${estado.progress === 35 ? 'active' : ''}">
             <div class="rma-step-icon"><i class="fa-solid fa-microscope"></i></div>
-            <div class="rma-step-label">Diagnóstico</div>
+            <div class="rma-step-label">DiagnÃ³stico</div>
           </div>
           <div class="rma-step ${estado.progress >= 50 ? 'completed' : ''} ${estado.progress === 50 || estado.progress === 55 ? 'active' : ''}">
             <div class="rma-step-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
-            <div class="rma-step-label">Reparación</div>
+            <div class="rma-step-label">ReparaciÃ³n</div>
           </div>
           <div class="rma-step ${estado.progress >= 90 ? 'completed' : ''} ${estado.progress === 90 || estado.progress === 100 ? 'active' : ''}">
             <div class="rma-step-icon"><i class="fa-solid fa-check-double"></i></div>
@@ -3980,9 +3989,9 @@
             <span class="rma-info-label"><i class="fa-solid fa-comment-dots" style="margin-right:5px;color:#4F46E5;"></i>Falla</span>
             <span class="rma-info-value" style="white-space:normal;line-height:1.4;">${falla}</span>
           </div>
-          ${tecnico !== '—' ? `
+          ${tecnico !== 'â€”' ? `
           <div class="rma-info-row">
-            <span class="rma-info-label"><i class="fa-solid fa-user-gear" style="margin-right:5px;color:#4F46E5;"></i>Técnico</span>
+            <span class="rma-info-label"><i class="fa-solid fa-user-gear" style="margin-right:5px;color:#4F46E5;"></i>TÃ©cnico</span>
             <span class="rma-info-value">${tecnico}</span>
           </div>` : ''}
         </div>
@@ -3994,7 +4003,7 @@
     if (!input) return;
     const cedula = input.value.trim();
     if (!cedula) {
-      rmaShowError('Por favor ingresa tu cédula o RUC.');
+      rmaShowError('Por favor ingresa tu cÃ©dula o RUC.');
       return;
     }
     rmaHideError();
@@ -4018,7 +4027,7 @@
         if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
         rmaSetLoading(false);
 
-        // Normalizar respuesta — admite { data: [...] } o array directo
+        // Normalizar respuesta â€” admite { data: [...] } o array directo
         let items = Array.isArray(data) ? data : (data.data || data.rmas || data.result || []);
 
         if (!items.length) {
@@ -4026,9 +4035,9 @@
             <div style="text-align:center;padding:30px 16px;">
               <i class="fa-solid fa-box-open" style="font-size:40px;color:#e0e7ff;margin-bottom:14px;display:block;"></i>
               <div style="font-size:14px;font-weight:700;color:var(--text-dark);margin-bottom:6px;">Sin equipos en servicio</div>
-              <div style="font-size:12px;color:var(--text-muted);">No encontramos RMAs activos para <strong>${cedula}</strong>.<br>Si crees que es un error, contáctanos por WhatsApp.</div>
+              <div style="font-size:12px;color:var(--text-muted);">No encontramos RMAs activos para <strong>${cedula}</strong>.<br>Si crees que es un error, contÃ¡ctanos por WhatsApp.</div>
             </div>`;
-          if (resultSub) resultSub.textContent = `Cédula: ${cedula}`;
+          if (resultSub) resultSub.textContent = `CÃ©dula: ${cedula}`;
           if (searchCard) searchCard.style.display = 'none';
           return;
         }
@@ -4042,7 +4051,7 @@
         rmaSetLoading(false);
         console.error('[RMA]', err);
         if (resultSection) resultSection.style.display = 'none';
-        rmaShowError('No se pudo conectar al servidor. Verifica tu conexión e intenta de nuevo.');
+        rmaShowError('No se pudo conectar al servidor. Verifica tu conexiÃ³n e intenta de nuevo.');
       });
   };
 
@@ -4071,17 +4080,17 @@
 
 })();
 
-// ══════════════════════════════════════════════════════════════════════════════
-// MÓDULO: CALCULADORA DE ALMACENAMIENTO CCTV
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// MÃ“DULO: CALCULADORA DE ALMACENAMIENTO CCTV
 // Se inicializa cuando el usuario navega a la vista toolbox:calculadora-almacenamiento
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 (function() {
   'use strict';
 
   // URL del Apps Script que devuelve discos del inventario MGM
   const STORAGE_CALC_GAS = "https://script.google.com/macros/s/AKfycbwwSvsAwud-fzGHdr9ylMLaU24unDUE9ixcK1D0lPFVT9PVbgp6vEn0UkaQgZn5Bp4vpQ/exec";
 
-  // Tabla de bitrates base (kbps) por resolución y codec (cámaras IP)
+  // Tabla de bitrates base (kbps) por resoluciÃ³n y codec (cÃ¡maras IP)
   const bitrateTable = {
     digital: {
       "720":   { h264: 2048,  h265: 1536,  h265p: 1024,  mjpeg: 8000  },
@@ -4097,7 +4106,7 @@
     }
   };
 
-  // Factores de modo de grabación (porcentaje del tiempo activo)
+  // Factores de modo de grabaciÃ³n (porcentaje del tiempo activo)
   const modeFactors = {
     continuous: 1,
     motion:     0.35,
@@ -4111,7 +4120,7 @@
   let _mostrarPrecioEnPDF = false;
   let _calcInitialized = false;
 
-  // ─── Inicializar calculadora cuando el usuario llega a esa vista ───────────
+  // â”€â”€â”€ Inicializar calculadora cuando el usuario llega a esa vista â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function initCalc() {
     const addBtn  = document.getElementById('addCam');
     const calcBtn = document.getElementById('btnCalcular');
@@ -4141,7 +4150,7 @@
     addCameraRow();
   }
 
-  // ─── Agregar una fila de cámara ───────────────────────────────────────────
+  // â”€â”€â”€ Agregar una fila de cÃ¡mara â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function addCameraRow() {
     const container = document.getElementById('camList');
     if (!container) return;
@@ -4205,11 +4214,11 @@
       </div>
     `;
     container.appendChild(div);
-    // Inicializar las opciones de resolución
+    // Inicializar las opciones de resoluciÃ³n
     calcActualizarRes(div.querySelector('.tipo'));
   }
 
-  // ─── Actualizar opciones de resolución según tecnología ───────────────────
+  // â”€â”€â”€ Actualizar opciones de resoluciÃ³n segÃºn tecnologÃ­a â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   window.calcActualizarRes = function(select) {
     const row = select.closest('.cam-row');
     const resSelect   = row.querySelector('.res');
@@ -4241,7 +4250,7 @@
     }
   };
 
-  // ─── Renumerar cámaras tras eliminar ─────────────────────────────────────
+  // â”€â”€â”€ Renumerar cÃ¡maras tras eliminar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   window.calcRenumerar = function() {
     document.querySelectorAll('.cam-row').forEach((r, i) => {
       const span = r.querySelector('span');
@@ -4249,7 +4258,7 @@
     });
   };
 
-  // ─── Calcular total de almacenamiento ────────────────────────────────────
+  // â”€â”€â”€ Calcular total de almacenamiento â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function calcularTotal() {
     const days = parseInt(document.getElementById('days').value) || 1;
     let totalNeto = 0;
@@ -4313,7 +4322,7 @@
     halarInventarioMGM(totalConSeguridad * 1024);
   }
 
-  // ─── Consultar inventario de discos en MGM ────────────────────────────────
+  // â”€â”€â”€ Consultar inventario de discos en MGM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function halarInventarioMGM(capGB) {
     const container = document.getElementById('listaDiscos');
     const loading   = document.getElementById('loadingMGM');
@@ -4371,7 +4380,7 @@
       });
   }
 
-  // ─── Generar PDF de cotización ────────────────────────────────────────────
+  // â”€â”€â”€ Generar PDF de cotizaciÃ³n â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function generarPDF() {
     if (typeof window.jspdf === 'undefined') {
       if (typeof showToast === 'function') showToast('PDF no disponible: verifique conexion a internet.', 'fa-solid fa-triangle-exclamation');
@@ -4432,11 +4441,11 @@
 
     doc.save(`MGM_Almacenamiento_${client.replace(/\s/g, '_')}.pdf`);
     if (typeof showToast === 'function') {
-      showToast('¡PDF de almacenamiento generado y descargado exitosamente!', 'fa-solid fa-file-pdf');
+      showToast('Â¡PDF de almacenamiento generado y descargado exitosamente!', 'fa-solid fa-file-pdf');
     }
   }
 
-  // ─── Gancho: escuchar cambios de tab para inicializar la calculadora ──────
+  // â”€â”€â”€ Gancho: escuchar cambios de tab para inicializar la calculadora â”€â”€â”€â”€â”€â”€
   const _origSwitch = window.switchMainTab;
   window.switchMainTab = function(tabName) {
     if (_origSwitch) _origSwitch(tabName);
@@ -4455,7 +4464,7 @@
     }
   };
 
-  // Easter egg en consola (igual que la versión standalone)
+  // Easter egg en consola (igual que la versiÃ³n standalone)
   (function() {
     const fontP = "font-family:'Segoe UI',sans-serif;";
     const fontM = "font-family:'Cascadia Code',monospace;";
@@ -4467,7 +4476,7 @@
       "padding-left:10px;"
     );
     console.log(
-      `%c» %cALGORITHM:%c Predictive Retention Modeling\n» %cPAYLOAD:%c Bitrate & Framerate Analysis\n» %cAUTHOR:%c Malloy Ruiz | MGM Tecno Sistemas 2026`,
+      `%cÂ» %cALGORITHM:%c Predictive Retention Modeling\nÂ» %cPAYLOAD:%c Bitrate & Framerate Analysis\nÂ» %cAUTHOR:%c Malloy Ruiz | MGM Tecno Sistemas 2026`,
       `${fontM} color:#486581;`, `color:#2ECC71; font-weight:bold;`, `${fontM} color:#486581;`,
       `${fontM} color:#486581;`, `color:#2ECC71; font-weight:bold;`, `${fontM} color:#486581;`,
       `color:#2ECC71; font-weight:bold;`, `${fontM} color:#486581;`
@@ -4476,34 +4485,34 @@
 
 })();
 
+// Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// ══════════════════════════════════════════════════════════════════════════
-// MÓDULO: CONVERSOR TÉCNICO
-// ══════════════════════════════════════════════════════════════════════════
+// MÃ“DULO: CONVERSOR TÃ‰CNICO
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 (function() {
   let _convInitialized = false;
 
   const C = {
-   "Longitud":{ icon:"fa-ruler-horizontal", hint:"Longitudes habituales en instalación.", units:{ "Milímetros (mm)":1,"Centímetros (cm)":10,"Metros (m)":100,"Kilómetros (km)":100000,"Pulgadas (in)":25.4,"Pies (ft)":304.8,"Yardas (yd)":914.4,"Millas (mi)":1609344 } },
-   "Área":{ icon:"fa-vector-square", hint:"1 m² = 1,000,000 mm².", units:{ "mm²":1,"cm²":100,"m²":1000000,"pulgadas²":645.16,"pies²":92903.04,"hectáreas":100000000 } },
-   "Volumen":{ icon:"fa-cube", hint:"Conversión de volumen.", units:{ "mL":1,"Litros (L)":1000,"cm³":1,"m³":1000000,"Pulgadas³":16.387064,"Pies³":28316.846592,"Galones US":3785.411784 } },
+   "Longitud":{ icon:"fa-ruler-horizontal", hint:"Longitudes habituales en instalaciÃ³n.", units:{ "MilÃ­metros (mm)":1,"CentÃ­metros (cm)":10,"Metros (m)":100,"KilÃ³metros (km)":100000,"Pulgadas (in)":25.4,"Pies (ft)":304.8,"Yardas (yd)":914.4,"Millas (mi)":1609344 } },
+   "Ãrea":{ icon:"fa-vector-square", hint:"1 mÂ² = 1,000,000 mmÂ².", units:{ "mmÂ²":1,"cmÂ²":100,"mÂ²":1000000,"pulgadasÂ²":645.16,"piesÂ²":92903.04,"hectÃ¡reas":100000000 } },
+   "Volumen":{ icon:"fa-cube", hint:"ConversiÃ³n de volumen.", units:{ "mL":1,"Litros (L)":1000,"cmÂ³":1,"mÂ³":1000000,"PulgadasÂ³":16.387064,"PiesÂ³":28316.846592,"Galones US":3785.411784 } },
    "Peso":{ icon:"fa-weight-hanging", hint:"Masa/peso expresado en unidades habituales.", units:{ "Gramos (g)":1,"Kilogramos (kg)":1000,"Toneladas (t)":1000000,"Onzas (oz)":28.349523125,"Libras (lb)":453.59237 } },
-   "Temperatura":{ icon:"fa-thermometer-half", hint:"Conversión exacta entre °C, °F y Kelvin.", units:{"°C":"C","°F":"F","Kelvin (K)":"K"}, special:"temperature" },
-   "Voltaje":{ icon:"fa-bolt", hint:"Voltaje eléctrico.", units:{"Microvoltios (µV)":0.000001,"Milivoltios (mV)":0.001,"Voltios (V)":1,"Kilovoltios (kV)":1000} },
-   "Corriente":{ icon:"fa-wave-square", hint:"Corriente eléctrica.", units:{"Microamperios (µA)":0.000001,"Miliamperios (mA)":0.001,"Amperios (A)":1,"Kiloamperios (kA)":1000} },
-   "Potencia":{ icon:"fa-plug", hint:"Potencia eléctrica y mecánica.", units:{"Milivatios (mW)":0.001,"Vatios (W)":1,"Kilovatios (kW)":1000,"Megavatios (MW)":1000000,"Caballos de fuerza (HP)":745.699872} },
-   "Energía":{ icon:"fa-battery-three-quarters", hint:"Energía.", units:{"Milijulios (mJ)":0.001,"Julios (J)":1,"Wh":3600,"kWh":3600000,"MWh":3600000000} },
-   "Resistencia":{ icon:"fa-resistor" , hint:"Resistencia eléctrica.", units:{"Miliohmios (mΩ)":0.001,"Ohmios (Ω)":1,"Kiloohmios (kΩ)":1000,"Megaohmios (MΩ)":1000000} },
-   "Frecuencia":{ icon:"fa-signal", hint:"Frecuencia de señales y equipos.", units:{"Hz":1,"kHz":1000,"MHz":1000000,"GHz":1000000000} },
-   "Datos":{ icon:"fa-database", hint:"Conversión decimal de capacidad de datos.", units:{"bits":0.125,"Bytes (B)":1,"KB":1000,"MB":1000000,"GB":1000000000,"TB":1000000000000,"KiB":1024,"MiB":1048576,"GiB":1073741824,"TiB":1099511627776} },
-   "Velocidad de red":{ icon:"fa-network-wired", hint:"Velocidades de transmisión: bps, Kbps, Mbps y Gbps.", units:{"bps":1,"Kbps":1000,"Mbps":1000000,"Gbps":1000000000} },
-   "Tiempo":{ icon:"fa-clock", hint:"Tiempo.", units:{"Milisegundos (ms)":0.001,"Segundos (s)":1,"Minutos (min)":60,"Horas (h)":3600,"Días":86400} },
-   "Presión":{ icon:"fa-gauge", hint:"Presión.", units:{"Pa":1,"kPa":1000,"bar":100000,"PSI":6894.757293,"atm":101325} },
-   "Flujo":{ icon:"fa-faucet", hint:"Flujo volumétrico.", units:{"L/s":1,"L/min":0.0166666666667,"m³/h":0.277777777778,"CFM":0.471947443} },
-   "Iluminación":{ icon:"fa-lightbulb", hint:"Unidades fotométricas.", units:{"Lux (lx)":1,"Kilolux (klx)":1000} },
-   "Ángulo":{ icon:"fa-drafting-compass", hint:"Ángulos.", units:{"Grados (°)":1,"Radianes (rad)":57.2957795131} },
-   "dBm / potencia":{ icon:"fa-chart-bar", hint:"dBm es potencia logarítmica.", units:{"mW":1,"W":1000,"dBm":"dBm"}, special:"dbm" },
-   "AWG / cable":{ icon:"fa-cable-car", hint:"Equivalencias nominales AWG ↔ diámetro ↔ área del conductor.", units:{}, special:"awg" }
+   "Temperatura":{ icon:"fa-thermometer-half", hint:"ConversiÃ³n exacta entre Â°C, Â°F y Kelvin.", units:{"Â°C":"C","Â°F":"F","Kelvin (K)":"K"}, special:"temperature" },
+   "Voltaje":{ icon:"fa-bolt", hint:"Voltaje elÃ©ctrico.", units:{"Microvoltios (ÂµV)":0.000001,"Milivoltios (mV)":0.001,"Voltios (V)":1,"Kilovoltios (kV)":1000} },
+   "Corriente":{ icon:"fa-wave-square", hint:"Corriente elÃ©ctrica.", units:{"Microamperios (ÂµA)":0.000001,"Miliamperios (mA)":0.001,"Amperios (A)":1,"Kiloamperios (kA)":1000} },
+   "Potencia":{ icon:"fa-plug", hint:"Potencia elÃ©ctrica y mecÃ¡nica.", units:{"Milivatios (mW)":0.001,"Vatios (W)":1,"Kilovatios (kW)":1000,"Megavatios (MW)":1000000,"Caballos de fuerza (HP)":745.699872} },
+   "EnergÃ­a":{ icon:"fa-battery-three-quarters", hint:"EnergÃ­a.", units:{"Milijulios (mJ)":0.001,"Julios (J)":1,"Wh":3600,"kWh":3600000,"MWh":3600000000} },
+   "Resistencia":{ icon:"fa-resistor" , hint:"Resistencia elÃ©ctrica.", units:{"Miliohmios (mÎ©)":0.001,"Ohmios (Î©)":1,"Kiloohmios (kÎ©)":1000,"Megaohmios (MÎ©)":1000000} },
+   "Frecuencia":{ icon:"fa-signal", hint:"Frecuencia de seÃ±ales y equipos.", units:{"Hz":1,"kHz":1000,"MHz":1000000,"GHz":1000000000} },
+   "Datos":{ icon:"fa-database", hint:"ConversiÃ³n decimal de capacidad de datos.", units:{"bits":0.125,"Bytes (B)":1,"KB":1000,"MB":1000000,"GB":1000000000,"TB":1000000000000,"KiB":1024,"MiB":1048576,"GiB":1073741824,"TiB":1099511627776} },
+   "Velocidad de red":{ icon:"fa-network-wired", hint:"Velocidades de transmisiÃ³n: bps, Kbps, Mbps y Gbps.", units:{"bps":1,"Kbps":1000,"Mbps":1000000,"Gbps":1000000000} },
+   "Tiempo":{ icon:"fa-clock", hint:"Tiempo.", units:{"Milisegundos (ms)":0.001,"Segundos (s)":1,"Minutos (min)":60,"Horas (h)":3600,"DÃ­as":86400} },
+   "PresiÃ³n":{ icon:"fa-gauge", hint:"PresiÃ³n.", units:{"Pa":1,"kPa":1000,"bar":100000,"PSI":6894.757293,"atm":101325} },
+   "Flujo":{ icon:"fa-faucet", hint:"Flujo volumÃ©trico.", units:{"L/s":1,"L/min":0.0166666666667,"mÂ³/h":0.277777777778,"CFM":0.471947443} },
+   "IluminaciÃ³n":{ icon:"fa-lightbulb", hint:"Unidades fotomÃ©tricas.", units:{"Lux (lx)":1,"Kilolux (klx)":1000} },
+   "Ãngulo":{ icon:"fa-drafting-compass", hint:"Ãngulos.", units:{"Grados (Â°)":1,"Radianes (rad)":57.2957795131} },
+   "dBm / potencia":{ icon:"fa-chart-bar", hint:"dBm es potencia logarÃ­tmica.", units:{"mW":1,"W":1000,"dBm":"dBm"}, special:"dbm" },
+   "AWG / cable":{ icon:"fa-cable-car", hint:"Equivalencias nominales AWG â†” diÃ¡metro â†” Ã¡rea del conductor.", units:{}, special:"awg" }
   };
 
   const awg = [
@@ -4547,7 +4556,7 @@
     fromEl.innerHTML = ""; toEl.innerHTML = "";
     
     if (data.special === "awg") {
-      ["AWG","Diámetro (mm)","Área (mm²)"].forEach(u => { fromEl.add(new Option(u,u)); toEl.add(new Option(u,u)); });
+      ["AWG","DiÃ¡metro (mm)","Ãrea (mmÂ²)"].forEach(u => { fromEl.add(new Option(u,u)); toEl.add(new Option(u,u)); });
     } else {
       Object.keys(data.units).forEach(u => { fromEl.add(new Option(u,u)); toEl.add(new Option(u,u)); });
     }
@@ -4560,8 +4569,8 @@
   }
 
   function tempConvert(v,a,b){
-    let c = a==="°C" ? v : a==="°F" ? (v-32)*5/9 : v-273.15;
-    return b==="°C" ? c : b==="°F" ? c*9/5+32 : c+273.15;
+    let c = a==="Â°C" ? v : a==="Â°F" ? (v-32)*5/9 : v-273.15;
+    return b==="Â°C" ? c : b==="Â°F" ? c*9/5+32 : c+273.15;
   }
   function dbmToMw(v){ return Math.pow(10, v/10); }
   function mwToDbm(v){ return 10*Math.log10(v); }
@@ -4574,14 +4583,14 @@
     if (a==="AWG"){
       const row = awg.find(r => Math.abs(parseFloat(r[0])===v));
       if (!row) return NaN;
-      return b==="Diámetro (mm)" ? row[1] : row[2];
+      return b==="DiÃ¡metro (mm)" ? row[1] : row[2];
     }
-    let row = awg.reduce((best,r) => Math.abs(r[b==="Diámetro (mm)"?1:2]-v) < Math.abs(best[b==="Diámetro (mm)"?1:2]-v) ? r : best, awg[0]);
+    let row = awg.reduce((best,r) => Math.abs(r[b==="DiÃ¡metro (mm)"?1:2]-v) < Math.abs(best[b==="DiÃ¡metro (mm)"?1:2]-v) ? r : best, awg[0]);
     return parseFloat(row[0].replace(/[^\d.-]/g,"")) || 0;
   }
 
   function formatNum(n) {
-    if (!Number.isFinite(n)) return "Valor no válido";
+    if (!Number.isFinite(n)) return "Valor no vÃ¡lido";
     const abs = Math.abs(n);
     if (abs !== 0 && (abs < 0.000001 || abs >= 1e12)) return n.toExponential(6);
     return new Intl.NumberFormat("es-PA", { maximumFractionDigits: 8 }).format(n);
@@ -4596,7 +4605,7 @@
     if (!valueEl || !fromEl || !toEl || !resEl || !resLbl) return;
 
     const data = C[currentCat], v = parseFloat(valueEl.value);
-    if (Number.isNaN(v)) { resEl.textContent = "—"; return; }
+    if (Number.isNaN(v)) { resEl.textContent = "â€”"; return; }
     
     let out;
     if (data.special === "temperature") out = tempConvert(v, fromEl.value, toEl.value);
@@ -4667,7 +4676,7 @@
       if(d) d.value = "Error";
       calcExpr = "";
       if (typeof showToast === 'function') {
-        showToast('Expresión matemática inválida', 'fa-solid fa-triangle-exclamation');
+        showToast('ExpresiÃ³n matemÃ¡tica invÃ¡lida', 'fa-solid fa-triangle-exclamation');
       }
     }
   };
@@ -4687,7 +4696,7 @@
     else if (e.key === "Escape") calcClear();
   });
 
-  // Guard e inicialización de la pestaña
+  // Guard e inicializaciÃ³n de la pestaÃ±a
   const _origSwitchConv = window.switchMainTab;
   window.switchMainTab = function(tabName) {
     if (_origSwitchConv) _origSwitchConv(tabName);
@@ -4707,9 +4716,9 @@
 })();
 
 
-// ══════════════════════════════════════════════════════════════════════════
-//  CALCULADORA UPS — gancho de navegacion (mismo patron que almacenamiento)
-// ══════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  CALCULADORA UPS â€” gancho de navegacion (mismo patron que almacenamiento)
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 (function() {
   var _origSwitchUps = window.switchMainTab;
   window.switchMainTab = function(tabName) {
@@ -4727,21 +4736,21 @@
   };
 })();
 
-// ══════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  OFFLINE SUPPORT LOGIC
-// ══════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 (function() {
   function updateOnlineStatus() {
     const offlineIcon = document.getElementById('offline-icon');
     if (!navigator.onLine) {
       if (offlineIcon) offlineIcon.style.display = 'inline-block';
       if (typeof window.showToast === 'function') {
-        window.showToast("Estás desconectado. El contenido cargado está guardado.", "fa-solid fa-wifi-slash");
+        window.showToast("EstÃ¡s desconectado. El contenido cargado estÃ¡ guardado.", "fa-solid fa-wifi-slash");
       }
     } else {
       if (offlineIcon) offlineIcon.style.display = 'none';
       if (typeof window.showToast === 'function') {
-        window.showToast("Conexión restaurada.", "success");
+        window.showToast("ConexiÃ³n restaurada.", "success");
       }
     }
   }
@@ -4755,3 +4764,22 @@
     if (offlineIcon) offlineIcon.style.display = 'inline-block';
   }
 })();
+
+
+// SISTEMA DE MODAL DE CUMPLEAÑOS
+window.showBirthdayModal = function(isSundayMoved) {
+  const textEl = document.getElementById('modal-birthday-text');
+  if (textEl) {
+    if (isSundayMoved) {
+      textEl.innerHTML = "Como tu cumpleaños cayó domingo, <strong>¡hoy lunes es tu día especial!</strong> Tienes un <strong>10% de descuento en todas tus compras hoy</strong> en nuestras sucursales de MGM.";
+    } else {
+      textEl.innerHTML = "¡Hoy es tu día especial! Queremos celebrarlo contigo otorgándote un <strong>10% de descuento en todas tus compras hoy</strong> en nuestras sucursales de MGM.";
+    }
+  }
+  openAppModal('modal-birthday');
+  setTimeout(() => {
+    if (typeof mgmConfetti !== 'undefined' && mgmConfetti.birthday) {
+      mgmConfetti.birthday();
+    }
+  }, 400);
+};
