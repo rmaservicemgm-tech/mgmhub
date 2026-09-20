@@ -4849,6 +4849,8 @@ async function renderReferidosPanel(cedula, refCodeFromClient) {
   if (qrContainer && qrImg) {
     qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(link)}`;
     qrContainer.style.display = 'block';
+    qrImg.style.cursor = 'pointer';
+    qrImg.onclick = () => openReferralQRModal(`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(link)}`, refCode);
   }
 
   // Guardar link para copyReferralCode
@@ -4910,3 +4912,42 @@ function copyReferralCode() {
     });
   } catch(e) {}
 }
+
+// ==========================================
+// REFERRAL FULL SCREEN QR & WAKE LOCK LOGIC
+// ==========================================
+let qrWakeLock = null;
+
+async function requestQRWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      qrWakeLock = await navigator.wakeLock.request('screen');
+    }
+  } catch (err) {
+    console.log('Wake Lock API not supported or denied:', err);
+  }
+}
+
+function releaseQRWakeLock() {
+  if (qrWakeLock !== null) {
+    qrWakeLock.release().then(() => {
+      qrWakeLock = null;
+    });
+  }
+}
+
+window.openReferralQRModal = function(qrSrc, refCode) {
+  const qrImg = document.getElementById('modal-ref-qr-img');
+  const codeDisplay = document.getElementById('modal-ref-code-display');
+  
+  if (qrImg) qrImg.src = qrSrc;
+  if (codeDisplay) codeDisplay.textContent = refCode;
+  
+  openAppModal('modal-referral-qr');
+  requestQRWakeLock();
+};
+
+window.closeReferralQRModal = function() {
+  closeAppModal('modal-referral-qr');
+  releaseQRWakeLock();
+};
