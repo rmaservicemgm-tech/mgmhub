@@ -2171,109 +2171,514 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
   color: #9a3412;
 }
 
-/* ========================================= */
-/* CSS PARA CALCULADORAS (MGM-TOOLBOX)       */
-/* ========================================= */
+/* ==========================================================================
+   SECCIÓN: MGM TOOLBOX — TARJETAS DE CALCULADORAS
+   ========================================================================== */
 .mgm-calculadoras {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 16px 16px 24px;
 }
 
 .mgm-calculadoras .mgm-title {
-  text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
+  padding-top: 4px;
 }
 
 .mgm-calculadoras .mgm-title h2 {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 800;
-  color: var(--text-dark, #1f2937);
-  margin-bottom: 10px;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+  letter-spacing: -0.02em;
 }
 
 .mgm-calculadoras .mgm-title p {
-  font-size: 14px;
-  color: var(--text-light, #6b7280);
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.4;
 }
 
+/* Grid de tarjetas */
 .mgm-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
+/* Tarjeta base */
 .mgm-card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border: 1px solid var(--border-light, #e5e7eb);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  padding: 16px 14px 14px;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   position: relative;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
+/* Tarjeta activa */
 .mgm-card.activo {
   cursor: pointer;
-  border-left: 4px solid var(--primary-color, #2563eb);
+  border-top: 3px solid var(--primary-blue);
 }
 
 .mgm-card.activo:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-blue);
 }
 
-.mgm-card:not(.activo) {
-  background: #f9fafb;
-  opacity: 0.8;
-  border-left: 4px solid #d1d5db;
+/* Tarjeta inactiva */
+.mgm-card.inactivo {
+  background: var(--bg-card-alt);
+  opacity: 0.72;
+  border-top: 3px solid var(--border-mid);
+  cursor: default;
 }
 
-.mgm-card:not(.activo) .mgm-icon {
-  color: #9ca3af;
+.mgm-card.inactivo .mgm-icon {
+  color: var(--text-subtle);
 }
 
-.mgm-card:not(.activo) h3 {
-  color: #6b7280;
+.mgm-card.inactivo h3 {
+  color: var(--text-muted);
 }
 
+/* Ícono de la tarjeta */
 .mgm-icon {
-  font-size: 28px;
-  color: var(--primary-color, #2563eb);
-  margin-bottom: 15px;
+  font-size: 24px;
+  color: var(--primary-blue);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .mgm-card h3 {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-dark, #1f2937);
-  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin-bottom: 5px;
+  line-height: 1.3;
 }
 
 .mgm-card p {
-  font-size: 13px;
-  color: var(--text-light, #6b7280);
-  margin-bottom: 15px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
   flex-grow: 1;
+  line-height: 1.4;
 }
 
+/* Badge de "Próximamente" */
+.badge-lock {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--bg-page);
+  border: 1px solid var(--border-mid);
+  color: var(--text-subtle);
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Botón de la tarjeta */
 .mgm-btn {
-  display: inline-block;
-  padding: 8px 16px;
-  background-color: var(--primary-color, #2563eb);
-  color: white;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: var(--primary-blue);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 800;
+  border-radius: 7px;
   text-align: center;
   text-decoration: none;
-  transition: background-color 0.2s ease;
+  transition: background 0.2s ease;
   margin-top: auto;
   pointer-events: none;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+}
+
+.mgm-card.inactivo .mgm-btn {
+  background: var(--border-mid);
+  color: var(--text-muted);
 }
 
 .mgm-card.activo:hover .mgm-btn {
-  background-color: var(--primary-dark, #1d4ed8);
+  background: var(--primary-navy-mid);
 }
+
+/* ==========================================================================
+   SECCIÓN: VISTAS INTERNAS DE CALCULADORAS
+   ========================================================================== */
+
+/* Módulo general de calculadora */
+.calc-module {
+  padding: 20px 16px 24px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Header de la calculadora (título + botón volver) */
+.header-brand {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-top: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.header-brand h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--primary-blue);
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.02em;
+}
+
+.header-brand span {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Botón Volver — clase reutilizable para todas las calculadoras */
+.btn-back-calc {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card-alt);
+  color: var(--text-dark);
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+.btn-back-calc:hover {
+  background: var(--primary-blue-lt);
+  color: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+
+/* Info del proyecto (calculadora almacenamiento) */
+.project-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+  background: var(--bg-card-alt);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 14px;
+}
+
+.footer-controls {
+  margin-top: 16px;
+}
+
+/* ==========================================================================
+   SECCIÓN: CONVERSOR TÉCNICO
+   ========================================================================== */
+.conversor-module .conv-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-page);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-light);
+}
+
+.conv-tab {
+  flex: 1;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.conv-tab.active {
+  background: var(--bg-surface);
+  color: var(--primary-blue);
+  box-shadow: var(--shadow-xs);
+}
+
+.conv-panel { display: none; }
+.conv-panel.active { display: block; animation: viewIn 0.2s ease; }
+
+/* Búsqueda del conversor */
+.conv-search {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-dark);
+  background: var(--bg-surface);
+  outline: none;
+  margin-bottom: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.conv-search:focus {
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px var(--primary-blue-glow);
+}
+
+/* Grilla de categorías */
+.conv-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+  max-height: 120px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-bottom: 4px;
+}
+
+.conv-cat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border-light);
+  background: var(--bg-surface);
+  color: var(--text-body);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.conv-cat-btn.active,
+.conv-cat-btn:hover {
+  background: var(--primary-blue);
+  color: #fff;
+  border-color: var(--primary-blue);
+}
+
+/* Caja del conversor DE/A */
+.converter-box {
+  background: var(--bg-card-alt);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.conv-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.conv-field label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.conv-field select,
+.conv-field input[type="number"] {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-family: inherit;
+  color: var(--text-dark);
+  background: var(--bg-surface);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.conv-field select:focus,
+.conv-field input[type="number"]:focus {
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px var(--primary-blue-glow);
+}
+
+/* Botón swap (intercambiar) */
+.conv-swap {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--primary-blue);
+  background: var(--primary-blue-lt);
+  color: var(--primary-blue);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-family: inherit;
+  align-self: flex-end;
+  margin-bottom: 2px;
+}
+.conv-swap:hover {
+  background: var(--primary-blue);
+  color: #fff;
+}
+
+/* Resultado de conversión */
+.conv-result {
+  background: var(--primary-navy);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-top: 14px;
+  text-align: center;
+}
+
+.conv-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.conv-value-text {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--accent-gold);
+  letter-spacing: -0.02em;
+}
+
+.conv-hint {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--bg-card-alt);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  line-height: 1.5;
+  min-height: 0;
+}
+.conv-hint:empty { display: none; }
+
+/* Calculadora dentro del conversor */
+.conv-calc {
+  background: var(--bg-card-alt);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 14px;
+}
+
+.conv-calc-display {
+  width: 100%;
+  background: var(--primary-navy);
+  color: var(--accent-gold);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 24px;
+  font-weight: 800;
+  text-align: right;
+  font-family: 'Outfit', monospace;
+  margin-bottom: 12px;
+  outline: none;
+  letter-spacing: -0.02em;
+}
+
+.conv-calc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.conv-calc-grid button {
+  padding: 13px;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-dark);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.conv-calc-grid button:hover {
+  background: var(--primary-blue-lt);
+  border-color: var(--primary-blue);
+  color: var(--primary-blue);
+  transform: scale(0.97);
+}
+.conv-calc-grid button:active { transform: scale(0.93); }
+
+.conv-clear {
+  background: #fef2f2 !important;
+  border-color: #fca5a5 !important;
+  color: var(--accent-red) !important;
+}
+.conv-clear:hover {
+  background: var(--accent-red) !important;
+  color: #fff !important;
+}
+
+.conv-op {
+  background: var(--primary-blue-lt) !important;
+  color: var(--primary-blue) !important;
+  border-color: var(--primary-blue) !important;
+  font-weight: 800 !important;
+}
+.conv-op:hover {
+  background: var(--primary-blue) !important;
+  color: #fff !important;
+}
+
+.conv-equal {
+  background: var(--primary-blue) !important;
+  color: #fff !important;
+  border-color: var(--primary-blue) !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+}
+.conv-equal:hover {
+  background: var(--primary-navy-mid) !important;
+}
+
