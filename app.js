@@ -2240,16 +2240,21 @@
         const diffHoras = diffMs / (1000 * 60 * 60);
         const diffDias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
+        const esHoy = ahora.toDateString() === fechaEv.toDateString();
+        const manana = new Date(ahora);
+        manana.setDate(manana.getDate() + 1);
+        const esManana = manana.toDateString() === fechaEv.toDateString();
+
         if (diffMs <= 0 && diffMs > -7200000) {
           countdownHtml = `<div class="my-course-countdown-pill days-live"><i class="fa-solid fa-satellite-dish"></i> ¡EN VIVO AHORA!</div>`;
         } else if (diffMs <= -7200000) {
           countdownHtml = `<div class="my-course-countdown-pill days-past"><i class="fa-solid fa-check"></i> Evento Finalizado</div>`;
-        } else if (diffHoras < 1) {
+        } else if (diffHoras > 0 && diffHoras < 1) {
           const minRestantes = Math.max(1, Math.round(diffMs / 60000));
           countdownHtml = `<div class="my-course-countdown-pill days-today"><i class="fa-solid fa-bell"></i> ¡Inicia en ${minRestantes} min!</div>`;
-        } else if (diffHoras < 24) {
+        } else if (esHoy) {
           countdownHtml = `<div class="my-course-countdown-pill days-today"><i class="fa-solid fa-fire"></i> ¡HOY a las ${formatEventTime(course.fecha)}!</div>`;
-        } else if (diffDias === 1) {
+        } else if (esManana) {
           countdownHtml = `<div class="my-course-countdown-pill days-soon"><i class="fa-solid fa-clock"></i> Mañana a las ${formatEventTime(course.fecha)}</div>`;
         } else if (diffDias <= 3) {
           countdownHtml = `<div class="my-course-countdown-pill days-soon"><i class="fa-solid fa-hourglass-half"></i> Faltan ${diffDias} días</div>`;
