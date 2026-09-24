@@ -2277,3 +2277,194 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
 .mgm-card.activo:hover .mgm-btn {
   background-color: var(--primary-dark, #1d4ed8);
 }
+
+/* --- MGM Calculadoras --- */
+.mgm-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 20px;
+}
+@media (max-width: 768px) {
+  .mgm-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.calc-module {
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
+
+.header-brand {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-top: 20px !important;
+  margin-bottom: 30px !important;
+}
+
+/* --- MGM Conversor Técnico Styles --- */
+.conv-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.conv-tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: var(--bg-card-alt, #f8f9fa);
+  color: var(--text-muted, #6c757d);
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.conv-tab.active {
+  background: var(--primary-blue, #0d6efd);
+  color: #fff;
+}
+.conv-panel {
+  display: none;
+}
+.conv-panel.active {
+  display: block;
+}
+.conv-search {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-light, #dee2e6);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+.conv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.conv-cat-btn {
+  padding: 10px;
+  border: 1px solid var(--border-light, #dee2e6);
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+.conv-cat-btn.active {
+  border-color: var(--primary-blue, #0d6efd);
+  color: var(--primary-blue, #0d6efd);
+  background: #e7f0fd;
+}
+.converter-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid #dee2e6;
+}
+.conv-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.conv-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted, #6c757d);
+  margin-bottom: 5px;
+}
+.conv-field select, .conv-field input {
+  padding: 10px;
+  border: 1px solid var(--border-light, #dee2e6);
+  border-radius: 8px;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.conv-swap {
+  background: var(--primary-blue, #0d6efd);
+  color: #fff;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 15px;
+}
+.conv-result {
+  background: #e7f0fd;
+  border-left: 4px solid var(--primary-blue, #0d6efd);
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+}
+.conv-label {
+  font-size: 12px;
+  color: var(--text-muted, #6c757d);
+  font-weight: 700;
+}
+.conv-value-text {
+  font-size: 24px;
+  color: var(--primary-blue, #0d6efd);
+  font-weight: 800;
+  word-break: break-all;
+}
+.conv-hint {
+  font-size: 12px;
+  color: var(--text-muted, #6c757d);
+  margin-top: 10px;
+  text-align: center;
+}
+.conv-calc-display {
+  width: 100%;
+  padding: 15px;
+  font-size: 24px;
+  text-align: right;
+  border: 1px solid var(--border-light, #dee2e6);
+  border-radius: 12px;
+  margin-bottom: 15px;
+  box-sizing: border-box;
+  background: #f8f9fa;
+}
+.conv-calc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.conv-calc-grid button {
+  padding: 15px;
+  font-size: 18px;
+  font-weight: 700;
+  border: 1px solid var(--border-light, #dee2e6);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.conv-calc-grid button:hover {
+  background: #e2e8f0;
+}
+.conv-op {
+  background: #e7f0fd !important;
+  color: var(--primary-blue, #0d6efd) !important;
+}
+.conv-equal {
+  background: var(--primary-blue, #0d6efd) !important;
+  color: #fff !important;
+}
+.conv-clear {
+  color: #dc3545 !important;
+}
+

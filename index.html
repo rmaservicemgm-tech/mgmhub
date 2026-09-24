@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>MGM Hub — Soluciones & Beneficios MGM</title>
-  <meta name="description" content="Aplicación Móvil MGM Hub: MGM Puntos, Calendario de Capacitaciones, Promociones del Mes y Asistente IA Magie.">
+  <title>MGM Hub â€” Soluciones & Beneficios MGM</title>
+  <meta name="description" content="AplicaciÃ³n MÃ³vil MGM Hub: MGM Puntos, Calendario de Capacitaciones, Promociones del Mes y Asistente IA Magie.">
   <meta name="theme-color" content="#ffffff">
   <link rel="manifest" href="manifest.json">
   
@@ -21,10 +21,10 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
-  <!-- 🎉 canvas-confetti — celebraciones MGM Hub -->
+  <!-- ðŸŽ‰ canvas-confetti â€” celebraciones MGM Hub -->
   <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
-  <!-- Registro del Service Worker con auto-actualización -->
+  <!-- Registro del Service Worker con auto-actualizaciÃ³n -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
@@ -34,8 +34,8 @@
             const newWorker = reg.installing;
             newWorker.addEventListener('statechange', function () {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // Hay una nueva versión: forzar recarga automática
-                console.log('[MGM Hub] Nueva versión disponible, actualizando...');
+                // Hay una nueva versiÃ³n: forzar recarga automÃ¡tica
+                console.log('[MGM Hub] Nueva versiÃ³n disponible, actualizando...');
                 newWorker.postMessage({ type: 'SKIP_WAITING' });
               }
             });
@@ -88,15 +88,15 @@
     };
   </script>
 
-  <!-- ══════════════════════════════════════════════════════════════════════════
-       PANTALLA BIENVENIDA: INSTALAR WEBAPP (solo si no está ya instalada)
-       ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+       PANTALLA BIENVENIDA: INSTALAR WEBAPP (solo si no estÃ¡ ya instalada)
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
   <div id="install-overlay" style="display:none;">
     <div id="install-card">
       <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" id="install-logo">
       <div id="install-badge">HUB</div>
       <h1 id="install-title">MGM Hub</h1>
-      <p id="install-sub">Tu centro de beneficios, promociones y puntos MGM — siempre a la mano.</p>
+      <p id="install-sub">Tu centro de beneficios, promociones y puntos MGM â€” siempre a la mano.</p>
       <div id="install-features">
         <div class="install-feature">
           <i class="fa-solid fa-star" style="color:#ffb800;"></i>
@@ -120,7 +120,7 @@
       </button>
       <div id="install-ios-hint" style="display:none;">
         <i class="fa-solid fa-arrow-up-from-bracket"></i>
-        <span>En Safari: toca <strong>Compartir</strong> → <strong>Añadir a inicio</strong></span>
+        <span>En Safari: toca <strong>Compartir</strong> â†’ <strong>AÃ±adir a inicio</strong></span>
       </div>
       <button id="btn-skip-install" onclick="skipInstallOverlay()">
         <i class="fa-solid fa-globe"></i> Continuar en el navegador
@@ -134,16 +134,16 @@
   <!-- APP MOBILE ROOT SHELL -->
   <div id="app-root">
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
-         HEADER PRINCIPAL MÓVIL (BLANCO CON BOTÓN ASESORÍA)
-         ══════════════════════════════════════════════════════════════════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+         HEADER PRINCIPAL MÃ“VIL (BLANCO CON BOTÃ“N ASESORÃA)
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <header class="app-header">
       <div class="brand-wrapper">
         <img src="https://mgmpty.odoo.com/web/image/website/1/logo/MGM?unique=44e5057" alt="MGM Logo" class="brand-logo-img" onerror="this.src='https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'">
         <div class="brand-titles">
           <div class="brand-app-name">
             MGM <span class="badge-box">HUB</span>
-            <i class="fa-solid fa-wifi-slash" id="offline-icon" title="Sin conexión"></i>
+            <i class="fa-solid fa-wifi-slash" id="offline-icon" title="Sin conexiÃ³n"></i>
           </div>
           <div class="brand-tagline">Soluciones & Beneficios</div>
         </div>
@@ -159,29 +159,29 @@
           <i class="fa-regular fa-user"></i>
         </button>
 
-        <button id="btn-open-chat-header" class="btn-header-wa-action" onclick="openAsesoriaModal()" aria-label="Asesoría WhatsApp">
+        <button id="btn-open-chat-header" class="btn-header-wa-action" onclick="openAsesoriaModal()" aria-label="AsesorÃ­a WhatsApp">
           <i class="fa-brands fa-whatsapp"></i>
-          <span>Asesoría</span>
+          <span>AsesorÃ­a</span>
         </button>
       </div>
     </header>
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
          VISTA 1: INICIO (DASHBOARD HUB)
-         ══════════════════════════════════════════════════════════════════════════ -->
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <main id="view-home" class="view-container active">
 
-      <!-- BANNER INTELIGENTE DE BIENVENIDA / AUTENTICACIÓN (PUNTOS) -->
+      <!-- BANNER INTELIGENTE DE BIENVENIDA / AUTENTICACIÃ“N (PUNTOS) -->
       <div id="home-auth-banner" class="home-auth-banner"></div>
 
-      <!-- HERO BANNER: PRÓXIMO EVENTO O EVENTO EN CURSO -->
+      <!-- HERO BANNER: PRÃ“XIMO EVENTO O EVENTO EN CURSO -->
       <div class="next-event-hero" id="home-event-banner" onclick="switchMainTab('agenda')">
         <div class="next-event-icon-box" id="home-event-icon-wrap">
           <i class="fa-solid fa-calendar-star" id="home-event-icon"></i>
         </div>
         <div class="next-event-details">
           <div class="next-event-badge" id="home-event-badge">
-            <i class="fa-solid fa-bolt"></i> Próximo Evento
+            <i class="fa-solid fa-bolt"></i> PrÃ³ximo Evento
           </div>
           <div class="next-event-title-text" id="home-event-title">Sincronizando agenda...</div>
           <div class="next-event-countdown" id="home-event-time">Calculando fecha...</div>
@@ -189,9 +189,9 @@
         <i class="fa-solid fa-chevron-right" style="color: rgba(255,255,255,0.6); font-size: 13px;"></i>
       </div>
 
-      <!-- SECCIÓN: ACCESOS DIRECTOS RÁPIDOS -->
+      <!-- SECCIÃ“N: ACCESOS DIRECTOS RÃPIDOS -->
       <div class="section-header">
-        <h2 class="section-title"><i class="fa-solid fa-grip" style="color: var(--primary-blue);"></i> Servicios Rápidos</h2>
+        <h2 class="section-title"><i class="fa-solid fa-grip" style="color: var(--primary-blue);"></i> Servicios RÃ¡pidos</h2>
       </div>
 
       <div class="quick-grid">
@@ -233,32 +233,32 @@
           <div class="card-icon-pill pill-toolbox"><i class="fa-solid fa-toolbox"></i></div>
           <div>
             <div class="card-title">MGM Toolbox</div>
-            <div class="card-desc">Herramientas pro para cálculos técnicos.</div>
+            <div class="card-desc">Herramientas pro para cÃ¡lculos tÃ©cnicos.</div>
           </div>
         </div>
       </div>
 
-      <!-- SECCIÓN: PROMOCIONES DESTACADAS EN TIEMPO REAL -->
+      <!-- SECCIÃ“N: PROMOCIONES DESTACADAS EN TIEMPO REAL -->
       <div class="section-header">
         <h2 class="section-title"><i class="fa-solid fa-sparkles" style="color: var(--accent-gold-dark);"></i> Promos de este Mes</h2>
-        <span class="section-link" onclick="switchMainTab('promos')">Ver todas →</span>
+        <span class="section-link" onclick="switchMainTab('promos')">Ver todas â†’</span>
       </div>
 
       <div class="promos-slider-container" id="home-promos-slider">
         <div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Cargando promociones del mes...</div>
       </div>
 
-      <!-- SECCIÓN: PREMIOS CANJEABLES POR PUNTOS -->
+      <!-- SECCIÃ“N: PREMIOS CANJEABLES POR PUNTOS -->
       <div class="section-header" style="margin-top: 10px;">
         <h2 class="section-title"><i class="fa-solid fa-gift" style="color: #10b981;"></i> Premios por Puntos</h2>
-        <span class="section-link" onclick="switchMainTab('puntos')">Mis Puntos →</span>
+        <span class="section-link" onclick="switchMainTab('puntos')">Mis Puntos â†’</span>
       </div>
 
       <div class="premios-slider-container" id="home-premios-slider">
-        <div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Cargando catálogo de premios...</div>
+        <div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Cargando catÃ¡logo de premios...</div>
       </div>
 
-      <!-- SECCIÓN: BANNER PUBLICITARIO / DESTACADOS -->
+      <!-- SECCIÃ“N: BANNER PUBLICITARIO / DESTACADOS -->
       <style>
         .mgm-ad-container {
           width: 100%;
@@ -402,7 +402,7 @@
         }
 
         // Detecta si una URL apunta a la propia app MGM Hub
-        // Extrae el valor de ?tab= (y opcionalmente &sub=) para navegación interna
+        // Extrae el valor de ?tab= (y opcionalmente &sub=) para navegaciÃ³n interna
         function extractInternalRoute(url) {
           if (!url || url === '#') return null;
           try {
@@ -428,7 +428,7 @@
           if (!link || link === '#') return '';
           const route = extractInternalRoute(link);
           if (route) {
-            // Navegación interna sin abrir nueva pestaña
+            // NavegaciÃ³n interna sin abrir nueva pestaÃ±a
             return `onclick="event.preventDefault(); if(typeof navigateTo==='function') navigateTo('${route.replace(/'/g,"\\'")}');" style="cursor:pointer;"`;
           }
           return `href="${link}" target="_blank" rel="noopener noreferrer"`;
@@ -449,11 +449,11 @@
           const link = fixUrl(ad.Link_Click);
           if (fmt === 'imagen') {
             const hasLink = link && link !== '#';
-            const imgTag = `<img src="${contenido}" alt="${ad.Nombre_Campaña || ad['Nombre_Campaña'] || 'Publicidad MGM'}" loading="lazy">`;
+            const imgTag = `<img src="${contenido}" alt="${ad.Nombre_CampaÃ±a || ad['Nombre_CampaÃ±a'] || 'Publicidad MGM'}" loading="lazy">`;
             if (!hasLink) return imgTag;
             const route = extractInternalRoute(link);
             if (route) {
-              // Enlace interno: div clickeable sin abrir pestaña
+              // Enlace interno: div clickeable sin abrir pestaÃ±a
               return `<div onclick="if(typeof navigateTo==='function') navigateTo('${route.replace(/'/g,"\\'")}');" style="cursor:pointer;">${imgTag}</div>`;
             }
             return `<a href="${link}" target="_blank" rel="noopener noreferrer">${imgTag}</a>`;
@@ -521,9 +521,9 @@
               return;
             }
 
-            // Filtrar por ubicación y estado activo
+            // Filtrar por ubicaciÃ³n y estado activo
             const validAds = allAds.filter(a => {
-              const u = (a.Ubicacion || a.Ubicación || '').toLowerCase().trim();
+              const u = (a.Ubicacion || a.UbicaciÃ³n || '').toLowerCase().trim();
               const est = (a.Estado || '').toLowerCase().trim();
               const isLoc = u === 'todos' || u === 'web' || u === 'inicio' || !u;
               const isActive = est !== 'inactivo' && est !== 'pausado';
@@ -541,7 +541,7 @@
               // Un solo anuncio: renderizado directo
               target.innerHTML = getAdHtml(validAds[0]);
             } else {
-              // Múltiples anuncios: Slider interactivo con autoplay
+              // MÃºltiples anuncios: Slider interactivo con autoplay
               const slidesHtml = validAds.map(ad => `
                 <div class="mgm-ad-slide-item">
                   ${getAdHtml(ad)}
@@ -565,7 +565,7 @@
                 </div>
               `;
 
-              // Soporte táctil / swipe en móvil
+              // Soporte tÃ¡ctil / swipe en mÃ³vil
               const wrapper = document.getElementById('mgm-ad-slider-wrapper');
               if (wrapper) {
                 let startX = 0;
@@ -601,7 +601,7 @@
       })();
       </script>
 
-      <!-- SECCIÓN: BENEFICIOS MGM (CON PADDING PARA SCROLL COMPLETO) -->
+      <!-- SECCIÃ“N: BENEFICIOS MGM (CON PADDING PARA SCROLL COMPLETO) -->
       <div class="section-header">
         <h2 class="section-title"><i class="fa-solid fa-shield-check" style="color: var(--primary-blue);"></i> Experiencia MGM</h2>
       </div>
@@ -610,14 +610,14 @@
         <div class="feature-item">
           <div class="feature-icon" style="color: var(--accent-gold-dark);"><i class="fa-solid fa-award"></i></div>
           <div class="feature-text">
-            <strong>Garantía & Respaldo Oficial</strong>
-            <span>Distribución autorizada de las mejores marcas de seguridad electrónica en Panamá.</span>
+            <strong>GarantÃ­a & Respaldo Oficial</strong>
+            <span>DistribuciÃ³n autorizada de las mejores marcas de seguridad electrÃ³nica en PanamÃ¡.</span>
           </div>
         </div>
         <div class="feature-item">
           <div class="feature-icon" style="color: var(--primary-blue);"><i class="fa-solid fa-user-tie"></i></div>
           <div class="feature-text">
-            <strong>Asesoría Técnica Especializada</strong>
+            <strong>AsesorÃ­a TÃ©cnica Especializada</strong>
             <span>Ingenieros de proyectos listos para dimensionar tus soluciones de CCTV y Control de Acceso.</span>
           </div>
         </div>
@@ -625,46 +625,46 @@
 
     </main>
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
          VISTA 2: MGM PUNTOS (PORTAL CLIENTE EXCLUSIVO)
-         ══════════════════════════════════════════════════════════════════════════ -->
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <main id="view-puntos" class="view-container">
 
-      <!-- SUB-NAVEGACIÓN INTERNA MGM PUNTOS -->
+      <!-- SUB-NAVEGACIÃ“N INTERNA MGM PUNTOS -->
       <div class="puntos-subnav">
         <button class="puntos-subtab active" data-subview="subview-cuenta">Mi Cuenta</button>
         <button class="puntos-subtab" data-subview="subview-registro">Registrarme</button>
         <button class="puntos-subtab" data-subview="subview-promos">Beneficios</button>
-        <button class="puntos-subtab" data-subview="subview-terminos">Términos</button>
+        <button class="puntos-subtab" data-subview="subview-terminos">TÃ©rminos</button>
       </div>
 
       <!-- SUBVISTA 1: MI CUENTA / CONSULTA DE PUNTOS -->
       <div id="subview-cuenta" class="puntos-subview active">
 
-        <!-- CAJA DE LOGIN / CONSULTA POR CÉDULA -->
+        <!-- CAJA DE LOGIN / CONSULTA POR CÃ‰DULA -->
         <div id="puntos-login-box" class="app-form">
           <div style="text-align: center; margin-bottom: 16px;">
             <i class="fa-solid fa-address-card" style="font-size: 32px; color: var(--accent-gold-dark); margin-bottom: 8px;"></i>
             <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">Consulta tus MGM Puntos</h3>
-            <p style="font-size: 12px; color: var(--text-muted);">Ingresa tu cédula o RUC registrado para ver tu saldo acumulado.</p>
+            <p style="font-size: 12px; color: var(--text-muted);">Ingresa tu cÃ©dula o RUC registrado para ver tu saldo acumulado.</p>
           </div>
 
           <div id="puntos-login-alert" class="app-alert"></div>
 
           <form id="form-puntos-login">
             <div class="form-group">
-              <label class="form-label" for="login-cedula">Cédula o Correo</label>
+              <label class="form-label" for="login-cedula">CÃ©dula o Correo</label>
               <input type="text" id="login-cedula" class="form-control" placeholder="Ej: 8-888-1234 o juan@email.com" data-fmt="cedula" required>
             </div>
             <button type="submit" class="btn-submit">
-              <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión / Ver Mis Puntos
+              <i class="fa-solid fa-right-to-bracket"></i> Iniciar SesiÃ³n / Ver Mis Puntos
             </button>
           </form>
 
           <div style="margin-top: 14px; text-align: center; font-size: 12.5px; color: var(--text-muted); border-top: 1px dashed var(--border-light); padding-top: 12px;">
-            ¿Aún no eres miembro de MGM Puntos? 
+            Â¿AÃºn no eres miembro de MGM Puntos? 
             <a href="javascript:void(0)" onclick="navigateTo('puntos:registro')" style="color: var(--primary-blue); font-weight: 700; text-decoration: underline;">
-              Regístrate gratis aquí
+              RegÃ­strate gratis aquÃ­
             </a>
           </div>
         </div>
@@ -672,7 +672,7 @@
         <!-- DASHBOARD DIGITAL DE SOCIO (SE REVELA TRAS CONSULTAR) -->
         <div id="puntos-dashboard-box" style="display: none;">
 
-          <!-- TARJETA DIGITAL DE MEMBRESÍA -->
+          <!-- TARJETA DIGITAL DE MEMBRESÃA -->
           <div class="member-card">
             <div class="member-card-header">
               <img src="https://mgmpty.odoo.com/web/image/website/1/logo/MGM?unique=44e5057" alt="MGM Logo" class="card-brand-logo">
@@ -694,18 +694,18 @@
             </div>
           </div>
 
-          <!-- BANNER ESPECIAL DE CUMPLEAÑOS -->
+          <!-- BANNER ESPECIAL DE CUMPLEAÃ‘OS -->
           <div id="dash-bday-banner" class="bday-banner" style="display: none;">
-            <div class="bday-icon">🎂</div>
+            <div class="bday-icon">ðŸŽ‚</div>
             <div class="bday-text">
-              <strong id="bday-banner-title">¡Feliz Cumpleaños! 🎉</strong>
-              <span id="bday-banner-sub">¡Hoy es tu día especial! Disfruta de un 10% de descuento en tus compras hoy en MGM.</span>
+              <strong id="bday-banner-title">Â¡Feliz CumpleaÃ±os! ðŸŽ‰</strong>
+              <span id="bday-banner-sub">Â¡Hoy es tu dÃ­a especial! Disfruta de un 10% de descuento en tus compras hoy en MGM.</span>
             </div>
           </div>
 
           <!-- HISTORIAL DE MOVIMIENTOS -->
           <div class="section-header" style="padding: 10px 0;">
-            <h3 class="section-title"><i class="fa-solid fa-receipt" style="color: var(--primary-blue);"></i> Últimos Movimientos</h3>
+            <h3 class="section-title"><i class="fa-solid fa-receipt" style="color: var(--primary-blue);"></i> Ãšltimos Movimientos</h3>
             <button class="btn-header-action" onclick="logoutClient()" style="width: auto; height: auto; padding: 4px 10px; border-radius: 6px; font-size: 11px; background: var(--bg-page); color: var(--text-dark); border-color: var(--border-light);">
               <i class="fa-solid fa-arrow-right-from-bracket"></i> Salir
             </button>
@@ -731,29 +731,29 @@
             <div class="referidos-card">
               <h4>Gana Puntos por Referir</h4>
               <p style="font-size: 13px; color: rgba(255,255,255,0.85); margin: 0 0 15px 0;">
-                Invita a tus amigos y gana <strong>300 pts</strong> cuando realicen su primera compra de <strong>$100 o más</strong>. ¡Ellos también ganarán 300 pts de bienvenida!
+                Invita a tus amigos y gana <strong>300 pts</strong> cuando realicen su primera compra de <strong>$100 o mÃ¡s</strong>. Â¡Ellos tambiÃ©n ganarÃ¡n 300 pts de bienvenida!
               </p>
               <div class="ref-code-display">
                 <span id="dash-ref-code">Cargando...</span>
-                <i class="fa-regular fa-copy" onclick="copyReferralCode()" title="Copiar Código"></i>
+                <i class="fa-regular fa-copy" onclick="copyReferralCode()" title="Copiar CÃ³digo"></i>
               </div>
               <a href="#" id="btn-share-whatsapp" class="btn-whatsapp-share" target="_blank" style="margin-top: 10px;">
                 <i class="fa-brands fa-whatsapp"></i> Compartir por WhatsApp
               </a>
               <div id="qr-code-container" style="margin-top: 15px; text-align: center; display: none;">
                 <img id="ref-qr-img" src="" alt="QR Referido" style="width: 120px; height: 120px; border-radius: 8px; border: 2px solid rgba(255,255,255,0.2);">
-                <div style="font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 5px;">Pídele a tu amigo que escanee este código</div>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 5px;">PÃ­dele a tu amigo que escanee este cÃ³digo</div>
               </div>
             </div>
 
             <h4 style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin: 0 0 10px 0;">Mis Referidos</h4>
             <div id="dash-ref-stats" style="font-size: 13px; color: var(--status-green); font-weight: 600; margin-bottom: 12px; display: none;">
-              ¡Has ganado <span id="dash-ref-pts-total">0</span> pts gracias a tus referidos!
+              Â¡Has ganado <span id="dash-ref-pts-total">0</span> pts gracias a tus referidos!
             </div>
             <div id="ref-list-container">
               <div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 13px; background: var(--bg-white); border-radius: 8px;">
                 <i class="fa-solid fa-users" style="font-size: 24px; color: #cbd5e1; margin-bottom: 10px; display: block;"></i>
-                Aún no has referido a nadie. ¡Comparte tu código para empezar a ganar!
+                AÃºn no has referido a nadie. Â¡Comparte tu cÃ³digo para empezar a ganar!
               </div>
             </div>
           </div>
@@ -764,14 +764,14 @@
       <!-- SUBVISTA 2: REGISTRO DE CLIENTE -->
       <div id="subview-registro" class="puntos-subview">
         <div class="app-form">
-          <!-- Banner si ya está autenticado -->
+          <!-- Banner si ya estÃ¡ autenticado -->
           <div id="reg-already-auth" style="display: none; text-align: center; padding: 20px 10px;">
             <div style="width: 52px; height: 52px; border-radius: 50%; background: #ecfdf5; color: #10b981; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px; border: 2px solid #a7f3d0;">
               <i class="fa-solid fa-id-card-clip"></i>
             </div>
             <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px;">Ya eres Miembro de MGM Puntos</h3>
             <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
-              Tienes una sesión activa como <strong id="reg-auth-name" style="color: var(--text-dark);">---</strong><br>
+              Tienes una sesiÃ³n activa como <strong id="reg-auth-name" style="color: var(--text-dark);">---</strong><br>
               <span id="reg-auth-cedula" style="font-size: 11.5px; color: var(--text-subtle);"></span>
             </p>
             <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
@@ -788,7 +788,7 @@
           <div id="reg-form-wrap">
             <div style="text-align: center; margin-bottom: 16px;">
               <i class="fa-solid fa-user-plus" style="font-size: 30px; color: var(--primary-blue); margin-bottom: 6px;"></i>
-              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">Únete al Programa MGM Puntos</h3>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">Ãšnete al Programa MGM Puntos</h3>
               <p style="font-size: 12px; color: var(--text-muted);">Compra, acumula puntos y canjea por descuentos directos.</p>
             </div>
 
@@ -797,48 +797,48 @@
             <form id="form-puntos-register">
               <div class="form-group">
                 <label class="form-label" for="reg-nombre">Nombre Completo o Empresa</label>
-                <input type="text" id="reg-nombre" class="form-control" placeholder="Ej: Juan Pérez" required>
+                <input type="text" id="reg-nombre" class="form-control" placeholder="Ej: Juan PÃ©rez" required>
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="reg-cedula">Cédula o RUC</label>
+                <label class="form-label" for="reg-cedula">CÃ©dula o RUC</label>
                 <input type="text" id="reg-cedula" class="form-control" placeholder="Ej: 8-888-1234" data-fmt="cedula" required>
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="reg-correo">Correo Electrónico</label>
+                <label class="form-label" for="reg-correo">Correo ElectrÃ³nico</label>
                 <input type="email" id="reg-correo" class="form-control" placeholder="juan@ejemplo.com" required>
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="reg-telefono">Teléfono / WhatsApp</label>
+                <label class="form-label" for="reg-telefono">TelÃ©fono / WhatsApp</label>
                 <input type="tel" id="reg-telefono" class="form-control" placeholder="6254-0000" required>
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="reg-cumpleanos">Fecha de Cumpleaños</label>
+                <label class="form-label" for="reg-cumpleanos">Fecha de CumpleaÃ±os</label>
                 <input type="date" id="reg-cumpleanos" class="form-control">
                 <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-                  🎁 Disfruta de un 10% de descuento especial el día de tu cumpleaños.
+                  ðŸŽ Disfruta de un 10% de descuento especial el dÃ­a de tu cumpleaÃ±os.
                 </div>
               </div>
               <div class="form-group" id="reg-referrer-group">
-                <label class="form-label" for="reg-referrer-code">Código de Invitación <span style="color:var(--status-green); font-size:11px;">(Opcional)</span></label>
+                <label class="form-label" for="reg-referrer-code">CÃ³digo de InvitaciÃ³n <span style="color:var(--status-green); font-size:11px;">(Opcional)</span></label>
                 <input type="text" id="reg-referrer-code" class="form-control" placeholder="Ej: MGM-CARL-1234">
                 <div style="font-size: 11px; color: var(--status-green); margin-top: 4px;">
-                  🎁 Ganarás 300 pts extra de bienvenida por usar este código.
+                  ðŸŽ GanarÃ¡s 300 pts extra de bienvenida por usar este cÃ³digo.
                 </div>
               </div>
 
               <button type="submit" class="btn-submit">
-                <i class="fa-solid fa-badge-check"></i> Completar Registro & Iniciar Sesión
+                <i class="fa-solid fa-badge-check"></i> Completar Registro & Iniciar SesiÃ³n
               </button>
             </form>
 
             <div style="margin-top: 14px; text-align: center; font-size: 12.5px; color: var(--text-muted); border-top: 1px dashed var(--border-light); padding-top: 12px;">
-              ¿Ya tienes una cuenta registrada? 
+              Â¿Ya tienes una cuenta registrada? 
               <a href="javascript:void(0)" onclick="navigateTo('puntos:cuenta')" style="color: var(--primary-blue); font-weight: 700; text-decoration: underline;">
-                Inicia sesión con tu cédula aquí
+                Inicia sesiÃ³n con tu cÃ©dula aquÃ­
               </a>
             </div>
           </div>
@@ -848,29 +848,29 @@
       <!-- SUBVISTA 3: BENEFICIOS & MULTIPLICADORES -->
       <div id="subview-promos" class="puntos-subview">
         <div id="puntos-promos-container" style="display: flex; flex-direction: column; gap: 12px;">
-          <!-- Cargado dinámicamente -->
+          <!-- Cargado dinÃ¡micamente -->
         </div>
       </div>
 
-      <!-- SUBVISTA 4: TÉRMINOS & CONDICIONES -->
+      <!-- SUBVISTA 4: TÃ‰RMINOS & CONDICIONES -->
       <div id="subview-terminos" class="puntos-subview">
         <div class="app-form" id="puntos-terms-container">
           <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--text-dark);">Reglamento Oficial</h3>
           <div id="terms-list-content" style="font-size: 12.5px; color: var(--text-muted); line-height: 1.6; display: flex; flex-direction: column; gap: 10px;">
-            Cargando términos oficiales...
+            Cargando tÃ©rminos oficiales...
           </div>
         </div>
       </div>
 
     </main>
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
          VISTA 3: CALENDARIO & AGENDA MGM
-         ══════════════════════════════════════════════════════════════════════════ -->
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <main id="view-agenda" class="view-container">
       <div class="calendar-wrap">
 
-        <!-- MES & NAVEGACIÓN -->
+        <!-- MES & NAVEGACIÃ“N -->
         <div class="calendar-top-bar">
           <div class="calendar-month-text">
             <i class="fa-solid fa-calendar-circle-user" style="color: var(--primary-blue);"></i>
@@ -882,7 +882,7 @@
           </div>
         </div>
 
-        <!-- FILTROS POR CATEGORÍA -->
+        <!-- FILTROS POR CATEGORÃA -->
         <div class="cal-filters">
           <div class="filter-pill active" onclick="filterEvents('all', this)"><i class="fa-solid fa-layer-group"></i> Todos</div>
           <div class="filter-pill" onclick="filterEvents('webinar', this)"><i class="fa-solid fa-desktop"></i> Webinars</div>
@@ -890,19 +890,19 @@
           <div class="filter-pill" onclick="filterEvents('curso', this)"><i class="fa-solid fa-award"></i> Certificaciones</div>
         </div>
 
-        <!-- DÍAS DE LA SEMANA -->
+        <!-- DÃAS DE LA SEMANA -->
         <div class="cal-grid-header">
-          <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+          <div>Dom</div><div>Lun</div><div>Mar</div><div>MiÃ©</div><div>Jue</div><div>Vie</div><div>SÃ¡b</div>
         </div>
 
-        <!-- CUADRÍCULA DEL CALENDARIO -->
+        <!-- CUADRÃCULA DEL CALENDARIO -->
         <div class="cal-grid-days" id="cal-grid-days-container"></div>
 
       </div>
 
-      <!-- ══════════════════════════════════════════════════════════════════════
-           SECCIÓN: MIS CAPACITACIONES INSCRITAS (Cuenta del Usuario)
-           ══════════════════════════════════════════════════════════════════════ -->
+      <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+           SECCIÃ“N: MIS CAPACITACIONES INSCRITAS (Cuenta del Usuario)
+           â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
       <div class="my-courses-wrap" id="my-courses-section">
         <div class="my-courses-header">
           <div class="my-courses-title-box">
@@ -919,24 +919,24 @@
       </div>
     </main>
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
-         VISTA 4: PROMOCIONES DEL MES (GALERÍA COMPLETA)
-         ══════════════════════════════════════════════════════════════════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+         VISTA 4: PROMOCIONES DEL MES (GALERÃA COMPLETA)
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <main id="view-promos" class="view-container">
       <div class="promos-gallery" id="promos-full-gallery">
-        <!-- Cargado dinámicamente desde Google Sheets -->
-        <div style="text-align: center; color: var(--text-muted); padding: 40px;">Cargando catálogo de promociones...</div>
+        <!-- Cargado dinÃ¡micamente desde Google Sheets -->
+        <div style="text-align: center; color: var(--text-muted); padding: 40px;">Cargando catÃ¡logo de promociones...</div>
       </div>
     </main>
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
          MINI AUDIO PLAYER (REPRODUCTOR STREAMING CON PLAYLIST MULTI-PISTA Y CIERRE 'X')
-         ══════════════════════════════════════════════════════════════════════════ -->
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div class="audio-mini-bar hidden" id="audio-mini-bar">
       <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="Track Cover" class="audio-cover-img" id="audio-cover">
       
       <div class="audio-info-wrap">
-        <div class="audio-track-title" id="audio-title">Cargando música...</div>
+        <div class="audio-track-title" id="audio-title">Cargando mÃºsica...</div>
         <div class="audio-track-artist" id="audio-artist">MGM Radio</div>
       </div>
 
@@ -947,7 +947,7 @@
           <i class="fa-solid fa-pause" id="audio-pause-icon" style="display: none;"></i>
         </button>
         <button class="btn-audio" id="audio-btn-next" aria-label="Siguiente"><i class="fa-solid fa-forward-step"></i></button>
-        <!-- BOTÓN DE CIERRE 'X' -->
+        <!-- BOTÃ“N DE CIERRE 'X' -->
         <button class="btn-audio btn-audio-close" id="audio-btn-close" aria-label="Cerrar reproductor" title="Cerrar reproductor">
           <i class="fa-solid fa-xmark"></i>
         </button>
@@ -956,9 +956,9 @@
       <audio id="audio-element" style="display: none;" preload="none"></audio>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
          VISTA 5: CONSULTA RMA
-         ══════════════════════════════════════════════════════════════════════════ -->
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <main id="view-rma" class="view-container">
       <div class="mgm-consulta-module">
         <style>
@@ -1335,7 +1335,7 @@
         </style>
 
         <div class="rma-consulta-card">
-          <!-- CABECERA DINÁMICA -->
+          <!-- CABECERA DINÃMICA -->
           <div class="header" id="rmaMainHeader">
             <div class="icon-wrapper" id="rmaHeaderIconWrapper">
               <span class="material-icons-round" id="rmaHeaderIcon">manage_search</span>
@@ -1345,17 +1345,17 @@
             <div id="rmaHeaderUserBadge"></div>
           </div>
 
-          <!-- BANNER INVITACIÓN LOGIN PARA CLIENTES NO AUTENTICADOS -->
+          <!-- BANNER INVITACIÃ“N LOGIN PARA CLIENTES NO AUTENTICADOS -->
           <div id="rmaLoginNotice" style="display:none;"></div>
 
           <!-- DASHBOARD DE EQUIPOS DEL USUARIO LOGUEADO -->
           <div id="rmaUserDashboard" style="display:none; margin-bottom: 16px;"></div>
 
-          <!-- BOTÓN DESPLEGABLE DE CONSULTA MANUAL (SOLO SI ESTÁ LOGUEADO) -->
+          <!-- BOTÃ“N DESPLEGABLE DE CONSULTA MANUAL (SOLO SI ESTÃ LOGUEADO) -->
           <div id="manualSearchToggleWrap" style="display:none; margin-bottom: 16px;">
             <button type="button" class="btn-toggle-manual" onclick="window.toggleManualRmaSearch()">
               <span class="material-icons-round" style="font-size:18px;">receipt_long</span>
-              <span>¿Consultar otra boleta física por número RMA?</span>
+              <span>Â¿Consultar otra boleta fÃ­sica por nÃºmero RMA?</span>
               <span class="material-icons-round" id="manualToggleIcon" style="font-size:20px;">expand_more</span>
             </button>
           </div>
@@ -1364,7 +1364,7 @@
           <form id="consultaForm">
             <button type="button" class="rma-qr-btn" onclick="openQrScannerModal()">
               <span class="material-icons-round">qr_code_scanner</span>
-              <span>Escanear Código QR</span>
+              <span>Escanear CÃ³digo QR</span>
             </button>
             <div style="display:flex; align-items:center; margin: 15px 0;">
               <div style="flex:1; height:1px; background:#E5E7EB;"></div>
@@ -1374,7 +1374,7 @@
             <div class="field-group">
               <div class="field">
                 <span class="material-icons-round">qr_code_2</span>
-                <input name="rma" placeholder="Número RMA (Ej: RMA-2026-0001)" required autocomplete="off">
+                <input name="rma" placeholder="NÃºmero RMA (Ej: RMA-2026-0001)" required autocomplete="off">
               </div>
             </div>
             <div class="field-group">
@@ -1391,7 +1391,7 @@
 
           <div id="loader" class="loader hidden">
             <div class="spinner"></div>
-            <p>Buscando la información de tu equipo...</p>
+            <p>Buscando la informaciÃ³n de tu equipo...</p>
           </div>
           <div id="resultado" class="resultado"></div>
         </div>
@@ -1435,13 +1435,13 @@
                     <div class="error-icon"><span class="material-icons-round">error_outline</span></div>
                     <div>
                       <strong style="font-size:16px;">Equipo no encontrado</strong><br>
-                      <span style="font-size:14px;opacity:0.9;">Verifica que el número RMA y el correo coincidan.</span>
+                      <span style="font-size:14px;opacity:0.9;">Verifica que el nÃºmero RMA y el correo coincidan.</span>
                     </div>
                   </div>`;
                 return;
               }
 
-              const mostrarNotas  = data.notas && data.notas !== "Sin notas aún" && data.notas.toString().trim() !== "";
+              const mostrarNotas  = data.notas && data.notas !== "Sin notas aÃºn" && data.notas.toString().trim() !== "";
               const mostrarPrecio = data.precio && data.precio.toString().trim() !== "";
               const mostrarPdf    = data.pdf && data.pdf.trim() !== "";
               const stringEstado  = (data.estado || '').toLowerCase();
@@ -1465,7 +1465,7 @@
                   <div class="timeline-section">
                     <div class="timeline-title">
                       <span class="material-icons-round">history</span>
-                      Historial del Servicio &amp; Diagnósticos
+                      Historial del Servicio &amp; DiagnÃ³sticos
                     </div>
                     <div class="timeline-track">
                       ${historial.map((h, idx) => {
@@ -1480,7 +1480,7 @@
                               <span class="material-icons-round" style="font-size:11px;">${iconName}</span>
                             </div>
                             <div class="timeline-header">
-                              <span class="timeline-estado">${h.estado || 'Actualización'}</span>
+                              <span class="timeline-estado">${h.estado || 'ActualizaciÃ³n'}</span>
                               <span class="timeline-fecha">${h.fecha || ''}</span>
                             </div>
                             ${h.notas ? `<div class="timeline-notas">${h.notas}</div>` : ''}
@@ -1497,7 +1497,7 @@
                     <span class="rma-badge"><span class="material-icons-round" style="font-size:14px;vertical-align:middle;margin-right:4px;">tag</span>${data.rma}</span>
                     <span class="material-icons-round" style="color:${isComplete ? 'var(--success)' : 'var(--primary)'};opacity:0.2;font-size:32px;">verified</span>
                   </div>
-                  <div class="estado-title">Estado de la Reparación</div>
+                  <div class="estado-title">Estado de la ReparaciÃ³n</div>
                   <h3 class="estado-value" style="${isComplete ? 'background:linear-gradient(135deg,#059669,#10B981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;' : ''}">${data.estado}</h3>
                   <div class="info-list">
                     <div class="info-item">
@@ -1519,7 +1519,7 @@
                   <div class="notes-box">
                     <span class="material-icons-round info-icon">assignment</span>
                     <div class="info-content">
-                      <div class="info-label" style="color:#475569;">Informe de nuestro Técnico</div>
+                      <div class="info-label" style="color:#475569;">Informe de nuestro TÃ©cnico</div>
                       <p class="info-text" style="color:#334155;">${data.notas}</p>
                     </div>
                   </div>` : ''}
@@ -1535,7 +1535,7 @@
                   ${mostrarPdf ? `
                   <a href="${data.pdf}" target="_blank" class="pdf-btn">
                     <span class="material-icons-round">picture_as_pdf</span>
-                    Descargar Informe Técnico
+                    Descargar Informe TÃ©cnico
                   </a>` : ''}
                   <div style="text-align:center; margin-top:16px;">
                     <button type="button" onclick="window.cerrarDetalleRma()"
@@ -1554,7 +1554,7 @@
                 <div class="error-msg">
                   <div class="error-icon"><span class="material-icons-round">wifi_off</span></div>
                   <div>
-                    <strong style="font-size:16px;">Error de conexión</strong><br>
+                    <strong style="font-size:16px;">Error de conexiÃ³n</strong><br>
                     <span style="font-size:14px;opacity:0.9;">Tuvimos un problema con el servidor, intenta nuevamente.</span>
                   </div>
                 </div>`;
@@ -1569,7 +1569,7 @@
             if (dashboard) dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
           };
 
-          // Alternar formulario manual (cuando está logueado)
+          // Alternar formulario manual (cuando estÃ¡ logueado)
           window.toggleManualRmaSearch = function() {
             const form = document.getElementById("consultaForm");
             const icon = document.getElementById("manualToggleIcon");
@@ -1586,11 +1586,11 @@
 
           // Quitar / ocultar RMA cerrado de la lista del cliente
           window.quitarRmaDeLista = function(rma) {
-            // Poner el número de RMA en el modal
+            // Poner el nÃºmero de RMA en el modal
             const rmaLabel = document.getElementById('modal-quitar-rma-number');
             if (rmaLabel) rmaLabel.textContent = rma;
 
-            // Asignar acción al botón de confirmar
+            // Asignar acciÃ³n al botÃ³n de confirmar
             const btnOk = document.getElementById('btn-quitar-rma-ok');
             if (btnOk) {
               btnOk.onclick = function() {
@@ -1651,7 +1651,7 @@
             window.loadUserActiveRmas();
           };
 
-          // Cargar automáticamente los equipos activos del cliente logueado
+          // Cargar automÃ¡ticamente los equipos activos del cliente logueado
           window.loadUserActiveRmas = async function() {
             const container = document.getElementById("rmaUserDashboard");
             const consultaForm = document.getElementById("consultaForm");
@@ -1668,7 +1668,7 @@
               user = JSON.parse(localStorage.getItem('mgm_auth_user')) || (window.state && window.state.authUser);
             } catch(e) {}
 
-            // ── CASO A: CLIENTE NO LOGUEADO ──
+            // â”€â”€ CASO A: CLIENTE NO LOGUEADO â”€â”€
             if (!user || (!user.cedula && !user.email)) {
               if (container) container.style.display = "none";
               if (toggleManualWrap) toggleManualWrap.style.display = "none";
@@ -1685,12 +1685,12 @@
                   <div class="rma-login-cta">
                     <span class="material-icons-round" style="color:var(--primary); font-size:24px; margin-top:2px;">account_circle</span>
                     <div style="flex:1;">
-                      <strong style="color:var(--text-main); font-size:13.5px;">¿Ya tienes cuenta en MGM Hub?</strong>
+                      <strong style="color:var(--text-main); font-size:13.5px;">Â¿Ya tienes cuenta en MGM Hub?</strong>
                       <p style="margin:3px 0 0 0; font-size:12px; color:var(--text-muted); line-height:1.4;">
-                        Inicia sesión para ver el estado de todos tus equipos automáticamente sin tener que ingresar el número de RMA ni correo.
+                        Inicia sesiÃ³n para ver el estado de todos tus equipos automÃ¡ticamente sin tener que ingresar el nÃºmero de RMA ni correo.
                       </p>
                       <button type="button" class="btn-login-cta" onclick="switchMainTab('puntos')">
-                        <span>Iniciar Sesión</span>
+                        <span>Iniciar SesiÃ³n</span>
                         <span class="material-icons-round" style="font-size:14px;">arrow_forward</span>
                       </button>
                     </div>
@@ -1699,14 +1699,14 @@
               return;
             }
 
-            // ── CASO B: CLIENTE LOGUEADO DIRECTO EN LA APP ──
+            // â”€â”€ CASO B: CLIENTE LOGUEADO DIRECTO EN LA APP â”€â”€
             if (loginNotice) loginNotice.style.display = "none";
             if (consultaForm) consultaForm.style.display = "none"; // Ocultar formulario manual directo
             if (toggleManualWrap) toggleManualWrap.style.display = "block"; // Permitir consultar otra boleta si quiere
 
             // Adaptar cabecera para el usuario
             if (headerTitle) headerTitle.textContent = "Mis Equipos en Taller";
-            if (headerSubtitle) headerSubtitle.textContent = "Seguimiento en vivo de tus equipos en servicio técnico";
+            if (headerSubtitle) headerSubtitle.textContent = "Seguimiento en vivo de tus equipos en servicio tÃ©cnico";
             if (headerIcon) headerIcon.textContent = "devices";
             if (headerBadge) {
               const labelUser = user.nombre ? user.nombre.split(' ')[0] : (user.cedula || user.email);
@@ -1727,7 +1727,7 @@
             container.innerHTML = `
               <div id="rmaUserList" style="font-size:13px; color:var(--text-muted); text-align:center; padding:16px 0;">
                 <div class="spinner" style="width:28px; height:28px; margin:0 auto 8px;"></div>
-                Cargando tus equipos en servicio técnico...
+                Cargando tus equipos en servicio tÃ©cnico...
               </div>`;
 
             try {
@@ -1762,7 +1762,7 @@
                 // Filtrar los que el usuario haya quitado de su lista
                 const rmasVisibles = data.rmas.filter(r => !dismissed.includes(String(r.rma).trim()));
 
-                // NUEVO: Verificar si hay algún RMA cerrado pendiente de evaluación
+                // NUEVO: Verificar si hay algÃºn RMA cerrado pendiente de evaluaciÃ³n
                 const rmaPendienteEval = rmasVisibles.find(r => {
                   const estLower = (r.estado || '').toLowerCase();
                   const isDone = estLower.includes('reparad') || estLower.includes('entregad') || estLower.includes('listo') || estLower.includes('cerrad') || estLower.includes('finalizad');
@@ -1777,11 +1777,11 @@
                     }
                   }, 500);
 
-                  // AGREGAR NOTIFICACIÓN A LA CAMPANITA
+                  // AGREGAR NOTIFICACIÃ“N A LA CAMPANITA
                   if (typeof window.addLocalNotification === 'function') {
                      window.addLocalNotification({
                         id: 'eval_' + rmaPendienteEval.rma,
-                        title: 'Evaluación Pendiente',
+                        title: 'EvaluaciÃ³n Pendiente',
                         message: 'Por favor, califica el servicio de tu equipo ' + rmaPendienteEval.rma,
                         seccion: 'rma'
                      });
@@ -1844,7 +1844,7 @@
 
                             <div class="rma-card-actions">
                               <button type="button" class="btn-action-ver" onclick="window.consultarRmaDirecto('${safeRma}', '${safeEmail}')">
-                                <span>Ver Diagnóstico</span>
+                                <span>Ver DiagnÃ³stico</span>
                                 <span class="material-icons-round" style="font-size:14px;">arrow_forward</span>
                               </button>
                               ${isDone ? `
@@ -1871,13 +1871,13 @@
                   <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:16px; padding:22px; text-align:center;">
                     <span class="material-icons-round" style="font-size:32px; color:#10B981;">inventory_2</span>
                     <div style="font-size:14px; font-weight:700; color:var(--text-main); margin-top:6px;">No tienes equipos activos en taller</div>
-                    <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Si ingresaste un equipo con boleta física y no aparece, puedes consultarlo abajo.</div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Si ingresaste un equipo con boleta fÃ­sica y no aparece, puedes consultarlo abajo.</div>
                   </div>`;
               }
             } catch (err) {
               const listEl = document.getElementById("rmaUserList");
               if (listEl) {
-                listEl.innerHTML = `<div style="font-size:12px; color:var(--text-muted); padding:10px;">Puedes rastrear tu equipo ingresando el número de RMA con el botón de abajo.</div>`;
+                listEl.innerHTML = `<div style="font-size:12px; color:var(--text-muted); padding:10px;">Puedes rastrear tu equipo ingresando el nÃºmero de RMA con el botÃ³n de abajo.</div>`;
               }
             }
           };
@@ -1917,7 +1917,7 @@
             form.replaceWith(form.cloneNode(true));
             const newForm = document.getElementById('eval-rma-form');
 
-            // ─── Re-inicializar estrellas (cloneNode() borra los listeners) ────
+            // â”€â”€â”€ Re-inicializar estrellas (cloneNode() borra los listeners) â”€â”€â”€â”€
             newForm.querySelectorAll('.star-rating-container').forEach(function(container) {
               var stars = container.querySelectorAll('.fa-star');
               var hiddenInput = newForm.querySelector('#' + container.dataset.target);
@@ -1955,7 +1955,7 @@
                 });
               });
             });
-            // ────────────────────────────────────────────────────────────────────
+            // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
             newForm.addEventListener('submit', async function(e) {
               e.preventDefault();
@@ -1987,7 +1987,7 @@
                 modal.style.display = 'none';
                 
                 if (window.showToast) {
-                  window.showToast("¡Gracias por evaluarnos!", "success");
+                  window.showToast("Â¡Gracias por evaluarnos!", "success");
                 }
                 
                 if (window.loadUserActiveRmas) {
@@ -1999,9 +1999,9 @@
                 }
 
               } catch (err) {
-                console.error("Error enviando evaluación:", err);
+                console.error("Error enviando evaluaciÃ³n:", err);
                 if (window.showToast) {
-                  window.showToast("Ocurrió un error. Intenta de nuevo.", "error");
+                  window.showToast("OcurriÃ³ un error. Intenta de nuevo.", "error");
                 }
                 btn.innerHTML = originalBtnHtml;
                 btn.disabled = false;
@@ -2023,13 +2023,13 @@
           <div id="qrScannerModal" class="qr-scanner-modal">
             <div class="qr-scanner-content">
               <div class="qr-scanner-header">
-                <h3>Escanear Código QR</h3>
+                <h3>Escanear CÃ³digo QR</h3>
                 <button onclick="closeQrScannerModal()" class="close-qr-btn">
                   <span class="material-icons-round">close</span>
                 </button>
               </div>
               <div id="qr-reader" style="width:100%; border-radius: 12px; overflow: hidden; margin-top: 10px;"></div>
-              <p class="qr-hint">Apunta la cámara al código QR de tu orden de servicio o correo electrónico.</p>
+              <p class="qr-hint">Apunta la cÃ¡mara al cÃ³digo QR de tu orden de servicio o correo electrÃ³nico.</p>
             </div>
           </div>
 
@@ -2166,7 +2166,7 @@
                   }
                   window.showToast('QR escaneado correctamente', 'success');
                 } else {
-                  window.showToast('El código QR no es válido para RMA', 'error');
+                  window.showToast('El cÃ³digo QR no es vÃ¡lido para RMA', 'error');
                 }
               } catch (e) {
                 if (decodedText.startsWith('RMA-')) {
@@ -2178,7 +2178,7 @@
                   }
                   window.showToast('RMA escaneado. Por favor ingresa el correo.', 'success');
                 } else {
-                  window.showToast('El código QR no es válido o no pertenece a MGM', 'error');
+                  window.showToast('El cÃ³digo QR no es vÃ¡lido o no pertenece a MGM', 'error');
                 }
               }
             }
@@ -2218,19 +2218,19 @@
       </button>
     </nav>
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
-         MODAL PANTALLA COMPLETA: ASESORÍA MGM & CONTACTOS WHATSAPP
-         ══════════════════════════════════════════════════════════════════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+         MODAL PANTALLA COMPLETA: ASESORÃA MGM & CONTACTOS WHATSAPP
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div class="app-modal" id="modal-asesoria">
       <div class="modal-content-card full-screen">
-        <button class="modal-close-x" onclick="closeAppModal('modal-asesoria')">✕</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-asesoria')">âœ•</button>
 
         <div class="asesoria-banner-header">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
             <i class="fa-brands fa-whatsapp" style="font-size: 26px; color: #25d366;"></i>
-            <h3 style="font-size: 17px; font-weight: 800; color: #fff;">Asesoría MGM en Línea</h3>
+            <h3 style="font-size: 17px; font-weight: 800; color: #fff;">AsesorÃ­a MGM en LÃ­nea</h3>
           </div>
-          <p style="font-size: 12px; color: rgba(255,255,255,0.75);">Elige el canal de atención especializada según tu necesidad:</p>
+          <p style="font-size: 12px; color: rgba(255,255,255,0.75);">Elige el canal de atenciÃ³n especializada segÃºn tu necesidad:</p>
         </div>
 
         <div class="wa-contact-list-modal">
@@ -2249,7 +2249,7 @@
             <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" class="wa-avatar-img">
             <div class="wa-card-info" style="flex: 1;">
               <strong>Asesor de Ventas & Cotizaciones</strong>
-              <span>Atención directa para distribuidores y pedidos</span>
+              <span>AtenciÃ³n directa para distribuidores y pedidos</span>
             </div>
             <i class="fa-brands fa-whatsapp" style="color: var(--accent-green); font-size: 22px;"></i>
           </a>
@@ -2258,18 +2258,18 @@
           <a class="wa-card-item" target="_blank" href="https://wa.me/50764541476?text=Consulta%20Proyectos%20desde%20MGM%20Hub%20App">
             <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" class="wa-avatar-img">
             <div class="wa-card-info" style="flex: 1;">
-              <strong>Ingeniería de Proyectos</strong>
+              <strong>IngenierÃ­a de Proyectos</strong>
               <span>Dimensionamiento de CCTV y control de acceso</span>
             </div>
             <i class="fa-brands fa-whatsapp" style="color: var(--accent-green); font-size: 22px;"></i>
           </a>
 
-          <!-- SOPORTE TÉCNICO -->
+          <!-- SOPORTE TÃ‰CNICO -->
           <a class="wa-card-item" target="_blank" href="https://wa.me/50765843751?text=Soporte%20Tecnico%20desde%20MGM%20Hub%20App">
             <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" class="wa-avatar-img">
             <div class="wa-card-info" style="flex: 1;">
-              <strong>Soporte Técnico & Garantías</strong>
-              <span>Configuración, firmwares y servicio postventa</span>
+              <strong>Soporte TÃ©cnico & GarantÃ­as</strong>
+              <span>ConfiguraciÃ³n, firmwares y servicio postventa</span>
             </div>
             <i class="fa-brands fa-whatsapp" style="color: var(--accent-green); font-size: 22px;"></i>
           </a>
@@ -2277,15 +2277,15 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
-         MODAL 1: DETALLES DE EVENTO & CAPACITACIÓN (LIGHTBOX)
-         ══════════════════════════════════════════════════════════════════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+         MODAL 1: DETALLES DE EVENTO & CAPACITACIÃ“N (LIGHTBOX)
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div class="app-modal" id="modal-event-detail">
       <div class="modal-content-card">
-        <button class="modal-close-x" onclick="closeAppModal('modal-event-detail')">✕</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-event-detail')">âœ•</button>
 
         <div style="display: inline-block; background: var(--primary-blue-lt); border: 1px solid var(--primary-blue); color: var(--primary-blue); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 12px; margin-bottom: 12px; text-transform: uppercase;" id="modal-event-cat">
-          Capacitación
+          CapacitaciÃ³n
         </div>
 
         <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;" id="modal-event-title">---</h3>
@@ -2310,7 +2310,7 @@
           <a href="#" target="_blank" id="modal-event-btn-reserve" class="btn-submit" style="flex: 1; text-decoration: none;">
             <i class="fa-solid fa-ticket"></i> Reservar Cupo
           </a>
-          <button class="btn-header-action" onclick="openEventQR()" title="Ver código QR" style="background: var(--bg-page); color: var(--text-dark); border-color: var(--border-light);"><i class="fa-solid fa-qrcode"></i></button>
+          <button class="btn-header-action" onclick="openEventQR()" title="Ver cÃ³digo QR" style="background: var(--bg-page); color: var(--text-dark); border-color: var(--border-light);"><i class="fa-solid fa-qrcode"></i></button>
           <button class="btn-header-action" onclick="openEventShare()" title="Compartir" style="background: var(--bg-page); color: var(--text-dark); border-color: var(--border-light);"><i class="fa-solid fa-share-nodes"></i></button>
         </div>
       </div>
@@ -2319,7 +2319,7 @@
     <!-- MODAL QR DE EVENTO -->
     <div class="app-modal" id="modal-event-qr">
       <div class="modal-content-card" style="text-align: center;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-event-qr')">✕</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-event-qr')">âœ•</button>
         <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--text-dark);">Escanea para Registrarte</h4>
         <img id="qr-image-src" src="" alt="QR Code" style="width: 190px; height: 190px; border-radius: 12px; background: #f8fafc; padding: 8px; margin: 0 auto 16px; display: block; border: 1px solid var(--border-light);">
         <button class="btn-submit" onclick="closeAppModal('modal-event-qr')">Entendido</button>
@@ -2330,18 +2330,18 @@
     <!-- MODAL QR DE REFERIDO (PANTALLA COMPLETA Y BRILLANTE) -->
     <div class="app-modal" id="modal-referral-qr" style="background: #ffffff !important; z-index: 99999;">
       <div class="modal-content-card" style="text-align: center; background: #ffffff !important; box-shadow: none; border: none; max-width: 100%; padding: 40px 20px;">
-        <button class="modal-close-x" onclick="closeReferralQRModal()" style="color: #000; background: #f1f5f9; top: 20px; right: 20px; width: 40px; height: 40px; font-size: 20px;">✕</button>
-        <h4 style="font-size: 20px; font-weight: 800; margin-bottom: 25px; color: #000;">Mi Código de Referido</h4>
+        <button class="modal-close-x" onclick="closeReferralQRModal()" style="color: #000; background: #f1f5f9; top: 20px; right: 20px; width: 40px; height: 40px; font-size: 20px;">âœ•</button>
+        <h4 style="font-size: 20px; font-weight: 800; margin-bottom: 25px; color: #000;">Mi CÃ³digo de Referido</h4>
         <img id="modal-ref-qr-img" src="" alt="QR Referido" style="width: 250px; height: 250px; border-radius: 0; background: #fff; margin: 0 auto 25px; display: block; border: 2px solid #000;">
         <div id="modal-ref-code-display" style="font-size: 32px; font-weight: 900; color: #000; letter-spacing: 2px; margin-bottom: 25px; font-family: monospace;"></div>
-        <p style="font-size: 15px; color: #333; margin-bottom: 0; font-weight: 600;">Muestra este código para invitar a tus colegas</p>
+        <p style="font-size: 15px; color: #333; margin-bottom: 0; font-weight: 600;">Muestra este cÃ³digo para invitar a tus colegas</p>
       </div>
     </div>
 
     <!-- MODAL COMPARTIR EVENTO -->
     <div class="app-modal" id="modal-event-share">
       <div class="modal-content-card" style="text-align: center;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-event-share')">✕</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-event-share')">âœ•</button>
         <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 16px; color: var(--text-dark);">Compartir Evento</h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
           <div class="feature-item" style="cursor: pointer; justify-content: center;" onclick="shareAction('wa')">
@@ -2364,7 +2364,7 @@
     <!-- MODAL DETALLE DE PREMIO -->
     <div class="app-modal" id="modal-premio-detail">
       <div class="modal-content-card" style="max-height: 85vh; overflow-y: auto; padding: 20px; position: relative;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-premio-detail')">✕</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-premio-detail')">âœ•</button>
 
         <div style="text-align: center; margin-bottom: 14px; position: relative;">
           <div id="modal-premio-img-wrap" style="width: 100%; height: 185px; border-radius: 14px; background: #f8fafc; border: 1px solid var(--border-light); display: flex; align-items: center; justify-content: center; overflow: hidden;">
@@ -2377,7 +2377,7 @@
 
         <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
           <span id="modal-premio-model" style="font-size: 11px; font-weight: 800; background: #ede9fe; color: #6d28d9; padding: 3px 8px; border-radius: 6px;">MOD. ---</span>
-          <span id="modal-premio-validez" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">⏱️ Validez: ---</span>
+          <span id="modal-premio-validez" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">â±ï¸ Validez: ---</span>
           <span id="modal-premio-stock" style="font-size: 11px; font-weight: 700; color: #16a34a; background: #f0fdf4; padding: 2px 7px; border-radius: 5px;">Disponible</span>
         </div>
 
@@ -2412,12 +2412,12 @@
     <!-- MODAL LOGIN / PERFIL -->
     <div class="app-modal" id="modal-user-login">
       <div class="modal-content-card" style="position: relative;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-user-login')">✕</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-user-login')">âœ•</button>
         <div id="login-view-unauth">
-          <h4 style="font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--text-dark); text-align: center;">Iniciar Sesión</h4>
-          <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 16px;">Ingresa tu cédula o correo para acceder a tus beneficios y recibir notificaciones especiales.</p>
+          <h4 style="font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--text-dark); text-align: center;">Iniciar SesiÃ³n</h4>
+          <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 16px;">Ingresa tu cÃ©dula o correo para acceder a tus beneficios y recibir notificaciones especiales.</p>
           <div class="form-group" style="margin-bottom: 16px;">
-            <label style="display:block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Cédula o Correo</label>
+            <label style="display:block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">CÃ©dula o Correo</label>
             <input type="text" id="login-cedula-input" placeholder="Ej: 8-888-1234 o juan@email.com" style="width:100%; padding: 12px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px; outline: none; background: #f8fafc;">
           </div>
           <button class="btn-submit" onclick="submitLogin()" id="btn-login-submit" style="width: 100%;">
@@ -2426,7 +2426,7 @@
           <div id="login-error-msg" style="color: #ef4444; font-size: 12px; font-weight: 600; margin-top: 10px; text-align: center; display: none;"></div>
 
           <div style="margin-top: 14px; text-align: center; font-size: 12px; color: var(--text-muted); border-top: 1px dashed var(--border-light); padding-top: 12px;">
-            ¿Aún no te has registrado? 
+            Â¿AÃºn no te has registrado? 
             <a href="javascript:void(0)" onclick="closeAppModal('modal-user-login'); navigateTo('puntos:registro');" style="color: var(--primary-blue); font-weight: 700; text-decoration: underline;">
               Crear cuenta en MGM Puntos
             </a>
@@ -2460,31 +2460,31 @@
           <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;" id="auth-cedula">---</p>
           <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;"><i class="fa-solid fa-star" style="color: var(--accent-gold);"></i> <strong style="color: var(--text-dark);" id="auth-puntos">0</strong> Puntos MGM</p>
 
-          <!-- Botón Permisos -->
+          <!-- BotÃ³n Permisos -->
           <button id="btn-enable-notifs" class="btn-submit" onclick="requestNotificationPermission()" style="width: 100%; background: linear-gradient(135deg, #6366f1, #4f46e5); margin-bottom: 12px; font-size: 13px; display: none;">
             <i class="fa-solid fa-bell"></i> Activar Notificaciones
           </button>
 
-          <button class="btn-submit" onclick="logoutClient()" style="width: 100%; background: var(--bg-card-alt); border: 1px solid var(--border-light); color: var(--text-muted); font-size: 13px;">Cerrar Sesión</button>
+          <button class="btn-submit" onclick="logoutClient()" style="width: 100%; background: var(--bg-card-alt); border: 1px solid var(--border-light); color: var(--text-muted); font-size: 13px;">Cerrar SesiÃ³n</button>
         </div>
       </div>
     </div>
 
-    <!-- MODAL CUMPLEAÑOS -->
+    <!-- MODAL CUMPLEAÃ‘OS -->
     <div class="app-modal" id="modal-birthday" style="z-index: 10000;">
       <div class="modal-content-card" style="text-align: center; max-width: 340px; padding: 30px 20px; position: relative;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-birthday')">✕</button>
-        <div style="font-size: 60px; margin-bottom: 10px; animation: bounce 2s infinite;">🎉🎂</div>
-        <h3 style="color: var(--text-dark); margin: 0 0 10px 0; font-size: 22px;">¡Feliz Cumpleaños!</h3>
+        <button class="modal-close-x" onclick="closeAppModal('modal-birthday')">âœ•</button>
+        <div style="font-size: 60px; margin-bottom: 10px; animation: bounce 2s infinite;">ðŸŽ‰ðŸŽ‚</div>
+        <h3 style="color: var(--text-dark); margin: 0 0 10px 0; font-size: 22px;">Â¡Feliz CumpleaÃ±os!</h3>
         <p id="modal-birthday-text" style="color: var(--text-body); font-size: 15px; line-height: 1.5; margin: 0 0 20px 0;">
-          ¡Hoy es tu día especial! Queremos celebrarlo contigo otorgándote un 10% de descuento en todas tus compras hoy en nuestras sucursales de MGM.
+          Â¡Hoy es tu dÃ­a especial! Queremos celebrarlo contigo otorgÃ¡ndote un 10% de descuento en todas tus compras hoy en nuestras sucursales de MGM.
         </p>
         <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(212,175,55,0.3);">
           <h4 style="margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #fffefa;">Tu Regalo Especial</h4>
           <div style="font-size: 32px; font-weight: bold; margin: 5px 0;">10% OFF</div>
           <p style="margin: 0; font-size: 12px; color: rgba(255,255,255,0.9);">EN TODA LA TIENDA HOY</p>
         </div>
-        <button class="btn-submit" onclick="closeAppModal('modal-birthday')" style="background: var(--primary-blue);">¡Genial, Gracias!</button>
+        <button class="btn-submit" onclick="closeAppModal('modal-birthday')" style="background: var(--primary-blue);">Â¡Genial, Gracias!</button>
       </div>
     </div>
 
@@ -2495,7 +2495,7 @@
           <h4 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0;"><i class="fa-regular fa-bell" style="color: #ef4444; margin-right: 6px;"></i> Notificaciones</h4>
           <div style="display: flex; gap: 12px; align-items: center;">
             <button onclick="clearNotifications()" style="background: transparent; border: none; font-size: 12px; color: var(--primary-blue); font-weight: 700; cursor: pointer; padding: 4px 8px;">Limpiar</button>
-            <button onclick="closeAppModal('modal-notifications')" style="background: transparent; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;">✕</button>
+            <button onclick="closeAppModal('modal-notifications')" style="background: transparent; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;">âœ•</button>
           </div>
         </div>
         <div id="notif-list" style="padding: 12px; overflow-y: auto; flex: 1; background: #f8fafc; min-height: 200px;">
@@ -2504,7 +2504,7 @@
       </div>
     </div>
 
-    <!-- MODAL CONFIRMACIÓN — LIMPIAR NOTIFICACIONES -->
+    <!-- MODAL CONFIRMACIÃ“N â€” LIMPIAR NOTIFICACIONES -->
     <div class="app-modal" id="modal-confirm-clear" style="z-index: 9500;">
       <div class="modal-content-card" style="max-width: 320px; padding: 0; overflow: hidden; border-radius: 22px;">
         <!-- Icono + encabezado -->
@@ -2519,12 +2519,12 @@
           ">
             <i class="fa-solid fa-trash-can" style="font-size: 24px; color: #ef4444;"></i>
           </div>
-          <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">¿Limpiar notificaciones?</h3>
+          <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">Â¿Limpiar notificaciones?</h3>
           <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
-            Se eliminarán <strong style="color: var(--text-dark);">todas</strong> tus notificaciones.<br>Esta acción no se puede deshacer.
+            Se eliminarÃ¡n <strong style="color: var(--text-dark);">todas</strong> tus notificaciones.<br>Esta acciÃ³n no se puede deshacer.
           </p>
         </div>
-        <!-- Botones de acción -->
+        <!-- Botones de acciÃ³n -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; background: #fff;">
           <button
             id="btn-confirm-clear-cancel"
@@ -2568,7 +2568,7 @@
       </div>
     </div>
 
-    <!-- MODAL CONFIRMACIÓN — QUITAR EQUIPO DE LA LISTA -->
+    <!-- MODAL CONFIRMACIÃ“N â€” QUITAR EQUIPO DE LA LISTA -->
     <div class="app-modal" id="modal-confirm-quitar-rma" style="z-index: 9500;">
       <div class="modal-content-card" style="max-width: 320px; padding: 0; overflow: hidden; border-radius: 22px;">
         <!-- Icono + encabezado -->
@@ -2583,12 +2583,12 @@
           ">
             <i class="fa-solid fa-box-archive" style="font-size: 24px; color: #3b82f6;"></i>
           </div>
-          <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">¿Quitar de la lista?</h3>
+          <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">Â¿Quitar de la lista?</h3>
           <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
-            El equipo <strong id="modal-quitar-rma-number" style="color: var(--primary-blue);"></strong> será retirado de tu seguimiento.<br>Ya está finalizado y podrás restaurarlo cuando quieras.
+            El equipo <strong id="modal-quitar-rma-number" style="color: var(--primary-blue);"></strong> serÃ¡ retirado de tu seguimiento.<br>Ya estÃ¡ finalizado y podrÃ¡s restaurarlo cuando quieras.
           </p>
         </div>
-        <!-- Botones de acción -->
+        <!-- Botones de acciÃ³n -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; background: #fff;">
           <button
             onclick="closeAppModal('modal-confirm-quitar-rma')"
@@ -2630,9 +2630,9 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
          SPLASHSCREEN INTELIGENTE DE BIENVENIDA / OFERTAS
-         ══════════════════════════════════════════════════════════════════════════ -->
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 
     <div id="imou-splash">
       <div class="splash-card-inner">
@@ -2640,14 +2640,14 @@
           <div class="splash-settings">
             <button class="splash-settings-btn" onclick="toggleSplashSettings()"><i class="fa-solid fa-gear"></i></button>
             <div class="splash-settings-menu" id="splash-settings-menu">
-              <div onclick="closeSplashOption('session')">No mostrar en esta sesión</div>
+              <div onclick="closeSplashOption('session')">No mostrar en esta sesiÃ³n</div>
               <div onclick="closeSplashOption('today')">No volver a mostrar hoy</div>
             </div>
           </div>
-          <button class="splash-close-btn" onclick="closeSplashOption('session')">✕</button>
+          <button class="splash-close-btn" onclick="closeSplashOption('session')">âœ•</button>
         </div>
         <div id="splash-content-wrap" style="cursor: pointer;">
-          <img id="splash-img" src="" alt="Promoción Especial">
+          <img id="splash-img" src="" alt="PromociÃ³n Especial">
         </div>
       </div>
     </div>
@@ -2657,15 +2657,15 @@
   <script src="https://cdn.botpress.cloud/webchat/v3.6/inject.js"></script>
 
   <script>
-    // Inicializar Botpress con los mismos parámetros que funcionan en la web MGM
-    // Se ejecuta inmediatamente después de cargar el SDK
+    // Inicializar Botpress con los mismos parÃ¡metros que funcionan en la web MGM
+    // Se ejecuta inmediatamente despuÃ©s de cargar el SDK
     if (window.botpress) {
       window.botpress.init({
         "botId": "e5a3c8a6-9aec-41a3-870d-d1985dc8c7df",
         "clientId": "defae30e-36d3-4f8e-91a9-5c524f7bc655",
         "configuration": {
           "version": "v2",
-          "botName": "Magie — Asistente IA MGM",
+          "botName": "Magie â€” Asistente IA MGM",
           "botAvatar": "https://mgmpty.odoo.com/web/image/69925-9cdb234e/magiechat.png",
           "color": "#143266",
           "variant": "solid",
@@ -2678,22 +2678,22 @@
     }
   </script>
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
          VISTA: TOOLBOX (DASHBOARD)
-         ══════════════════════════════════════════════════════════════════════════ -->
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <main id="view-toolbox" class="view-container">
       <div class="mgm-calculadoras">
         <div class="mgm-title">
-          <h2>Calculadoras Técnicas MGM</h2>
-          <p>Herramientas profesionales para dimensionar, diseñar y planificar proyectos.</p>
+          <h2>Calculadoras TÃ©cnicas MGM</h2>
+          <p>Herramientas profesionales para dimensionar, diseÃ±ar y planificar proyectos.</p>
         </div>
         <div class="mgm-grid">
-          <!-- ACTIVA: Conversor Técnico -->
+          <!-- ACTIVA: Conversor TÃ©cnico -->
           <div class="mgm-card activo" onclick="switchMainTab('toolbox-conversor-tecnico')">
             <div class="mgm-icon"><i class="fas fa-exchange-alt"></i></div>
-            <h3>MGM Conversor Técnico</h3>
-            <p>Conversiones rápidas para instaladores de seguridad electrónica.</p>
-            <a class="mgm-btn">Usar Conversor →</a>
+            <h3>MGM Conversor TÃ©cnico</h3>
+            <p>Conversiones rÃ¡pidas para instaladores de seguridad electrÃ³nica.</p>
+            <a class="mgm-btn">Usar Conversor â†’</a>
           </div>
 
           <!-- ACTIVA: Almacenamiento -->
@@ -2702,60 +2702,57 @@
               <i class="fas fa-hdd"></i>
             </div>
             <h3>Calculadora de Almacenamiento CCTV</h3>
-            <p>Calcula la capacidad de disco duro necesaria para grabación de video vigilancia.</p>
-            <a class="mgm-btn">Usar Calculadora →</a>
+            <p>Calcula la capacidad de disco duro necesaria para grabaciÃ³n de video vigilancia.</p>
+            <a class="mgm-btn">Usar Calculadora â†’</a>
           </div>
 
-          <!-- ACTIVA: Cloud VSaaS -->
-          <div class="mgm-card activo" onclick="switchMainTab('toolbox-calculadora-cloud')">
-            <div class="mgm-icon"><i class="fas fa-cloud"></i></div>
-            <h3>Calculadora Cloud VSaaS</h3>
-            <p>Calcula el almacenamiento y ancho de banda para grabación en la nube.</p>
-            <a class="mgm-btn">Usar Calculadora →</a>
+          <h3>Calculadora Cloud VSaaS</h3>
+            <p>Calcula el almacenamiento y ancho de banda para grabaciÃ³n en la nube.</p>
+            <a class="mgm-btn">Usar Calculadora â†’</a>
           </div>
           
           <!-- INACTIVAS -->
           <div class="mgm-card inactivo">
-            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
+            <div class="badge-lock"><i class="fas fa-lock"></i> PrÃ³ximamente</div>
             <div class="mgm-icon"><i class="fas fa-network-wired"></i></div>
             <h3>Calculadora de Ancho de Banda</h3>
-            <p>Estima el consumo total de red necesario para transmisión de video en tiempo real.</p>
+            <p>Estima el consumo total de red necesario para transmisiÃ³n de video en tiempo real.</p>
             <a class="mgm-btn">Disponible pronto</a>
           </div>
           
           <div class="mgm-card inactivo">
-            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
+            <div class="badge-lock"><i class="fas fa-lock"></i> PrÃ³ximamente</div>
             <div class="mgm-icon"><i class="fas fa-bolt"></i></div>
-            <h3>Calculadora de Caída de Voltaje</h3>
-            <p>Determina la pérdida de voltaje en cables eléctricos según distancia.</p>
+            <h3>Calculadora de CaÃ­da de Voltaje</h3>
+            <p>Determina la pÃ©rdida de voltaje en cables elÃ©ctricos segÃºn distancia.</p>
             <a class="mgm-btn">Disponible pronto</a>
           </div>
           
           <div class="mgm-card inactivo">
-            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
+            <div class="badge-lock"><i class="fas fa-lock"></i> PrÃ³ximamente</div>
             <div class="mgm-icon"><i class="fas fa-wifi"></i></div>
-            <h3>Calculadora de Enlaces Inalámbricos</h3>
-            <p>Evalúa la viabilidad de enlaces inalámbricos punto a punto.</p>
+            <h3>Calculadora de Enlaces InalÃ¡mbricos</h3>
+            <p>EvalÃºa la viabilidad de enlaces inalÃ¡mbricos punto a punto.</p>
             <a class="mgm-btn">Disponible pronto</a>
           </div>
           
           <div class="mgm-card inactivo">
-            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
+            <div class="badge-lock"><i class="fas fa-lock"></i> PrÃ³ximamente</div>
             <div class="mgm-icon"><i class="fas fa-search"></i></div>
             <h3>Calculadora de Lentes y Cobertura DORI</h3>
-            <p>Permite calcular el alcance de detección, observación, reconocimiento e identificación.</p>
+            <p>Permite calcular el alcance de detecciÃ³n, observaciÃ³n, reconocimiento e identificaciÃ³n.</p>
             <a class="mgm-btn">Disponible pronto</a>
           </div>
           
           <div class="mgm-card activo" onclick="switchMainTab('toolbox-calculadora-ups')">
             <div class="mgm-icon"><i class="fas fa-battery-full"></i></div>
-            <h3>Calculadora de Autonomía UPS</h3>
+            <h3>Calculadora de AutonomÃ­a UPS</h3>
             <p>Calcula el tiempo de respaldo y la capacidad necesaria del UPS.</p>
-            <a class="mgm-btn">Usar Calculadora →</a>
+            <a class="mgm-btn">Usar Calculadora â†’</a>
           </div>
           
           <div class="mgm-card inactivo">
-            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
+            <div class="badge-lock"><i class="fas fa-lock"></i> PrÃ³ximamente</div>
             <div class="mgm-icon"><i class="fas fa-plug"></i></div>
             <h3>Calculadora de Potencia PoE</h3>
             <p>Dimensiona la potencia total requerida para switches PoE.</p>
@@ -2765,15 +2762,15 @@
       </div>
     </main>
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
          VISTA: CALCULADORA ALMACENAMIENTO
-         ══════════════════════════════════════════════════════════════════════════ -->
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <main id="view-toolbox-calculadora-almacenamiento" class="view-container">
       <div class="calc-module">
         <div class="header-brand">
           <div>
             <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-hdd"></i> Calc. Almacenamiento CCTV</h2>
-            <span style="font-size: 12px; color: var(--text-muted);">MGM Tecno Sistemas — Calculadora Profesional</span>
+            <span style="font-size: 12px; color: var(--text-muted);">MGM Tecno Sistemas â€” Calculadora Profesional</span>
           </div>
           <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
@@ -2837,29 +2834,29 @@
     </main>
 
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
-         MODAL 2: DETALLES DE PROMOCIÓN (INSTAGRAM STYLE FEED)
-         ══════════════════════════════════════════════════════════════════════════ -->
-        <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-         VISTA: CONVERSOR TÃ‰CNICO
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+         MODAL 2: DETALLES DE PROMOCIÃ“N (INSTAGRAM STYLE FEED)
          â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+        <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+         VISTA: CONVERSOR TÃƒâ€°CNICO
+         Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
     <main id="view-toolbox-conversor-tecnico" class="view-container">
       <div class="calc-module conversor-module">
         <div class="header-brand">
           <div>
-            <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-exchange-alt"></i> Conversor Técnico</h2>
-            <span style="font-size: 12px; color: var(--text-muted);">MGM Tecno Sistemas — Herramientas Profesionales</span>
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-exchange-alt"></i> Conversor TÃ©cnico</h2>
+            <span style="font-size: 12px; color: var(--text-muted);">MGM Tecno Sistemas â€” Herramientas Profesionales</span>
           </div>
           <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
 
         <div class="conv-tabs">
-          <button class="conv-tab active" data-tab="conv-panel">🔄 Conversor</button>
-          <button class="conv-tab" data-tab="calc-panel">🔢 Calculadora</button>
+          <button class="conv-tab active" data-tab="conv-panel">ðŸ”„ Conversor</button>
+          <button class="conv-tab" data-tab="calc-panel">ðŸ”¢ Calculadora</button>
         </div>
 
         <section id="conv-panel" class="conv-panel active">
-          <input id="conv-search" class="conv-search" placeholder="🔍 Buscar una unidad o categoría…">
+          <input id="conv-search" class="conv-search" placeholder="ðŸ” Buscar una unidad o categorÃ­aâ€¦">
           <div id="conv-categories" class="conv-grid"></div>
 
           <div class="converter-box">
@@ -2867,7 +2864,7 @@
               <label>DE</label>
               <select id="conv-from"></select>
             </div>
-            <button class="conv-swap" id="conv-swap" title="Intercambiar">⇄</button>
+            <button class="conv-swap" id="conv-swap" title="Intercambiar">â‡„</button>
             <div class="conv-field">
               <label>A</label>
               <select id="conv-to"></select>
@@ -2881,7 +2878,7 @@
 
           <div class="conv-result">
             <div class="conv-label" id="conv-resultLabel">Resultado</div>
-            <div class="conv-value-text" id="conv-result">—</div>
+            <div class="conv-value-text" id="conv-result">â€”</div>
           </div>
           <div class="conv-hint" id="conv-hint"></div>
         </section>
@@ -2891,13 +2888,13 @@
             <input id="conv-calcDisplay" class="conv-calc-display" value="0" readonly>
             <div class="conv-calc-grid">
               <button class="conv-clear" onclick="calcClear()">C</button>
-              <button onclick="calcBack()">⌫</button>
+              <button onclick="calcBack()">âŒ«</button>
               <button onclick="calcInput('%')">%</button>
-              <button class="conv-op" onclick="calcInput('/')">÷</button>
+              <button class="conv-op" onclick="calcInput('/')">Ã·</button>
               <button onclick="calcInput('7')">7</button><button onclick="calcInput('8')">8</button>
-              <button onclick="calcInput('9')">9</button><button class="conv-op" onclick="calcInput('*')">×</button>
+              <button onclick="calcInput('9')">9</button><button class="conv-op" onclick="calcInput('*')">Ã—</button>
               <button onclick="calcInput('4')">4</button><button onclick="calcInput('5')">5</button>
-              <button onclick="calcInput('6')">6</button><button class="conv-op" onclick="calcInput('-')">−</button>
+              <button onclick="calcInput('6')">6</button><button class="conv-op" onclick="calcInput('-')">âˆ’</button>
               <button onclick="calcInput('1')">1</button><button onclick="calcInput('2')">2</button>
               <button onclick="calcInput('3')">3</button><button class="conv-op" onclick="calcInput('+')">+</button>
               <button onclick="calcInput('0')">0</button><button onclick="calcInput('.')">.</button>
@@ -2909,9 +2906,9 @@
       </div>
     </main>
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
-         VISTA: CALCULADORA DE AUTONOMÍA UPS
-         ══════════════════════════════════════════════════════════════════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+         VISTA: CALCULADORA DE AUTONOMÃA UPS
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <main id="view-toolbox-calculadora-ups" class="view-container">
       <style>
         .ups-grid-config { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
@@ -3026,7 +3023,7 @@
             if(typeof showToast === 'function') showToast('Advertencia: Sobrecarga en el equipo.', 'fa-solid fa-triangle-exclamation');
           } else if(totalW>maxW*0.8) {
             document.getElementById("alertAreaUps").innerHTML='<div style="background:#fffbeb;color:#b45309;border-left:4px solid #f59e0b;padding:12px;border-radius:8px;margin-bottom:12px;font-size:13px;"><strong>LIMITE:</strong> Carga superior al 80%.</div>';
-            if(typeof showToast === 'function') showToast('Precaución: Carga cercana al límite.', 'fa-solid fa-circle-exclamation');
+            if(typeof showToast === 'function') showToast('PrecauciÃ³n: Carga cercana al lÃ­mite.', 'fa-solid fa-circle-exclamation');
           } else {
             document.getElementById("alertAreaUps").innerHTML="";
           }
@@ -3053,24 +3050,24 @@
       })();
     </script>
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
          VISTA: CALCULADORA CLOUD VSAAS
-         ══════════════════════════════════════════════════════════════════════════ -->
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <main id="view-toolbox-calculadora-cloud" class="view-container">
       <div class="calc-module">
         <div class="header-brand">
           <div>
             <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-cloud"></i> Calc. Cloud VSaaS</h2>
-            <span style="font-size: 12px; color: var(--text-muted);">MGM Seguridad — Calculadora de Almacenamiento Cloud</span>
+            <span style="font-size: 12px; color: var(--text-muted);">MGM Seguridad â€” Calculadora de Almacenamiento Cloud</span>
           </div>
           <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
         
         <div class="config-section" style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #dee2e6;">
-          <span class="section-title" style="font-weight: bold; color: #1a73e8; margin-bottom: 15px; display: block; text-transform: uppercase; font-size: 13px;">Parámetros de Retención y Costos</span>
+          <span class="section-title" style="font-weight: bold; color: #1a73e8; margin-bottom: 15px; display: block; text-transform: uppercase; font-size: 13px;">ParÃ¡metros de RetenciÃ³n y Costos</span>
           <div class="grid-config" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
             <div style="display: flex; flex-direction: column;">
-              <label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">Días de Retención</label>
+              <label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">DÃ­as de RetenciÃ³n</label>
               <input type="number" id="retentionCloud" value="30" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
             </div>
             <div style="display: flex; flex-direction: column;">
@@ -3108,8 +3105,8 @@
             <table id="tablaDetalleCloud" style="width:100%; border-collapse: collapse; font-size: 12px; background: white;">
               <thead style="background: #f1f1f1;">
                 <tr>
-                  <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Cámaras</th>
-                  <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Resolución</th>
+                  <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">CÃ¡maras</th>
+                  <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">ResoluciÃ³n</th>
                   <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">FPS</th>
                   <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Modo</th>
                   <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Upload (Mbps)</th>
@@ -3138,7 +3135,7 @@
           div.innerHTML = `
             <div class="cam-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; align-items: end;">
               <div style="display:flex; flex-direction:column;"><label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">Cantidad</label><input type="number" class="count" value="4" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;"></div>
-              <div style="display:flex; flex-direction:column;"><label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">Resolución</label>
+              <div style="display:flex; flex-direction:column;"><label style="font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555;">ResoluciÃ³n</label>
                 <select class="res" style="padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
                   <option value="720">720p</option>
                   <option value="1080" selected>1080p (2MP)</option>
@@ -3192,7 +3189,7 @@
           document.querySelector("#tablaDetalleCloud tbody").innerHTML = htmlTabla;
           let alertas = "";
           if (totalMbps > 10) {
-            alertas = `<div class="alert alert-warning" style="background: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; line-height: 1.5;"><strong>⚠️ ATENCIÓN:</strong> El ancho de banda de subida requerido es de ${totalMbps.toFixed(1)} Mbps. Asegúrese de que el enlace de internet del cliente soporte esta carga constante.</div>`;
+            alertas = `<div class="alert alert-warning" style="background: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; line-height: 1.5;"><strong>âš ï¸ ATENCIÃ“N:</strong> El ancho de banda de subida requerido es de ${totalMbps.toFixed(1)} Mbps. AsegÃºrese de que el enlace de internet del cliente soporte esta carga constante.</div>`;
           }
           document.getElementById("alertAreaCloud").innerHTML = alertas;
         }
@@ -3200,7 +3197,7 @@
         function generarPDFCloud() {
           const { jsPDF } = window.jspdf;
           const doc = new jsPDF();
-          doc.text("MGM Seguridad - Cálculo Cloud VSaaS", 15, 20);
+          doc.text("MGM Seguridad - CÃ¡lculo Cloud VSaaS", 15, 20);
           doc.autoTable({ html: '#tablaDetalleCloud', startY: 30, headStyles: { fillColor: [26, 115, 232] } });
           doc.save("MGM_Calculo_Cloud.pdf");
         }
@@ -3213,7 +3210,7 @@
 
 
 <div class="cli-modal" id="modal-promo-feed">
-      <button class="cli-modal-close" onclick="closePromoDetail()">✕</button>
+      <button class="cli-modal-close" onclick="closePromoDetail()">âœ•</button>
       <div class="cli-modal-feed" id="cli-modal-feed">
         <!-- Promo items injected here -->
       </div>
@@ -3230,7 +3227,7 @@
           <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir Enlace
         </a>
         <div class="cli-copy-dates" id="cli-copy-dates"></div>
-        <!-- Sección comentarios dentro del sheet -->
+        <!-- SecciÃ³n comentarios dentro del sheet -->
         <div id="cli-copy-comments">
           <div style="font-size: 13px; font-weight: 800; color: var(--text-dark); margin-bottom: 10px;">
             <i class="fa-regular fa-comment" style="margin-right: 5px;"></i> Comentarios
@@ -3245,13 +3242,13 @@
       </div>
     </div>
 
-    <!-- MODAL SELECTOR WHATSAPP — z-index alto, después del feed para ganar en DOM -->
+    <!-- MODAL SELECTOR WHATSAPP â€” z-index alto, despuÃ©s del feed para ganar en DOM -->
     <div class="app-modal" id="modal-wa-selector" style="z-index:9000;">
       <div class="modal-content-card" style="text-align: center; max-width: 300px;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-wa-selector')">✕</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-wa-selector')">âœ•</button>
         <div style="font-size: 32px; color: #25d366; margin-bottom: 12px;"><i class="fa-brands fa-whatsapp"></i></div>
-        <h4 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">¿A quién deseas consultar?</h4>
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Elige uno de nuestros asesores para enviar tu consulta sobre la promoción.</p>
+        <h4 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">Â¿A quiÃ©n deseas consultar?</h4>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Elige uno de nuestros asesores para enviar tu consulta sobre la promociÃ³n.</p>
         <button onclick="sendWaConsult('64541476')" style="width: 100%; background: #25d366; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
           <i class="fa-brands fa-whatsapp"></i> Asesor 1 (+507 6454-1476)
         </button>
@@ -3264,16 +3261,16 @@
   </div> <!-- FIN APP ROOT -->
   <script src="app.js?v=14"></script>
 
-  <!-- LÓGICA DE INSTALACIÓN PWA -->
+  <!-- LÃ“GICA DE INSTALACIÃ“N PWA -->
   <script>
     (function() {
-      // Detectar si YA está instalada como PWA
+      // Detectar si YA estÃ¡ instalada como PWA
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches
                         || window.navigator.standalone === true;
 
       if (isStandalone) return; // Si ya es webapp, no mostrar nada
 
-      // Si ya la ignoró, no mostrarla de nuevo
+      // Si ya la ignorÃ³, no mostrarla de nuevo
       const skipped = localStorage.getItem('mgm_install_skipped');
       if (skipped) return;
 
@@ -3282,14 +3279,14 @@
       window.addEventListener('beforeinstallprompt', function(e) {
         e.preventDefault();
         window._pwaInstallEvent = e;
-        // Mostrar botón de instalación nativo
+        // Mostrar botÃ³n de instalaciÃ³n nativo
         const btn = document.getElementById('btn-install-app');
         if (btn) btn.style.display = 'flex';
         const iosHint = document.getElementById('install-ios-hint');
         if (iosHint) iosHint.style.display = 'none';
       });
 
-      // Detectar iOS (Safari) — no tiene beforeinstallprompt
+      // Detectar iOS (Safari) â€” no tiene beforeinstallprompt
       const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
                  && !window.MSStream;
       const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -3299,18 +3296,18 @@
       if (overlay) overlay.style.display = 'flex';
 
       if (isIOS && isSafari) {
-        // En iOS mostrar instrucción manual
+        // En iOS mostrar instrucciÃ³n manual
         const btn = document.getElementById('btn-install-app');
         if (btn) btn.style.display = 'none';
         const iosHint = document.getElementById('install-ios-hint');
         if (iosHint) iosHint.style.display = 'flex';
       } else {
-        // En Android/Chrome ocultamos el botón hasta recibir beforeinstallprompt
+        // En Android/Chrome ocultamos el botÃ³n hasta recibir beforeinstallprompt
         const btn = document.getElementById('btn-install-app');
-        if (btn) btn.style.display = 'none'; // Se mostrará cuando llegue el evento
+        if (btn) btn.style.display = 'none'; // Se mostrarÃ¡ cuando llegue el evento
       }
 
-      // Detectar si se instaló exitosamente
+      // Detectar si se instalÃ³ exitosamente
       window.addEventListener('appinstalled', function() {
         const overlay = document.getElementById('install-overlay');
         if (overlay) overlay.style.display = 'none';
@@ -3343,12 +3340,12 @@
   </script>
 
   <!-- ==============================================
-       MODAL DE EVALUACIÓN RMA (INSISTENTE)
+       MODAL DE EVALUACIÃ“N RMA (INSISTENTE)
   =============================================== -->
   <div class="app-modal" id="eval-rma-modal" style="display: none; z-index: 10001;">
     <div class="modal-content-card" style="max-width: 450px; margin: auto;">
       <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center;">
-        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0;"><i class="fa-solid fa-star" style="color: var(--accent-gold-dark);"></i> Ayúdanos a Mejorar</h3>
+        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0;"><i class="fa-solid fa-star" style="color: var(--accent-gold-dark);"></i> AyÃºdanos a Mejorar</h3>
       </div>
       <div style="padding: 20px; text-align: left;">
         <p style="font-size: 14px; margin-bottom: 20px; color: var(--text-color);">
@@ -3359,53 +3356,53 @@
           <input type="hidden" id="eval-rma-id" />
           
           <div style="margin-bottom: 15px;">
-            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">¿El equipo quedó funcionando correctamente y resolvió tu problema?</label>
+            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">Â¿El equipo quedÃ³ funcionando correctamente y resolviÃ³ tu problema?</label>
             <input type="hidden" id="eval-q1" required>
             <div class="star-rating-container" data-target="eval-q1">
-              <i class="fa-solid fa-star" data-val="1" title="Aún presenta fallas"></i>
+              <i class="fa-solid fa-star" data-val="1" title="AÃºn presenta fallas"></i>
               <i class="fa-solid fa-star" data-val="2"></i>
               <i class="fa-solid fa-star" data-val="3"></i>
               <i class="fa-solid fa-star" data-val="4"></i>
-              <i class="fa-solid fa-star" data-val="5" title="Sí, perfectamente"></i>
+              <i class="fa-solid fa-star" data-val="5" title="SÃ­, perfectamente"></i>
             </div>
           </div>
 
           <div style="margin-bottom: 15px;">
-            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">¿Cómo calificas el tiempo que tardamos en entregarte el equipo?</label>
+            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">Â¿CÃ³mo calificas el tiempo que tardamos en entregarte el equipo?</label>
             <input type="hidden" id="eval-q2" required>
             <div class="star-rating-container" data-target="eval-q2">
               <i class="fa-solid fa-star" data-val="1" title="Muy demorado"></i>
               <i class="fa-solid fa-star" data-val="2"></i>
               <i class="fa-solid fa-star" data-val="3" title="Aceptable"></i>
               <i class="fa-solid fa-star" data-val="4"></i>
-              <i class="fa-solid fa-star" data-val="5" title="Rápido y a tiempo"></i>
+              <i class="fa-solid fa-star" data-val="5" title="RÃ¡pido y a tiempo"></i>
             </div>
           </div>
 
           <div style="margin-bottom: 15px;">
-            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">¿La explicación técnica de la falla y la solución fue clara?</label>
+            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">Â¿La explicaciÃ³n tÃ©cnica de la falla y la soluciÃ³n fue clara?</label>
             <input type="hidden" id="eval-q3" required>
             <div class="star-rating-container" data-target="eval-q3">
               <i class="fa-solid fa-star" data-val="1"></i>
               <i class="fa-solid fa-star" data-val="2" title="Confusa / Poco clara"></i>
               <i class="fa-solid fa-star" data-val="3"></i>
               <i class="fa-solid fa-star" data-val="4"></i>
-              <i class="fa-solid fa-star" data-val="5" title="Sí, muy clara"></i>
+              <i class="fa-solid fa-star" data-val="5" title="SÃ­, muy clara"></i>
             </div>
           </div>
 
           <div style="margin-bottom: 15px;">
-            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">¿Qué podemos mejorar en nuestro taller técnico?</label>
+            <label style="font-weight: 600; font-size: 14px; display: block; margin-bottom: 5px;">Â¿QuÃ© podemos mejorar en nuestro taller tÃ©cnico?</label>
             <textarea id="eval-q4" class="mgm-input" style="width: 100%; min-height: 70px; padding: 12px; border-radius: 10px; border: 1px solid var(--border-light); font-size: 14px; font-family: inherit;" placeholder="(Espacio abierto para comentarios)"></textarea>
           </div>
 
           <button type="submit" class="btn-submit" style="width: 100%; margin-top: 10px;">
-            <i class="fa-solid fa-paper-plane"></i> Enviar Evaluación
+            <i class="fa-solid fa-paper-plane"></i> Enviar EvaluaciÃ³n
           </button>
         </form>
         <script>
           // Inicializar estrellas interactivas
-          // No usamos DOMContentLoaded porque el DOM ya está listo cuando este script se ejecuta
+          // No usamos DOMContentLoaded porque el DOM ya estÃ¡ listo cuando este script se ejecuta
           (function initStarRating() {
             document.querySelectorAll('.star-rating-container').forEach(function(container) {
               var stars = container.querySelectorAll('.fa-star');
@@ -3413,7 +3410,7 @@
               if (!hiddenInput) return;
 
               stars.forEach(function(star) {
-                // Click: fijar calificación
+                // Click: fijar calificaciÃ³n
                 star.addEventListener('click', function() {
                   var val = parseInt(star.dataset.val);
                   hiddenInput.value = val;
@@ -3426,7 +3423,7 @@
                   });
                 });
 
-                // Hover: preview de calificación
+                // Hover: preview de calificaciÃ³n
                 star.addEventListener('mouseenter', function() {
                   var val = parseInt(star.dataset.val);
                   stars.forEach(function(s) {
@@ -3458,10 +3455,10 @@
     </div>
   </div>
 
-  <!-- TOAST GLOBAL — fuera de todo stacking context -->
+  <!-- TOAST GLOBAL â€” fuera de todo stacking context -->
   <div id="mgm-toast-el" class="mgm-toast"></div>
 
-  <!-- Modal de Recordatorio de Instalación -->
+  <!-- Modal de Recordatorio de InstalaciÃ³n -->
   <style>
     @keyframes pwaPopIn {
       0% { opacity: 0; transform: scale(0.95) translateY(10px); }
@@ -3486,17 +3483,17 @@
   <div id="pwa-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 99999; align-items: center; justify-content: center;">
     <div id="pwa-modal-content" style="background: #ffffff; width: 90%; max-width: 400px; padding: 25px; border-radius: 16px; text-align: center; font-family: system-ui, -apple-system, sans-serif; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
       
-      <div style="font-size: 40px; margin-bottom: 10px;">📲</div>
-      <h3 style="margin: 0 0 10px 0; color: #0f172a; font-size: 20px;">¡Instala MGM Hub!</h3>
+      <div style="font-size: 40px; margin-bottom: 10px;">ðŸ“²</div>
+      <h3 style="margin: 0 0 10px 0; color: #0f172a; font-size: 20px;">Â¡Instala MGM Hub!</h3>
       <p style="color: #475569; font-size: 14px; line-height: 1.4; margin-bottom: 12px;">
         Accede a todo nuestro ecosistema directamente desde tu celular:
       </p>
       <ul style="color: #475569; font-size: 13px; line-height: 1.6; text-align: left; margin-bottom: 20px; padding-left: 20px;">
-        <li>🎁 <strong>Puntos y premios:</strong> Acumula y canjea fácilmente.</li>
-        <li>📅 <strong>Capacitaciones:</strong> Mantente al día con nuestra agenda.</li>
-        <li>🏷️ <strong>Promociones:</strong> Descuentos y beneficios exclusivos.</li>
-        <li>🛠️ <strong>RMA:</strong> Gestión y notificaciones en tiempo real.</li>
-        <li>🚀 <strong>Ligera:</strong> Súper rápida y no ocupa memoria.</li>
+        <li>ðŸŽ <strong>Puntos y premios:</strong> Acumula y canjea fÃ¡cilmente.</li>
+        <li>ðŸ“… <strong>Capacitaciones:</strong> Mantente al dÃ­a con nuestra agenda.</li>
+        <li>ðŸ·ï¸ <strong>Promociones:</strong> Descuentos y beneficios exclusivos.</li>
+        <li>ðŸ› ï¸ <strong>RMA:</strong> GestiÃ³n y notificaciones en tiempo real.</li>
+        <li>ðŸš€ <strong>Ligera:</strong> SÃºper rÃ¡pida y no ocupa memoria.</li>
       </ul>
 
       <button id="btn-instalar-app" style="width: 100%; background: #2563eb; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; margin-bottom: 10px;">
@@ -3504,7 +3501,7 @@
       </button>
       
       <button id="btn-recordar-luego" style="background: transparent; color: #64748b; border: none; font-size: 13px; cursor: pointer; text-decoration: underline;">
-        Recordármelo más tarde
+        RecordÃ¡rmelo mÃ¡s tarde
       </button>
       
     </div>
@@ -3518,16 +3515,16 @@
       const btnInstalar = document.getElementById('btn-instalar-app');
       const btnLuego = document.getElementById('btn-recordar-luego');
 
-      // Tiempo de repetición: 5 minutos
+      // Tiempo de repeticiÃ³n: 5 minutos
       const TIEMPO_REPETICION_MS = 5 * 60 * 1000;
 
-      // 1. Detectar si el dispositivo es móvil (Smartphone o Tablet)
+      // 1. Detectar si el dispositivo es mÃ³vil (Smartphone o Tablet)
       const esDispositivoMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
 
-      // 2. Validar si ya está instalada o ejecutándose como PWA
+      // 2. Validar si ya estÃ¡ instalada o ejecutÃ¡ndose como PWA
       const esAppInstalada = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-      // 3. Ejecutar solo si ES móvil y NO está instalada
+      // 3. Ejecutar solo si ES mÃ³vil y NO estÃ¡ instalada
       if (esDispositivoMovil && !esAppInstalada) {
         setTimeout(() => {
           mostrarModal();
@@ -3544,20 +3541,20 @@
         
         if (timerRecordatorio) clearTimeout(timerRecordatorio);
 
-        // Reprogramar a los 5 minutos solo en móvil
+        // Reprogramar a los 5 minutos solo en mÃ³vil
         timerRecordatorio = setTimeout(() => {
           mostrarModal();
         }, TIEMPO_REPETICION_MS);
       }
 
-      // Capturar evento de instalación nativo de Android
+      // Capturar evento de instalaciÃ³n nativo de Android
       window.addEventListener('beforeinstallprompt', (e) => {
         if (!esDispositivoMovil) return;
         e.preventDefault();
         deferredPrompt = e;
       });
 
-      // Botón "Instalar WebApp"
+      // BotÃ³n "Instalar WebApp"
       btnInstalar.addEventListener('click', async () => {
         if (deferredPrompt) {
           deferredPrompt.prompt();
@@ -3568,18 +3565,18 @@
           }
           deferredPrompt = null;
         } else {
-          // Guía para Safari en iOS u otros navegadores móviles
-          alert('Para instalar:\n1. Toca el botón Compartir 📤 de tu navegador.\n2. Selecciona "Agregar a inicio" ➕.');
+          // GuÃ­a para Safari en iOS u otros navegadores mÃ³viles
+          alert('Para instalar:\n1. Toca el botÃ³n Compartir ðŸ“¤ de tu navegador.\n2. Selecciona "Agregar a inicio" âž•.');
           ocultarYProgramar();
         }
       });
 
-      // Botón "Recordármelo más tarde"
+      // BotÃ³n "RecordÃ¡rmelo mÃ¡s tarde"
       btnLuego.addEventListener('click', () => {
         ocultarYProgramar();
       });
 
-      // Al completar la instalación
+      // Al completar la instalaciÃ³n
       window.addEventListener('appinstalled', () => {
         pwaModal.style.display = 'none';
         if (timerRecordatorio) clearTimeout(timerRecordatorio);
