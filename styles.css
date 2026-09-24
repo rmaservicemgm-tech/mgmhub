@@ -72,6 +72,7 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
   max-width: 540px;
   margin: 0 auto;
   min-height: 100dvh;
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
   background: var(--bg-page);
