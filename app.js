@@ -1462,6 +1462,7 @@
           nombre: p.nombre || p.title || `Promoción MGM #${idx + 1}`,
           descripcion: p.copy || p.descripcion || 'Conoce nuestras mejores ofertas en equipos de seguridad.',
           imagen: p.img || p.imagen || p.imagen_url || '',
+          video: p.video || '',
           tipo: p.tipo || 'especial',
           fecha_inicio: p.fecha_inicio || '',
           fecha_fin: p.fecha_fin || '',
@@ -2339,6 +2340,27 @@
     event.stopPropagation();
   };
 
+  window.toggleFeedVideo = function(wrapper) {
+    const video = wrapper.querySelector('video');
+    if (!video) return;
+    if (video.paused) {
+      video.play();
+      wrapper.classList.remove('is-paused');
+    } else {
+      video.pause();
+      wrapper.classList.add('is-paused');
+    }
+  };
+
+  window.toggleFeedVideoMute = function(btn, event) {
+    event.stopPropagation();
+    const wrapper = btn.closest('.cli-video-wrapper');
+    const video = wrapper.querySelector('video');
+    if (!video) return;
+    video.muted = !video.muted;
+    btn.innerHTML = video.muted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
+  };
+
   window.openPromoDetail = function(idx) {
     const modal = document.getElementById('modal-promo-feed');
     const feed = document.getElementById('cli-modal-feed');
@@ -2353,9 +2375,17 @@
 
       return `
       <div class="cli-feed-item" id="promo-feed-${i}">
-        ${ p.imagen
-          ? `<img class="cli-feed-img" src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">`
-          : `<div class="cli-feed-img-placeholder" style="background:${promoPlaceholderBg(p.tipo)};">${promoPlaceholderEmoji(p.tipo)}</div>`
+        ${ p.video
+           ? `<div class="cli-video-wrapper" onclick="toggleFeedVideo(this)">
+                <video src="${p.video}" poster="${p.imagen}" preload="auto" autoplay loop muted playsinline class="cli-feed-video"></video>
+                <div class="cli-video-center-controls">
+                  <button class="cli-play-overlay"><i class="fa-solid fa-play"></i></button>
+                  <button class="cli-mute-overlay" onclick="toggleFeedVideoMute(this, event)"><i class="fa-solid fa-volume-xmark"></i></button>
+                </div>
+              </div>`
+           : p.imagen
+             ? `<img class="cli-feed-img" src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">`
+             : `<div class="cli-feed-img-placeholder" style="background:${promoPlaceholderBg(p.tipo)};">${promoPlaceholderEmoji(p.tipo)}</div>`
         }
         <div class="cli-feed-gradient"></div>
 
@@ -2403,6 +2433,35 @@
       const target = document.getElementById('promo-feed-' + idx);
       if (target) target.scrollIntoView({ behavior: 'auto', block: 'start' });
     }, 50);
+
+    // Observer para videos (reproducir solo el visible)
+    if (window._feedVideoObserver) {
+      window._feedVideoObserver.disconnect();
+    }
+    window._feedVideoObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const wrapper = entry.target.querySelector('.cli-video-wrapper');
+        if (!wrapper) return;
+        const video = wrapper.querySelector('video');
+        if (!video) return;
+        
+        if (entry.isIntersecting) {
+          video.play().catch(e => console.warn('Autoplay prevented', e));
+          wrapper.classList.remove('is-paused');
+        } else {
+          video.pause();
+          wrapper.classList.add('is-paused');
+        }
+      });
+    }, {
+      root: feed,
+      threshold: 0.6 // Al menos 60% visible para reproducir
+    });
+    
+    // Observar cada item
+    feed.querySelectorAll('.cli-feed-item').forEach(item => {
+      window._feedVideoObserver.observe(item);
+    });
   };
 
   // — Like dentro del feed Reels (sin confetti de posición ya que es overlay)
@@ -2580,6 +2639,9 @@
       if (modal) {
           modal.style.display = 'none';
           document.getElementById('cli-modal-feed').innerHTML = ''; // Limpiar la memoria
+          if (window._feedVideoObserver) {
+              window._feedVideoObserver.disconnect();
+          }
       }
   };
 
