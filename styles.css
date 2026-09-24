@@ -2284,16 +2284,9 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
   grid-template-columns: repeat(2, 1fr) !important;
   gap: 20px;
 }
-@media (max-width: 768px) {
-  .mgm-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
 
-.calc-module {
-  padding-top: 30px;
-  padding-bottom: 30px;
-}
+
+.calc-module { padding: 30px 20px; max-width: 540px; margin: 0 auto; box-sizing: border-box; }
 
 .header-brand {
   display: flex !important;
@@ -2467,4 +2460,5 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
 .conv-clear {
   color: #dc3545 !important;
 }
+
 
