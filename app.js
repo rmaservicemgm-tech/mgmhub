@@ -154,6 +154,36 @@
     ]
   };
 
+  // ── Corrección de arranque: limpiar seenNotifs para notifs con fecha_inicio futura ──
+  // Repara usuarios que recibieron el push antes de tiempo (bug anterior).
+  // Si una notif guardada tiene fecha_inicio en el futuro y está en seenNotifs,
+  // se elimina de seenNotifs para que el scheduler la dispare cuando llegue su hora.
+  (function purgeFutureSeenNotifs() {
+    const now = Date.now();
+    let changed = false;
+    state.notifications.forEach(function(n) {
+      if (!n.fecha_inicio) return;
+      let str = String(n.fecha_inicio).trim();
+      if (str.includes('/')) {
+        const parts = str.split(/[\/ :]/);
+        if (parts.length >= 3 && parts[0].length <= 2) {
+          str = parts[2] + '-' + parts[1].padStart(2,'0') + '-' + parts[0].padStart(2,'0')
+              + 'T' + (parts[3] ? parts[3].padStart(2,'0') : '00') + ':'
+              + (parts[4] ? parts[4].padStart(2,'0') : '00') + ':00';
+        }
+      } else {
+        str = str.replace(' ', 'T');
+        if (str.length === 10) str += 'T00:00:00';
+      }
+      const fi = new Date(str);
+      if (!isNaN(fi.getTime()) && now < fi.getTime()) {
+        const idx = state.seenNotifs.indexOf(String(n.id));
+        if (idx !== -1) { state.seenNotifs.splice(idx, 1); changed = true; }
+      }
+    });
+    if (changed) localStorage.setItem(K_SEEN_NOTIFS, JSON.stringify(state.seenNotifs));
+  })();
+
   // ══════════════════════════════════════════════════════════════════════════════
   // DATOS DE FALLBACK (DEMO / MODO OFFLINE)
   // ══════════════════════════════════════════════════════════════════════════════
@@ -3489,12 +3519,64 @@
           if (!alreadyExists && !isCleared) {
             state.notifications.unshift(n);
             hasChanged = true;
-            
-            // Solo disparar toast/nativo si nunca lo hemos visto en este dispositivo
-            if (!state.seenNotifs.includes(stringId)) {
+
+            // ── Verificar ventana de tiempo ANTES de disparar push/toast ──
+            // Si fecha_inicio existe y aún no ha llegado, la notif queda en la
+            // campanita pero NO se lanza al sistema operativo todavía.
+            const nowMs = Date.now();
+            let enVentana = true;
+            if (n.fecha_inicio) {
+              let fiStr = String(n.fecha_inicio).trim();
+              // Soportar "YYYY-MM-DD HH:mm" y "DD/MM/YYYY HH:mm"
+              if (fiStr.includes('/')) {
+                const parts = fiStr.split(/[\/ :]/);
+                // DD/MM/YYYY [HH:mm[:ss]]
+                if (parts.length >= 3 && parts[0].length <= 2) {
+                  const d = parts[0].padStart(2,'0');
+                  const m = parts[1].padStart(2,'0');
+                  const y = parts[2];
+                  const hh = parts[3] ? parts[3].padStart(2,'0') : '00';
+                  const mm = parts[4] ? parts[4].padStart(2,'0') : '00';
+                  fiStr = `${y}-${m}-${d}T${hh}:${mm}:00`;
+                }
+              } else {
+                // "YYYY-MM-DD HH:mm" → ISO
+                fiStr = fiStr.replace(' ', 'T');
+                if (fiStr.length === 10) fiStr += 'T00:00:00'; // solo fecha
+              }
+              const fi = new Date(fiStr);
+              if (!isNaN(fi.getTime()) && nowMs < fi.getTime()) {
+                enVentana = false; // Aún no es su hora
+              }
+            }
+            if (n.fecha_fin) {
+              let ffStr = String(n.fecha_fin).trim();
+              if (ffStr.includes('/')) {
+                const parts = ffStr.split(/[\/ :]/);
+                if (parts.length >= 3 && parts[0].length <= 2) {
+                  const d = parts[0].padStart(2,'0');
+                  const m = parts[1].padStart(2,'0');
+                  const y = parts[2];
+                  const hh = parts[3] ? parts[3].padStart(2,'0') : '23';
+                  const mm = parts[4] ? parts[4].padStart(2,'0') : '59';
+                  ffStr = `${y}-${m}-${d}T${hh}:${mm}:59`;
+                }
+              } else {
+                ffStr = ffStr.replace(' ', 'T');
+                if (ffStr.length === 10) ffStr += 'T23:59:59';
+              }
+              const ff = new Date(ffStr);
+              if (!isNaN(ff.getTime()) && nowMs > ff.getTime()) {
+                enVentana = false; // Ya expiró
+              }
+            }
+
+            // Solo disparar push nativo y toast si estamos dentro de la ventana
+            // y nunca lo hemos disparado en este dispositivo
+            if (enVentana && !state.seenNotifs.includes(stringId)) {
               state.seenNotifs.push(stringId);
               localStorage.setItem(K_SEEN_NOTIFS, JSON.stringify(state.seenNotifs));
-              
+
               // Disparar notificación nativa del sistema
               fireNativeNotif(n.title || 'MGM', n.body || '', n.seccion || n.url || '');
               // Mostrar Toast visual en la app
@@ -3502,6 +3584,10 @@
                 showToast(n.title || 'Nueva notificación de MGM', 'fa-solid fa-bell');
               }
             }
+            // Si !enVentana: la notif ya está en state.notifications (campanita visible)
+            // pero NO se disparó push. En la siguiente revisión periódica, cuando
+            // llegue la fecha_inicio, entrará al bloque alreadyExists=true y NO
+            // disparará push. Para capturar ese momento necesitamos el scheduler abajo.
           } else if (alreadyExists) {
             // Actualizar si hay cambios en el texto o destino
             const existingIdx = state.notifications.findIndex(existing => String(existing.id) === stringId);
@@ -3515,34 +3601,40 @@
           }
         });
 
-        // Helper para parsear fechas robustamente (soporta YYYY-MM-DD, DD/MM/YYYY, y fechas ISO UTC)
+        // Helper para parsear fechas robustamente (soporta YYYY-MM-DD, DD/MM/YYYY HH:mm, y fechas ISO)
         const parseDateRobust = (dateStr, isEnd) => {
-          let str = String(dateStr || '').trim().split(' ')[0].split('T')[0];
+          let str = String(dateStr || '').trim();
           if (!str) return null;
-          // Si viene en formato DD/MM/YYYY, convertirlo a YYYY-MM-DD
-          if (str.includes('/')) {
-            const parts = str.split('/');
+          // Separar parte de fecha de la hora si viene junto
+          const spaceIdx = str.indexOf(' ');
+          const hasTime = spaceIdx !== -1;
+          const datePart = hasTime ? str.substring(0, spaceIdx) : str.split('T')[0];
+          const timePart = hasTime ? str.substring(spaceIdx + 1) : (str.includes('T') ? str.substring(str.indexOf('T') + 1) : '');
+          let normalDate = datePart;
+          // Convertir DD/MM/YYYY → YYYY-MM-DD
+          if (normalDate.includes('/')) {
+            const parts = normalDate.split('/');
             if (parts.length === 3 && parts[0].length <= 2) {
-              str = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+              normalDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
             }
           }
-          return new Date(str + (isEnd ? 'T23:59:59' : 'T00:00:00'));
+          const timeStr = timePart || (isEnd ? '23:59:59' : '00:00:00');
+          return new Date(`${normalDate}T${timeStr}`);
         };
 
+        // ── Limpiar SOLO las que ya EXPIRARON (fecha_fin pasada) ──────────────
+        // Las que aún NO han comenzado (fecha_inicio futura) se MANTIENEN en el
+        // estado para que el scheduler pueda dispararlas en hora exacta.
         const todayForNotifs = new Date();
         const finalLength = state.notifications.length;
         state.notifications = state.notifications.filter(n => {
-          if (n.fecha_inicio) {
-            const fi = parseDateRobust(n.fecha_inicio, false);
-            if (fi && !isNaN(fi.getTime()) && todayForNotifs < fi) return false;
-          }
           if (n.fecha_fin) {
             const ff = parseDateRobust(n.fecha_fin, true);
-            if (ff && !isNaN(ff.getTime()) && todayForNotifs > ff) return false;
+            if (ff && !isNaN(ff.getTime()) && todayForNotifs > ff) return false; // Expirada
           }
-          return true;
+          return true; // Activa o futura → mantener
         });
-        
+
         if (state.notifications.length !== finalLength) {
           hasChanged = true;
         }
@@ -3583,11 +3675,73 @@
     }
   }, 20000);
 
-  // Actualizar el globito rojo de la campana
+  // ── Scheduler de notificaciones programadas (cada 60 segundos) ───────────────
+  // Detecta notificaciones que acaban de entrar en su ventana de tiempo (fecha_inicio)
+  // y dispara el push nativo exactamente en ese momento, sin importar si la app
+  // estaba abierta cuando se descargó la notif del backend.
+  setInterval(() => {
+    if (!state.authUser) return;
+    let cambio = false;
+    state.notifications.forEach(n => {
+      const stringId = String(n.id);
+      // Si ya fue disparada anteriormente, no repetir
+      if (state.seenNotifs.includes(stringId)) return;
+      // Si no está en ventana todavía, no disparar
+      if (!notifEnVentana(n)) return;
+      // ¡Llegó su hora! Marcar como vista y disparar
+      state.seenNotifs.push(stringId);
+      localStorage.setItem(K_SEEN_NOTIFS, JSON.stringify(state.seenNotifs));
+      fireNativeNotif(n.title || 'MGM', n.body || '', n.seccion || n.url || '');
+      if (typeof showToast === 'function') {
+        showToast(n.title || 'Nueva notificación de MGM', 'fa-solid fa-bell');
+      }
+      cambio = true;
+    });
+    if (cambio) {
+      updateNotifBadge();
+      renderNotifications();
+    }
+  }, 60000);
+
+  // Helper compartido: verifica si una notif ya está en su ventana de tiempo activa
+  function notifEnVentana(n) {
+    const nowMs = Date.now();
+    if (n.fecha_inicio) {
+      let str = String(n.fecha_inicio).trim();
+      if (str.includes('/')) {
+        const parts = str.split(/[\/ :]/);
+        if (parts.length >= 3 && parts[0].length <= 2) {
+          str = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}T${parts[3] ? parts[3].padStart(2,'0') : '00'}:${parts[4] ? parts[4].padStart(2,'0') : '00'}:00`;
+        }
+      } else {
+        str = str.replace(' ', 'T');
+        if (str.length === 10) str += 'T00:00:00';
+      }
+      const fi = new Date(str);
+      if (!isNaN(fi.getTime()) && nowMs < fi.getTime()) return false; // Aún no empieza
+    }
+    if (n.fecha_fin) {
+      let str = String(n.fecha_fin).trim();
+      if (str.includes('/')) {
+        const parts = str.split(/[\/ :]/);
+        if (parts.length >= 3 && parts[0].length <= 2) {
+          str = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}T${parts[3] ? parts[3].padStart(2,'0') : '23'}:${parts[4] ? parts[4].padStart(2,'0') : '59'}:59`;
+        }
+      } else {
+        str = str.replace(' ', 'T');
+        if (str.length === 10) str += 'T23:59:59';
+      }
+      const ff = new Date(str);
+      if (!isNaN(ff.getTime()) && nowMs > ff.getTime()) return false; // Expirada
+    }
+    return true;
+  }
+
+  // Actualizar el globito rojo de la campana (solo cuenta notifs en ventana de tiempo)
   function updateNotifBadge() {
     const badge = document.getElementById('notif-badge');
     if (!badge) return;
-    const count = state.notifications.length;
+    const count = state.notifications.filter(n => notifEnVentana(n)).length;
     if (count > 0) {
       badge.textContent = count > 9 ? '9+' : String(count);
       badge.style.display = 'inline-flex';
@@ -3731,7 +3885,10 @@
     const list = document.getElementById('notif-list');
     if (!list) return;
 
-    if (state.notifications.length === 0) {
+    // Solo mostrar notificaciones dentro de su ventana de tiempo activa
+    const visibles = state.notifications.filter(n => notifEnVentana(n));
+
+    if (visibles.length === 0) {
       list.innerHTML = `
         <div style="text-align:center; padding:40px 20px;">
           <div style="font-size:40px; margin-bottom:12px;">✅</div>
@@ -3754,7 +3911,7 @@
       default:  { icon: 'fa-circle-info',   color: '#0ea5e9', badgeText: null,         badgeBg: null,      badgeTxt: null      }
     };
 
-    list.innerHTML = state.notifications.map(n => {
+    list.innerHTML = visibles.map(n => {
       // Usar campo seccion o url del backend; fallback: inferir por contenido
       let seccion = (n.seccion || n.url || '').trim();
       const titleLower = (n.title || '').toLowerCase();
