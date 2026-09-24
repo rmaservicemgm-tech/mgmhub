@@ -284,6 +284,8 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
 .pill-chat      { background: #e8f9f1; color: #18a85c; }
 .pill-toolbox   { background: #ede9fe; color: var(--accent-purple); }
 .pill-ups       { background: #ecfdf5; color: #059669; }
+.pill-rma       { background: #EEF2FF; color: #4F46E5; }
+.pill-tracking  { background: #FFF7ED; color: #EA580C; }
 .pill-disabled  { background: var(--bg-card-alt); color: var(--text-subtle); }
 
 .card-title  { font-size: 13.5px; font-weight: 800; color: var(--text-dark); margin-bottom: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -2460,37 +2462,41 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
 /* Category pills */
 .conv-grid {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
   gap: 8px;
   margin-bottom: 20px;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.conv-grid::-webkit-scrollbar {
+  display: none;
 }
 .conv-cat-btn {
-  padding: 7px 13px;
-  border: 1.5px solid var(--border-light);
-  background: var(--bg-card);
-  border-radius: var(--radius-full);
+  padding: 8px 16px;
+  border: none;
+  background: #F3F4F6;
+  border-radius: 99px;
+  flex-shrink: 0;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   font-family: 'Outfit', sans-serif;
   color: var(--text-body);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   white-space: nowrap;
-  box-shadow: var(--shadow-xs);
 }
 .conv-cat-btn:hover {
-  border-color: var(--primary-blue);
-  color: var(--primary-blue);
-  background: var(--primary-blue-lt);
+  background: #E5E7EB;
 }
 .conv-cat-btn.active {
-  border-color: var(--primary-blue);
-  color: var(--primary-blue);
-  background: var(--primary-blue-lt);
-  box-shadow: 0 2px 8px rgba(0,115,230,0.2);
+  color: #FFFFFF;
+  background: var(--primary-blue);
+  box-shadow: 0 4px 12px rgba(0,115,230,0.3);
   font-weight: 700;
 }
 

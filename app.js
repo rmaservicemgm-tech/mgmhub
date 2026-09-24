@@ -4660,7 +4660,7 @@
     Object.keys(C).filter(x => x.toLowerCase().includes(filter.toLowerCase()) || Object.keys(C[x].units).some(u=>u.toLowerCase().includes(filter.toLowerCase())))
     .forEach(x => {
       const b = document.createElement("button"); 
-      b.className = "cat" + (x === currentCat ? " active" : "");
+      b.className = "conv-cat-btn" + (x === currentCat ? " active" : "");
       const icon = C[x].icon || "fa-circle";
       b.innerHTML = '<i class="fas ' + icon + ' cat-icon"></i><span>' + x + '</span>'; 
       b.onclick = () => selectCategory(x); 
