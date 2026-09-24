@@ -278,13 +278,43 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
   display: flex; align-items: center; justify-content: center;
   font-size: 18px; margin-bottom: 10px;
 }
-.pill-puntos  { background: #fff8e1; color: var(--accent-gold-dark); }
-.pill-agenda  { background: var(--primary-blue-lt); color: var(--primary-blue); }
-.pill-promos  { background: #fff0e8; color: var(--accent-orange); }
-.pill-chat    { background: #e8f9f1; color: #18a85c; }
+.pill-puntos    { background: #fff8e1; color: var(--accent-gold-dark); }
+.pill-agenda    { background: var(--primary-blue-lt); color: var(--primary-blue); }
+.pill-promos    { background: #fff0e8; color: var(--accent-orange); }
+.pill-chat      { background: #e8f9f1; color: #18a85c; }
+.pill-toolbox   { background: #ede9fe; color: var(--accent-purple); }
+.pill-ups       { background: #ecfdf5; color: #059669; }
+.pill-disabled  { background: var(--bg-card-alt); color: var(--text-subtle); }
 
-.card-title  { font-size: 13.5px; font-weight: 800; color: var(--text-dark); margin-bottom: 3px; }
+.card-title  { font-size: 13.5px; font-weight: 800; color: var(--text-dark); margin-bottom: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .card-desc   { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+
+/* Disabled calc card */
+.quick-card--disabled {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+}
+.quick-card--disabled:hover {
+  transform: none;
+  box-shadow: var(--shadow-xs);
+  border-color: var(--border-light);
+}
+
+/* "Pronto" badge inline */
+.badge-soon {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: #fff0e8;
+  color: var(--accent-orange);
+  border-radius: var(--radius-full);
+  padding: 2px 7px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
 
 /* Slider de promos en Home */
 .promos-slider-container {
@@ -2279,11 +2309,7 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
 }
 
 /* --- MGM Calculadoras --- */
-.mgm-grid {
-  display: grid !important;
-  grid-template-columns: repeat(2, 1fr) !important;
-  gap: 20px;
-}
+.mgm-grid { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
 
 
 .calc-module { padding: 30px 20px; max-width: 540px; margin: 0 auto; box-sizing: border-box; }

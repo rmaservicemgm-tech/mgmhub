@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -2688,63 +2688,70 @@
           <p>Herramientas profesionales para dimensionar, diseñar y planificar proyectos.</p>
         </div>
         <div class="mgm-grid">
-          <!-- ACTIVA: Conversor Técnico -->
-          <div class="mgm-card activo" onclick="switchMainTab('toolbox-conversor-tecnico')">
-            <div class="mgm-icon"><i class="fas fa-exchange-alt"></i></div>
-            <h3>MGM Conversor Técnico</h3>
-            <p>Conversiones rápidas para instaladores de seguridad electrónica.</p>
-            <a class="mgm-btn">Usar Conversor →</a>
-          </div>
 
-          <!-- ACTIVA: Almacenamiento -->
-          <div class="mgm-card activo" onclick="switchMainTab('toolbox-calculadora-almacenamiento')">
-            <div class="mgm-icon">
-              <i class="fas fa-hdd"></i>
+          <!-- Conversor Técnico -->
+          <div class="quick-card" onclick="switchMainTab('toolbox-conversor-tecnico')">
+            <div class="card-icon-pill pill-toolbox"><i class="fas fa-exchange-alt"></i></div>
+            <div>
+              <div class="card-title">MGM Conversor Técnico</div>
+              <div class="card-desc">Conversiones rápidas para instaladores de seguridad electrónica.</div>
             </div>
-            <h3>Calculadora de Almacenamiento CCTV</h3>
-            <p>Calcula la capacidad de disco duro necesaria para grabación de video vigilancia.</p>
-            <a class="mgm-btn">Usar Calculadora →</a>
           </div>
 
-          
-          <div class="mgm-card inactivo">
-            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
-            <div class="mgm-icon"><i class="fas fa-bolt"></i></div>
-            <h3>Calculadora de Caída de Voltaje</h3>
-            <p>Determina la pérdida de voltaje en cables eléctricos según distancia.</p>
-            <a class="mgm-btn">Disponible pronto</a>
+          <!-- Calculadora Almacenamiento -->
+          <div class="quick-card" onclick="switchMainTab('toolbox-calculadora-almacenamiento')">
+            <div class="card-icon-pill pill-agenda"><i class="fas fa-hdd"></i></div>
+            <div>
+              <div class="card-title">Almacenamiento CCTV</div>
+              <div class="card-desc">Calcula la capacidad de disco necesaria para grabación de video vigilancia.</div>
+            </div>
           </div>
-          
-          <div class="mgm-card inactivo">
-            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
-            <div class="mgm-icon"><i class="fas fa-wifi"></i></div>
-            <h3>Calculadora de Enlaces Inalámbricos</h3>
-            <p>Evalúa la viabilidad de enlaces inalámbricos punto a punto.</p>
-            <a class="mgm-btn">Disponible pronto</a>
+
+          <!-- Calculadora UPS -->
+          <div class="quick-card" onclick="switchMainTab('toolbox-calculadora-ups')">
+            <div class="card-icon-pill pill-ups"><i class="fas fa-battery-full"></i></div>
+            <div>
+              <div class="card-title">Autonomía UPS</div>
+              <div class="card-desc">Calcula el tiempo de respaldo y la capacidad necesaria del UPS.</div>
+            </div>
           </div>
-          
-          <div class="mgm-card inactivo">
-            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
-            <div class="mgm-icon"><i class="fas fa-search"></i></div>
-            <h3>Calculadora de Lentes y Cobertura DORI</h3>
-            <p>Permite calcular el alcance de detección, observación, reconocimiento e identificación.</p>
-            <a class="mgm-btn">Disponible pronto</a>
+
+          <!-- Próximamente: Caída de Voltaje -->
+          <div class="quick-card quick-card--disabled">
+            <div class="card-icon-pill pill-disabled"><i class="fas fa-bolt"></i></div>
+            <div>
+              <div class="card-title">Caída de Voltaje <span class="badge-soon">Pronto</span></div>
+              <div class="card-desc">Determina la pérdida de voltaje en cables eléctricos según distancia.</div>
+            </div>
           </div>
-          
-          <div class="mgm-card activo" onclick="switchMainTab('toolbox-calculadora-ups')">
-            <div class="mgm-icon"><i class="fas fa-battery-full"></i></div>
-            <h3>Calculadora de Autonomía UPS</h3>
-            <p>Calcula el tiempo de respaldo y la capacidad necesaria del UPS.</p>
-            <a class="mgm-btn">Usar Calculadora →</a>
+
+          <!-- Próximamente: Inalámbricos -->
+          <div class="quick-card quick-card--disabled">
+            <div class="card-icon-pill pill-disabled"><i class="fas fa-wifi"></i></div>
+            <div>
+              <div class="card-title">Enlaces Inalámbricos <span class="badge-soon">Pronto</span></div>
+              <div class="card-desc">Evalúa la viabilidad de enlaces inalámbricos punto a punto.</div>
+            </div>
           </div>
-          
-          <div class="mgm-card inactivo">
-            <div class="badge-lock"><i class="fas fa-lock"></i> Próximamente</div>
-            <div class="mgm-icon"><i class="fas fa-plug"></i></div>
-            <h3>Calculadora de Potencia PoE</h3>
-            <p>Dimensiona la potencia total requerida para switches PoE.</p>
-            <a class="mgm-btn">Disponible pronto</a>
+
+          <!-- Próximamente: DORI -->
+          <div class="quick-card quick-card--disabled">
+            <div class="card-icon-pill pill-disabled"><i class="fas fa-search"></i></div>
+            <div>
+              <div class="card-title">Lentes y DORI <span class="badge-soon">Pronto</span></div>
+              <div class="card-desc">Calcula el alcance de detección, observación, reconocimiento e identificación.</div>
+            </div>
           </div>
+
+          <!-- Próximamente: PoE -->
+          <div class="quick-card quick-card--disabled">
+            <div class="card-icon-pill pill-disabled"><i class="fas fa-plug"></i></div>
+            <div>
+              <div class="card-title">Potencia PoE <span class="badge-soon">Pronto</span></div>
+              <div class="card-desc">Dimensiona la potencia total requerida para switches PoE.</div>
+            </div>
+          </div>
+
         </div>
       </div>
     </main>
