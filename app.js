@@ -3395,6 +3395,11 @@
     // Ocultar badge al abrir el panel (marcar como vistas)
     const badge = document.getElementById('notif-badge');
     if (badge) badge.style.display = 'none';
+
+    // Trackear apertura del panel
+    if (state.authUser) {
+      trackUserActivity(state.authUser.cedula, state.authUser.nombre, 'Abrir_Notificaciones');
+    }
   };
 
   // Solicitar permiso de notificaciones nativas del navegador
@@ -3888,14 +3893,17 @@
     if (notif.type === 'bday' || String(notifId).startsWith('bday_')) {
       closeAppModal('modal-notifications');
       if (typeof window.showBirthdayModal === 'function') window.showBirthdayModal(notif.isSundayMoved);
+      if (state.authUser) trackUserActivity(state.authUser.cedula, state.authUser.nombre, 'Click_Notificacion: Cumpleaños');
       return;
     }
 
     const target = (notif.seccion || notif.url || '').trim();
     if (target) {
       closeAppModal('modal-notifications');
+      if (state.authUser) trackUserActivity(state.authUser.cedula, state.authUser.nombre, 'Click_Notificacion: ' + target);
       navigateTo(target);
     }
+
   };
 
   // Modal de cumpleaños: mensaje personalizado + confeti
