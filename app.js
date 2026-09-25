@@ -117,12 +117,14 @@
   const K_TX      = 'mgm_local_tx';
   const K_SPLASH  = 'mgm_splash_date_v2';
   const K_LIKES   = 'mgm_promo_likes';
-  const K_AUTH    = 'mgm_auth_user';
-  const K_NOTIFS  = 'mgm_notifications';
-  const K_CLEARED_NOTIFS = 'mgm_cleared_notifs';
-  const K_SEEN_NOTIFS = 'mgm_seen_notifs';
-  const K_NOTIFIED_TX    = 'mgm_notified_tx_v1';
-  const K_MY_COURSES     = 'mgm_my_courses';
+  const K_AUTH           = 'mgm_auth_user';
+  const K_NOTIFS          = 'mgm_notifications';
+  const K_CLEARED_NOTIFS  = 'mgm_cleared_notifs';
+  const K_SEEN_NOTIFS     = 'mgm_seen_notifs';
+  const K_NOTIFIED_TX     = 'mgm_notified_tx_v1';
+  const K_MY_COURSES      = 'mgm_my_courses';
+  const K_LAST_ACTIVITY   = 'mgm_last_activity';   // Timestamp de última actividad
+  const SESSION_MAX_MS    = 30 * 24 * 60 * 60 * 1000; // 30 días en milisegundos
 
   const state = {
     activeTab:   'home',
@@ -879,6 +881,8 @@
     state.sessionToken = (state.sessionToken || 0) + 1;
     state.authUser = { ...state.authUser, ...clientData };
     localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
+    // Registrar timestamp de actividad al iniciar sesión
+    localStorage.setItem(K_LAST_ACTIVITY, String(Date.now()));
 
     // 1. Actualizar icono con inicial y aro azul en el Header
     updateHeaderUserIcon();
@@ -3151,6 +3155,7 @@
 
     state.authUser = null;
     localStorage.removeItem(K_AUTH);
+    localStorage.removeItem(K_LAST_ACTIVITY); // Limpiar timestamp al cerrar sesión
     state.myCourses = [];
     localStorage.removeItem(K_MY_COURSES);
     renderMyCourses();
@@ -4102,6 +4107,31 @@
     // Asegurar tema estándar limpio (sin modo oscuro residual)
     document.documentElement.removeAttribute('data-theme');
     try { localStorage.removeItem('mgm_theme'); } catch(e) {}
+
+    // ── Verificar expiración de sesión por inactividad (30 días) ─────────────
+    if (state.authUser) {
+      const lastActivity = parseInt(localStorage.getItem(K_LAST_ACTIVITY) || '0');
+      const ahora = Date.now();
+      if (lastActivity && (ahora - lastActivity) > SESSION_MAX_MS) {
+        // Sesión expirada: limpiar silenciosamente
+        console.log('[MGM Hub] Sesión expirada por inactividad (30 días). Cerrando...');
+        state.sessionToken = (state.sessionToken || 0) + 1;
+        state.loggedOut = true;
+        state.authUser = null;
+        localStorage.removeItem(K_AUTH);
+        localStorage.removeItem(K_NOTIFS);
+        localStorage.removeItem(K_CLEARED_NOTIFS);
+        localStorage.removeItem(K_SEEN_NOTIFS);
+        localStorage.removeItem(K_MY_COURSES);
+        localStorage.removeItem(K_LAST_ACTIVITY);
+        state.notifications = [];
+        state.clearedNotifs = [];
+        state.myCourses = [];
+      } else {
+        // Sesión válida: actualizar timestamp de última actividad
+        localStorage.setItem(K_LAST_ACTIVITY, String(ahora));
+      }
+    }
 
     // Capturar código de referido de URL si existe
     const urlParams = new URLSearchParams(window.location.search);
