@@ -874,6 +874,9 @@
 
   async function setClientSession(clientData, eventType = 'login') {
     if (!clientData) return;
+    // Restablecer el flag de logout al iniciar una sesión nueva válida
+    state.loggedOut = false;
+    state.sessionToken = (state.sessionToken || 0) + 1;
     state.authUser = { ...state.authUser, ...clientData };
     localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
 
@@ -1264,6 +1267,8 @@
     updatePuntosAuthViews();
     // Usar datos guardados primero (instantáneo)
     renderDashboard(state.authUser);
+    // Capturar el token de sesión actual para detectar logout durante la espera
+    const tokenSnapshot = state.sessionToken || 0;
     // Luego refrescar desde el GAS en segundo plano
     try {
       const res = await fetch(CFG.PUNTOS_GAS_URL, {
@@ -1271,6 +1276,13 @@
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'get_client', cedula: state.authUser.cedula })
       }).then(r => r.json());
+
+      // ⚠️ GUARD: Si el usuario cerró sesión mientras esperaba la respuesta, descartar
+      if (state.loggedOut || !state.authUser || (state.sessionToken || 0) !== tokenSnapshot) {
+        console.log('[MGM] Respuesta descartada: sesión cerrada durante la petición.');
+        return;
+      }
+
       if (res.success && res.client) {
         // Detectar si entraron puntos o transacciones nuevas y disparar notificación
         checkAndNotifyNewPoints(res.client);
@@ -3133,6 +3145,10 @@
   }
 
   window.logoutClient = function() {
+    // │ Incrementar token de sesión para invalidar todas las respuestas en vuelo
+    state.sessionToken = (state.sessionToken || 0) + 1;
+    state.loggedOut = true; // Flag de seguridad: bloquea restauraciones posteriores
+
     state.authUser = null;
     localStorage.removeItem(K_AUTH);
     state.myCourses = [];
@@ -3141,6 +3157,8 @@
     // Limpiar completamente las notificaciones al cerrar sesión
     state.notifications = [];
     localStorage.setItem(K_NOTIFS, '[]');
+    state.clearedNotifs = [];
+    localStorage.removeItem(K_CLEARED_NOTIFS);
     updateNotifBadge();
     renderNotifications();
     updateHeaderUserIcon();
@@ -3432,7 +3450,8 @@
   // Consultar notificaciones del backend
   async function checkNotifications() {
     if (CFG.NOTIFS_GAS_URL === 'URL_TEMPORAL_PENDIENTE') return;
-    
+    // Capturar token antes de la petición async
+    const tokenSnapshot = state.sessionToken || 0;
     try {
       const cedula = state.authUser ? state.authUser.cedula : 'ANONIMO';
       const email  = (state.authUser && state.authUser.email) ? state.authUser.email : '';
@@ -3442,6 +3461,12 @@
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'get_notifications', cedula, email, nombre })
       }).then(r => r.json());
+
+      // ⚠️ GUARD: Si el usuario cerró sesión mientras esperaba la respuesta, descartar
+      if (state.loggedOut || (state.sessionToken || 0) !== tokenSnapshot) {
+        console.log('[MGM] Notificaciones descartadas: sesión cerrada durante la petición.');
+        return;
+      }
 
       if (res.success) {
         let hasChanged = false;
