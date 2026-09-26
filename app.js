@@ -5366,10 +5366,17 @@ window.closeReferralQRModal = function() {
       emisoras = EMISORAS_FALLBACK; // garantizamos siempre tener radios
     } finally {
       if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
+      // Ocultar el mini-bar de promos normales (evita doble reproductor)
+      document.getElementById('audio-mini-bar')?.classList.add('hidden');
       // Siempre renderizamos, aunque haya fallado algo
       renderRadioList();
       renderSpotifyList();
-      if (emisoras.length > 0) selectRadio(emisoras[0], false);
+      // Reproducir un promo MGM primero, luego dejar la primera radio lista (sin autoplay)
+      if (promoTracks.length > 0) {
+        playNextPartyPromo(true); // true = modo inicio: vuelve a radio[0] al terminar
+      } else if (emisoras.length > 0) {
+        selectRadio(emisoras[0], false);
+      }
       startPartyPromoSchedule();
     }
   }
@@ -5592,37 +5599,45 @@ window.closeReferralQRModal = function() {
     partyPromoInterval = null;
   }
 
-  function playNextPartyPromo() {
-    if (!promoTracks.length) return;
+  function playNextPartyPromo(isInit = false) {
+    if (!promoTracks.length) {
+      // Si no hay promos y es el inicio, cargamos la primera radio sin autoplay
+      if (isInit && emisoras.length > 0) selectRadio(emisoras[0], false);
+      return;
+    }
     const track = promoTracks[partyPromoIndex % promoTracks.length];
     partyPromoIndex++;
     isPlayingPartyPromo = true;
 
-    // Guardar radio actual
-    const savedRadio   = currentRadio;
-    const wasPlaying   = isPlaying;
+    // En inicio no hay radio guardada; al terminar cargamos emisoras[0] sin autoplay
+    const savedRadio = isInit ? null : currentRadio;
+    const wasPlaying = isInit ? false : isPlaying;
 
-    // Pausa la radio
+    // Pausa cualquier stream previo
     if (hls) { hls.destroy(); hls = null; }
     partyAudio.pause();
 
     // Mostrar aviso en hero
     if (promoNotice) {
-      promoNotice.textContent = '📢 Pausa publicitaria MGM';
+      promoNotice.textContent = '📢 Audio MGM';
       promoNotice.style.display = 'block';
     }
     updateHeroUI({ nombre: track.title, sub: track.artist, logo: track.cover, isLive: false });
+    if (miniPlayer) miniPlayer.style.display = 'flex';
 
-    // Reproducir promo con el mismo audio element
+    // Reproducir promo
     partyAudio.src = track.src;
     partyAudio.play().catch(e => console.warn('[PartyPromo] Error:', e));
 
-    // Cuando termine el promo → volver a la radio
+    // Cuando termine → volver a la radio
     const onPromoEnd = () => {
       partyAudio.removeEventListener('ended', onPromoEnd);
       isPlayingPartyPromo = false;
       if (promoNotice) promoNotice.style.display = 'none';
-      if (savedRadio) {
+      if (isInit) {
+        // Primer arranque: dejar lista la primera radio sin autoplay
+        if (emisoras.length > 0) selectRadio(emisoras[0], false);
+      } else if (savedRadio) {
         if (wasPlaying) selectRadio(savedRadio, true);
         else selectRadio(savedRadio, false);
       }
@@ -5720,13 +5735,18 @@ window.closeReferralQRModal = function() {
   if (typeof _orig === 'function') {
     window.switchMainTab = function(tabName) {
       _orig(tabName);
-      if (tabName === 'party' && !hasInitialized) {
-        hasInitialized = true;
-        initPartyData();
-      }
-      // Cuando se sale de Modo Fiesta: restablecer audio-bar de promos
-      if (tabName !== 'party') {
+      if (tabName === 'party') {
+        // Ocultar mini-bar de promos normal cuando entra Modo Fiesta
+        document.getElementById('audio-mini-bar')?.classList.add('hidden');
+        if (!hasInitialized) {
+          hasInitialized = true;
+          initPartyData();
+        }
+      } else {
+        // Al salir de Modo Fiesta: pausar party, restablecer mini-bar de promos
         stopPartyPromoSchedule();
+        if (partyAudio) partyAudio.pause();
+        document.getElementById('audio-mini-bar')?.classList.remove('hidden');
       }
     };
   }
