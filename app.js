@@ -89,17 +89,21 @@
     // 3. PROMOCIONES DEL MES (Slider & Rotator)
     PROMOS_GAS_URL: 'https://script.google.com/macros/s/AKfycbxP0mmc5rSsn6-b29iHM3HpgMKqAQL0auCRHGIoM7DfUxrkFvvMyzI4LTBueCHs6iDzyw/exec',
 
-    // 4. AUDIO PLAYER (Playlist Streaming Multi-Pista)
+    // 4. AUDIO PLAYER (Playlist Streaming Multi-Pista — Audios promocionales)
     AUDIO_GAS_URL: 'https://script.google.com/macros/s/AKfycbwlzKNgocSThMfZJ5qPi1cJNrBreEeAVbvN-anObK3jW1vFnPIRadt77tMp4qTdBiAg/exec',
 
     // 5. SPLASHSCREEN (Campañas IMOU / Promos)
     SPLASH_GAS_URL: 'https://script.google.com/macros/s/AKfycbw3Aey_uya9yLM8xKrcQCBrlMcTSkAdnUBCQEq_kitdBN4-BZHnxbJP66lO5qgZgO8KAQ/exec',
 
-    // 6. NOTIFICACIONES & TRACKING (El usuario creará este nuevo GAS)
+    // 6. NOTIFICACIONES & TRACKING
     NOTIFS_GAS_URL: 'https://script.google.com/macros/s/AKfycby8EOl7-hZ1Q8rvPCjFB2ItFrRKqwVmDoPJrhX3sM_3-O8xeoWmuZ0RxbEgNUjLN_6dfA/exec',
 
-    // 7. CATÁLOGO DE PREMIOS & CANJES (Backend MGM Puntos o propio)
+    // 7. CATÁLOGO DE PREMIOS & CANJES
     PREMIOS_GAS_URL: 'https://script.google.com/macros/s/AKfycbwV90SCVdMrMgE1Vlev3rdpcqMJlVwCV5du_MGJ-BtV5Di8LMY9UroYD7dXhWBXyI2yGw/exec',
+
+    // 8. MODO FIESTA — Backend unificado (Radios, Spotify, Chat)
+    // ⚠️ Reemplaza con la URL del nuevo radios_backend.gs desplegado
+    RADIOS_GAS_URL: 'PENDIENTE_RADIOS_GAS_URL',
 
     VAL_PUNTO: 0.01,
     BOTPRESS_BOT_ID: 'e5a3c8a6-9aec-41a3-870d-d1985dc8c7df',
@@ -5239,159 +5243,288 @@ window.closeReferralQRModal = function() {
   releaseQRWakeLock();
 };
 
-// ==========================================
-// MODO FIESTA (RADIOS) LOGIC
-// ==========================================
+// ══════════════════════════════════════════════════════════════════════════════
+// MODO FIESTA — LÓGICA COMPLETA (Radios, Spotify, Chat, Promo-Audio por hora)
+// ══════════════════════════════════════════════════════════════════════════════
 (function() {
-  let emisoras = [];
-  let hls = null;
-  let currentRadio = null;
-  let isPlaying = false;
+
+  // ── Estado ────────────────────────────────────────────────────────────────
+  let emisoras      = [];     // Radios en vivo
+  let spotifyItems  = [];     // Playlists Spotify
+  let promoTracks   = [];     // Audios promocionales (hoja Playlist)
+  let currentMode   = 'radio'; // 'radio' | 'spotify'
+  let currentRadio  = null;
+  let currentSpotify= null;
+  let hls           = null;
+  let isPlaying     = false;
   let timerInterval = null;
-  let secondsElapsed = 0;
-  let hasInitializedPartyMode = false;
+  let secondsElapsed= 0;
+  let hasInitialized= false;
 
-  const audio = document.getElementById('party-audio-player');
-  const heroImg = document.getElementById('party-hero-img');
-  const heroTitle = document.getElementById('party-hero-title');
-  const heroSub = document.getElementById('party-hero-sub');
-  const heroPlayBtn = document.getElementById('party-hero-play-btn');
+  // Promo-audio en Modo Fiesta: cada hora se pausa la radio y suena un promo
+  let partyPromoInterval    = null;
+  let partyPromoIndex       = 0;
+  let isPlayingPartyPromo   = false;
+  const PARTY_PROMO_INTERVAL_MS = 60 * 60 * 1000; // 1 hora
 
-  const miniPlayer = document.getElementById('party-mini-player');
-  const miniImg = document.getElementById('party-mini-img');
-  const miniTitle = document.getElementById('party-mini-title');
-  const miniSub = document.getElementById('party-mini-sub');
-  const miniPlayBtn = document.getElementById('party-mini-play-btn');
+  // Chat polling
+  let chatPollInterval  = null;
+  let lastChatCount     = 0;
+  const CHAT_POLL_MS    = 8000;
 
-  const stationsListContainer = document.getElementById('party-stations-list');
-  const timeCount = document.getElementById('party-time-count');
+  // ── Elementos DOM ─────────────────────────────────────────────────────────
+  const partyAudio    = document.getElementById('party-audio-player');
+  const heroImg       = document.getElementById('party-hero-img');
+  const heroTitle     = document.getElementById('party-hero-title');
+  const heroSub       = document.getElementById('party-hero-sub');
+  const heroPlayBtn   = document.getElementById('party-hero-play-btn');
+  const heroTag       = document.getElementById('party-hero-tag');
+  const miniPlayer    = document.getElementById('party-mini-player');
+  const miniImg       = document.getElementById('party-mini-img');
+  const miniTitle     = document.getElementById('party-mini-title');
+  const miniSub       = document.getElementById('party-mini-sub');
+  const miniPlayBtn   = document.getElementById('party-mini-play-btn');
+  const miniCloseBtn  = document.getElementById('party-mini-close-btn');
+  const stationsList  = document.getElementById('party-stations-list');
+  const spotifyList   = document.getElementById('party-spotify-list');
+  const spotifyPanel  = document.getElementById('party-spotify-panel');
+  const spotifyEmbed  = document.getElementById('party-spotify-embed');
+  const timeCount     = document.getElementById('party-time-count');
+  const tabRadioBtn   = document.getElementById('party-tab-radio');
+  const tabSpotifyBtn = document.getElementById('party-tab-spotify');
+  const tabChatBtn    = document.getElementById('party-tab-chat');
+  const tabRadioPanel = document.getElementById('party-panel-radio');
+  const tabSpotifyPanel=document.getElementById('party-panel-spotify');
+  const tabChatPanel  = document.getElementById('party-panel-chat');
+  const promoNotice   = document.getElementById('party-promo-notice');
 
-  async function loadRadios() {
+  // ── Tabs internos del Modo Fiesta ─────────────────────────────────────────
+  function switchPartyTab(tab) {
+    [tabRadioPanel, tabSpotifyPanel, tabChatPanel].forEach(p => p && p.classList.add('hidden'));
+    [tabRadioBtn, tabSpotifyBtn, tabChatBtn].forEach(b => b && b.classList.remove('active'));
+    if (tab === 'radio')   { tabRadioPanel?.classList.remove('hidden');   tabRadioBtn?.classList.add('active'); }
+    if (tab === 'spotify') { tabSpotifyPanel?.classList.remove('hidden'); tabSpotifyBtn?.classList.add('active'); }
+    if (tab === 'chat')    { tabChatPanel?.classList.remove('hidden');    tabChatBtn?.classList.add('active'); }
+  }
+
+  if (tabRadioBtn)   tabRadioBtn.onclick   = () => switchPartyTab('radio');
+  if (tabSpotifyBtn) tabSpotifyBtn.onclick = () => switchPartyTab('spotify');
+  if (tabChatBtn)    tabChatBtn.onclick    = () => { switchPartyTab('chat'); loadChat(); };
+
+  // ── Carga inicial ─────────────────────────────────────────────────────────
+  async function initPartyData() {
     try {
-      if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Cargando radios...');
-      const response = await fetch(CFG.AUDIO_GAS_URL);
-      const data = await response.json();
-      
-      emisoras = data.map((item, idx) => ({
-        id: idx,
-        nombre: item.Titulo || 'Radio ' + (idx + 1),
-        freq: item.Artista || 'Online',
-        url: item.URL_Audio,
-        logo: item.URL_Portada || 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png',
-        isHls: item.URL_Audio && item.URL_Audio.includes('.m3u8')
-      })).filter(r => r.url); // Filtrar vacios
+      if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Cargando Modo Fiesta...');
 
-      if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
+      // Carga paralela: radios, spotify, promos-audio
+      const gasUrl = CFG.RADIOS_GAS_URL && CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
+        ? CFG.RADIOS_GAS_URL : null;
 
-      if (emisoras.length > 0) {
-        renderList();
-        selectAndPlay(emisoras[0], false); // Selecciona pero no autoplaya
+      const [radiosRes, spotifyRes, promoRes] = await Promise.allSettled([
+        gasUrl ? fetch(`${gasUrl}?action=radios`).then(r => r.json()) : Promise.resolve([]),
+        gasUrl ? fetch(`${gasUrl}?action=spotify`).then(r => r.json()) : Promise.resolve([]),
+        // Promos vienen de AUDIO_GAS_URL (hoja Playlist del spreadsheet principal)
+        fetch(CFG.AUDIO_GAS_URL).then(r => r.json())
+      ]);
+
+      // Radios
+      if (radiosRes.status === 'fulfilled' && Array.isArray(radiosRes.value) && radiosRes.value.length > 0) {
+        emisoras = radiosRes.value;
       } else {
-        if(stationsListContainer) stationsListContainer.innerHTML = '<div style="text-align:center; padding: 20px;">No hay emisoras disponibles.</div>';
+        // Fallback: radios hardcoded del archivo original
+        emisoras = EMISORAS_FALLBACK;
       }
-    } catch (e) {
-      console.error('Error cargando radios:', e);
+
+      // Spotify
+      if (spotifyRes.status === 'fulfilled' && Array.isArray(spotifyRes.value)) {
+        spotifyItems = spotifyRes.value;
+      }
+
+      // Promo tracks
+      if (promoRes.status === 'fulfilled' && Array.isArray(promoRes.value)) {
+        promoTracks = promoRes.value.map(t => ({
+          title:  t.title  || t.titulo  || 'MGM Audio',
+          artist: t.artist || t.artista || 'MGM',
+          src:    t.url    || t.src     || '',
+          cover:  t.cover  || t.imagen  || 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'
+        })).filter(t => t.src);
+      }
+
       if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
-      if(stationsListContainer) stationsListContainer.innerHTML = '<div style="text-align:center; padding: 20px;">Error al cargar las emisoras.</div>';
+
+      renderRadioList();
+      renderSpotifyList();
+
+      // Seleccionar primera radio (sin autoplay)
+      if (emisoras.length > 0) selectRadio(emisoras[0], false);
+
+      // Iniciar ciclo de promo-audio cada hora
+      startPartyPromoSchedule();
+
+    } catch(e) {
+      console.error('[PartyMode] Error en initPartyData:', e);
+      if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
     }
   }
 
-  function renderList() {
-    if (!stationsListContainer) return;
-    stationsListContainer.innerHTML = '';
+  // ── Radios ────────────────────────────────────────────────────────────────
+  function renderRadioList() {
+    if (!stationsList) return;
+    stationsList.innerHTML = '';
+    if (!emisoras.length) {
+      stationsList.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted)">No hay radios disponibles.</div>';
+      return;
+    }
     emisoras.forEach(item => {
       const isCurrent = currentRadio && currentRadio.id === item.id;
       const card = document.createElement('div');
       card.className = `station-card ${isCurrent ? 'active' : ''}`;
-      card.onclick = () => selectAndPlay(item, true);
-
+      card.onclick = () => selectRadio(item, true);
       card.innerHTML = `
         <div class="card-left">
-          <div class="card-thumb">
-            <img src="${item.logo}" alt="${item.nombre}" loading="lazy">
-          </div>
+          <div class="card-thumb"><img src="${item.logo}" alt="${item.nombre}" loading="lazy" onerror="this.src='https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'"></div>
           <div class="card-info">
-            <span class="card-name ${isCurrent ? 'active-text' : ''}">${item.nombre}</span>
-            <span class="card-freq">${item.freq}</span>
+            <span class="card-name ${isCurrent?'active-text':''}">${item.nombre}</span>
+            <span class="card-freq">${item.freq || 'Online'} • Panamá</span>
           </div>
         </div>
-        <button class="card-more-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+        <button class="card-more-btn" title="Opciones"><i class="fa-solid fa-ellipsis-vertical"></i></button>
       `;
-      stationsListContainer.appendChild(card);
+      stationsList.appendChild(card);
     });
   }
 
-  function selectAndPlay(radio, autoPlay = true) {
-    if (currentRadio && currentRadio.id === radio.id && autoPlay) {
-      togglePlay();
-      return;
-    }
+  function selectRadio(radio, autoPlay = true) {
+    // Si está reproduciendo un promo, detenerlo
+    if (isPlayingPartyPromo) stopPartyPromo();
 
-    currentRadio = radio;
-    updateHeroUI(radio);
-    renderList();
-
+    currentMode   = 'radio';
+    currentRadio  = radio;
+    currentSpotify= null;
+    hideSpotifyEmbed();
+    updateHeroUI({ nombre: radio.nombre, sub: `${radio.freq || 'Online'} • EN VIVO`, logo: radio.logo, isLive: true });
+    renderRadioList();
     secondsElapsed = 0;
     updateTimerDisplay();
 
-    if (hls) {
-      hls.destroy();
-      hls = null;
-    }
+    // Desactivar audio-bar de promos cuando está el Modo Fiesta activo
+    document.getElementById('audio-mini-bar')?.classList.add('hidden');
+
+    if (hls) { hls.destroy(); hls = null; }
 
     if (autoPlay) {
-      if (radio.isHls) {
-        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-          hls = new Hls();
-          hls.loadSource(radio.url);
-          hls.attachMedia(audio);
-          hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            audio.play().catch(e => { console.warn(e); setPlayState(false); });
-          });
-        } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
-          audio.src = radio.url;
-          audio.play().catch(e => { console.warn(e); setPlayState(false); });
-        }
+      if (radio.isHls && typeof Hls !== 'undefined' && Hls.isSupported()) {
+        hls = new Hls();
+        hls.loadSource(radio.url);
+        hls.attachMedia(partyAudio);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => partyAudio.play().catch(e => { console.warn(e); setPlayState(false); }));
+      } else if (radio.isHls && partyAudio.canPlayType('application/vnd.apple.mpegurl')) {
+        partyAudio.src = radio.url;
+        partyAudio.play().catch(e => { console.warn(e); setPlayState(false); });
       } else {
-        audio.src = radio.url;
-        audio.play().catch(e => { console.warn(e); setPlayState(false); });
+        partyAudio.src = radio.url;
+        partyAudio.play().catch(e => { console.warn(e); setPlayState(false); });
       }
     } else {
-      if (radio.isHls) {
-        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-          hls = new Hls();
-          hls.loadSource(radio.url);
-          hls.attachMedia(audio);
-        } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
-          audio.src = radio.url;
-        }
+      if (radio.isHls && typeof Hls !== 'undefined' && Hls.isSupported()) {
+        hls = new Hls(); hls.loadSource(radio.url); hls.attachMedia(partyAudio);
       } else {
-        audio.src = radio.url;
+        partyAudio.src = radio.url;
       }
     }
   }
 
-  function updateHeroUI(radio) {
-    if (heroImg) heroImg.src = radio.logo;
-    if (heroTitle) heroTitle.textContent = radio.nombre;
-    if (heroSub) heroSub.textContent = radio.freq;
+  // ── Botón Random ─────────────────────────────────────────────────────────
+  window.partyPlayRandom = function() {
+    if (!emisoras.length) return;
+    const pool = emisoras.filter(r => !currentRadio || r.id !== currentRadio.id);
+    const pick  = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : emisoras[0];
+    selectRadio(pick, true);
+    if (typeof showToast === 'function') showToast(`🎲 Cambiando a: ${pick.nombre}`, 'fa-solid fa-shuffle');
+  };
 
-    if (miniImg) miniImg.src = radio.logo;
-    if (miniTitle) miniTitle.textContent = radio.nombre;
-    if (miniSub) miniSub.textContent = 'EN VIVO';
+  // ── Spotify ───────────────────────────────────────────────────────────────
+  function renderSpotifyList() {
+    if (!spotifyList) return;
+    spotifyList.innerHTML = '';
+    if (!spotifyItems.length) {
+      spotifyList.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted)">No hay playlists de Spotify configuradas.<br><small>Agrega entradas en la hoja "Spotify List".</small></div>';
+      return;
+    }
+    spotifyItems.forEach(item => {
+      const isActive = currentSpotify && currentSpotify.id === item.id;
+      const card = document.createElement('div');
+      card.className = `station-card ${isActive ? 'active' : ''}`;
+      card.onclick = () => selectSpotify(item);
+      card.innerHTML = `
+        <div class="card-left">
+          <div class="card-thumb" style="background:#1DB954;border-color:#1DB954;">
+            <img src="${item.logo}" alt="${item.nombre}" loading="lazy" onerror="this.src='https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'" style="object-fit:cover">
+          </div>
+          <div class="card-info">
+            <span class="card-name ${isActive?'active-text':''}"><i class="fa-brands fa-spotify" style="color:#1DB954;margin-right:4px"></i>${item.nombre}</span>
+            <span class="card-freq">${item.tipo || 'playlist'} • Spotify</span>
+          </div>
+        </div>
+        <div style="color:#1DB954;font-size:20px;padding:8px"><i class="fa-brands fa-spotify"></i></div>
+      `;
+      spotifyList.appendChild(card);
+    });
+  }
+
+  function getSpotifyEmbedUrl(spotifyUrl) {
+    // Convierte cualquier URL de Spotify en URL de embed
+    // https://open.spotify.com/playlist/xxx → https://open.spotify.com/embed/playlist/xxx
+    try {
+      const url  = new URL(spotifyUrl);
+      const path = url.pathname; // /playlist/xxx o /track/xxx o /album/xxx
+      return `https://open.spotify.com/embed${path}?utm_source=generator&theme=0`;
+    } catch(e) {
+      // Si ya es un embed ID directo
+      if (spotifyUrl.includes('embed')) return spotifyUrl;
+      return `https://open.spotify.com/embed/playlist/${spotifyUrl}?utm_source=generator&theme=0`;
+    }
+  }
+
+  function selectSpotify(item) {
+    // Pausa la radio cuando se abre Spotify
+    if (isPlayingPartyPromo) stopPartyPromo();
+    partyAudio.pause();
+    currentMode   = 'spotify';
+    currentSpotify= item;
+    updateHeroUI({ nombre: item.nombre, sub: `${item.tipo||'playlist'} • Spotify`, logo: item.logo, isLive: false });
+    renderSpotifyList();
+
+    // Mostrar el embed de Spotify
+    if (spotifyPanel)  spotifyPanel.classList.remove('hidden');
+    if (spotifyEmbed) {
+      spotifyEmbed.src = getSpotifyEmbedUrl(item.spotifyUrl);
+    }
+    document.getElementById('audio-mini-bar')?.classList.add('hidden');
+  }
+
+  function hideSpotifyEmbed() {
+    if (spotifyPanel)  spotifyPanel.classList.add('hidden');
+    if (spotifyEmbed)  spotifyEmbed.src = '';
+  }
+
+  // ── Reproductor Compartido ─────────────────────────────────────────────────
+  function updateHeroUI({ nombre, sub, logo, isLive }) {
+    if (heroImg)   heroImg.src = logo;
+    if (heroTitle) heroTitle.textContent = nombre;
+    if (heroSub)   heroSub.textContent   = sub;
+    if (heroTag)   heroTag.textContent   = isLive ? '⚡ EN VIVO' : '♫ SPOTIFY';
+    if (miniImg)   miniImg.src   = logo;
+    if (miniTitle) miniTitle.textContent = nombre;
+    if (miniSub)   miniSub.textContent   = isLive ? '● EN VIVO' : '♫ Spotify';
+    if (miniPlayer) miniPlayer.style.display = 'flex';
   }
 
   function togglePlay() {
-    if (!currentRadio && emisoras.length > 0) {
-      selectAndPlay(emisoras[0], true);
-      return;
-    }
-
-    if (isPlaying) {
-      audio.pause();
-    } else {
-      audio.play().catch(e => console.warn(e));
-    }
+    if (currentMode === 'spotify') return; // Spotify se controla desde su embed
+    if (!currentRadio && emisoras.length > 0) { selectRadio(emisoras[0], true); return; }
+    if (isPlaying) partyAudio.pause();
+    else partyAudio.play().catch(e => console.warn(e));
   }
 
   function setPlayState(playing) {
@@ -5399,63 +5532,225 @@ window.closeReferralQRModal = function() {
     const icon = playing ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
     if (heroPlayBtn) heroPlayBtn.innerHTML = icon;
     if (miniPlayBtn) miniPlayBtn.innerHTML = icon;
-
-    if (playing) {
-      if (miniPlayer) miniPlayer.style.display = 'flex';
-      startTimer();
-    } else {
-      stopTimer();
-    }
+    if (playing) { if (miniPlayer) miniPlayer.style.display = 'flex'; startTimer(); }
+    else stopTimer();
   }
 
   function startTimer() {
     stopTimer();
-    timerInterval = setInterval(() => {
-      secondsElapsed++;
-      updateTimerDisplay();
-    }, 1000);
+    timerInterval = setInterval(() => { secondsElapsed++; updateTimerDisplay(); }, 1000);
   }
-
-  function stopTimer() {
-    if (timerInterval) clearInterval(timerInterval);
-  }
-
+  function stopTimer()  { if (timerInterval) clearInterval(timerInterval); }
   function updateTimerDisplay() {
     if (!timeCount) return;
-    const mins = Math.floor(secondsElapsed / 60);
-    const secs = secondsElapsed % 60;
-    timeCount.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    const m = Math.floor(secondsElapsed/60), s = secondsElapsed%60;
+    timeCount.textContent = `${m}:${s<10?'0':''}${s}`;
   }
 
   if (heroPlayBtn) heroPlayBtn.onclick = togglePlay;
   if (miniPlayBtn) miniPlayBtn.onclick = togglePlay;
 
-  if (audio) {
-    audio.onplay = () => setPlayState(true);
-    audio.onpause = () => setPlayState(false);
-    audio.onerror = () => setPlayState(false);
+  // Botón cerrar mini player
+  if (miniCloseBtn) {
+    miniCloseBtn.onclick = () => {
+      partyAudio.pause();
+      isPlaying = false;
+      stopTimer();
+      stopPartyPromoSchedule();
+      if (miniPlayer) miniPlayer.style.display = 'none';
+      // Restablecer audio-bar de promos
+      document.getElementById('audio-mini-bar')?.classList.remove('hidden');
+    };
   }
 
-  // Hook into tab switching
-  const _origSwitchMainTab = window.switchMainTab;
-  if (typeof _origSwitchMainTab === 'function') {
+  if (partyAudio) {
+    partyAudio.onplay  = () => setPlayState(true);
+    partyAudio.onpause = () => setPlayState(false);
+    partyAudio.onerror = () => setPlayState(false);
+  }
+
+  // ── Promo-audio cada hora en Modo Fiesta ──────────────────────────────────
+  // Cuando Modo Fiesta está activo: cada hora pausa la radio, reproduce un promo,
+  // luego vuelve a la radio automáticamente.
+  function startPartyPromoSchedule() {
+    stopPartyPromoSchedule();
+    if (!promoTracks.length) return;
+    partyPromoInterval = setInterval(() => {
+      playNextPartyPromo();
+    }, PARTY_PROMO_INTERVAL_MS);
+  }
+
+  function stopPartyPromoSchedule() {
+    if (partyPromoInterval) clearInterval(partyPromoInterval);
+    partyPromoInterval = null;
+  }
+
+  function playNextPartyPromo() {
+    if (!promoTracks.length) return;
+    const track = promoTracks[partyPromoIndex % promoTracks.length];
+    partyPromoIndex++;
+    isPlayingPartyPromo = true;
+
+    // Guardar radio actual
+    const savedRadio   = currentRadio;
+    const wasPlaying   = isPlaying;
+
+    // Pausa la radio
+    if (hls) { hls.destroy(); hls = null; }
+    partyAudio.pause();
+
+    // Mostrar aviso en hero
+    if (promoNotice) {
+      promoNotice.textContent = '📢 Pausa publicitaria MGM';
+      promoNotice.style.display = 'block';
+    }
+    updateHeroUI({ nombre: track.title, sub: track.artist, logo: track.cover, isLive: false });
+
+    // Reproducir promo con el mismo audio element
+    partyAudio.src = track.src;
+    partyAudio.play().catch(e => console.warn('[PartyPromo] Error:', e));
+
+    // Cuando termine el promo → volver a la radio
+    const onPromoEnd = () => {
+      partyAudio.removeEventListener('ended', onPromoEnd);
+      isPlayingPartyPromo = false;
+      if (promoNotice) promoNotice.style.display = 'none';
+      if (savedRadio) {
+        if (wasPlaying) selectRadio(savedRadio, true);
+        else selectRadio(savedRadio, false);
+      }
+    };
+    partyAudio.addEventListener('ended', onPromoEnd);
+  }
+
+  function stopPartyPromo() {
+    isPlayingPartyPromo = false;
+    partyAudio.pause();
+    partyAudio.removeAttribute('src');
+    if (promoNotice) promoNotice.style.display = 'none';
+  }
+
+  // ── Chat ──────────────────────────────────────────────────────────────────
+  async function loadChat() {
+    const gasUrl = CFG.RADIOS_GAS_URL && CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
+      ? CFG.RADIOS_GAS_URL : null;
+    if (!gasUrl) { renderChatOffline(); return; }
+
+    try {
+      const res  = await fetch(`${gasUrl}?action=chat`);
+      const msgs = await res.json();
+      renderChatMessages(Array.isArray(msgs) ? msgs : []);
+    } catch(e) {
+      console.warn('[Chat] Error:', e);
+    }
+  }
+
+  function renderChatOffline() {
+    const container = document.getElementById('party-chat-messages');
+    if (container) container.innerHTML = '<div class="party-chat-offline">⚙️ Chat no disponible. Configura RADIOS_GAS_URL.</div>';
+  }
+
+  function renderChatMessages(msgs) {
+    const container = document.getElementById('party-chat-messages');
+    if (!container) return;
+    if (!msgs.length) {
+      container.innerHTML = '<div class="party-chat-empty">💬 Sin mensajes hoy. ¡Sé el primero!</div>';
+      return;
+    }
+    const myName = (state?.authUser?.nombre || localStorage.getItem('mgm_chat_name') || '').trim();
+    container.innerHTML = msgs.map(m => {
+      const isMe = myName && m.nombre === myName;
+      const hora = m.ts ? new Date(m.ts).toLocaleTimeString('es-PA', {hour:'2-digit',minute:'2-digit'}) : '';
+      return `
+        <div class="party-chat-msg ${isMe?'me':'them'}">
+          ${!isMe ? `<div class="party-chat-author">${m.nombre}</div>` : ''}
+          <div class="party-chat-bubble">${escapeHtml(m.mensaje)}</div>
+          <div class="party-chat-time">${hora}</div>
+        </div>
+      `;
+    }).join('');
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  window.sendPartyChat = async function() {
+    const input   = document.getElementById('party-chat-input');
+    const mensaje = input ? input.value.trim() : '';
+    if (!mensaje) return;
+
+    const gasUrl = CFG.RADIOS_GAS_URL && CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
+      ? CFG.RADIOS_GAS_URL : null;
+    if (!gasUrl) { if(typeof showToast==='function') showToast('Chat no disponible.','fa-solid fa-circle-exclamation'); return; }
+
+    const nombre = (state?.authUser?.nombre || localStorage.getItem('mgm_chat_name') || 'Invitado').trim();
+    const cedula = state?.authUser?.cedula || '';
+
+    // Optimistic UI
+    const container = document.getElementById('party-chat-messages');
+    if (container) {
+      const emptyEl = container.querySelector('.party-chat-empty');
+      if (emptyEl) emptyEl.remove();
+      const hora = new Date().toLocaleTimeString('es-PA',{hour:'2-digit',minute:'2-digit'});
+      container.innerHTML += `<div class="party-chat-msg me"><div class="party-chat-bubble">${escapeHtml(mensaje)}</div><div class="party-chat-time">${hora}</div></div>`;
+      container.scrollTop = container.scrollHeight;
+    }
+    if (input) input.value = '';
+
+    try {
+      await fetch(gasUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'chat_send', nombre, mensaje, cedula })
+      });
+    } catch(e) { console.warn('[Chat] Error enviando:', e); }
+  };
+
+  // ── Hook en tab switching ──────────────────────────────────────────────────
+  const _orig = window.switchMainTab;
+  if (typeof _orig === 'function') {
     window.switchMainTab = function(tabName) {
-      _origSwitchMainTab(tabName);
-      if (tabName === 'party' && !hasInitializedPartyMode) {
-        hasInitializedPartyMode = true;
-        loadRadios();
+      _orig(tabName);
+      if (tabName === 'party' && !hasInitialized) {
+        hasInitialized = true;
+        initPartyData();
+      }
+      // Cuando se sale de Modo Fiesta: restablecer audio-bar de promos
+      if (tabName !== 'party') {
+        stopPartyPromoSchedule();
       }
     };
   }
 
-  // Expose global init function
   window.initPartyMode = function() {
-    if (!hasInitializedPartyMode) {
-      hasInitializedPartyMode = true;
-      loadRadios();
-    }
-    if (typeof window.switchMainTab === 'function') {
-      window.switchMainTab('party');
-    }
+    if (!hasInitialized) { hasInitialized = true; initPartyData(); }
+    if (typeof window.switchMainTab === 'function') window.switchMainTab('party');
   };
+
+  // ── Fallback de emisoras hardcodeadas ────────────────────────────────────
+  const EMISORAS_FALLBACK = [
+    { id:1,  nombre:'Super Q FM',          freq:'90.5 FM',  url:'https://sqserver.superqpanama.net:8005/superqpanama',  logo:'https://www.dropbox.com/scl/fi/qy3byy8j6jjy8g8sdjh5t/super-q-fm.webp?rlkey=63wpvscqhigec1gygiscuzb6a&st=q4v5oah4&raw=1', isHls:false },
+    { id:2,  nombre:'Tropi Q',             freq:'99.7 FM',  url:'https://www.streaming507.net:8140/stream',            logo:'https://www.dropbox.com/scl/fi/njbuxdn3knw3kd7ltcdky/tropi-q.webp?rlkey=y9zgnk8k71x050qjbop4y1p0m&st=88rrlpet&raw=1', isHls:false },
+    { id:3,  nombre:'Fabulosa Estéreo',    freq:'100.5 FM', url:'https://servidor24-1.brlogic.com:7018/live',          logo:'https://www.dropbox.com/scl/fi/m9dswoee6gcmrycl3xkv5/fabulosa-estereo.webp?rlkey=gbmzowm7byzvjqnqgfmp7x6wb&st=p0m5wme0&raw=1', isHls:false },
+    { id:4,  nombre:'Caliente',            freq:'96.9 FM',  url:'https://s9.stweb.tv/thinkindot-fast-2/live/playlist.m3u8', logo:'https://www.dropbox.com/scl/fi/ykp1jg3jj19oc5axcmf68/caliente-radio.webp?rlkey=jy8smgfw5ubi4ee47uyc9hl87&st=7tazfj3v&raw=1', isHls:true },
+    { id:5,  nombre:'La Exitosa',          freq:'95.3 FM',  url:'https://stream-280.surfernetwork.com/k7qfxuec8e9uv',  logo:'https://www.dropbox.com/scl/fi/rskllf6acpb4a1jag6frc/la-exitosa.webp?rlkey=oet4qvpgi9zxvopo4ehykz7z5&st=cr64clnf&raw=1', isHls:false },
+    { id:6,  nombre:'La Mega',             freq:'98.1 FM',  url:'https://usest-sp1.golivestream.net/8022/stream',      logo:'https://www.dropbox.com/scl/fi/kur6v7aysqi2gvhqbd6qh/la-mega-981-fm.webp?rlkey=wd7buytaaq5vk3w6lyesro8d0&st=ui5s8qk1&raw=1', isHls:false },
+    { id:7,  nombre:'FM Lo Nuestro',       freq:'102.1 FM', url:'https://www.streaming507.net:8136/stream',            logo:'https://www.dropbox.com/scl/fi/9y4g34gndxmj5v1z56ep9/lo-nuestro-1021.webp?rlkey=gnwt91rm8v8w363jxbdkh2zkq&st=p1sbvc29&raw=1', isHls:false },
+    { id:8,  nombre:'La KY',               freq:'92.5 FM',  url:'https://18163.live.streamtheworld.com/LAKY_PANAMA.mp3', logo:'https://www.dropbox.com/scl/fi/sbnq1k3vjmyn7u7wruo6m/la-ky.webp?rlkey=euuvvkzpu7bduyudv0ft8w36c&st=rbn48q4y&raw=1', isHls:false },
+    { id:9,  nombre:'WAO',                 freq:'97.1 FM',  url:'https://stream-179.zeno.fm/g7ayu7wbr2zuv',           logo:'https://www.dropbox.com/scl/fi/yctrvxzu27enbhky4pxlf/wao-9712.webp?rlkey=a1waf6l012zqoc0mou8rt2xy0&st=cj0aznei&raw=1', isHls:false },
+    { id:10, nombre:'Quiubo Estéreo',      freq:'103.3 FM', url:'https://14623.live.streamtheworld.com/QUBO.mp3',     logo:'https://www.dropbox.com/scl/fi/5hohjp4puegs9me0fsa07/quiubo-estereo.webp?rlkey=k4unnguk4xalhdl5ragcnrvxa&st=w1x7z1wx&raw=1', isHls:false },
+    { id:11, nombre:'Panama Hit Radio',    freq:'Online',   url:'https://www.streaming507.net:8024/stream',           logo:'https://www.dropbox.com/scl/fi/g0nec9icf98862bt33a44/panama-hit-radio.webp?rlkey=z40pdi1swldb27hx0q6oho2vp&st=uqgc33er&raw=1', isHls:false },
+    { id:12, nombre:'Theurbanflow507',     freq:'Online',   url:'https://radio.chatarrarecords.com/listen/theurbanflow507.net/radio.mp3', logo:'https://www.dropbox.com/scl/fi/qlo4kqt6nne3sl2m39rr5/theurbanflow507.webp?rlkey=mc411a2ivdcg0y63prkf5lunv&st=k4nop25b&raw=1', isHls:false },
+    { id:13, nombre:'Marbella Stereo',     freq:'104.3 FM', url:'https://sonic.host-live.com:10839/stream',           logo:'https://www.dropbox.com/scl/fi/pba2hu4cm1fzlpr9mdevu/marbella-stereo.webp?rlkey=qbvll0kavqpvr2st6ng6a8ykv&st=jq6iiwh5&raw=1', isHls:false },
+    { id:14, nombre:'Play',                freq:'103.7 FM', url:'https://playerservices.streamtheworld.com/api/livestream-redirect/PLAY_PANAMA.mp3', logo:'https://www.dropbox.com/scl/fi/xn6jtv6097y8beh05il5f/play.webp?rlkey=f4bj36p5cvwl6pydyfedbx6sd&st=fw8dktyt&raw=1', isHls:false },
+    { id:15, nombre:'FM 99',               freq:'99.3 FM',  url:'https://c34.radioboss.fm/stream/969',                logo:'https://www.dropbox.com/scl/fi/9mg6unzojz3ccyz8qt64d/fm99.webp?rlkey=dlnujiemgcbh1ew3q9ludwtor&st=5selgm1w&raw=1', isHls:false },
+    { id:16, nombre:'Wakala Radio',        freq:'Online',   url:'https://wakalaradio.radioca.st/stream',              logo:'https://www.dropbox.com/scl/fi/mdon1hgxrw1roesbdfvmy/wakala-radio.webp?rlkey=91vk78tv3utr9o7h8ujlbouep&st=ujvxkmel&raw=1', isHls:false },
+    { id:17, nombre:'La Tipik',            freq:'107.3 FM', url:'https://stream.mixesurbanospty.com:8090/tipik.mp3',  logo:'https://www.dropbox.com/scl/fi/vorm7mmijk0coooiqmtvr/la-tipik.webp?rlkey=cykebvrlm98whbm43s66muw61&st=zfce31ph&raw=1', isHls:false },
+    { id:18, nombre:'Mixes Azuero',        freq:'Online',   url:'https://stream.zeno.fm/zpft5vns4tzuv',              logo:'https://www.dropbox.com/scl/fi/uq4l8sndjw8jmia313s4e/mixes-azuero-radio-panama.webp?rlkey=pnewg6e7pynsj67sbj319zwig&st=61x8vzt2&raw=1', isHls:false },
+    { id:19, nombre:'Ep3 Radio - Reventon',freq:'Online',   url:'https://radiostream.interven.ca/listen/elpincay/radio.mp3', logo:'https://www.dropbox.com/scl/fi/bzjkxp7oisig26z9nbgla/ep3-radio-reventon.webp?rlkey=fihq6atkdyomsqlf6veiit4lc&st=r72z6xc6&raw=1', isHls:false },
+    { id:20, nombre:'Rockeros Online',     freq:'Online',   url:'https://stream.zeno.fm/ds3c8nx8yuquv',              logo:'https://www.dropbox.com/scl/fi/u9myr05zcenq2uaoi58m5/rockeros-online-radio.webp?rlkey=xaaxb3yam1mv8am712czzrpuh&st=afgtw2h3&raw=1', isHls:false }
+  ];
+
 })();

@@ -2974,3 +2974,186 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
   justify-content: center;
   cursor: pointer;
 }
+
+/* ==========================================================================
+   MODO FIESTA — TABS INTERNOS (Radios / Spotify / Chat)
+   ========================================================================== */
+.party-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 4px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 4px;
+}
+
+.party-tab {
+  flex: 1;
+  background: transparent;
+  border: 1.5px solid var(--border-light);
+  border-radius: 10px;
+  padding: 8px 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+
+.party-tab.active {
+  background: var(--primary-navy);
+  border-color: var(--primary-navy);
+  color: #fff;
+}
+
+.party-tab:not(.active):hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: var(--text-dark);
+}
+
+/* ==========================================================================
+   MODO FIESTA — BOTÓN RANDOM
+   ========================================================================== */
+.party-random-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.35);
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+.party-random-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 14px rgba(245, 158, 11, 0.5);
+}
+
+/* ==========================================================================
+   MODO FIESTA — CHAT
+   ========================================================================== */
+.party-chat-box {
+  min-height: 220px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scroll-behavior: smooth;
+}
+
+.party-chat-msg {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
+}
+
+.party-chat-msg.me {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.party-chat-msg.them {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.party-chat-author {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+  padding-left: 4px;
+}
+
+.party-chat-bubble {
+  background: #f1f5f9;
+  border-radius: 12px 12px 12px 4px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  color: var(--text-dark);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.party-chat-msg.me .party-chat-bubble {
+  background: var(--primary-navy);
+  color: #fff;
+  border-radius: 12px 12px 4px 12px;
+}
+
+.party-chat-time {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  padding: 0 4px;
+}
+
+.party-chat-empty,
+.party-chat-offline {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  padding: 24px 12px;
+  flex: 1;
+}
+
+.party-chat-input-row {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px 16px;
+  border-top: 1px solid var(--border-light);
+  background: var(--bg-card);
+  position: sticky;
+  bottom: 80px;
+}
+
+.party-chat-input {
+  flex: 1;
+  border: 1.5px solid var(--border-light);
+  border-radius: 22px;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  outline: none;
+  background: var(--bg-page);
+  color: var(--text-dark);
+  transition: border-color 0.2s;
+}
+.party-chat-input:focus {
+  border-color: var(--primary-blue);
+}
+
+.party-chat-send-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--primary-navy);
+  border: none;
+  color: #fff;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.party-chat-send-btn:hover {
+  background: var(--primary-blue);
+}
+
+/* section-title-box ya tiene flex, pero aseguramos space-between */
+.section-title-box {
+  justify-content: space-between;
+}

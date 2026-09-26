@@ -258,11 +258,11 @@
         </div>
 
         <!-- MODO FIESTA -->
-        <div class="quick-card quick-card--disabled" onclick="/* switchMainTab('party') */">
+        <div class="quick-card" onclick="initPartyMode()">
           <div class="card-icon-pill" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;"><i class="fa-solid fa-music"></i></div>
           <div>
-            <div class="card-title">Modo Fiesta <span style="font-size: 9px; background: #FFF7ED; padding: 2px 6px; border-radius: 4px; color: #EA580C; margin-left: 6px; border: 1px solid #FFEDD5; letter-spacing: 0.5px;">PRONTO</span></div>
-            <div class="card-desc">Radio en vivo y playlists curadas por MGM.</div>
+            <div class="card-title">Modo Fiesta <span style="font-size: 9px; background: #FFF7ED; padding: 2px 6px; border-radius: 4px; color: #EA580C; margin-left: 6px; border: 1px solid #FFEDD5; letter-spacing: 0.5px;">NUEVO</span></div>
+            <div class="card-desc">Radio en vivo, Spotify y chat del evento.</div>
           </div>
         </div>
       </div>
@@ -3008,55 +3008,105 @@
     </main>
 
     <!-- ══════════════════════════════════════════════════════════════════════════
-         VISTA: MODO FIESTA (RADIOS)
+         VISTA: MODO FIESTA (Radios, Spotify, Chat)
          ══════════════════════════════════════════════════════════════════════════ -->
-    <main id="view-party" class="view-container" style="background-color: var(--bg-page); min-height: 100vh;">
+    <main id="view-party" class="view-container" style="background-color: var(--bg-page); min-height: 100vh; padding-bottom: 140px;">
+
       <!-- BANNER HERO / REPRODUCTOR EN VIVO -->
       <div class="hero-banner-card">
-        <div class="hero-tag"><i class="fa-solid fa-bolt"></i> MODO FIESTA MGM</div>
-        
-        <div class="hero-cover">
-          <img id="party-hero-img" src="" alt="Portada Radio">
+        <div id="party-hero-tag" class="hero-tag"><i class="fa-solid fa-bolt"></i> MODO FIESTA MGM</div>
+
+        <!-- Aviso de promo publicitaria (oculto por default) -->
+        <div id="party-promo-notice" style="display:none; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); padding:5px 12px; border-radius:10px; font-size:0.75rem; font-weight:700; color:var(--accent-gold); margin-bottom:8px; letter-spacing:0.4px;"></div>
+
+        <div class="hero-cover" style="position:relative;">
+          <img id="party-hero-img" src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="Portada">
         </div>
 
-        <h2 id="party-hero-title" class="hero-title">Cargando...</h2>
-        <div id="party-hero-sub" class="hero-sub">Selecciona una emisora</div>
+        <h2 id="party-hero-title" class="hero-title">MGM Radios</h2>
+        <div id="party-hero-sub" class="hero-sub">Selecciona una emisora o playlist</div>
 
         <!-- STREAM PROGRESS -->
         <div class="progress-box">
-          <div class="progress-bar">
-            <div class="progress-fill"></div>
-          </div>
+          <div class="progress-bar"><div class="progress-fill"></div></div>
           <div class="progress-labels">
             <span id="party-time-count">0:00</span>
-            <span>● EN VIVO</span>
+            <span>&#9679; EN VIVO</span>
           </div>
         </div>
 
+        <!-- Controles del hero -->
         <div class="hero-controls">
-          <button id="party-hero-play-btn" class="hero-play-btn"><i class="fa-solid fa-play"></i></button>
+          <button id="party-hero-play-btn" class="hero-play-btn" title="Play/Pausa"><i class="fa-solid fa-play"></i></button>
+          <button class="hero-play-btn" style="background:rgba(255,255,255,0.15);width:42px;height:42px;font-size:16px;" onclick="partyPlayRandom()" title="Radio aleatoria"><i class="fa-solid fa-shuffle"></i></button>
         </div>
       </div>
 
-      <!-- LISTA DE EMISORAS -->
-      <div class="section-title-box">
-        <span class="section-title">Emisoras en Vivo</span>
+      <!-- TABS INTERNOS: Radios / Spotify / Chat -->
+      <div class="party-tabs">
+        <button id="party-tab-radio"   class="party-tab active"><i class="fa-solid fa-tower-broadcast"></i> Radios</button>
+        <button id="party-tab-spotify" class="party-tab"><i class="fa-brands fa-spotify"></i> Spotify</button>
+        <button id="party-tab-chat"    class="party-tab"><i class="fa-solid fa-comments"></i> Chat</button>
       </div>
 
-      <div class="stations-list" id="party-stations-list"></div>
+      <!-- PANEL: RADIOS -->
+      <div id="party-panel-radio">
+        <div class="section-title-box">
+          <span class="section-title">Emisoras en Vivo</span>
+          <button class="party-random-btn" onclick="partyPlayRandom()">
+            <i class="fa-solid fa-shuffle"></i> Random
+          </button>
+        </div>
+        <div class="stations-list" id="party-stations-list"></div>
+      </div>
+
+      <!-- PANEL: SPOTIFY -->
+      <div id="party-panel-spotify" class="hidden">
+        <div class="section-title-box">
+          <span class="section-title"><i class="fa-brands fa-spotify" style="color:#1DB954"></i> Spotify MGM</span>
+        </div>
+        <!-- Embed Spotify (visible al seleccionar un item) -->
+        <div id="party-spotify-panel" class="hidden" style="padding:0 16px 16px;">
+          <iframe id="party-spotify-embed"
+            style="border-radius:16px;width:100%;height:352px;border:0;"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            allowfullscreen></iframe>
+        </div>
+        <div class="stations-list" id="party-spotify-list"></div>
+      </div>
+
+      <!-- PANEL: CHAT -->
+      <div id="party-panel-chat" class="hidden">
+        <div style="padding:12px 16px 6px;">
+          <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:8px 12px;font-size:0.72rem;color:#b45309;display:flex;align-items:center;gap:8px;">
+            <i class="fa-solid fa-clock"></i>
+            Chat del día &bull; Se borra automáticamente a las 12:00 AM
+          </div>
+        </div>
+        <div id="party-chat-messages" class="party-chat-box"></div>
+        <div class="party-chat-input-row">
+          <input id="party-chat-input" class="party-chat-input" type="text" placeholder="Escribe un mensaje..." maxlength="300"
+            onkeydown="if(event.key==='Enter') sendPartyChat()">
+          <button class="party-chat-send-btn" onclick="sendPartyChat()">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
 
       <!-- MINI PLAYER FLOATING -->
-      <div class="mini-player-mgm" id="party-mini-player" style="display: none;">
+      <div class="mini-player-mgm" id="party-mini-player" style="display:none;">
         <div class="mini-left">
-          <div class="mini-thumb">
-            <img id="party-mini-img" src="" alt="Mini Logo">
-          </div>
+          <div class="mini-thumb"><img id="party-mini-img" src="" alt="Mini"></div>
           <div class="mini-info">
             <div id="party-mini-title" class="mini-title">MGM Radios</div>
-            <div id="party-mini-sub" class="mini-sub">Listo para transmitir</div>
+            <div id="party-mini-sub" class="mini-sub">EN VIVO</div>
           </div>
         </div>
-        <button id="party-mini-play-btn" class="mini-play-btn"><i class="fa-solid fa-play"></i></button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button id="party-mini-play-btn" class="mini-play-btn"><i class="fa-solid fa-play"></i></button>
+          <button id="party-mini-close-btn" class="mini-play-btn" style="background:#6b7280;" title="Cerrar reproductor"><i class="fa-solid fa-xmark"></i></button>
+        </div>
       </div>
 
       <audio id="party-audio-player"></audio>
