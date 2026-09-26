@@ -5320,24 +5320,27 @@ window.closeReferralQRModal = function() {
       const gasUrl = CFG.RADIOS_GAS_URL && CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
         ? CFG.RADIOS_GAS_URL : null;
 
+      const safeJson = url => fetch(url).then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      });
+
       const [radiosRes, spotifyRes, promoRes] = await Promise.allSettled([
-        gasUrl ? fetch(`${gasUrl}?action=radios`).then(r => r.json()) : Promise.resolve([]),
-        gasUrl ? fetch(`${gasUrl}?action=spotify`).then(r => r.json()) : Promise.resolve([]),
-        // Promos vienen de AUDIO_GAS_URL (hoja Playlist del spreadsheet principal)
-        fetch(CFG.AUDIO_GAS_URL).then(r => r.json())
+        gasUrl ? safeJson(`${gasUrl}?action=radios`)   : Promise.resolve([]),
+        gasUrl ? safeJson(`${gasUrl}?action=spotify`)  : Promise.resolve([]),
+        safeJson(`${CFG.AUDIO_GAS_URL}?action=playlist`)
       ]);
 
-      // Radios
+      // Radios — siempre cargamos algo (fallback si hay error)
       if (radiosRes.status === 'fulfilled' && Array.isArray(radiosRes.value) && radiosRes.value.length > 0) {
-        // Si el backend es el viejo, devuelve 'Titulo'. Si es el nuevo, 'nombre' o 'Emisora'.
         if (radiosRes.value[0].nombre || radiosRes.value[0].Emisora) {
           emisoras = radiosRes.value;
         } else {
-          console.warn('[PartyMode] GAS no actualizado. Usando fallback de radios.');
+          console.warn('[PartyMode] Respuesta inesperada del GAS. Usando fallback.');
           emisoras = EMISORAS_FALLBACK;
         }
       } else {
-        // Fallback: radios hardcoded del archivo original
+        console.warn('[PartyMode] Radios no disponibles. Usando fallback. Razón:', radiosRes.reason || 'vacío');
         emisoras = EMISORAS_FALLBACK;
       }
 
@@ -5346,7 +5349,7 @@ window.closeReferralQRModal = function() {
         spotifyItems = spotifyRes.value;
       }
 
-      // Promo tracks
+      // Promo tracks — no bloquea si falla
       if (promoRes.status === 'fulfilled' && Array.isArray(promoRes.value)) {
         promoTracks = promoRes.value.map(t => ({
           title:  t.title  || t.titulo  || 'MGM Audio',
@@ -5354,22 +5357,20 @@ window.closeReferralQRModal = function() {
           src:    t.url    || t.src     || '',
           cover:  t.cover  || t.imagen  || 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'
         })).filter(t => t.src);
+      } else {
+        console.warn('[PartyMode] Promos no disponibles:', promoRes.reason || 'vacío');
       }
 
+    } catch(e) {
+      console.error('[PartyMode] Error crítico en initPartyData:', e);
+      emisoras = EMISORAS_FALLBACK; // garantizamos siempre tener radios
+    } finally {
       if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
-
+      // Siempre renderizamos, aunque haya fallado algo
       renderRadioList();
       renderSpotifyList();
-
-      // Seleccionar primera radio (sin autoplay)
       if (emisoras.length > 0) selectRadio(emisoras[0], false);
-
-      // Iniciar ciclo de promo-audio cada hora
       startPartyPromoSchedule();
-
-    } catch(e) {
-      console.error('[PartyMode] Error en initPartyData:', e);
-      if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
     }
   }
 
