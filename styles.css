@@ -2702,3 +2702,275 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
   background: #fff1f1 !important;
 }
 .conv-clear:hover { background: #ffe0e0 !important; }
+
+/* ==========================================================================
+   MODO FIESTA (RADIOS) - ESTILOS
+   ========================================================================== */
+.hero-banner-card {
+  margin: 16px;
+  background: linear-gradient(135deg, #0b1839 0%, #172a5a 100%);
+  border-radius: 20px;
+  padding: 20px;
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(11, 24, 57, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.hero-tag {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+}
+
+.hero-cover {
+  width: 180px;
+  height: 180px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  background: #ffffff;
+  margin-bottom: 16px;
+}
+
+.hero-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.hero-sub {
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+
+.progress-box {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  width: 100%;
+  height: 100%;
+  background: var(--accent-gold);
+  animation: pulseStream 2s infinite alternate;
+}
+
+@keyframes pulseStream {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: #cbd5e1;
+  margin-top: 6px;
+}
+
+.hero-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hero-play-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent-gold);
+  border: none;
+  color: #000;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+}
+
+.stations-list {
+  padding: 0 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.station-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.station-card.active {
+  border-color: var(--primary-blue);
+  background: #f8fafc;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.08);
+}
+
+.card-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.card-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f1f5f9;
+  border: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.card-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-name.active-text {
+  color: var(--primary-blue);
+}
+
+.card-freq {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.card-more-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.mini-player-mgm {
+  position: fixed;
+  bottom: 80px; /* Above the bottom nav */
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 406px;
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 10px 25px rgba(11, 24, 57, 0.12);
+  z-index: 100;
+}
+
+.mini-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.mini-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f1f5f9;
+  flex-shrink: 0;
+}
+
+.mini-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mini-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mini-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-sub {
+  font-size: 0.75rem;
+  color: var(--primary-blue);
+  font-weight: 600;
+}
+
+.mini-play-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--primary-navy);
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}

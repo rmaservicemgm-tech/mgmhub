@@ -23,6 +23,9 @@
 
   <!-- 🎉 canvas-confetti — celebraciones MGM Hub -->
   <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  
+  <!-- HLS.js para soporte de streams .m3u8 (Radios) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
   <!-- Registro del Service Worker con auto-actualización -->
   <script>
@@ -251,6 +254,15 @@
           <div>
             <div class="card-title">Rastrear Pedido <span style="font-size: 9px; background: #FFF7ED; padding: 2px 6px; border-radius: 4px; color: #EA580C; margin-left: 6px; border: 1px solid #FFEDD5; letter-spacing: 0.5px;">PRONTO</span></div>
             <div class="card-desc">Seguimiento de envío de tus paquetes y compras.</div>
+          </div>
+        </div>
+
+        <!-- MODO FIESTA -->
+        <div class="quick-card quick-card--disabled" onclick="/* switchMainTab('party') */">
+          <div class="card-icon-pill" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;"><i class="fa-solid fa-music"></i></div>
+          <div>
+            <div class="card-title">Modo Fiesta <span style="font-size: 9px; background: #FFF7ED; padding: 2px 6px; border-radius: 4px; color: #EA580C; margin-left: 6px; border: 1px solid #FFEDD5; letter-spacing: 0.5px;">PRONTO</span></div>
+            <div class="card-desc">Radio en vivo y playlists curadas por MGM.</div>
           </div>
         </div>
       </div>
@@ -2993,6 +3005,61 @@
           </div>
         </div>
       </div>
+    </main>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VISTA: MODO FIESTA (RADIOS)
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <main id="view-party" class="view-container" style="background-color: var(--bg-page); min-height: 100vh;">
+      <!-- BANNER HERO / REPRODUCTOR EN VIVO -->
+      <div class="hero-banner-card">
+        <div class="hero-tag"><i class="fa-solid fa-bolt"></i> MODO FIESTA MGM</div>
+        
+        <div class="hero-cover">
+          <img id="party-hero-img" src="" alt="Portada Radio">
+        </div>
+
+        <h2 id="party-hero-title" class="hero-title">Cargando...</h2>
+        <div id="party-hero-sub" class="hero-sub">Selecciona una emisora</div>
+
+        <!-- STREAM PROGRESS -->
+        <div class="progress-box">
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+          <div class="progress-labels">
+            <span id="party-time-count">0:00</span>
+            <span>● EN VIVO</span>
+          </div>
+        </div>
+
+        <div class="hero-controls">
+          <button id="party-hero-play-btn" class="hero-play-btn"><i class="fa-solid fa-play"></i></button>
+        </div>
+      </div>
+
+      <!-- LISTA DE EMISORAS -->
+      <div class="section-title-box">
+        <span class="section-title">Emisoras en Vivo</span>
+      </div>
+
+      <div class="stations-list" id="party-stations-list"></div>
+
+      <!-- MINI PLAYER FLOATING -->
+      <div class="mini-player-mgm" id="party-mini-player" style="display: none;">
+        <div class="mini-left">
+          <div class="mini-thumb">
+            <img id="party-mini-img" src="" alt="Mini Logo">
+          </div>
+          <div class="mini-info">
+            <div id="party-mini-title" class="mini-title">MGM Radios</div>
+            <div id="party-mini-sub" class="mini-sub">Listo para transmitir</div>
+          </div>
+        </div>
+        <button id="party-mini-play-btn" class="mini-play-btn"><i class="fa-solid fa-play"></i></button>
+      </div>
+
+      <audio id="party-audio-player"></audio>
     </main>
     <script>
       (function() {

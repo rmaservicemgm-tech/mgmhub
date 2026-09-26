@@ -5238,3 +5238,224 @@ window.closeReferralQRModal = function() {
   closeAppModal('modal-referral-qr');
   releaseQRWakeLock();
 };
+
+// ==========================================
+// MODO FIESTA (RADIOS) LOGIC
+// ==========================================
+(function() {
+  let emisoras = [];
+  let hls = null;
+  let currentRadio = null;
+  let isPlaying = false;
+  let timerInterval = null;
+  let secondsElapsed = 0;
+  let hasInitializedPartyMode = false;
+
+  const audio = document.getElementById('party-audio-player');
+  const heroImg = document.getElementById('party-hero-img');
+  const heroTitle = document.getElementById('party-hero-title');
+  const heroSub = document.getElementById('party-hero-sub');
+  const heroPlayBtn = document.getElementById('party-hero-play-btn');
+
+  const miniPlayer = document.getElementById('party-mini-player');
+  const miniImg = document.getElementById('party-mini-img');
+  const miniTitle = document.getElementById('party-mini-title');
+  const miniSub = document.getElementById('party-mini-sub');
+  const miniPlayBtn = document.getElementById('party-mini-play-btn');
+
+  const stationsListContainer = document.getElementById('party-stations-list');
+  const timeCount = document.getElementById('party-time-count');
+
+  async function loadRadios() {
+    try {
+      if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Cargando radios...');
+      const response = await fetch(CFG.AUDIO_GAS_URL);
+      const data = await response.json();
+      
+      emisoras = data.map((item, idx) => ({
+        id: idx,
+        nombre: item.Titulo || 'Radio ' + (idx + 1),
+        freq: item.Artista || 'Online',
+        url: item.URL_Audio,
+        logo: item.URL_Portada || 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png',
+        isHls: item.URL_Audio && item.URL_Audio.includes('.m3u8')
+      })).filter(r => r.url); // Filtrar vacios
+
+      if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
+
+      if (emisoras.length > 0) {
+        renderList();
+        selectAndPlay(emisoras[0], false); // Selecciona pero no autoplaya
+      } else {
+        if(stationsListContainer) stationsListContainer.innerHTML = '<div style="text-align:center; padding: 20px;">No hay emisoras disponibles.</div>';
+      }
+    } catch (e) {
+      console.error('Error cargando radios:', e);
+      if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
+      if(stationsListContainer) stationsListContainer.innerHTML = '<div style="text-align:center; padding: 20px;">Error al cargar las emisoras.</div>';
+    }
+  }
+
+  function renderList() {
+    if (!stationsListContainer) return;
+    stationsListContainer.innerHTML = '';
+    emisoras.forEach(item => {
+      const isCurrent = currentRadio && currentRadio.id === item.id;
+      const card = document.createElement('div');
+      card.className = `station-card ${isCurrent ? 'active' : ''}`;
+      card.onclick = () => selectAndPlay(item, true);
+
+      card.innerHTML = `
+        <div class="card-left">
+          <div class="card-thumb">
+            <img src="${item.logo}" alt="${item.nombre}" loading="lazy">
+          </div>
+          <div class="card-info">
+            <span class="card-name ${isCurrent ? 'active-text' : ''}">${item.nombre}</span>
+            <span class="card-freq">${item.freq}</span>
+          </div>
+        </div>
+        <button class="card-more-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+      `;
+      stationsListContainer.appendChild(card);
+    });
+  }
+
+  function selectAndPlay(radio, autoPlay = true) {
+    if (currentRadio && currentRadio.id === radio.id && autoPlay) {
+      togglePlay();
+      return;
+    }
+
+    currentRadio = radio;
+    updateHeroUI(radio);
+    renderList();
+
+    secondsElapsed = 0;
+    updateTimerDisplay();
+
+    if (hls) {
+      hls.destroy();
+      hls = null;
+    }
+
+    if (autoPlay) {
+      if (radio.isHls) {
+        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+          hls = new Hls();
+          hls.loadSource(radio.url);
+          hls.attachMedia(audio);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            audio.play().catch(e => { console.warn(e); setPlayState(false); });
+          });
+        } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
+          audio.src = radio.url;
+          audio.play().catch(e => { console.warn(e); setPlayState(false); });
+        }
+      } else {
+        audio.src = radio.url;
+        audio.play().catch(e => { console.warn(e); setPlayState(false); });
+      }
+    } else {
+      if (radio.isHls) {
+        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+          hls = new Hls();
+          hls.loadSource(radio.url);
+          hls.attachMedia(audio);
+        } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
+          audio.src = radio.url;
+        }
+      } else {
+        audio.src = radio.url;
+      }
+    }
+  }
+
+  function updateHeroUI(radio) {
+    if (heroImg) heroImg.src = radio.logo;
+    if (heroTitle) heroTitle.textContent = radio.nombre;
+    if (heroSub) heroSub.textContent = radio.freq;
+
+    if (miniImg) miniImg.src = radio.logo;
+    if (miniTitle) miniTitle.textContent = radio.nombre;
+    if (miniSub) miniSub.textContent = 'EN VIVO';
+  }
+
+  function togglePlay() {
+    if (!currentRadio && emisoras.length > 0) {
+      selectAndPlay(emisoras[0], true);
+      return;
+    }
+
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      audio.play().catch(e => console.warn(e));
+    }
+  }
+
+  function setPlayState(playing) {
+    isPlaying = playing;
+    const icon = playing ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
+    if (heroPlayBtn) heroPlayBtn.innerHTML = icon;
+    if (miniPlayBtn) miniPlayBtn.innerHTML = icon;
+
+    if (playing) {
+      if (miniPlayer) miniPlayer.style.display = 'flex';
+      startTimer();
+    } else {
+      stopTimer();
+    }
+  }
+
+  function startTimer() {
+    stopTimer();
+    timerInterval = setInterval(() => {
+      secondsElapsed++;
+      updateTimerDisplay();
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+  }
+
+  function updateTimerDisplay() {
+    if (!timeCount) return;
+    const mins = Math.floor(secondsElapsed / 60);
+    const secs = secondsElapsed % 60;
+    timeCount.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  }
+
+  if (heroPlayBtn) heroPlayBtn.onclick = togglePlay;
+  if (miniPlayBtn) miniPlayBtn.onclick = togglePlay;
+
+  if (audio) {
+    audio.onplay = () => setPlayState(true);
+    audio.onpause = () => setPlayState(false);
+    audio.onerror = () => setPlayState(false);
+  }
+
+  // Hook into tab switching
+  const _origSwitchMainTab = window.switchMainTab;
+  if (typeof _origSwitchMainTab === 'function') {
+    window.switchMainTab = function(tabName) {
+      _origSwitchMainTab(tabName);
+      if (tabName === 'party' && !hasInitializedPartyMode) {
+        hasInitializedPartyMode = true;
+        loadRadios();
+      }
+    };
+  }
+
+  // Expose global init function
+  window.initPartyMode = function() {
+    if (!hasInitializedPartyMode) {
+      hasInitializedPartyMode = true;
+      loadRadios();
+    }
+    if (typeof window.switchMainTab === 'function') {
+      window.switchMainTab('party');
+    }
+  };
+})();
