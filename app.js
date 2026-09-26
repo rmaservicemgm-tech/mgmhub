@@ -101,9 +101,9 @@
     // 7. CATÁLOGO DE PREMIOS & CANJES
     PREMIOS_GAS_URL: 'https://script.google.com/macros/s/AKfycbwV90SCVdMrMgE1Vlev3rdpcqMJlVwCV5du_MGJ-BtV5Di8LMY9UroYD7dXhWBXyI2yGw/exec',
 
-    // 8. MODO FIESTA — Backend unificado (Radios, Spotify, Chat)
-    // ⚠️ Reemplaza con la URL del nuevo radios_backend.gs desplegado
-    RADIOS_GAS_URL: 'PENDIENTE_RADIOS_GAS_URL',
+    // 8. MODO FIESTA — mismo Spreadsheet que AUDIO_GAS_URL
+    // (El nuevo radios_backend.gs maneja: ?action=playlist|radios|spotify|chat)
+    RADIOS_GAS_URL: 'https://script.google.com/macros/s/AKfycbwlzKNgocSThMfZJ5qPi1cJNrBreEeAVbvN-anObK3jW1vFnPIRadt77tMp4qTdBiAg/exec',
 
     VAL_PUNTO: 0.01,
     BOTPRESS_BOT_ID: 'e5a3c8a6-9aec-41a3-870d-d1985dc8c7df',
@@ -5329,7 +5329,13 @@ window.closeReferralQRModal = function() {
 
       // Radios
       if (radiosRes.status === 'fulfilled' && Array.isArray(radiosRes.value) && radiosRes.value.length > 0) {
-        emisoras = radiosRes.value;
+        // Si el backend es el viejo, devuelve 'Titulo'. Si es el nuevo, 'nombre' o 'Emisora'.
+        if (radiosRes.value[0].nombre || radiosRes.value[0].Emisora) {
+          emisoras = radiosRes.value;
+        } else {
+          console.warn('[PartyMode] GAS no actualizado. Usando fallback de radios.');
+          emisoras = EMISORAS_FALLBACK;
+        }
       } else {
         // Fallback: radios hardcoded del archivo original
         emisoras = EMISORAS_FALLBACK;
