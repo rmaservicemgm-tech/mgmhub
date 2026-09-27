@@ -16,7 +16,7 @@
   <!-- Google Fonts & FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap">
-  <link rel="stylesheet" href="styles.css?v=17">
+  <link rel="stylesheet" href="styles.css?v=18">
   <!-- jsPDF para exportacion de cotizaciones desde la Calculadora de Almacenamiento -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -26,6 +26,31 @@
   
   <!-- HLS.js para soporte de streams .m3u8 (Radios) -->
   <script defer src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+  <!-- Limpiar caché viejo al actualizar version -->
+  <script>
+    (function() {
+      var APP_VERSION = '18';
+      var stored = sessionStorage.getItem('mgm_app_v');
+      if (stored !== APP_VERSION) {
+        sessionStorage.setItem('mgm_app_v', APP_VERSION);
+        // Borrar todos los caches del SW
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            names.forEach(function(name) { caches.delete(name); });
+          });
+        }
+        // Desregistrar todos los SW viejos
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            regs.forEach(function(r) { r.unregister(); });
+            // Recargar SOLO si había algo registrado (evita loop)
+            if (regs.length > 0) window.location.reload(true);
+          });
+        }
+      }
+    })();
+  </script>
 
   <!-- Registro del Service Worker con auto-actualización -->
   <script>
@@ -3231,7 +3256,7 @@
       </div>
     </div>
 >
-  <script src="app.js?v=18"></script>
+  <script src="app.js?v=19"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
   <script>
