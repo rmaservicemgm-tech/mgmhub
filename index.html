@@ -30,10 +30,10 @@
   <!-- Limpiar caché viejo al actualizar version -->
   <script>
     (function() {
-      var APP_VERSION = '18';
-      var stored = sessionStorage.getItem('mgm_app_v');
+      var APP_VERSION = '20';
+      var stored = localStorage.getItem('mgm_app_v');
       if (stored !== APP_VERSION) {
-        sessionStorage.setItem('mgm_app_v', APP_VERSION);
+        localStorage.setItem('mgm_app_v', APP_VERSION);
         // Borrar todos los caches del SW
         if ('caches' in window) {
           caches.keys().then(function(names) {
@@ -3256,7 +3256,7 @@
       </div>
     </div>
 >
-  <script src="app.js?v=19"></script>
+  <script src="app.js?v=20"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
   <script>
