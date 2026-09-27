@@ -5349,7 +5349,7 @@ window.closeReferralQRModal = function() {
       const [radiosRes, spotifyRes, promoRes] = await Promise.allSettled([
         gasUrl ? safeJson(`${gasUrl}?action=radios`)   : Promise.resolve([]),
         gasUrl ? safeJson(`${gasUrl}?action=spotify`)  : Promise.resolve([]),
-        safeJson(`${CFG.AUDIO_GAS_URL}?action=playlist`)
+        safeJson(`${window.CFG?.AUDIO_GAS_URL}?action=playlist`)
       ]);
 
       // Radios — siempre cargamos algo (fallback si hay error)
