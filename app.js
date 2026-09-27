@@ -5306,17 +5306,31 @@ window.closeReferralQRModal = function() {
   const promoNotice   = document.getElementById('party-promo-notice');
 
   // ── Tabs internos del Modo Fiesta ─────────────────────────────────────────
+  let chatPollInterval = null;
+
   function switchPartyTab(tab) {
     [tabRadioPanel, tabSpotifyPanel, tabChatPanel].forEach(p => p && p.classList.add('hidden'));
     [tabRadioBtn, tabSpotifyBtn, tabChatBtn].forEach(b => b && b.classList.remove('active'));
+    
+    // Detener polling de chat si no estamos en chat
+    if (chatPollInterval) {
+      clearInterval(chatPollInterval);
+      chatPollInterval = null;
+    }
+
     if (tab === 'radio')   { tabRadioPanel?.classList.remove('hidden');   tabRadioBtn?.classList.add('active'); }
     if (tab === 'spotify') { tabSpotifyPanel?.classList.remove('hidden'); tabSpotifyBtn?.classList.add('active'); }
-    if (tab === 'chat')    { tabChatPanel?.classList.remove('hidden');    tabChatBtn?.classList.add('active'); }
+    if (tab === 'chat')    { 
+      tabChatPanel?.classList.remove('hidden');    
+      tabChatBtn?.classList.add('active'); 
+      loadChat();
+      chatPollInterval = setInterval(loadChat, 3000); // Poll cada 3 segundos
+    }
   }
 
   if (tabRadioBtn)   tabRadioBtn.onclick   = () => switchPartyTab('radio');
   if (tabSpotifyBtn) tabSpotifyBtn.onclick = () => switchPartyTab('spotify');
-  if (tabChatBtn)    tabChatBtn.onclick    = () => { switchPartyTab('chat'); loadChat(); };
+  if (tabChatBtn)    tabChatBtn.onclick    = () => switchPartyTab('chat');
 
   // ── Carga inicial ─────────────────────────────────────────────────────────
   async function initPartyData() {
@@ -5661,8 +5675,8 @@ window.closeReferralQRModal = function() {
 
   // ── Chat ──────────────────────────────────────────────────────────────────
   async function loadChat() {
-    const gasUrl = CFG.RADIOS_GAS_URL && CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
-      ? CFG.RADIOS_GAS_URL : null;
+    const gasUrl = window.CFG?.RADIOS_GAS_URL && window.CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
+      ? window.CFG.RADIOS_GAS_URL : null;
     if (!gasUrl) { renderChatOffline(); return; }
 
     try {
@@ -5758,8 +5772,12 @@ window.closeReferralQRModal = function() {
       } else {
         // Al salir de Modo Fiesta: pausar party, restablecer mini-bar de promos
         stopPartyPromoSchedule();
-        if (partyAudio) partyAudio.pause();
+        if (typeof partyAudio !== 'undefined' && partyAudio) partyAudio.pause();
         document.getElementById('audio-mini-bar')?.classList.remove('hidden');
+        if (typeof chatPollInterval !== 'undefined' && chatPollInterval) {
+          clearInterval(chatPollInterval);
+          chatPollInterval = null;
+        }
       }
     };
   }
