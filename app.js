@@ -114,9 +114,8 @@
     AUDIO_TRACKS: []
   };
 
-  // Exponer CFG y state globalmente para el módulo de Modo Fiesta
+  // Exponer CFG globalmente para el módulo de Modo Fiesta
   window.CFG = CFG;
-  // state se expone más adelante cuando se inicializa (ver abajo)
 
   // ══════════════════════════════════════════════════════════════════════════════
   // STATE LOCAL
@@ -163,9 +162,6 @@
       { fecha:'2026-07-15 09:40', cedula:'8-888-1234', factura:'FAC-2026-0742', subtotal:200.00, multiplicador:'1X Estándar', puntos:200, asesor:'Ana Gómez' }
     ]
   };
-  
-  // Hacer state global para el modo fiesta
-  window.state = state;
 
   // ── Corrección de arranque: limpiar seenNotifs para notifs con fecha_inicio futura ──
   // Repara usuarios que recibieron el push antes de tiempo (bug anterior).
@@ -5306,31 +5302,17 @@ window.closeReferralQRModal = function() {
   const promoNotice   = document.getElementById('party-promo-notice');
 
   // ── Tabs internos del Modo Fiesta ─────────────────────────────────────────
-  let chatPollInterval = null;
-
   function switchPartyTab(tab) {
     [tabRadioPanel, tabSpotifyPanel, tabChatPanel].forEach(p => p && p.classList.add('hidden'));
     [tabRadioBtn, tabSpotifyBtn, tabChatBtn].forEach(b => b && b.classList.remove('active'));
-    
-    // Detener polling de chat si no estamos en chat
-    if (chatPollInterval) {
-      clearInterval(chatPollInterval);
-      chatPollInterval = null;
-    }
-
     if (tab === 'radio')   { tabRadioPanel?.classList.remove('hidden');   tabRadioBtn?.classList.add('active'); }
     if (tab === 'spotify') { tabSpotifyPanel?.classList.remove('hidden'); tabSpotifyBtn?.classList.add('active'); }
-    if (tab === 'chat')    { 
-      tabChatPanel?.classList.remove('hidden');    
-      tabChatBtn?.classList.add('active'); 
-      loadChat();
-      chatPollInterval = setInterval(loadChat, 3000); // Poll cada 3 segundos
-    }
+    if (tab === 'chat')    { tabChatPanel?.classList.remove('hidden');    tabChatBtn?.classList.add('active'); }
   }
 
   if (tabRadioBtn)   tabRadioBtn.onclick   = () => switchPartyTab('radio');
   if (tabSpotifyBtn) tabSpotifyBtn.onclick = () => switchPartyTab('spotify');
-  if (tabChatBtn)    tabChatBtn.onclick    = () => switchPartyTab('chat');
+  if (tabChatBtn)    tabChatBtn.onclick    = () => { switchPartyTab('chat'); loadChat(); };
 
   // ── Carga inicial ─────────────────────────────────────────────────────────
   async function initPartyData() {
@@ -5338,8 +5320,8 @@ window.closeReferralQRModal = function() {
       if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Cargando Modo Fiesta...');
 
       // Carga paralela: radios, spotify, promos-audio
-      const gasUrl = window.CFG?.RADIOS_GAS_URL && window.CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
-        ? window.CFG.RADIOS_GAS_URL : null;
+      const gasUrl = CFG.RADIOS_GAS_URL && CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
+        ? CFG.RADIOS_GAS_URL : null;
 
       const safeJson = url => fetch(url).then(r => {
         if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -5349,7 +5331,7 @@ window.closeReferralQRModal = function() {
       const [radiosRes, spotifyRes, promoRes] = await Promise.allSettled([
         gasUrl ? safeJson(`${gasUrl}?action=radios`)   : Promise.resolve([]),
         gasUrl ? safeJson(`${gasUrl}?action=spotify`)  : Promise.resolve([]),
-        safeJson(`${window.CFG?.AUDIO_GAS_URL}?action=playlist`)
+        safeJson(`${CFG.AUDIO_GAS_URL}?action=playlist`)
       ]);
 
       // Radios — siempre cargamos algo (fallback si hay error)
@@ -5675,8 +5657,8 @@ window.closeReferralQRModal = function() {
 
   // ── Chat ──────────────────────────────────────────────────────────────────
   async function loadChat() {
-    const gasUrl = window.CFG?.RADIOS_GAS_URL && window.CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
-      ? window.CFG.RADIOS_GAS_URL : null;
+    const gasUrl = CFG.RADIOS_GAS_URL && CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
+      ? CFG.RADIOS_GAS_URL : null;
     if (!gasUrl) { renderChatOffline(); return; }
 
     try {
@@ -5724,16 +5706,14 @@ window.closeReferralQRModal = function() {
     const mensaje = input ? input.value.trim() : '';
     if (!mensaje) return;
 
-    const gasUrl = window.CFG?.RADIOS_GAS_URL && window.CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
-      ? window.CFG.RADIOS_GAS_URL : null;
+    const gasUrl = CFG.RADIOS_GAS_URL && CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
+      ? CFG.RADIOS_GAS_URL : null;
     if (!gasUrl) { if(typeof showToast==='function') showToast('Chat no disponible.','fa-solid fa-circle-exclamation'); return; }
 
-    // Obtener nombre del usuario (de state global o localStorage)
-    const authUser = window.state?.authUser || null;
-    const nombre = (authUser?.nombre || localStorage.getItem('mgm_chat_name') || 'Invitado').trim();
-    const cedula = authUser?.cedula || '';
+    const nombre = (state?.authUser?.nombre || localStorage.getItem('mgm_chat_name') || 'Invitado').trim();
+    const cedula = state?.authUser?.cedula || '';
 
-    // Optimistic UI — mostrar mensaje inmediatamente
+    // Optimistic UI
     const container = document.getElementById('party-chat-messages');
     if (container) {
       const emptyEl = container.querySelector('.party-chat-empty');
@@ -5745,15 +5725,11 @@ window.closeReferralQRModal = function() {
     if (input) input.value = '';
 
     try {
-      // mode: 'no-cors' evita el error de CORS con el redirect de GAS
       await fetch(gasUrl, {
         method: 'POST',
-        mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'chat_send', nombre, mensaje, cedula })
       });
-      // Recargar mensajes después de 2s para confirmar que se guardó
-      setTimeout(() => loadChat(), 2000);
     } catch(e) { console.warn('[Chat] Error enviando:', e); }
   };
 
@@ -5774,10 +5750,6 @@ window.closeReferralQRModal = function() {
         stopPartyPromoSchedule();
         if (typeof partyAudio !== 'undefined' && partyAudio) partyAudio.pause();
         document.getElementById('audio-mini-bar')?.classList.remove('hidden');
-        if (typeof chatPollInterval !== 'undefined' && chatPollInterval) {
-          clearInterval(chatPollInterval);
-          chatPollInterval = null;
-        }
       }
     };
   }
