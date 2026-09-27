@@ -114,8 +114,9 @@
     AUDIO_TRACKS: []
   };
 
-  // Exponer CFG globalmente para el módulo de Modo Fiesta
+  // Exponer CFG y state globalmente para el módulo de Modo Fiesta
   window.CFG = CFG;
+  // state se expone más adelante cuando se inicializa (ver abajo)
 
   // ══════════════════════════════════════════════════════════════════════════════
   // STATE LOCAL
@@ -162,6 +163,9 @@
       { fecha:'2026-07-15 09:40', cedula:'8-888-1234', factura:'FAC-2026-0742', subtotal:200.00, multiplicador:'1X Estándar', puntos:200, asesor:'Ana Gómez' }
     ]
   };
+  
+  // Hacer state global para el modo fiesta
+  window.state = state;
 
   // ── Corrección de arranque: limpiar seenNotifs para notifs con fecha_inicio futura ──
   // Repara usuarios que recibieron el push antes de tiempo (bug anterior).
@@ -5706,14 +5710,16 @@ window.closeReferralQRModal = function() {
     const mensaje = input ? input.value.trim() : '';
     if (!mensaje) return;
 
-    const gasUrl = CFG.RADIOS_GAS_URL && CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
-      ? CFG.RADIOS_GAS_URL : null;
+    const gasUrl = window.CFG?.RADIOS_GAS_URL && window.CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
+      ? window.CFG.RADIOS_GAS_URL : null;
     if (!gasUrl) { if(typeof showToast==='function') showToast('Chat no disponible.','fa-solid fa-circle-exclamation'); return; }
 
-    const nombre = (state?.authUser?.nombre || localStorage.getItem('mgm_chat_name') || 'Invitado').trim();
-    const cedula = state?.authUser?.cedula || '';
+    // Obtener nombre del usuario (de state global o localStorage)
+    const authUser = window.state?.authUser || null;
+    const nombre = (authUser?.nombre || localStorage.getItem('mgm_chat_name') || 'Invitado').trim();
+    const cedula = authUser?.cedula || '';
 
-    // Optimistic UI
+    // Optimistic UI — mostrar mensaje inmediatamente
     const container = document.getElementById('party-chat-messages');
     if (container) {
       const emptyEl = container.querySelector('.party-chat-empty');
@@ -5725,11 +5731,15 @@ window.closeReferralQRModal = function() {
     if (input) input.value = '';
 
     try {
+      // mode: 'no-cors' evita el error de CORS con el redirect de GAS
       await fetch(gasUrl, {
         method: 'POST',
+        mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'chat_send', nombre, mensaje, cedula })
       });
+      // Recargar mensajes después de 2s para confirmar que se guardó
+      setTimeout(() => loadChat(), 2000);
     } catch(e) { console.warn('[Chat] Error enviando:', e); }
   };
 
