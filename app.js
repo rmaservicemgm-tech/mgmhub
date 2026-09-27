@@ -5338,8 +5338,8 @@ window.closeReferralQRModal = function() {
       if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Cargando Modo Fiesta...');
 
       // Carga paralela: radios, spotify, promos-audio
-      const gasUrl = CFG.RADIOS_GAS_URL && CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
-        ? CFG.RADIOS_GAS_URL : null;
+      const gasUrl = window.CFG?.RADIOS_GAS_URL && window.CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
+        ? window.CFG.RADIOS_GAS_URL : null;
 
       const safeJson = url => fetch(url).then(r => {
         if (!r.ok) throw new Error('HTTP ' + r.status);
