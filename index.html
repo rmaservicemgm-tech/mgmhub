@@ -2689,9 +2689,21 @@
     // Inicializar Botpress con los mismos parámetros que funcionan en la web MGM
     // Se ejecuta inmediatamente después de cargar el SDK
     if (window.botpress) {
+      let userName = '';
+      try {
+        const authRaw = localStorage.getItem('mgm_auth_user');
+        if (authRaw) {
+          const authData = JSON.parse(authRaw);
+          userName = authData.nombre_empresa || authData.nombre || authData.cedula || '';
+        }
+      } catch(e) {}
+
       window.botpress.init({
         "botId": "e5a3c8a6-9aec-41a3-870d-d1985dc8c7df",
         "clientId": "defae30e-36d3-4f8e-91a9-5c524f7bc655",
+        "userData": {
+           "name": userName
+        },
         "configuration": {
           "version": "v2",
           "botName": "Magie — Asistente IA MGM",
