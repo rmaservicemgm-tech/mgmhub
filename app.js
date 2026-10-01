@@ -2865,126 +2865,6 @@
   };
 
   // ══════════════════════════════════════════════════════════════════════════════
-  // MÓDULO AUDIO PLAYER — REPRODUCCIÓN SECUENCIAL & MULTI-PISTA
-  // ══════════════════════════════════════════════════════════════════════════════
-
-  const audioEl    = document.getElementById('audio-element');
-  const audioBar   = document.getElementById('audio-mini-bar');
-  const playIcon   = document.getElementById('audio-play-icon');
-  const pauseIcon  = document.getElementById('audio-pause-icon');
-  const trackTitle = document.getElementById('audio-title');
-  const trackArtist= document.getElementById('audio-artist');
-  const coverImg   = document.getElementById('audio-cover');
-
-  function loadTrack(idx) {
-    const tracks = CFG.AUDIO_TRACKS;
-    if (!tracks || !tracks.length || !audioEl) {
-      if (audioBar) audioBar.classList.add('hidden');
-      return;
-    }
-
-    state.audioTrackIndex = ((idx % tracks.length) + tracks.length) % tracks.length;
-    const track = tracks[state.audioTrackIndex];
-
-    if (track && track.src) {
-      const wasPlaying = state.audioPlaying;
-      audioEl.src = track.src;
-      if (trackTitle) trackTitle.textContent = track.title || 'MGM Radio';
-      if (trackArtist) trackArtist.textContent = track.artist || 'MGM';
-      if (coverImg) {
-        coverImg.src = track.cover || 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png';
-      }
-      if (audioBar) audioBar.classList.remove('hidden');
-
-      if (wasPlaying) {
-        audioEl.play().catch(err => console.warn('Autoplay track change error:', err));
-      }
-    } else {
-      if (audioBar) audioBar.classList.add('hidden');
-    }
-  }
-
-  async function fetchAudioPlaylist() {
-    try {
-      const res = await fetch(CFG.AUDIO_GAS_URL);
-      const data = await res.json();
-      const rawList = Array.isArray(data) ? data : (data && Array.isArray(data.value) ? data.value : []);
-
-      if (Array.isArray(rawList) && rawList.length > 0) {
-        const mapped = rawList.map(t => ({
-          title: t.title || t.titulo || t.nombre || 'MGM Audio',
-          artist: t.artist || t.artista || 'MGM Radio',
-          src: t.url || t.src || t.audio_url || t.audio || t.link || '',
-          cover: t.cover || t.imagen || t.img || 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'
-        })).filter(t => t.src);
-
-        if (mapped.length > 0) {
-          CFG.AUDIO_TRACKS = mapped;
-          loadTrack(0);
-          return;
-        }
-      }
-
-      // Si no hay pistas válidas en el GAS, dejar vacío y ocultar completamente el reproductor
-      CFG.AUDIO_TRACKS = [];
-      if (audioBar) audioBar.classList.add('hidden');
-      if (audioEl) {
-        audioEl.pause();
-        audioEl.src = '';
-      }
-    } catch (err) {
-      console.warn('Audio GAS fetch error / sin pistas:', err);
-      CFG.AUDIO_TRACKS = [];
-      if (audioBar) audioBar.classList.add('hidden');
-      if (audioEl) {
-        audioEl.pause();
-        audioEl.src = '';
-      }
-    }
-  }
-
-  document.getElementById('audio-btn-play')?.addEventListener('click', () => {
-    const tracks = CFG.AUDIO_TRACKS;
-    if (!audioEl || !tracks || !tracks.length) return;
-
-    if (state.audioPlaying) {
-      audioEl.pause();
-      state.audioPlaying = false;
-      playIcon && (playIcon.style.display = '');
-      pauseIcon && (pauseIcon.style.display = 'none');
-      coverImg?.classList.remove('spinning');
-    } else {
-      audioEl.play().then(() => {
-        state.audioPlaying = true;
-        playIcon && (playIcon.style.display = 'none');
-        pauseIcon && (pauseIcon.style.display = '');
-        coverImg?.classList.add('spinning');
-      }).catch(err => console.warn('Audio play error:', err));
-    }
-  });
-
-  document.getElementById('audio-btn-prev')?.addEventListener('click', () => {
-    loadTrack(state.audioTrackIndex - 1);
-  });
-
-  document.getElementById('audio-btn-next')?.addEventListener('click', () => {
-    loadTrack(state.audioTrackIndex + 1);
-  });
-
-  document.getElementById('audio-btn-close')?.addEventListener('click', () => {
-    audioEl?.pause();
-    state.audioPlaying = false;
-    audioBar?.classList.add('hidden');
-  });
-
-  if (audioEl) {
-    audioEl.addEventListener('ended', () => {
-      loadTrack(state.audioTrackIndex + 1);
-      audioEl.play().catch(e => console.warn(e));
-    });
-  }
-
-  // ══════════════════════════════════════════════════════════════════════════════
   // SPLASHSCREEN / PROMO INTERSTITIAL (SPLASH_GAS_URL)
   // ══════════════════════════════════════════════════════════════════════════════
 
@@ -4190,8 +4070,7 @@
     await Promise.allSettled([
       loadHomePromos(),
       loadHomeRewards(),
-      loadHomeNextEvent(),
-      fetchAudioPlaylist()
+      loadHomeNextEvent()
     ]);
 
     checkAndShowSplash();
@@ -5303,16 +5182,12 @@ window.closeReferralQRModal = function() {
 
   // ── Tabs internos del Modo Fiesta ─────────────────────────────────────────
   function switchPartyTab(tab) {
-    [tabRadioPanel, tabSpotifyPanel, tabChatPanel].forEach(p => p && p.classList.add('hidden'));
-    [tabRadioBtn, tabSpotifyBtn, tabChatBtn].forEach(b => b && b.classList.remove('active'));
+    [tabRadioPanel].forEach(p => p && p.classList.add('hidden'));
+    [tabRadioBtn].forEach(b => b && b.classList.remove('active'));
     if (tab === 'radio')   { tabRadioPanel?.classList.remove('hidden');   tabRadioBtn?.classList.add('active'); }
-    if (tab === 'spotify') { tabSpotifyPanel?.classList.remove('hidden'); tabSpotifyBtn?.classList.add('active'); }
-    if (tab === 'chat')    { tabChatPanel?.classList.remove('hidden');    tabChatBtn?.classList.add('active'); }
   }
 
   if (tabRadioBtn)   tabRadioBtn.onclick   = () => switchPartyTab('radio');
-  if (tabSpotifyBtn) tabSpotifyBtn.onclick = () => switchPartyTab('spotify');
-  if (tabChatBtn)    tabChatBtn.onclick    = () => { switchPartyTab('chat'); loadChat(); };
 
   // ── Carga inicial ─────────────────────────────────────────────────────────
   async function initPartyData() {
@@ -5608,8 +5483,8 @@ window.closeReferralQRModal = function() {
       if (isInit && emisoras.length > 0) selectRadio(emisoras[0], false);
       return;
     }
-    const track = promoTracks[partyPromoIndex % promoTracks.length];
-    partyPromoIndex++;
+    const randomIndex = Math.floor(Math.random() * promoTracks.length);
+    const track = promoTracks[randomIndex];
     isPlayingPartyPromo = true;
 
     // En inicio no hay radio guardada; al terminar cargamos emisoras[0] sin autoplay
