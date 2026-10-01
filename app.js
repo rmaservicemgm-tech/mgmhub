@@ -2203,8 +2203,62 @@
     if (platform === 'mail') window.open(`mailto:?subject=${encodeURIComponent(ev.titulo)}&body=${encoded}`, '_blank');
     if (platform === 'copy') { navigator.clipboard.writeText(text).then(() => showToast('¡Texto copiado!', 'fa-solid fa-clipboard-check')); }
     if (platform === 'cal') {
-      const dateStart = ev.fecha.replace(/-/g,'');
-      window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.titulo)}&dates=${dateStart}T000000Z/${dateStart}T235959Z&details=${encodeURIComponent(ev.descripcion)}`, '_blank');
+      // Parsear hora del evento (formato "HH:MM - HH:MM" o "HH:MM")
+      // Panamá es UTC-5, así que sumamos 5h para convertir a UTC
+      const PANAMA_OFFSET = 5 * 60; // minutos
+      const dateStr = ev.fecha; // YYYY-MM-DD
+
+      function toGCalDate(dateYMD, timeStr) {
+        // timeStr: "HH:MM"
+        const [h, m] = timeStr.trim().split(':').map(Number);
+        if (isNaN(h) || isNaN(m)) return null;
+        // Sumar offset UTC-5 → UTC
+        const totalMin = h * 60 + m + PANAMA_OFFSET;
+        const utcH = Math.floor(totalMin / 60) % 24;
+        const utcM = totalMin % 60;
+        // Si la hora UTC supera medianoche, avanzar el día
+        const dayCarry = Math.floor((h * 60 + m + PANAMA_OFFSET) / (24 * 60));
+        let [y, mo, d] = dateYMD.split('-').map(Number);
+        d += dayCarry;
+        const dt = new Date(y, mo - 1, d);
+        const yy = dt.getFullYear();
+        const mm = String(dt.getMonth() + 1).padStart(2, '0');
+        const dd = String(dt.getDate()).padStart(2, '0');
+        return `${yy}${mm}${dd}T${String(utcH).padStart(2,'0')}${String(utcM).padStart(2,'0')}00Z`;
+      }
+
+      let calDates;
+      const horaRaw = (ev.hora || '').trim(); // "10:00 - 11:00" o "10:00 – 11:00"
+      const horaMatch = horaRaw.replace('–', '-').split('-');
+      const startParsed = horaMatch[0] ? toGCalDate(dateStr, horaMatch[0]) : null;
+      const endParsed   = horaMatch[1] ? toGCalDate(dateStr, horaMatch[1]) : null;
+
+      if (startParsed && endParsed) {
+        calDates = `${startParsed}/${endParsed}`;
+      } else if (startParsed) {
+        // Sin hora fin: asumir 1 hora de duración
+        const endFallback = toGCalDate(dateStr, (parseInt(horaMatch[0]) + 1) + ':' + (horaMatch[0].split(':')[1] || '00'));
+        calDates = `${startParsed}/${endFallback || startParsed}`;
+      } else {
+        // Sin hora: evento de todo el día
+        const d = dateStr.replace(/-/g,'');
+        calDates = `${d}/${d}`;
+      }
+
+      const calDetails = [
+        ev.descripcion || '',
+        ev.lugar ? `📍 ${ev.lugar}` : '',
+        ev.costo  ? `💲 ${ev.costo}` : ''
+      ].filter(Boolean).join('\n');
+
+      window.open(
+        `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+        `&text=${encodeURIComponent(ev.titulo)}` +
+        `&dates=${calDates}` +
+        `&details=${encodeURIComponent(calDetails)}` +
+        `&location=${encodeURIComponent(ev.lugar || '')}`,
+        '_blank'
+      );
     }
     closeAppModal('modal-event-share');
   };
