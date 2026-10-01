@@ -4132,6 +4132,7 @@
     // ── DEEP LINK: Leer parámetros de URL al arrancar la app ──────────────────────
     // Ejemplos: ?tab=puntos&sub=registro | ?tab=agenda&id=EV001 | ?tab=promos&id=P001
     // QR RMA:   ?tab=rma&sub=RMA-2026-0001&email=cliente@email.com
+    // Modo Fiesta: ?tab=party
     const _urlParams = new URLSearchParams(window.location.search);
     const _deepTab   = _urlParams.get('tab');
     const _deepSub   = _urlParams.get('sub') || _urlParams.get('id');
@@ -5197,6 +5198,10 @@ window.closeReferralQRModal = function() {
   let secondsElapsed= 0;
   let hasInitialized= false;
 
+  // Claves de caché localStorage para Modo Fiesta
+  const K_CACHE_RADIOS  = 'MGM_CACHE_RADIOS';
+  const K_CACHE_FIESTA  = 'MGM_CACHE_FIESTA_PROMOS';
+
   // Promo-audio en Modo Fiesta: cada hora se pausa la radio y suena un promo
   let partyPromoInterval    = null;
   let partyPromoIndex       = 0;
@@ -5248,6 +5253,28 @@ window.closeReferralQRModal = function() {
     try {
       if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Cargando Modo Fiesta...');
 
+      // ── Cargar caché inmediato antes del fetch ────────────────────────────
+      const cachedRadios = localStorage.getItem(K_CACHE_RADIOS);
+      if (cachedRadios) {
+        try {
+          const r = JSON.parse(cachedRadios);
+          if (Array.isArray(r) && r.length > 0) { emisoras = r; renderRadioList(); }
+        } catch(e) {}
+      }
+      const cachedPromos = localStorage.getItem(K_CACHE_FIESTA);
+      if (cachedPromos) {
+        try {
+          const p = JSON.parse(cachedPromos);
+          if (Array.isArray(p) && p.length > 0) {
+            promoTracks = p;
+            // Pre-cargar promo inicial si no hay radio jugando aún
+            if (!isPlaying && !currentRadio && promoTracks.length > 0) {
+              playNextPartyPromo(true);
+            }
+          }
+        } catch(e) {}
+      }
+
       // Carga paralela: radios, spotify, promos-audio
       const gasUrl = CFG.RADIOS_GAS_URL && CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
         ? CFG.RADIOS_GAS_URL : null;
@@ -5267,13 +5294,14 @@ window.closeReferralQRModal = function() {
       if (radiosRes.status === 'fulfilled' && Array.isArray(radiosRes.value) && radiosRes.value.length > 0) {
         if (radiosRes.value[0].nombre || radiosRes.value[0].Emisora) {
           emisoras = radiosRes.value;
+          localStorage.setItem(K_CACHE_RADIOS, JSON.stringify(emisoras));
         } else {
           console.warn('[PartyMode] Respuesta inesperada del GAS. Usando fallback.');
-          emisoras = EMISORAS_FALLBACK;
+          if (!emisoras.length) emisoras = EMISORAS_FALLBACK;
         }
       } else {
         console.warn('[PartyMode] Radios no disponibles. Usando fallback. Razón:', radiosRes.reason || 'vacío');
-        emisoras = EMISORAS_FALLBACK;
+        if (!emisoras.length) emisoras = EMISORAS_FALLBACK;
       }
 
       // Spotify
@@ -5283,12 +5311,16 @@ window.closeReferralQRModal = function() {
 
       // Promo tracks — no bloquea si falla
       if (promoRes.status === 'fulfilled' && Array.isArray(promoRes.value)) {
-        promoTracks = promoRes.value.map(t => ({
+        const freshPromos = promoRes.value.map(t => ({
           title:  t.title  || t.titulo  || 'MGM Audio',
           artist: t.artist || t.artista || 'MGM',
           src:    t.url    || t.src     || '',
           cover:  t.cover  || t.imagen  || 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'
         })).filter(t => t.src);
+        if (freshPromos.length > 0) {
+          promoTracks = freshPromos;
+          localStorage.setItem(K_CACHE_FIESTA, JSON.stringify(promoTracks));
+        }
       } else {
         console.warn('[PartyMode] Promos no disponibles:', promoRes.reason || 'vacío');
       }
@@ -5303,11 +5335,14 @@ window.closeReferralQRModal = function() {
       // Siempre renderizamos, aunque haya fallado algo
       renderRadioList();
       renderSpotifyList();
-      // Reproducir un promo MGM primero, luego dejar la primera radio lista (sin autoplay)
-      if (promoTracks.length > 0) {
-        playNextPartyPromo(true); // true = modo inicio: vuelve a radio[0] al terminar
-      } else if (emisoras.length > 0) {
-        selectRadio(emisoras[0], false);
+      // Solo reproducir promo al inicio si no se cargó ya desde caché
+      const alreadyStarted = isPlaying || isPlayingPartyPromo || currentRadio;
+      if (!alreadyStarted) {
+        if (promoTracks.length > 0) {
+          playNextPartyPromo(true); // true = modo inicio: vuelve a radio[0] al terminar
+        } else if (emisoras.length > 0) {
+          selectRadio(emisoras[0], false);
+        }
       }
       startPartyPromoSchedule();
     }
@@ -5557,9 +5592,14 @@ window.closeReferralQRModal = function() {
     updateHeroUI({ nombre: track.title, sub: track.artist, logo: track.cover, isLive: false });
     if (miniPlayer) miniPlayer.style.display = 'flex';
 
-    // Reproducir promo
+    // Reproducir promo — el audio ya fue desbloqueado en initPartyMode()
     partyAudio.src = track.src;
-    partyAudio.play().catch(e => console.warn('[PartyPromo] Error:', e));
+    partyAudio.load();
+    partyAudio.play().catch(e => {
+      console.warn('[PartyPromo] Autoplay bloqueado, mostrando botón play:', e);
+      // Si el autoplay falla, el usuario ve el hero con botón play manual
+      setPlayState(false);
+    });
 
     // Cuando termine → volver a la radio
     const onPromoEnd = () => {
@@ -5684,6 +5724,22 @@ window.closeReferralQRModal = function() {
   }
 
   window.initPartyMode = function() {
+    // ⚠️ AUTOPLAY FIX: Los navegadores bloquean audio si no hay gesto del usuario.
+    // Desbloqueamos el elemento de audio SINCÓNICAMENTE en el mismo clic.
+    if (partyAudio && !partyAudio._unlocked) {
+      partyAudio.muted = true;
+      partyAudio.play().then(() => {
+        partyAudio.pause();
+        partyAudio.muted = false;
+        partyAudio.currentTime = 0;
+        partyAudio._unlocked = true;
+      }).catch(() => {
+        // En Safari móvil puede fallar igual — el usuario deberá pulsar play manualmente
+        partyAudio.muted = false;
+        partyAudio._unlocked = true;
+      });
+    }
+
     if (!hasInitialized) { hasInitialized = true; initPartyData(); }
     if (typeof window.switchMainTab === 'function') window.switchMainTab('party');
   };
