@@ -3768,7 +3768,7 @@
     }
 
     // Actualizar burbujas de los iconos del home
-    const counts = { puntos: 0, agenda: 0, promos: 0, rma: 0, rastreo: 0 };
+    const counts = { puntos: 0, agenda: 0, promos: 0, rma: 0, rastreo: 0, magie: 0, toolbox: 0, fiesta: 0 };
     
     const notifsActivas = state.notifications.filter(n => notifEnVentana(n));
     notifsActivas.forEach(n => {
@@ -3783,6 +3783,9 @@
         else if (hasWord(/\b(punto|puntos|cumplea[nñ]os|redim|canje|canjear|saldo|acredit|ajuste)\b/i)) seccion = 'puntos';
         else if (hasWord(/\b(promo|oferta|descuento|rebaja|remate)\b/i)) seccion = 'promos';
         else if (hasWord(/\b(evento|webinar|curso|capacitaci[oó]n|charla|certificaci[oó]n)\b/i)) seccion = 'agenda';
+        else if (hasWord(/\b(magie|asistente|bot|ia|cotiza|cotizaci[oó]n)\b/i)) seccion = 'magie';
+        else if (hasWord(/\b(toolbox|herramienta|c[aá]lculo|calculadora|ups|almacenamiento)\b/i)) seccion = 'toolbox';
+        else if (hasWord(/\b(fiesta|radio|m[uú]sica|dj|mix)\b/i)) seccion = 'fiesta';
       }
       
       const secBase = seccion.split(':')[0].toLowerCase();
