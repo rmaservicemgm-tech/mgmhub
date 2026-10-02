@@ -6063,19 +6063,19 @@ window.closeReferralQRModal = function() {
               <div class="rma-tracker-progress" style="width:${Math.min(infoEstado.progress, 100)}%; background: ${isComplete ? '#10B981' : '#0284C7'};"></div>
               
               <div class="rma-step ${infoEstado.progress >= 25 ? 'completed' : ''} ${infoEstado.progress === 25 ? 'active' : ''}">
-                <div class="rma-step-icon" style="${infoEstado.progress >= 25 ? 'background:#10B981;border-color:#10B981;color:white;' : ''}"><i class="fa-solid fa-box"></i></div>
+                <div class="rma-step-icon" style="${infoEstado.progress > 25 ? 'background:#10B981;border-color:#10B981;color:white;' : ''} ${infoEstado.progress === 25 ? 'background:#0284C7;border-color:#0284C7;color:white;box-shadow:0 0 10px rgba(2,132,199,0.4);' : ''}"><i class="fa-solid fa-box"></i></div>
                 <div class="rma-step-label">Pagado</div>
               </div>
               <div class="rma-step ${infoEstado.progress >= 50 ? 'completed' : ''} ${infoEstado.progress === 50 ? 'active' : ''}">
-                <div class="rma-step-icon" style="${infoEstado.progress >= 50 ? 'background:#10B981;border-color:#10B981;color:white;' : ''} ${infoEstado.progress === 50 ? 'background:#0284C7;border-color:#0284C7;color:white;box-shadow:0 0 10px rgba(2,132,199,0.4);' : ''}"><i class="fa-solid fa-boxes-packing"></i></div>
+                <div class="rma-step-icon" style="${infoEstado.progress > 50 ? 'background:#10B981;border-color:#10B981;color:white;' : ''} ${infoEstado.progress === 50 ? 'background:#0284C7;border-color:#0284C7;color:white;box-shadow:0 0 10px rgba(2,132,199,0.4);' : ''}"><i class="fa-solid fa-boxes-packing"></i></div>
                 <div class="rma-step-label">Empacado</div>
               </div>
               <div class="rma-step ${infoEstado.progress >= 75 ? 'completed' : ''} ${infoEstado.progress === 75 ? 'active' : ''}">
-                <div class="rma-step-icon" style="${infoEstado.progress >= 75 ? 'background:#10B981;border-color:#10B981;color:white;' : ''} ${infoEstado.progress === 75 ? 'background:#0284C7;border-color:#0284C7;color:white;box-shadow:0 0 10px rgba(2,132,199,0.4);' : ''}"><i class="fa-solid fa-truck-fast"></i></div>
+                <div class="rma-step-icon" style="${infoEstado.progress > 75 ? 'background:#10B981;border-color:#10B981;color:white;' : ''} ${infoEstado.progress === 75 ? 'background:#0284C7;border-color:#0284C7;color:white;box-shadow:0 0 10px rgba(2,132,199,0.4);' : ''}"><i class="fa-solid fa-truck-fast"></i></div>
                 <div class="rma-step-label">Camino</div>
               </div>
               <div class="rma-step ${infoEstado.progress >= 100 ? 'completed' : ''} ${infoEstado.progress === 100 ? 'active' : ''}">
-                <div class="rma-step-icon" style="${infoEstado.progress >= 100 ? 'background:#10B981;border-color:#10B981;color:white;' : ''}"><i class="fa-solid fa-check-double"></i></div>
+                <div class="rma-step-icon" style="${infoEstado.progress >= 100 ? 'background:#10B981;border-color:#10B981;color:white;box-shadow:0 0 10px rgba(16,185,129,0.4);' : ''}"><i class="fa-solid fa-check-double"></i></div>
                 <div class="rma-step-label">Entregado</div>
               </div>
             </div>
