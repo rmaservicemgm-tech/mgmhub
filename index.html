@@ -274,10 +274,10 @@
         </div>
 
         <!-- RASTREO DE PAQUETES -->
-        <div class="quick-card quick-card--disabled">
-          <div class="card-icon-pill pill-tracking"><i class="fa-solid fa-box-open"></i></div>
+        <div class="quick-card" onclick="switchMainTab('rastreo')">
+          <div class="card-icon-pill pill-tracking" style="background:#E0F2FE; color:#0284C7;"><i class="fa-solid fa-box-open"></i></div>
           <div>
-            <div class="card-title">Rastrear Pedido <span style="font-size: 9px; background: #FFF7ED; padding: 2px 6px; border-radius: 4px; color: #EA580C; margin-left: 6px; border: 1px solid #FFEDD5; letter-spacing: 0.5px;">PRONTO</span></div>
+            <div class="card-title">Rastrear Pedido <span style="font-size: 9px; background: #ECFDF5; padding: 2px 6px; border-radius: 4px; color: #059669; margin-left: 6px; border: 1px solid #D1FAE5; letter-spacing: 0.5px;">NUEVO</span></div>
             <div class="card-desc">Seguimiento de envío de tus paquetes y compras.</div>
           </div>
         </div>
@@ -2719,6 +2719,68 @@
       });
     }
   </script>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VISTA: RASTREO DE PEDIDOS
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <main id="view-rastreo" class="view-container">
+      <div class="mgm-consulta-module">
+        <div class="rma-consulta-card">
+          <div class="header" id="rastreoMainHeader">
+            <div class="icon-wrapper" id="rastreoHeaderIconWrapper" style="background: linear-gradient(135deg, #38BDF8, #0284C7);">
+              <span class="material-icons-round" id="rastreoHeaderIcon">local_shipping</span>
+            </div>
+            <h2 id="rastreoHeaderTitle">Rastrear Pedido</h2>
+            <p class="subtitle" id="rastreoHeaderSubtitle">Ingresa los datos para ver el estado de tu envío</p>
+            <div id="rastreoHeaderUserBadge"></div>
+          </div>
+          
+          <div id="rastreoUserDashboard" style="display:none; margin-bottom: 16px;"></div>
+
+          <div id="manualRastreoSearchToggleWrap" style="display:none; margin-bottom: 16px;">
+            <button type="button" class="btn-toggle-manual" onclick="window.toggleManualRastreoSearch()">
+              <span class="material-icons-round" style="font-size:18px;">search</span>
+              <span>¿Rastrear otro paquete?</span>
+              <span class="material-icons-round" id="manualRastreoToggleIcon" style="font-size:20px;">expand_more</span>
+            </button>
+          </div>
+
+          <form id="rastreoConsultaForm">
+            <button type="button" class="rma-qr-btn" onclick="openQrScannerModal()">
+              <span class="material-icons-round">qr_code_scanner</span>
+              <span>Escanear Código QR</span>
+            </button>
+            <div style="display:flex; align-items:center; margin: 15px 0;">
+              <div style="flex:1; height:1px; background:#E5E7EB;"></div>
+              <span style="padding:0 15px; font-size:13px; color:#9CA3AF; font-weight:500;">O escribe los datos</span>
+              <div style="flex:1; height:1px; background:#E5E7EB;"></div>
+            </div>
+            <div class="field-group">
+              <div class="field">
+                <span class="material-icons-round" style="color: #0284C7;">receipt</span>
+                <input name="rastreo" placeholder="No. Rastreo (Ej: TRK-2601-01)" required autocomplete="off">
+              </div>
+            </div>
+            <div class="field-group">
+              <div class="field">
+                <span class="material-icons-round" style="color: #0284C7;">alternate_email</span>
+                <input name="email" type="email" placeholder="Email o Cédula asociada" required autocomplete="email">
+              </div>
+            </div>
+            <button type="submit" class="rma-submit-btn" style="background: linear-gradient(135deg, #0284C7, #0369A1);">
+              <span>Rastrear Pedido</span>
+              <span class="material-icons-round">arrow_forward</span>
+            </button>
+          </form>
+
+          <div id="rastreo-loader" class="loader hidden">
+            <div class="spinner" style="border-top-color: #0284C7;"></div>
+            <p>Buscando la información de tu paquete...</p>
+          </div>
+          <div id="rastreo-resultado" class="resultado"></div>
+        </div>
+      </div>
+    </main>
 
     <!-- ══════════════════════════════════════════════════════════════════════════
          VISTA: TOOLBOX (DASHBOARD)

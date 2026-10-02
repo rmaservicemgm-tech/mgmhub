@@ -636,6 +636,19 @@
         }
       }, 150);
     }
+    if (tabName === 'rastreo') {
+      setTimeout(() => {
+        // Pre-llenar email en el formulario manual si el usuario está logueado
+        const emailInp = document.querySelector('#rastreoConsultaForm input[name="email"]');
+        if (emailInp && !emailInp.value && state.authUser && state.authUser.email) {
+          emailInp.value = state.authUser.email;
+        }
+        // Cargar pedidos activos del usuario logueado
+        if (typeof window.loadUserActiveRastreos === 'function') {
+          window.loadUserActiveRastreos();
+        }
+      }, 150);
+    }
   };
 
   // ══════════════════════════════════════════════════════════════════════════════
@@ -800,6 +813,25 @@
             form.rma.value = sub;
             if (_rmaEmail && form.email) form.email.value = _rmaEmail;
             form.rma.focus();
+          }
+        }
+      }, 300);
+    }
+
+    // --- RASTREO: auto-llenar y buscar cuando viene de QR/notificación ---
+    if (tab === 'rastreo' && sub) {
+      setTimeout(() => {
+        const _email = window._pendingRmaEmail
+          || (state.authUser && state.authUser.email)
+          || '';
+        window._pendingRmaEmail = null;
+        if (typeof window.consultarRastreoAutomatico === 'function') {
+          window.consultarRastreoAutomatico(sub, _email);
+        } else {
+          const form = document.getElementById('rastreoConsultaForm');
+          if (form && form.rastreo) {
+            form.rastreo.value = sub;
+            if (_email && form.email) form.email.value = _email;
           }
         }
       }, 300);
@@ -5778,4 +5810,332 @@ window.closeReferralQRModal = function() {
     { id:20, nombre:'Rockeros Online',     freq:'Online',   url:'https://stream.zeno.fm/ds3c8nx8yuquv',              logo:'https://www.dropbox.com/scl/fi/u9myr05zcenq2uaoi58m5/rockeros-online-radio.webp?rlkey=xaaxb3yam1mv8am712czzrpuh&st=afgtw2h3&raw=1', isHls:false }
   ];
 
+})();
+/* ==========================================================================
+   MÓDULO RASTREO — SEGUIMIENTO DE DESPACHOS (Global)
+   Endpoint: RASTREO_GAS_URL
+   ========================================================================== */
+(function() {
+  'use strict';
+
+  // URL del backend (Debe reemplazarse con el despliegue de rastreo_backend.gs)
+  const RASTREO_GAS_URL = 'PEGAR_AQUI_URL_RASTREO';
+
+  // Mapa de estados de Rastreo → { clase CSS, icono, progress % }
+  const RASTREO_ESTADO_MAP = {
+    '1': { cls: 'recibido',        icon: 'fa-box',               progress: 25,  label: 'Pago Confirmado' },
+    '2': { cls: 'diagnostico',     icon: 'fa-boxes-packing',     progress: 50,  label: 'Empacado / Preparando' },
+    '3': { cls: 'reparacion',      icon: 'fa-truck-fast',        progress: 75,  label: 'En Camino' },
+    '4': { cls: 'entregado',       icon: 'fa-check-double',      progress: 100, label: 'Completado' }
+  };
+
+  function getRastreoEstadoInfo(rawEstado) {
+    if (!rawEstado) return { cls: 'default', icon: 'fa-circle-question', progress: 0, label: rawEstado || 'Desconocido' };
+    const key = String(rawEstado).trim();
+    return RASTREO_ESTADO_MAP[key] || { cls: 'default', icon: 'fa-circle-question', progress: 20, label: 'Actualizado' };
+  }
+
+  function rastreoSetLoading(on) {
+    const btn = document.querySelector('#rastreoConsultaForm button[type="submit"]');
+    if (!btn) return;
+    btn.disabled = on;
+    const spanText = btn.querySelector('span:first-child');
+    if (spanText) spanText.textContent = on ? 'Buscando Paquete...' : 'Rastrear Pedido';
+  }
+
+  function rastreoShowError(msg) {
+    const resultDiv = document.getElementById("rastreo-resultado");
+    if (!resultDiv) return;
+    resultDiv.innerHTML = `
+      <div class="error-msg" style="background: #FEF2F2; color: #991B1B; padding: 20px; border-radius: 16px; border: 1px solid #FECACA; display: flex; align-items: center; gap: 16px;">
+        <div class="error-icon" style="background: #FEE2E2; color: #EF4444; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><span class="material-icons-round">error_outline</span></div>
+        <div>
+          <strong style="font-size:16px;">Paquete no encontrado</strong><br>
+          <span style="font-size:14px;opacity:0.9;">${msg || 'Verifica que el número de rastreo y correo sean correctos.'}</span>
+        </div>
+      </div>`;
+  }
+
+  // Tarjeta compacta para la lista de paquetes del usuario logueado
+  function buildRastreoCard(item) {
+    const estado = getRastreoEstadoInfo(item.estado);
+    const fechaActualizacion = item.fecha_actualizacion || '—';
+    const transporte = item.transportista || '—';
+    const guia = item.num_guia || '';
+    const numRastreo = item.id_rastreo || '';
+    const isDone = estado.progress === 100;
+
+    return `
+      <div class="rma-item-card" onclick="window.consultarRastreoAutomatico('${numRastreo}', '${item.email || item.cedula}')" style="cursor:pointer;">
+        <div class="rma-card-top">
+          <span class="rma-code-tag" style="color:#0284C7; background:#E0F2FE; border-color:#BAE6FD;">${numRastreo}</span>
+          <span class="rma-status-chip ${isDone ? 'done' : 'progress'}">
+            <i class="fa-solid ${estado.icon}"></i> ${estado.label}
+          </span>
+        </div>
+        <div class="rma-product-name" style="font-size: 13px; color: #334155;">Factura: ${item.factura || 'N/A'}</div>
+        <div class="rma-issue-preview" style="border-left-color: #38BDF8;">Transporte: ${transporte} ${guia ? ' (Guía: ' + guia + ')' : ''}</div>
+        <div class="rma-card-bottom">
+          <span class="rma-card-date"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${fechaActualizacion}</span>
+          <div class="rma-card-actions">
+            <button class="btn-action-ver" style="background: linear-gradient(135deg, #0284C7, #0369A1);">Ver Seguimiento</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  window.toggleManualRastreoSearch = function() {
+    const form = document.getElementById("rastreoConsultaForm");
+    const icon = document.getElementById("manualRastreoToggleIcon");
+    if (!form) return;
+    if (form.style.display === "none" || !form.style.display) {
+      form.style.display = "block";
+      if (icon) icon.textContent = "expand_less";
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      form.style.display = "none";
+      if (icon) icon.textContent = "expand_more";
+    }
+  };
+
+  window.cerrarDetalleRastreo = function() {
+    const res = document.getElementById("rastreo-resultado");
+    if (res) res.innerHTML = "";
+    const dashboard = document.getElementById("rastreoUserDashboard");
+    if (dashboard) dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  window.consultarRastreoAutomatico = function(rastreo, email) {
+    const form = document.getElementById("rastreoConsultaForm");
+    if (form) {
+      form.rastreo.value = rastreo;
+      form.email.value = email;
+      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Cargar paquetes activos para el cliente logueado
+  window.loadUserActiveRastreos = async function() {
+    const container = document.getElementById("rastreoUserDashboard");
+    const consultaForm = document.getElementById("rastreoConsultaForm");
+    const toggleWrap = document.getElementById("manualRastreoSearchToggleWrap");
+    const headerTitle = document.getElementById("rastreoHeaderTitle");
+    const headerSubtitle = document.getElementById("rastreoHeaderSubtitle");
+    const headerBadge = document.getElementById("rastreoHeaderUserBadge");
+
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('mgm_auth_user')) || (window.state && window.state.authUser); } catch(e) {}
+
+    if (!user) {
+      // Cliente no logueado
+      if(container) container.style.display = "none";
+      if(consultaForm) consultaForm.style.display = "block";
+      if(toggleWrap) toggleWrap.style.display = "none";
+      if(headerTitle) headerTitle.textContent = "Rastrear Pedido";
+      if(headerSubtitle) headerSubtitle.textContent = "Ingresa los datos para ver el estado de tu envío";
+      if(headerBadge) headerBadge.innerHTML = "";
+      return;
+    }
+
+    // Cliente Logueado
+    if(headerTitle) headerTitle.textContent = "Mis Pedidos";
+    if(headerSubtitle) headerSubtitle.textContent = "Seguimiento de tus envíos";
+    if(headerBadge) {
+      headerBadge.innerHTML = `<span class="rma-user-badge-header" style="background:#E0F2FE; color:#0369A1;"><i class="fa-solid fa-circle-user"></i> ${user.nombre || 'Mi Cuenta'}</span>`;
+    }
+
+    if(container) {
+      container.style.display = "block";
+      container.innerHTML = `<div style="text-align:center; padding: 20px; color: #64748b;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i>Buscando tus envíos...</div>`;
+    }
+    if(consultaForm) consultaForm.style.display = "none";
+    if(toggleWrap) toggleWrap.style.display = "block";
+
+    try {
+      const res = await fetch(`${RASTREO_GAS_URL}?action=buscar_cedula&cedula=${encodeURIComponent(user.cedula)}`);
+      const payload = await res.json();
+
+      if (payload.error || !payload.data || payload.data.length === 0) {
+        if(container) container.innerHTML = `
+          <div style="background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 16px; padding: 30px 20px; text-align: center;">
+            <div style="background: #E2E8F0; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #64748B;">
+              <span class="material-icons-round" style="font-size:24px;">local_shipping</span>
+            </div>
+            <h4 style="margin:0 0 6px 0; font-size:15px; color:#334155;">Sin envíos activos</h4>
+            <p style="margin:0; font-size:13px; color:#64748B; line-height:1.4;">No encontramos pedidos asociados a tu cuenta. Puedes usar la búsqueda manual.</p>
+          </div>
+        `;
+      } else {
+        const items = payload.data;
+        if(container) {
+          container.innerHTML = `<div class="rma-equipos-list">${items.map(buildRastreoCard).join('')}</div>`;
+        }
+      }
+    } catch (err) {
+      if(container) container.innerHTML = `<div style="color: #EF4444; text-align:center; padding: 15px; font-size:13px;">Error de conexión con el servidor.</div>`;
+    }
+  };
+
+  // Manejo del Submit del formulario
+  const consultaForm = document.getElementById("rastreoConsultaForm");
+  if (consultaForm) {
+    consultaForm.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const rastreo = consultaForm.rastreo.value.trim();
+      const email = consultaForm.email.value.trim();
+      const loader = document.getElementById("rastreo-loader");
+      const resultDiv = document.getElementById("rastreo-resultado");
+
+      consultaForm.querySelectorAll(".field").forEach(f => f.classList.remove("error"));
+      if (!rastreo) consultaForm.rastreo.parentElement.classList.add("error");
+      if (!email) consultaForm.email.parentElement.classList.add("error");
+      if (!rastreo || !email) return;
+
+      resultDiv.innerHTML = "";
+      loader.classList.remove("hidden");
+      rastreoSetLoading(true);
+
+      try {
+        const res = await fetch(`${RASTREO_GAS_URL}?action=buscar_factura&factura=${encodeURIComponent(rastreo)}&email=${encodeURIComponent(email)}`);
+        const payload = await res.json();
+        
+        loader.classList.add("hidden");
+        rastreoSetLoading(false);
+
+        if (!payload.success || !payload.data || payload.data.length === 0) {
+          rastreoShowError();
+          return;
+        }
+
+        const data = payload.data[0]; // Usamos el primer match
+        const infoEstado = getRastreoEstadoInfo(data.estado);
+        const isComplete = infoEstado.progress === 100;
+        const historial = data.historial || [];
+
+        let timelineHtml = '';
+        if (historial.length > 0) {
+          timelineHtml = `
+            <div class="timeline-section">
+              <div class="timeline-title">
+                <span class="material-icons-round" style="color:#0284C7;">route</span>
+                Ruta del Envío
+              </div>
+              <div class="timeline-track">
+                ${historial.map((h, idx) => {
+                  const isLatest = idx === historial.length - 1;
+                  const hInfo = getRastreoEstadoInfo(h.estado);
+                  const isDone = hInfo.progress === 100;
+                  const stepClass = isDone ? 'done' : (isLatest ? 'latest' : '');
+                  const iconName = isDone ? 'task_alt' : (isLatest ? 'pending' : 'check');
+                  
+                  // Sobrescribir colores en el style para que match con Rastreo
+                  const styleOverride = isLatest ? 'background: #0284C7; border-color: #0284C7;' : '';
+                  const boxOverride = isLatest ? 'box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);' : '';
+
+                  return `
+                    <div class="timeline-step ${stepClass}">
+                      <div class="timeline-dot" style="${styleOverride} ${boxOverride}">
+                        <span class="material-icons-round" style="font-size:11px; ${isLatest?'color:white;':''}">${iconName}</span>
+                      </div>
+                      <div class="timeline-header">
+                        <span class="timeline-estado">${hInfo.label}</span>
+                        <span class="timeline-fecha">${h.fecha || ''}</span>
+                      </div>
+                      ${h.notas ? `<div class="timeline-notas">${h.notas}</div>` : ''}
+                    </div>`;
+                }).join('')}
+              </div>
+            </div>`;
+        }
+
+        resultDiv.innerHTML = `
+          <div class="estado-box" style="border-top: 4px solid ${isComplete ? '#10B981' : '#0284C7'};">
+            <div class="estado-header">
+              <span class="rma-badge" style="background:#E0F2FE; color:#0369A1;"><span class="material-icons-round" style="font-size:14px;vertical-align:middle;margin-right:4px;">local_shipping</span>${data.id_rastreo}</span>
+              <span class="material-icons-round" style="color:${isComplete ? '#10B981' : '#0284C7'};opacity:0.2;font-size:32px;">verified</span>
+            </div>
+            <div class="estado-title">Estado del Pedido</div>
+            <h3 class="estado-value" style="background:linear-gradient(135deg, ${isComplete ? '#059669, #10B981' : '#0369A1, #0284C7'}); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${infoEstado.label}</h3>
+            
+            <!-- Barra de Progreso Tracker Visual -->
+            <div class="rma-tracker">
+              <div class="rma-tracker-progress" style="width:${Math.min(infoEstado.progress, 100)}%; background: ${isComplete ? '#10B981' : '#0284C7'};"></div>
+              
+              <div class="rma-step ${infoEstado.progress >= 25 ? 'completed' : ''} ${infoEstado.progress === 25 ? 'active' : ''}">
+                <div class="rma-step-icon" style="${infoEstado.progress >= 25 ? 'background:#10B981;border-color:#10B981;color:white;' : ''}"><i class="fa-solid fa-box"></i></div>
+                <div class="rma-step-label">Pagado</div>
+              </div>
+              <div class="rma-step ${infoEstado.progress >= 50 ? 'completed' : ''} ${infoEstado.progress === 50 ? 'active' : ''}">
+                <div class="rma-step-icon" style="${infoEstado.progress >= 50 ? 'background:#10B981;border-color:#10B981;color:white;' : ''} ${infoEstado.progress === 50 ? 'background:#0284C7;border-color:#0284C7;color:white;box-shadow:0 0 10px rgba(2,132,199,0.4);' : ''}"><i class="fa-solid fa-boxes-packing"></i></div>
+                <div class="rma-step-label">Empacado</div>
+              </div>
+              <div class="rma-step ${infoEstado.progress >= 75 ? 'completed' : ''} ${infoEstado.progress === 75 ? 'active' : ''}">
+                <div class="rma-step-icon" style="${infoEstado.progress >= 75 ? 'background:#10B981;border-color:#10B981;color:white;' : ''} ${infoEstado.progress === 75 ? 'background:#0284C7;border-color:#0284C7;color:white;box-shadow:0 0 10px rgba(2,132,199,0.4);' : ''}"><i class="fa-solid fa-truck-fast"></i></div>
+                <div class="rma-step-label">Camino</div>
+              </div>
+              <div class="rma-step ${infoEstado.progress >= 100 ? 'completed' : ''} ${infoEstado.progress === 100 ? 'active' : ''}">
+                <div class="rma-step-icon" style="${infoEstado.progress >= 100 ? 'background:#10B981;border-color:#10B981;color:white;' : ''}"><i class="fa-solid fa-check-double"></i></div>
+                <div class="rma-step-label">Entregado</div>
+              </div>
+            </div>
+
+            <div class="info-list">
+              <div class="info-item">
+                <span class="material-icons-round info-icon" style="color:#0284C7;">receipt_long</span>
+                <div class="info-content">
+                  <div class="info-label">Factura / Referencia</div>
+                  <p class="info-text">${data.factura || 'N/A'}</p>
+                </div>
+              </div>
+              <div class="info-item">
+                <span class="material-icons-round info-icon" style="color:#0284C7;">person</span>
+                <div class="info-content">
+                  <div class="info-label">Destinatario</div>
+                  <p class="info-text">${data.cliente_nombre || 'N/A'}</p>
+                </div>
+              </div>
+              <div class="info-item">
+                <span class="material-icons-round info-icon" style="color:#0284C7;">conveyor_belt</span>
+                <div class="info-content">
+                  <div class="info-label">Transportista Asignado</div>
+                  <p class="info-text">${data.transportista || 'N/A'}</p>
+                </div>
+              </div>
+              ${data.num_guia ? `
+              <div class="info-item">
+                <span class="material-icons-round info-icon" style="color:#10B981;">tag</span>
+                <div class="info-content">
+                  <div class="info-label" style="color:#065F46;">Número de Guía</div>
+                  <p class="info-text" style="font-weight:bold; color:#047857;">${data.num_guia}</p>
+                </div>
+              </div>` : ''}
+            </div>
+
+            ${data.notas && (!historial || historial.length === 0) ? `
+            <div class="notes-box">
+              <span class="material-icons-round info-icon">speaker_notes</span>
+              <div class="info-content">
+                <div class="info-label" style="color:#475569;">Novedades del Envío</div>
+                <p class="info-text" style="color:#334155;">${data.notas}</p>
+              </div>
+            </div>` : ''}
+            
+            ${timelineHtml}
+
+            <div style="text-align:center; margin-top:16px;">
+              <button type="button" onclick="window.cerrarDetalleRastreo()"
+                style="background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; padding:9px 18px; border-radius:12px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                <span class="material-icons-round" style="font-size:16px;">keyboard_arrow_up</span>
+                <span>Ocultar Detalle</span>
+              </button>
+            </div>
+          </div>`;
+      } catch (err) {
+        loader.classList.add("hidden");
+        rastreoSetLoading(false);
+        rastreoShowError("Error de conexión al servidor.");
+      }
+    });
+  }
 })();
