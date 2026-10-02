@@ -5819,7 +5819,7 @@ window.closeReferralQRModal = function() {
   'use strict';
 
   // URL del backend (Debe reemplazarse con el despliegue de rastreo_backend.gs)
-  const RASTREO_GAS_URL = 'PEGAR_AQUI_URL_RASTREO';
+  const RASTREO_GAS_URL = 'https://script.google.com/macros/s/AKfycbwDJcl_qsvrlh7VCND2GtfwnZmD34Bko5Ac5NuG_qv3PhHm3ljtSL4DAgeA3Z2MDTwkMQ/exec';
 
   // Mapa de estados de Rastreo → { clase CSS, icono, progress % }
   const RASTREO_ESTADO_MAP = {
