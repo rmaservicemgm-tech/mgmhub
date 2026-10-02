@@ -6123,6 +6123,16 @@ window.closeReferralQRModal = function() {
             
             ${timelineHtml}
 
+            ${infoEstado.progress === 75 ? `
+            <div style="text-align:center; margin-top:20px;">
+              <button type="button" id="btn-confirmar-recepcion" onclick="window.confirmarRecepcionRastreo('${data.id_rastreo}', '${email}')"
+                style="background:linear-gradient(135deg, #10B981, #059669); color:white; border:none; padding:12px 24px; border-radius:12px; font-size:15px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(16,185,129,0.3); transition:all 0.2s;">
+                <span class="material-icons-round">task_alt</span>
+                <span>¡Ya recibí mi paquete!</span>
+              </button>
+              <p style="font-size:11px; color:#64748B; margin-top:8px;">Haz clic aquí únicamente cuando tengas el paquete en tus manos.</p>
+            </div>` : ''}
+
             <div style="text-align:center; margin-top:16px;">
               <button type="button" onclick="window.cerrarDetalleRastreo()"
                 style="background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; padding:9px 18px; border-radius:12px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
@@ -6138,4 +6148,36 @@ window.closeReferralQRModal = function() {
       }
     });
   }
+
+  window.confirmarRecepcionRastreo = async function(id_rastreo, email) {
+    if(!confirm("¿Confirmas que recibiste tu paquete en buenas condiciones? Esta acción no se puede deshacer.")) return;
+    
+    const btn = document.getElementById("btn-confirmar-recepcion");
+    if(btn) { btn.disabled = true; btn.innerHTML = "Confirmando..."; }
+
+    try {
+      const res = await fetch(RASTREO_GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: "cliente_confirma_entrega",
+          id_rastreo: id_rastreo,
+          email: email
+        })
+      });
+      const data = await res.json();
+      if(data.success) {
+        alert("¡Excelente! Gracias por confirmar la entrega.");
+        // Refrescar el form para que aparezca como completado
+        const form = document.getElementById("rastreoConsultaForm");
+        if(form) form.dispatchEvent(new Event("submit"));
+      } else {
+        alert("Ocurrió un problema: " + data.message);
+        if(btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons-round">task_alt</span><span>¡Ya recibí mi paquete!</span>'; }
+      }
+    } catch(err) {
+      alert("Error de conexión con el servidor.");
+      if(btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons-round">task_alt</span><span>¡Ya recibí mi paquete!</span>'; }
+    }
+  };
+
 })();
