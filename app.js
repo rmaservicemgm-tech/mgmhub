@@ -3766,6 +3766,39 @@
     } else {
       badge.style.display = 'none';
     }
+
+    // Actualizar burbujas de los iconos del home
+    const counts = { puntos: 0, agenda: 0, promos: 0, rma: 0, rastreo: 0 };
+    
+    visibles.forEach(n => {
+      let seccion = (n.seccion || n.url || '').trim();
+      const titleLower = (n.title || '').toLowerCase();
+      const bodyLower  = (n.body || '').toLowerCase();
+      const combinedText = `${titleLower} ${bodyLower}`;
+      const hasWord = (rx) => rx.test(combinedText);
+
+      if (!seccion) {
+        if (hasWord(/\b(rma|garant[ií]a|garantias|taller|reparaci[oó]n|reparar|equipo)\b/i)) seccion = 'rma';
+        else if (hasWord(/\b(punto|puntos|cumplea[nñ]os|redim|canje|canjear|saldo|acredit|ajuste)\b/i)) seccion = 'puntos';
+        else if (hasWord(/\b(promo|oferta|descuento|rebaja|remate)\b/i)) seccion = 'promos';
+        else if (hasWord(/\b(evento|webinar|curso|capacitaci[oó]n|charla|certificaci[oó]n)\b/i)) seccion = 'agenda';
+      }
+      
+      const secBase = seccion.split(':')[0].toLowerCase();
+      if (counts[secBase] !== undefined) {
+        counts[secBase]++;
+      } else if (hasWord(/\b(rastreo|env[ií]o|paquete|despacho|entregado|bodega|transporte)\b/i)) {
+        counts.rastreo++;
+      }
+    });
+
+    for (const [key, val] of Object.entries(counts)) {
+      const b = document.getElementById('badge-home-' + key);
+      if (b) {
+        b.textContent = val > 9 ? '9+' : String(val);
+        b.style.display = val > 0 ? 'flex' : 'none';
+      }
+    }
   }
 
   // Añadir notificación local (ej. Evaluación RMA)
