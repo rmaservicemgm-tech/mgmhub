@@ -6080,7 +6080,7 @@ window.closeReferralQRModal = function() {
               </div>
             </div>
 
-            <div class="info-list">
+            <div class="info-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
               <div class="info-item">
                 <span class="material-icons-round info-icon" style="color:#0284C7;">receipt_long</span>
                 <div class="info-content">
@@ -6096,7 +6096,7 @@ window.closeReferralQRModal = function() {
                 </div>
               </div>
               <div class="info-item">
-                <span class="material-icons-round info-icon" style="color:#0284C7;">conveyor_belt</span>
+                <span class="material-icons-round info-icon" style="color:#0284C7;">local_shipping</span>
                 <div class="info-content">
                   <div class="info-label">Transportista Asignado</div>
                   <p class="info-text">${data.transportista || 'N/A'}</p>
