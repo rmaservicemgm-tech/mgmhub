@@ -3770,7 +3770,8 @@
     // Actualizar burbujas de los iconos del home
     const counts = { puntos: 0, agenda: 0, promos: 0, rma: 0, rastreo: 0 };
     
-    visibles.forEach(n => {
+    const notifsActivas = state.notifications.filter(n => notifEnVentana(n));
+    notifsActivas.forEach(n => {
       let seccion = (n.seccion || n.url || '').trim();
       const titleLower = (n.title || '').toLowerCase();
       const bodyLower  = (n.body || '').toLowerCase();
