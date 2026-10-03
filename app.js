@@ -6186,35 +6186,122 @@ window.closeReferralQRModal = function() {
     });
   }
 
-  window.confirmarRecepcionRastreo = async function(id_rastreo, email) {
-    if(!confirm("¿Confirmas que recibiste tu paquete en buenas condiciones? Esta acción no se puede deshacer.")) return;
-    
-    const btn = document.getElementById("btn-confirmar-recepcion");
-    if(btn) { btn.disabled = true; btn.innerHTML = "Confirmando..."; }
+  function ensureRastreoConfirmModal() {
+    let m = document.getElementById('modal-rastreo-confirm');
+    if (!m) {
+      m = document.createElement('div');
+      m.className = 'app-modal';
+      m.id = 'modal-rastreo-confirm';
+      m.style.zIndex = '9500';
+      m.innerHTML = `
+        <div class="modal-content-card" style="max-width: 320px; padding: 0; overflow: hidden; border-radius: 22px;">
+          <div style="background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%); padding: 28px 24px 20px; text-align: center; border-bottom: 1px solid var(--border-light);">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #dbeafe, #bfdbfe); border: 2px solid #93c5fd; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; box-shadow: 0 4px 16px rgba(59,130,246,0.18);">
+              <i class="fa-solid fa-box-open" style="font-size: 24px; color: #3b82f6;"></i>
+            </div>
+            <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">Confirmar Entrega</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">¿Confirmas que recibiste tu paquete en buenas condiciones?<br>Esta acción no se puede deshacer.</p>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; background: #fff;">
+            <button onclick="closeAppModal('modal-rastreo-confirm')" style="padding: 16px 12px; background: #fff; border: none; border-right: 1px solid var(--border-light); font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: background 0.18s, color 0.18s; border-radius: 0 0 0 22px;" onmouseover="this.style.background='#f8fafc'; this.style.color='var(--text-body)'" onmouseout="this.style.background='#fff'; this.style.color='var(--text-muted)'">
+              <i class="fa-solid fa-xmark" style="margin-right: 5px; font-size: 12px;"></i>Cancelar
+            </button>
+            <button id="btn-rastreo-confirm-ok" style="padding: 16px 12px; background: #fff; border: none; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; color: #3b82f6; cursor: pointer; transition: background 0.18s, color 0.18s; border-radius: 0 0 22px 0;" onmouseover="this.style.background='#eff6ff'; this.style.color='#2563eb'" onmouseout="this.style.background='#fff'; this.style.color='#3b82f6'">
+              <i class="fa-solid fa-check" style="margin-right: 5px; font-size: 12px;"></i>Confirmar
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(m);
+    }
+  }
 
-    try {
-      const res = await fetch(RASTREO_GAS_URL, {
-        method: 'POST',
-        body: JSON.stringify({
-          action: "cliente_confirma_entrega",
-          id_rastreo: id_rastreo,
-          email: email
-        })
-      });
-      const data = await res.json();
-      if(data.success) {
-        alert("¡Excelente! Gracias por confirmar la entrega.");
-        // Refrescar el form para que aparezca como completado
-        const form = document.getElementById("rastreoConsultaForm");
-        if(form) form.dispatchEvent(new Event("submit"));
-      } else {
-        alert("Ocurrió un problema: " + data.message);
+  function showRastreoAlert(title, message, isSuccess) {
+    let m = document.getElementById('modal-rastreo-alert');
+    if (!m) {
+      m = document.createElement('div');
+      m.className = 'app-modal';
+      m.id = 'modal-rastreo-alert';
+      m.style.zIndex = '9500';
+      m.innerHTML = `
+        <div class="modal-content-card" style="max-width: 320px; padding: 0; overflow: hidden; border-radius: 22px;">
+          <div id="rastreo-alert-header" style="padding: 28px 24px 20px; text-align: center; border-bottom: 1px solid var(--border-light);">
+            <div id="rastreo-alert-icon-wrap" style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px;">
+              <i id="rastreo-alert-icon" style="font-size: 24px;"></i>
+            </div>
+            <h3 id="rastreo-alert-title" style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;"></h3>
+            <p id="rastreo-alert-msg" style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;"></p>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr; background: #fff;">
+            <button onclick="closeAppModal('modal-rastreo-alert')" style="padding: 16px 12px; background: #fff; border: none; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; color: var(--text-dark); cursor: pointer; transition: background 0.18s, color 0.18s; border-radius: 0 0 22px 22px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
+              Aceptar
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(m);
+    }
+    
+    const header = document.getElementById('rastreo-alert-header');
+    const iconWrap = document.getElementById('rastreo-alert-icon-wrap');
+    const icon = document.getElementById('rastreo-alert-icon');
+    
+    if (isSuccess) {
+      header.style.background = 'linear-gradient(135deg, #f0fdf4 0%, #fcfdfa 100%)';
+      iconWrap.style.background = 'linear-gradient(135deg, #dcfce7, #bbf7d0)';
+      iconWrap.style.border = '2px solid #86efac';
+      iconWrap.style.boxShadow = '0 4px 16px rgba(34,197,94,0.18)';
+      icon.className = 'fa-solid fa-check';
+      icon.style.color = '#22c55e';
+    } else {
+      header.style.background = 'linear-gradient(135deg, #fff1f2 0%, #fef9ec 100%)';
+      iconWrap.style.background = 'linear-gradient(135deg, #fef2f2, #fee2e2)';
+      iconWrap.style.border = '2px solid #fca5a5';
+      iconWrap.style.boxShadow = '0 4px 16px rgba(239,68,68,0.18)';
+      icon.className = 'fa-solid fa-xmark';
+      icon.style.color = '#ef4444';
+    }
+    
+    document.getElementById('rastreo-alert-title').innerHTML = title;
+    document.getElementById('rastreo-alert-msg').innerHTML = message;
+    
+    openAppModal('modal-rastreo-alert');
+  }
+
+  window.confirmarRecepcionRastreo = function(id_rastreo, email) {
+    ensureRastreoConfirmModal();
+    const btnOk = document.getElementById("btn-rastreo-confirm-ok");
+    btnOk.onclick = async () => {
+      closeAppModal('modal-rastreo-confirm');
+      
+      const btn = document.getElementById("btn-confirmar-recepcion");
+      if(btn) { btn.disabled = true; btn.innerHTML = "Confirmando..."; }
+
+      try {
+        const res = await fetch(RASTREO_GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: "cliente_confirma_entrega",
+            id_rastreo: id_rastreo,
+            email: email
+          })
+        });
+        const data = await res.json();
+        if(data.success) {
+          showRastreoAlert("¡Excelente!", "Gracias por confirmar la entrega.", true);
+          // Refrescar el form para que aparezca como completado
+          const form = document.getElementById("rastreoConsultaForm");
+          if(form) form.dispatchEvent(new Event("submit"));
+        } else {
+          showRastreoAlert("Ocurrió un problema", data.message, false);
+          if(btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons-round">task_alt</span><span>¡Ya recibí mi paquete!</span>'; }
+        }
+      } catch(err) {
+        showRastreoAlert("Error", "Error de conexión con el servidor.", false);
         if(btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons-round">task_alt</span><span>¡Ya recibí mi paquete!</span>'; }
       }
-    } catch(err) {
-      alert("Error de conexión con el servidor.");
-      if(btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons-round">task_alt</span><span>¡Ya recibí mi paquete!</span>'; }
-    }
+    };
+    openAppModal('modal-rastreo-confirm');
   };
 
 })();
