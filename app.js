@@ -5852,7 +5852,7 @@ window.closeReferralQRModal = function() {
     partyAudio.src = track.src;
     partyAudio.load();
     partyAudio.play().catch(e => {
-      console.warn('[PartyPromo] Autoplay bloqueado, mostrando botón play:', e);trando botón play:', e);
+      console.warn('[PartyPromo] Autoplay bloqueado, mostrando botón play:', e);
       // Si el autoplay falla, el usuario ve el hero con botón play manual
       setPlayState(false);
     });
