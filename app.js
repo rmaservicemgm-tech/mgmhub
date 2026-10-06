@@ -1131,11 +1131,26 @@
       let alertType = null; // 'redemption', 'earned', 'adjustment_pos', 'adjustment_neg', 'nc'
 
       if (ptsNum < 0) {
-        // Movimiento negativo: ¿Redención, Devolución/NC o Ajuste en contra?
+        // Movimiento negativo: ¿Redención, Devolución/NC, Ajuste en contra o Vencimiento?
         const isNC = fac.startsWith('NC-') || mult.includes('DEVOLUCI') || mult.includes('NOTA DE CR');
         const isAjusteNeg = mult.includes('AJUSTE EN CONTRA') || mult.includes('AJUSTE (-)') || mult.includes('AJUSTE NEG');
+        const isVencimiento = mult.includes('VENCIMIENTO') || mult.includes('EXPIRA') || fac.startsWith('RST-');
 
-        if (isNC) {
+        if (isVencimiento) {
+          alertType = 'vencimiento';
+          notifObj = {
+            id: notifId,
+            title: `⏳ Tus puntos han expirado`,
+            body: `Estos son puntos vencidos o expirados que no se canjearon antes del 31 de diciembre (${ptsAbs.toLocaleString('es-PA')} Pts). ¡Te invitamos a seguir acumulando en este nuevo año!`,
+            date: tx.fecha || new Date().toLocaleDateString('es-PA'),
+            seccion: 'puntos:cuenta',
+            icon: 'fa-calendar-xmark',
+            iconColor: '#f97316',
+            badgeText: '⏳ Vencimiento',
+            badgeBg: '#ffedd5',
+            badgeTxt: '#c2410c'
+          };
+        } else if (isNC) {
           alertType = 'nc';
           notifObj = {
             id: notifId,
