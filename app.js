@@ -643,6 +643,29 @@
         if (emailInp && !emailInp.value && state.authUser && state.authUser.email) {
           emailInp.value = state.authUser.email;
         }
+        // Mostrar/ocultar banner de login
+        const loginNotice = document.getElementById('rastreoLoginNotice');
+        if (loginNotice) {
+          if (!state.authUser) {
+            loginNotice.style.display = 'block';
+            loginNotice.innerHTML = `
+              <div class="rma-login-cta" style="display:flex; gap:12px; align-items:flex-start; background:linear-gradient(135deg,#e0f2fe,#f0f9ff); border:1px solid #bae6fd; border-radius:14px; padding:14px 16px; margin-bottom:16px;">
+                <span class="material-icons-round" style="color:#0284c7; font-size:24px; margin-top:2px;">account_circle</span>
+                <div style="flex:1;">
+                  <strong style="color:#0c4a6e; font-size:13.5px;">¿Ya tienes cuenta en MGM Hub?</strong>
+                  <p style="margin:3px 0 8px 0; font-size:12px; color:#0369a1; line-height:1.4;">
+                    Inicia sesión para ver el estado de todos tus envíos automáticamente sin tener que ingresar el número de rastreo ni correo.
+                  </p>
+                  <button type="button" style="display:inline-flex; align-items:center; gap:6px; background:#0284c7; color:white; border:none; border-radius:8px; padding:8px 14px; font-size:12px; font-weight:700; cursor:pointer;" onclick="switchMainTab('puntos')">
+                    Iniciar Sesión <span class="material-icons-round" style="font-size:14px;">arrow_forward</span>
+                  </button>
+                </div>
+              </div>`;
+          } else {
+            loginNotice.style.display = 'none';
+            loginNotice.innerHTML = '';
+          }
+        }
         // Cargar pedidos activos del usuario logueado
         if (typeof window.loadUserActiveRastreos === 'function') {
           window.loadUserActiveRastreos();
@@ -3100,8 +3123,112 @@
   // ══════════════════════════════════════════════════════════════════════════════
   // AUTHENTICATION & LOGIN (MGM PUNTOS)
   // ══════════════════════════════════════════════════════════════════════════════
-  
-  window.openLoginModal = function() {
+    })
+    .then(r => r.json())
+    .then(res => {
+      hideMgmLoader();
+      if (res.success && res.client) {
+        // Actualizar sesi�n con nuevos datos
+        setClientSession(res.client, 'update'); // esto actualiza state.authUser y localStorage
+        showToast(successMsg, 'success');
+      } else {
+        showToast(res.message || 'Error al actualizar', 'error');
+      }
+    })
+    .catch(err => {
+      hideMgmLoader();
+      showToast('Error de conexi�n', 'error');
+      console.error(err);
+    });
+  }
+
+  // ==========================================================================
+  // SETTINGS & USER INFO
+  // ==========================================================================
+
+  window.openSettingsModal = function() {
+    if (!state.authUser) return;
+    
+    // Poblar campos
+    document.getElementById('set-email').value = state.authUser.correo || '';
+    document.getElementById('set-phone').value = state.authUser.telefono || '';
+    
+    // Poblar preferencias
+    let pref = state.authUser.preferencias || { global: true, puntos: true, rma: true, promos: true };
+    document.getElementById('set-notif-global').checked = !!pref.global;
+    document.getElementById('set-notif-puntos').checked = !!pref.puntos;
+    document.getElementById('set-notif-rma').checked = !!pref.rma;
+    document.getElementById('set-notif-promos').checked = !!pref.promos;
+    
+    openAppModal('modal-settings');
+  };
+
+  window.updateUserPreferences = function() {
+    if (!state.authUser) return;
+    
+    let isGlobal = document.getElementById('set-notif-global').checked;
+    // Si desactiva global, desactivar el resto visualmente (opcional) o logicamente
+    let pref = {
+      global: isGlobal,
+      puntos: document.getElementById('set-notif-puntos').checked,
+      rma: document.getElementById('set-notif-rma').checked,
+      promos: document.getElementById('set-notif-promos').checked
+    };
+    
+    state.authUser.preferencias = pref; // Actualizar estado local inmediato
+    
+    // Enviar a backend
+    sendUserUpdateToBackend({ preferencias: pref }, 'Preferencias guardadas');
+  };
+
+  window.updateUserInfoField = function(field) {
+    if (!state.authUser) return;
+    
+    let val = '';
+    let payload = {};
+    
+    if (field === 'email') {
+      val = document.getElementById('set-email').value.trim();
+      if (!val) { showToast('Ingresa un correo válido', 'error'); return; }
+      payload.correo = val;
+    } else if (field === 'phone') {
+      val = document.getElementById('set-phone').value.trim();
+      if (!val) { showToast('Ingresa un teléfono válido', 'error'); return; }
+      payload.telefono = val;
+    }
+    
+    showMgmLoader('Actualizando...');
+    sendUserUpdateToBackend(payload, 'Información actualizada');
+  };
+
+  function sendUserUpdateToBackend(payload, successMsg) {
+    if (!state.authUser) return;
+    
+    payload.action = 'update_user_info';
+    payload.cedula = state.authUser.cedula;
+    
+    fetch(CFG.SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    })
+    .then(r => r.json())
+    .then(res => {
+      hideMgmLoader();
+      if (res.success && res.client) {
+        setClientSession(res.client, 'update');
+        showToast(successMsg, 'success');
+      } else {
+        showToast(res.message || 'Error al actualizar', 'error');
+      }
+    })
+    .catch(err => {
+      hideMgmLoader();
+      showToast('Error de conexión', 'error');
+      console.error(err);
+    });
+  }
+window.openLoginModal = function() {
     const isAuth = !!state.authUser;
     document.getElementById('login-view-unauth').style.display = isAuth ? 'none' : 'block';
     document.getElementById('login-view-auth').style.display = isAuth ? 'block' : 'none';
@@ -6669,3 +6796,24 @@ window.closeReferralQRModal = function() {
   };
 
 })();
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // CALCULADORAS NUEVAS - Ganchos de navegación (Autenticación requerida)
+  // ══════════════════════════════════════════════════════════════════════════════
+  (function() {
+    const _origSwitchNewCalc = window.switchMainTab;
+    window.switchMainTab = function(tabName) {
+      if (_origSwitchNewCalc) _origSwitchNewCalc(tabName);
+      if (tabName === 'toolbox-calculadora-voltaje' || tabName === 'toolbox-calculadora-inalambrica') {
+        const _authData = localStorage.getItem('mgm_auth_user');
+        if (!_authData) {
+          const viewEl = document.getElementById('view-toolbox');
+          document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+          if (viewEl) viewEl.classList.add('active');
+          if (typeof showToast === 'function') showToast('Debes iniciar sesión para usar las Calculadoras Técnicas.', 'fa-solid fa-lock');
+          return;
+        }
+      }
+    };
+  })();
+
