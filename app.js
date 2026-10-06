@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MGM HUB MOBILE APP - app.js
  * Lógica principal de la WebApp Móvil PWA
  * Módulos: Navegación · MGM Puntos · Agenda & Cursos · Promociones · Asesoría & Magie IA · Multi-Audio Player Streaming
@@ -3120,28 +3120,6 @@
     });
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // AUTHENTICATION & LOGIN (MGM PUNTOS)
-  // ══════════════════════════════════════════════════════════════════════════════
-    })
-    .then(r => r.json())
-    .then(res => {
-      hideMgmLoader();
-      if (res.success && res.client) {
-        // Actualizar sesi�n con nuevos datos
-        setClientSession(res.client, 'update'); // esto actualiza state.authUser y localStorage
-        showToast(successMsg, 'success');
-      } else {
-        showToast(res.message || 'Error al actualizar', 'error');
-      }
-    })
-    .catch(err => {
-      hideMgmLoader();
-      showToast('Error de conexi�n', 'error');
-      console.error(err);
-    });
-  }
-
   // ==========================================================================
   // SETTINGS & USER INFO
   // ==========================================================================
@@ -3228,6 +3206,7 @@
       console.error(err);
     });
   }
+
 window.openLoginModal = function() {
     const isAuth = !!state.authUser;
     document.getElementById('login-view-unauth').style.display = isAuth ? 'none' : 'block';
