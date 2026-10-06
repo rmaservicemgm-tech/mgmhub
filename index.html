@@ -2844,11 +2844,11 @@
             </div>
           </div>
 
-          <!-- Próximamente: Caída de Voltaje -->
-          <div class="quick-card quick-card--disabled">
-            <div class="card-icon-pill pill-disabled"><i class="fas fa-bolt"></i></div>
+          <!-- Calculadora Caída de Voltaje -->
+          <div class="quick-card" onclick="switchMainTab('toolbox-calculadora-voltaje')">
+            <div class="card-icon-pill pill-ups"><i class="fas fa-bolt"></i></div>
             <div>
-              <div class="card-title">Caída de Voltaje <span class="badge-soon">Pronto</span></div>
+              <div class="card-title">Caída de Voltaje</div>
               <div class="card-desc">Determina la pérdida de voltaje en cables eléctricos según distancia.</div>
             </div>
           </div>
@@ -2880,6 +2880,93 @@
             </div>
           </div>
 
+        </div>
+      </div>
+    </main>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VISTA: CALCULADORA CAÍDA DE VOLTAJE
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <main id="view-toolbox-calculadora-voltaje" class="view-container">
+      <div class="calc-module">
+        <div class="header-brand">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-bolt"></i> Calc. Caída de Voltaje DC</h2>
+            <span style="font-size: 12px; color: var(--text-muted);">MGM Seguridad — Calculadora Profesional</span>
+          </div>
+          <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
+        </div>
+        
+        <style>
+          .vd-project-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; }
+          .vd-project-info label { font-size: 12px; font-weight: bold; margin-bottom: 5px; display: block; color: var(--text-muted); }
+          .vd-project-info input { width: 100%; padding: 10px; border: 1px solid var(--border-light); border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+          .vd-cam-row { background: #ffffff; border: 1px solid var(--border-light); border-radius: 12px; padding: 20px; margin-bottom: 20px; position: relative; transition: 0.2s; }
+          .vd-cam-row:hover { border-color: var(--primary-blue); box-shadow: 0 5px 15px rgba(26,115,232,0.1); }
+          .vd-cam-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+          .vd-cam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+          .vd-cam-grid label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; display: block; }
+          .vd-cam-grid select, .vd-cam-grid input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-light); font-size: 13px; background: #fff; }
+          .vd-footer-controls { background: #f8f9fa; padding: 20px; border-radius: 12px; margin-top: 25px; }
+          .vd-btn { padding: 12px 25px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 14px; margin: 5px; }
+          .vd-btn-primary { background: var(--primary-blue); color: white; }
+          .vd-btn-secondary { background: #6c757d; color: white; }
+          .vd-btn-add { background: #10b981; color: white; }
+          .vd-btn-danger { background: #ef4444; color: white; padding: 6px 12px; }
+          .vd-resultado-box { margin-top: 30px; display: none; }
+          .vd-alert-box { padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; line-height: 1.6; }
+          .vd-alert-warning { background: #fffbeb; border-left: 6px solid #f59e0b; color: #92400e; }
+          .vd-alert-success { background: #f0fdf4; border-left: 6px solid #10b981; color: #065f46; }
+          .vd-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 15px; }
+          .vd-table th { background: #f1f5f9; padding: 10px; border-bottom: 1px solid #e2e8f0; }
+          .vd-table td { padding: 9px 8px; border-bottom: 1px solid #e2e8f0; text-align: center; }
+          .vd-critico { color: #ef4444; font-weight: bold; }
+          .vd-optimo { color: #10b981; font-weight: bold; }
+          @media (max-width: 600px) { .vd-cam-grid { grid-template-columns: 1fr 1fr; } }
+        </style>
+
+        <div class="vd-project-info">
+          <div>
+            <label>Proyecto:</label>
+            <input type="text" id="vdClientName" placeholder="Ej: Control Acceso Edificio X">
+          </div>
+          <div>
+            <label>Temperatura Ambiente Estimada (°C):</label>
+            <input type="number" id="vdTemp" value="30">
+          </div>
+        </div>
+        <div id="vdDeviceList"></div>
+        <div class="vd-footer-controls">
+          <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button id="vdAddDev" class="vd-btn vd-btn-add"><i class="fas fa-plus"></i> Agregar Equipo</button>
+            <button id="vdBtnCalcular" class="vd-btn vd-btn-primary"><i class="fas fa-calculator"></i> Calcular Caída</button>
+            <button id="vdBtnPDF" class="vd-btn vd-btn-secondary"><i class="fas fa-file-pdf"></i> Reporte PDF</button>
+          </div>
+        </div>
+        <div id="vdResultadoBox" class="vd-resultado-box">
+          <div id="vdStatusAlert" class="vd-alert-box"></div>
+          <div style="overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-light);">
+            <table class="vd-table" id="vdTablaDetalle">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Equipo</th>
+                  <th>V. Fuente</th>
+                  <th>Carga (A)</th>
+                  <th>Dist.</th>
+                  <th>Calibre</th>
+                  <th>Material</th>
+                  <th>Caída (V)</th>
+                  <th>V. Llegada</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 15px; padding: 13px; background: #fffbeb; border-radius: 8px; border: 1px solid #fef3c7; line-height:1.6;">
+            <strong>REGLA DE ORO MGM:</strong> Para equipos de seguridad, la caída de voltaje no debe superar el <b>10%</b>. En cerraduras magnéticas y cámaras con IR potente, recomendamos no exceder el <b>5%</b> para garantizar el torque y la visión nocturna clara.
+          </div>
         </div>
       </div>
     </main>

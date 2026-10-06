@@ -6351,4 +6351,154 @@ window.closeReferralQRModal = function() {
     }
   });
 
+  // ══════════════════════════════════════════════════════════════════════════════
+  // MÓDULO: CALCULADORA DE CAÍDA DE VOLTAJE (TOOLBOX)
+  // ══════════════════════════════════════════════════════════════════════════════
+  document.addEventListener('DOMContentLoaded', () => {
+    // Resistencias Ω/m a 20°C
+    const resBase = {
+      cobre: { 14: 0.0082, 16: 0.0131, 18: 0.0209, 20: 0.0333, 22: 0.0529, 24: 0.0842 },
+      cca:   { 14: 0.0135, 16: 0.0216, 18: 0.0345, 20: 0.0549, 22: 0.0873, 24: 0.1389 }
+    };
+    
+    const btnAddDev = document.getElementById("vdAddDev");
+    const btnCalcular = document.getElementById("vdBtnCalcular");
+    const btnPDF = document.getElementById("vdBtnPDF");
+    
+    if(btnAddDev) btnAddDev.addEventListener("click", addDeviceRow);
+    if(btnCalcular) btnCalcular.addEventListener("click", calcularVoltaje);
+    if(btnPDF) btnPDF.addEventListener("click", generarPDF);
+
+    function addDeviceRow() {
+      const container = document.getElementById("vdDeviceList");
+      if(!container) return;
+      const index = container.children.length + 1;
+      const div = document.createElement("div");
+      div.className = "vd-cam-row";
+      div.innerHTML = `
+        <div class="vd-cam-header">
+          <span style="font-weight:bold; color:var(--primary-blue);">EQUIPO #${index}</span>
+          <button class="vd-btn vd-btn-danger" onclick="this.parentElement.parentElement.remove(); window.vdRenumerar();">X</button>
+        </div>
+        <div class="vd-cam-grid">
+          <div><label>Tipo</label><select class="vd-tipo">
+            <option value="Cámara IP">Cámara IP</option>
+            <option value="Cámara Análoga">Cámara Análoga</option>
+            <option value="PTZ">Domo PTZ</option>
+            <option value="Maglock">Cerradura Magnética</option>
+            <option value="Biométrico">Biométrico</option>
+            <option value="Radio">Radio Enlace</option>
+          </select></div>
+          <div><label>V. Fuente (V)</label><input type="number" class="vd-voltaje" value="12"></div>
+          <div><label>Consumo (Watts)</label><input type="number" class="vd-watts" value="10"></div>
+          <div><label>Distancia (m)</label><input type="number" class="vd-dist" value="25"></div>
+          <div><label>Calibre (AWG)</label><select class="vd-awg">
+            <option value="14">14 AWG</option>
+            <option value="16">16 AWG</option>
+            <option value="18" selected>18 AWG</option>
+            <option value="20">20 AWG</option>
+            <option value="22">22 AWG</option>
+            <option value="24">24 AWG (UTP)</option>
+          </select></div>
+          <div><label>Conductor</label><select class="vd-cond">
+            <option value="cobre">Cobre 100%</option>
+            <option value="cca">CCA (Aleación)</option>
+          </select></div>
+        </div>
+      `;
+      container.appendChild(div);
+    }
+    
+    window.vdRenumerar = function() {
+      document.querySelectorAll(".vd-cam-row").forEach((r, i) => r.querySelector(".vd-cam-header span").innerText = "EQUIPO #" + (i+1));
+    };
+
+    function calcularVoltaje() {
+      const tempInput = document.getElementById("vdTemp");
+      if(!tempInput) return;
+      const temp = parseFloat(tempInput.value) || 20;
+      const tempFactor = 1 + (0.00393 * (temp - 20)); // Coeficiente térmico del cobre
+      let detalleHtml = "";
+      let tieneCriticos = false;
+      const filasPDF = [];
+      document.querySelectorAll(".vd-cam-row").forEach((row, i) => {
+        const tipo = row.querySelector(".vd-tipo").value;
+        const vFuente = parseFloat(row.querySelector(".vd-voltaje").value);
+        const watts = parseFloat(row.querySelector(".vd-watts").value);
+        const dist = parseFloat(row.querySelector(".vd-dist").value);
+        const awg = row.querySelector(".vd-awg").value;
+        const cond = row.querySelector(".vd-cond").value;
+        const amps = watts / vFuente;
+        const resistencia = resBase[cond][awg] * tempFactor * (dist * 2);
+        const vDrop = amps * resistencia;
+        const vFinal = vFuente - vDrop;
+        const porcDrop = (vDrop / vFuente) * 100;
+        let estado = "Óptimo";
+        let clase = "vd-optimo";
+        if (porcDrop > 10) { estado = "CRÍTICO"; clase = "vd-critico"; tieneCriticos = true; }
+        else if (porcDrop > 5) { estado = "Precaución"; clase = ""; }
+        detalleHtml += `<tr>
+          <td>${i+1}</td>
+          <td>${tipo}</td>
+          <td>${vFuente}V</td>
+          <td>${amps.toFixed(2)}A</td>
+          <td>${dist}m</td>
+          <td>${awg}</td>
+          <td>${cond.toUpperCase()}</td>
+          <td class="${clase}">${vDrop.toFixed(2)}V</td>
+          <td class="${clase}">${vFinal.toFixed(2)}V</td>
+          <td class="${clase}">${estado} (${porcDrop.toFixed(1)}%)</td>
+        </tr>`;
+        filasPDF.push([i+1, tipo, vFuente+"V", dist+"m", awg, cond.toUpperCase(), vDrop.toFixed(2)+"V", vFinal.toFixed(2)+"V", estado]);
+      });
+      const alertBox = document.getElementById("vdStatusAlert");
+      if (tieneCriticos) {
+        alertBox.className = "vd-alert-box vd-alert-warning";
+        alertBox.innerHTML = "<strong>⚠️ ATENCIÓN:</strong> Se detectaron caídas de voltaje superiores al 10%. Esto provocará fallos intermitentes, reinicios o pérdida de visión nocturna. Se recomienda usar un calibre más grueso (AWG 16/14) o acercar la fuente de poder.";
+      } else {
+        alertBox.className = "vd-alert-box vd-alert-success";
+        alertBox.innerHTML = "<strong>✅ DISEÑO SEGURO:</strong> Todos los dispositivos reciben voltaje dentro del rango tolerable. Los equipos operarán de forma estable.";
+      }
+      document.querySelector("#vdTablaDetalle tbody").innerHTML = detalleHtml;
+      document.getElementById("vdResultadoBox").style.display = "block";
+      
+      // Toast genérico de MGM
+      if(window.showToast) window.showToast("Cálculo completado exitosamente", "success");
+    }
+
+    function generarPDF() {
+      if(!window.jspdf) {
+         if(window.showToast) window.showToast("La librería PDF aún está cargando...", "warning");
+         return;
+      }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const client = document.getElementById("vdClientName").value || "Proyecto MGM";
+      doc.setFillColor(26, 115, 232);
+      doc.rect(0, 0, 210, 45, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.text("MGM SEGURIDAD", 15, 20);
+      doc.setFontSize(10);
+      doc.text("INFORME DE CAÍDA DE TENSIÓN DC", 15, 30);
+      doc.text(`PROYECTO: ${client.toUpperCase()}`, 15, 38);
+      
+      // Imagen PDF
+      doc.addImage("https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png", 'PNG', 160, 8, 35, 30);
+      doc.autoTable({
+        html: '#vdTablaDetalle',
+        startY: 55,
+        headStyles: { fillColor: [26, 115, 232] },
+        styles: { fontSize: 8 }
+      });
+      doc.save(`MGM_Voltaje_${client.replace(/\s/g, '_')}.pdf`);
+      
+      if(window.showToast) window.showToast("Reporte PDF generado y descargado.", "success");
+    }
+    
+    if(document.getElementById("vdDeviceList")) {
+        addDeviceRow();
+    }
+  });
+
 })();
