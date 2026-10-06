@@ -2072,20 +2072,6 @@
           });
         </script>
 
-          <!-- QR SCANNER MODAL -->
-          <div id="qrScannerModal" class="qr-scanner-modal">
-            <div class="qr-scanner-content">
-              <div class="qr-scanner-header">
-                <h3>Escanear Código QR</h3>
-                <button onclick="closeQrScannerModal()" class="close-qr-btn">
-                  <span class="material-icons-round">close</span>
-                </button>
-              </div>
-              <div id="qr-reader" style="width:100%; border-radius: 12px; overflow: hidden; margin-top: 10px;"></div>
-              <p class="qr-hint">Apunta la cámara al código QR de tu orden de servicio o correo electrónico.</p>
-            </div>
-          </div>
-
           <style>
 
             .qr-scanner-modal {
@@ -3943,5 +3929,20 @@
     })();
   </script>
 
+
+  <!-- QR SCANNER MODAL (GLOBAL) -->
+  <div id="qrScannerModal" class="qr-scanner-modal" style="z-index:99999;">
+    <div class="qr-scanner-content">
+      <div class="qr-scanner-header">
+        <h3>Escanear Codigo QR</h3>
+        <button onclick="closeQrScannerModal()" class="close-qr-btn">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+      <div id="qr-reader" style="width:100%; border-radius: 12px; overflow: hidden; margin-top: 10px;"></div>
+      <p class="qr-hint">Apunta la camara al codigo QR de tu orden de servicio o correo electronico.</p>
+    </div>
+  </div>
 </body>
 </html>
+
