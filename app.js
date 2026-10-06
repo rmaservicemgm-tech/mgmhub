@@ -6596,7 +6596,7 @@ window.closeReferralQRModal = function() {
         const d = parseFloat(c.querySelector('.cDist').value);
         const rg = parseFloat(c.querySelector('.cGn').value);
         const res = wlCalcularLink(d, freq, txP, txG, rg, hA, hB, hO);
-        wlSimulationData.push({id: \`Cliente \${wlSimulationData.length+1}\`, ...res});
+        wlSimulationData.push({id: `Cliente ${wlSimulationData.length+1}`, ...res});
       }
     }
     
@@ -6604,11 +6604,11 @@ window.closeReferralQRModal = function() {
       const fColor = row.fresnelRatio > 60 ? '#10b981' : '#f59e0b';
       tableHtml += `
         <tr>
-          <td><strong>\${row.id}</strong></td>
-          <td>\${row.rssi.toFixed(1)} dBm</td>
-          <td>\${row.snr.toFixed(1)} dB</td>
-          <td style="color:\${fColor}">\${row.fresnelRatio.toFixed(0)}% Clear</td>
-          <td>\${row.mbit.toFixed(0)} Mbps</td>
+          <td><strong>${row.id}</strong></td>
+          <td>${row.rssi.toFixed(1)} dBm</td>
+          <td>${row.snr.toFixed(1)} dB</td>
+          <td style="color:${fColor}">${row.fresnelRatio.toFixed(0)}% Clear</td>
+          <td>${row.mbit.toFixed(0)} Mbps</td>
         </tr>
       `;
     });
@@ -6647,8 +6647,8 @@ window.closeReferralQRModal = function() {
     doc.text("MGM SEGURIDAD - MEMORIA INALÁMBRICA", 15, 25);
     doc.setTextColor(40);
     doc.setFontSize(10);
-    doc.text(\`Modo: \${wlWirelessMode} | Frecuencia: \${document.getElementById('wlFreq').value} GHz\`, 15, 50);
-    doc.text(\`Resultado: \${document.getElementById('wlStatusMsg').innerText}\`, 15, 57);
+    doc.text(`Modo: ${wlWirelessMode} | Frecuencia: ${document.getElementById('wlFreq').value} GHz`, 15, 50);
+    doc.text(`Resultado: ${document.getElementById('wlStatusMsg').innerText}`, 15, 57);
     
     const body = wlSimulationData.map(d => [
       d.id, 
