@@ -755,18 +755,20 @@
     }
 
     const parts = trimmed.split(':');
-    const tab = parts[0].toLowerCase();
+    let tab = parts[0].toLowerCase();
     const sub = parts[1] || null;
 
     // Cerrar cualquier modal abierto antes de navegar
     document.querySelectorAll('.app-modal.active').forEach(m => m.classList.remove('active'));
 
     // Navegar al tab principal
-    if (tab === 'toolbox' && sub) {
-        switchMainTab(tab + '-' + sub);
-        return;
+    if (tab === 'radio') {
+      switchMainTab('party');
+    } else if (tab === 'toolbox' && sub) {
+      switchMainTab(tab + '-' + sub);
+      return;
     } else {
-        switchMainTab(tab);
+      switchMainTab(tab);
     }
 
     if (!sub) return;
@@ -5850,7 +5852,7 @@ window.closeReferralQRModal = function() {
     partyAudio.src = track.src;
     partyAudio.load();
     partyAudio.play().catch(e => {
-      console.warn('[PartyPromo] Autoplay bloqueado, mostrando botón play:', e);
+      console.warn('[PartyPromo] Autoplay bloqueado, mostrando botón play:', e);trando botón play:', e);
       // Si el autoplay falla, el usuario ve el hero con botón play manual
       setPlayState(false);
     });
