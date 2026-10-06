@@ -790,28 +790,29 @@
     if (tab === 'radio') {
       const targetSub = String(sub).toLowerCase().trim();
       const tryOpenRadio = (attempts = 0) => {
-        if (attempts > 5) return false;
+        if (attempts > 8) return false;
         
-        // Ensure emisoras is not empty before attempting find
-        if (emisoras && emisoras.length > 0) {
-          const station = emisoras.find(e => 
+        // Acceder a emisoras desde window (scope del Modo Fiesta IIFE)
+        const ems = window.mgmEmisoras || [];
+        if (ems.length > 0) {
+          const station = ems.find(e => 
             String(e.id).toLowerCase() === targetSub || 
             String(e.nombre).toLowerCase().replace(/\s+/g, '-') === targetSub ||
             String(e.nombre).toLowerCase().includes(targetSub)
           );
           
-          if (station && typeof selectRadio === 'function') {
-            selectRadio(station, true);
+          if (station && typeof window.partySelectRadio === 'function') {
+            window.partySelectRadio(station, true);
             return true;
           }
         }
         
-        // Retry logic if station not found yet (waiting for GAS fetch)
-        setTimeout(() => tryOpenRadio(attempts + 1), 1500);
+        // Retry: esperar que initPartyData termine de cargar
+        setTimeout(() => tryOpenRadio(attempts + 1), 1000);
         return false;
       };
       
-      // Start initial attempt
+      // Arrancar primer intento
       tryOpenRadio(0);
     }
 
@@ -5448,7 +5449,8 @@ window.closeReferralQRModal = function() {
 (function() {
 
   // ── Estado ────────────────────────────────────────────────────────────────
-  let emisoras      = [];     // Radios en vivo
+  window.mgmEmisoras = [];    // Expuesto globalmente para deeplinks
+  let emisoras      = window.mgmEmisoras;     // Radios en vivo
   let spotifyItems  = [];     // Playlists Spotify
   let promoTracks   = [];     // Audios promocionales (hoja Playlist)
   let currentMode   = 'radio'; // 'radio' | 'spotify'
@@ -5520,7 +5522,7 @@ window.closeReferralQRModal = function() {
       if (cachedRadios) {
         try {
           const r = JSON.parse(cachedRadios);
-          if (Array.isArray(r) && r.length > 0) { emisoras = r; renderRadioList(); }
+          if (Array.isArray(r) && r.length > 0) { emisoras = r; window.mgmEmisoras = r; renderRadioList(); }
         } catch(e) {}
       }
       const cachedPromos = localStorage.getItem(K_CACHE_FIESTA);
@@ -5556,14 +5558,15 @@ window.closeReferralQRModal = function() {
       if (radiosRes.status === 'fulfilled' && Array.isArray(radiosRes.value) && radiosRes.value.length > 0) {
         if (radiosRes.value[0].nombre || radiosRes.value[0].Emisora) {
           emisoras = radiosRes.value;
+          window.mgmEmisoras = emisoras;
           localStorage.setItem(K_CACHE_RADIOS, JSON.stringify(emisoras));
         } else {
           console.warn('[PartyMode] Respuesta inesperada del GAS. Usando fallback.');
-          if (!emisoras.length) emisoras = EMISORAS_FALLBACK;
+          if (!emisoras.length) { emisoras = EMISORAS_FALLBACK; window.mgmEmisoras = emisoras; }
         }
       } else {
         console.warn('[PartyMode] Radios no disponibles. Usando fallback. Razón:', radiosRes.reason || 'vacío');
-        if (!emisoras.length) emisoras = EMISORAS_FALLBACK;
+        if (!emisoras.length) { emisoras = EMISORAS_FALLBACK; window.mgmEmisoras = emisoras; }
       }
 
       // Spotify
@@ -5637,6 +5640,7 @@ window.closeReferralQRModal = function() {
     });
   }
 
+  window.partySelectRadio = function(radio, autoPlay = true) { return selectRadio(radio, autoPlay); };
   function selectRadio(radio, autoPlay = true) {
     // Si está reproduciendo un promo, detenerlo
     if (isPlayingPartyPromo) stopPartyPromo();
