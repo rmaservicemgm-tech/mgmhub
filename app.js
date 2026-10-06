@@ -1,4 +1,4 @@
-﻿/**
+/**
  * MGM HUB MOBILE APP - app.js
  * Lógica principal de la WebApp Móvil PWA
  * Módulos: Navegación · MGM Puntos · Agenda & Cursos · Promociones · Asesoría & Magie IA · Multi-Audio Player Streaming
@@ -690,7 +690,11 @@
     if (s.startsWith('/')) return true; // Ruta relativa hacia la web externa (Odoo)
 
     // Si coincide con alguna pestaña interna conocida o deeplink interno, NO es externa
-    const internalTabs = ['home', 'inicio', 'puntos', 'agenda', 'promos', 'rma', 'asesoria', 'soporte', 'toolbox', 'toolbox-calculadora-almacenamiento', 'toolbox-conversor-tecnico', 'toolbox-calculadora-ups'];
+    const internalTabs = [
+      'home', 'inicio', 'puntos', 'agenda', 'promos', 'rma', 'asesoria', 'soporte', 
+      'toolbox', 'toolbox-calculadora-almacenamiento', 'toolbox-conversor-tecnico', 
+      'toolbox-calculadora-ups', 'toolbox-calculadora-voltaje', 'toolbox-calculadora-inalambrica', 'radio'
+    ];
     const prefix = s.split(':')[0].trim();
     if (internalTabs.includes(prefix)) return false;
 
@@ -778,6 +782,29 @@
       const targetSubview = subviewMap[sub] || 'subview-cuenta';
       const btn = document.querySelector(`.puntos-subtab[data-subview="${targetSubview}"]`);
       if (btn) btn.click();
+    }
+
+    // --- Radio: reproducir emisora específica ---
+    if (tab === 'radio') {
+      const targetSub = String(sub).toLowerCase().trim();
+      const tryOpenRadio = () => {
+        if (!emisoras || emisoras.length === 0) return false;
+        const station = emisoras.find(e => 
+          String(e.id) === targetSub || 
+          String(e.nombre).toLowerCase().replace(/\s+/g, '-') === targetSub ||
+          String(e.nombre).toLowerCase().includes(targetSub)
+        );
+        if (station && typeof selectRadio === 'function') {
+          selectRadio(station, true);
+          return true;
+        }
+        return false;
+      };
+      // Intentar de inmediato
+      if (!tryOpenRadio()) {
+        // Si las emisoras aún no han cargado de GAS, intentar 1.5s después
+        setTimeout(tryOpenRadio, 1500);
+      }
     }
 
     // --- Agenda: abrir modal del evento por ID ---
