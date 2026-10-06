@@ -789,24 +789,30 @@
     // --- Radio: reproducir emisora específica ---
     if (tab === 'radio') {
       const targetSub = String(sub).toLowerCase().trim();
-      const tryOpenRadio = () => {
-        if (!emisoras || emisoras.length === 0) return false;
-        const station = emisoras.find(e => 
-          String(e.id) === targetSub || 
-          String(e.nombre).toLowerCase().replace(/\s+/g, '-') === targetSub ||
-          String(e.nombre).toLowerCase().includes(targetSub)
-        );
-        if (station && typeof selectRadio === 'function') {
-          selectRadio(station, true);
-          return true;
+      const tryOpenRadio = (attempts = 0) => {
+        if (attempts > 5) return false;
+        
+        // Ensure emisoras is not empty before attempting find
+        if (emisoras && emisoras.length > 0) {
+          const station = emisoras.find(e => 
+            String(e.id).toLowerCase() === targetSub || 
+            String(e.nombre).toLowerCase().replace(/\s+/g, '-') === targetSub ||
+            String(e.nombre).toLowerCase().includes(targetSub)
+          );
+          
+          if (station && typeof selectRadio === 'function') {
+            selectRadio(station, true);
+            return true;
+          }
         }
+        
+        // Retry logic if station not found yet (waiting for GAS fetch)
+        setTimeout(() => tryOpenRadio(attempts + 1), 1500);
         return false;
       };
-      // Intentar de inmediato
-      if (!tryOpenRadio()) {
-        // Si las emisoras aún no han cargado de GAS, intentar 1.5s después
-        setTimeout(tryOpenRadio, 1500);
-      }
+      
+      // Start initial attempt
+      tryOpenRadio(0);
     }
 
     // --- Agenda: abrir modal del evento por ID ---
@@ -5863,8 +5869,8 @@ window.closeReferralQRModal = function() {
       isPlayingPartyPromo = false;
       if (promoNotice) promoNotice.style.display = 'none';
       if (isInit) {
-        // Primer arranque: dejar lista la primera radio sin autoplay
-        if (emisoras.length > 0) selectRadio(emisoras[0], false);
+        // Primer arranque: hacer autoplay de la primera radio tras el promo de bienvenida
+        if (emisoras.length > 0) selectRadio(emisoras[0], true);
       } else if (savedRadio) {
         if (wasPlaying) selectRadio(savedRadio, true);
         else selectRadio(savedRadio, false);
