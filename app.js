@@ -2414,10 +2414,10 @@
 
       const meetBtnHtml = course.meet ? `
         <a href="${course.meet}" target="_blank" class="btn-meet-join">
-          <i class="fa-solid fa-video"></i> Entrar a Google Meet
+          <i class="fa-solid fa-video"></i> Entrar a la reunión
         </a>
       ` : `
-        <button class="btn-meet-join" onclick="showToast('Enlace de Meet disponible próximamente', 'fa-solid fa-circle-info')">
+        <button class="btn-meet-join" onclick="showToast('Enlace disponible próximamente', 'fa-solid fa-circle-info')">
           <i class="fa-solid fa-circle-info"></i> Enlace disponible pronto
         </button>
       `;
