@@ -2486,7 +2486,7 @@
           </div>
         </div>
         <div id="login-view-auth" style="display: none; text-align: center;">
-          <button class="modal-settings-btn" onclick="openAppModal('modal-settings')" title="Configuración"><i class="fa-solid fa-gear"></i></button>
+          <button class="modal-settings-btn" onclick="openSettingsModal()" title="Configuración"><i class="fa-solid fa-gear"></i></button>
           <!-- Contenedor Avatar con subida interactiva -->
           <div class="auth-avatar-wrapper">
             <div class="auth-avatar-box" id="auth-avatar-box" onclick="document.getElementById('avatar-file-input').click()" title="Toca para cambiar tu foto de perfil">
@@ -2565,7 +2565,7 @@
               <span class="setting-desc">Activa o desactiva todas las alertas</span>
             </div>
             <label class="toggle-switch">
-              <input type="checkbox" id="set-notif-global" checked>
+              <input type="checkbox" id="set-notif-global" onchange="updateUserPreferences()">
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -2575,7 +2575,7 @@
               <span class="setting-title"><i class="fa-solid fa-star" style="color:#f59e0b; width: 16px; text-align: center;"></i> Puntos MGM</span>
             </div>
             <label class="toggle-switch">
-              <input type="checkbox" id="set-notif-puntos" checked>
+              <input type="checkbox" id="set-notif-puntos" onchange="updateUserPreferences()">
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -2585,7 +2585,7 @@
               <span class="setting-title"><i class="fa-solid fa-rotate-left" style="color:#0f766e; width: 16px; text-align: center;"></i> Estado de RMA</span>
             </div>
             <label class="toggle-switch">
-              <input type="checkbox" id="set-notif-rma" checked>
+              <input type="checkbox" id="set-notif-rma" onchange="updateUserPreferences()">
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -2595,7 +2595,7 @@
               <span class="setting-title"><i class="fa-solid fa-fire" style="color:#ef4444; width: 16px; text-align: center;"></i> Promociones</span>
             </div>
             <label class="toggle-switch">
-              <input type="checkbox" id="set-notif-promos" checked>
+              <input type="checkbox" id="set-notif-promos" onchange="updateUserPreferences()">
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -2607,14 +2607,14 @@
             <label>Correo Electrónico</label>
             <div class="input-with-action">
               <input type="email" id="set-email" value="" placeholder="tu@email.com">
-              <button class="btn-sm" onclick="if(window.showToast) window.showToast('Actualización de correo próximamente...', 'info')">Actualizar</button>
+              <button class="btn-sm" onclick="updateUserInfoField('email')">Actualizar</button>
             </div>
           </div>
           <div class="setting-input-group">
             <label>Teléfono Celular</label>
             <div class="input-with-action">
               <input type="tel" id="set-phone" value="" placeholder="6000-0000">
-              <button class="btn-sm" onclick="if(window.showToast) window.showToast('Actualización de celular próximamente...', 'info')">Actualizar</button>
+              <button class="btn-sm" onclick="updateUserInfoField('phone')">Actualizar</button>
             </div>
           </div>
         </div>
