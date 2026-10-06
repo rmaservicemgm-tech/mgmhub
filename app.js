@@ -1118,6 +1118,33 @@
       const ptsAbs = Math.abs(ptsNum);
       const isNewlyDiscovered = !notifiedTxs.includes(txKey);
 
+      // ── FILTRO DE ANTIGÜEDAD: solo notificar transacciones de los últimos 4 días ──
+      // Transacciones más viejas se marcan como "ya notificadas" sin generar alerta visible.
+      const DIAS_MAX_NOTIF = 4;
+      let txFechaMs = 0;
+      if (tx.fecha) {
+        // Soportar DD/MM/YYYY HH:mm y YYYY-MM-DD y variantes
+        let fStr = String(tx.fecha).trim();
+        if (fStr.includes('/')) {
+          const parts = fStr.split(/[\/\s:]/);
+          if (parts[0].length <= 2) {
+            fStr = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}T${parts[3] ? parts[3].padStart(2,'0') : '00'}:${parts[4] ? parts[4].padStart(2,'0') : '00'}:00`;
+          }
+        } else {
+          fStr = fStr.replace(' ', 'T');
+        }
+        const parsed = new Date(fStr);
+        if (!isNaN(parsed.getTime())) txFechaMs = parsed.getTime();
+      }
+      const isReciente = txFechaMs > 0 && (Date.now() - txFechaMs) < (DIAS_MAX_NOTIF * 24 * 60 * 60 * 1000);
+
+      // Si la transacción es antigua, marcarla como ya notificada (para no volver a evaluarla)
+      // pero NO generar ninguna notificación visible.
+      if (!isReciente) {
+        if (isNewlyDiscovered) notifiedTxs.push(txKey);
+        return; // Saltar sin crear notif
+      }
+
       // Determinar si ya está en la lista de notificaciones o fue borrada por el usuario (sincronizada con backend)
       const alreadyInList = state.notifications.some(n => String(n.id) === String(notifId));
       const wasCleared = state.clearedNotifs.includes(String(notifId));
@@ -3501,8 +3528,8 @@
         state.notifications = state.notifications.filter(localNotif => {
           const localId = String(localNotif.id);
           if (state.clearedNotifs.includes(localId)) return false;
-          if (localId.startsWith('pts_')) return true; // Mantener puntos si no fueron borrados
-          return serverIds.includes(localId);  // Mantener del server solo si sigue activa
+          // Mantener solo si sigue en el servidor (aplica a todos los tipos, incluyendo pts_)
+          return serverIds.includes(localId);
         });
         
         if (state.notifications.length !== originalLength) {
@@ -6500,5 +6527,145 @@ window.closeReferralQRModal = function() {
         addDeviceRow();
     }
   });
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // MÓDULO: CALCULADORA DE ENLACES INALÁMBRICOS (TOOLBOX)
+  // ══════════════════════════════════════════════════════════════════════════════
+  let wlWirelessMode = 'P2P';
+  let wlSimulationData = [];
+
+  window.wlSetMode = function(m) {
+    wlWirelessMode = m;
+    document.getElementById('btnP2P').classList.toggle('active', m === 'P2P');
+    document.getElementById('btnP2MP').classList.toggle('active', m === 'P2MP');
+    document.getElementById('wlP2mpSection').style.display = m === 'P2MP' ? 'block' : 'none';
+  };
+
+  window.wlAddClient = function() {
+    const container = document.getElementById('wlClientList');
+    const id = container.children.length + 1;
+    const div = document.createElement('div');
+    div.className = 'client-row';
+    div.innerHTML = `
+      <div style="display:flex; gap:15px; align-items:flex-end;">
+        <div class="field" style="flex:1"><label>Distancia C${id} (km)</label><input type="number" class="cDist" value="1.5"></div>
+        <div class="field" style="flex:1"><label>Ganancia CPE (dBi)</label><input type="number" class="cGn" value="16"></div>
+        <button onclick="this.parentElement.parentElement.remove()" style="color:red; border:none; background:none; cursor:pointer; margin-bottom:10px;">Eliminar</button>
+      </div>
+    `;
+    container.appendChild(div);
+  };
+
+  function wlCalcularLink(dist, freq, txPwr, txGn, rxGn, hA, hB, hObs) {
+    const fspl = 32.44 + (20 * Math.log10(dist)) + (20 * Math.log10(freq * 1000));
+    const rssi = (txPwr + txGn + rxGn) - fspl - 2; // -2 por pérdidas cables
+    const noise = -96 + (10 * Math.log10(parseInt(document.getElementById('wlChan').value)/20));
+    const snr = rssi - noise;
+    // Fresnel
+    const lambda = 0.3 / freq;
+    const f1 = 17.32 * Math.sqrt((dist * 1000) / (4 * freq * 1000));
+    const hMid = (hA + hB) / 2;
+    const clearance = hMid - hObs;
+    const fresnelRatio = (clearance / f1) * 100;
+    // Throughput aprox
+    let mbit = 0;
+    if(snr > 30) mbit = parseInt(document.getElementById('wlChan').value) * 5;
+    else if(snr > 20) mbit = parseInt(document.getElementById('wlChan').value) * 3;
+    else if(snr > 12) mbit = parseInt(document.getElementById('wlChan').value) * 1.5;
+    return { rssi, snr, fresnelRatio, mbit, fspl };
+  }
+
+  window.wlEjecutarSimulacion = function() {
+    const freq = parseFloat(document.getElementById('wlFreq').value);
+    const txP = parseFloat(document.getElementById('wlTxPwr').value);
+    const txG = parseFloat(document.getElementById('wlTxGn').value);
+    const hA = parseFloat(document.getElementById('wlHA').value);
+    const hB = parseFloat(document.getElementById('wlHB').value);
+    const hO = parseFloat(document.getElementById('wlHObs').value);
+    wlSimulationData = [];
+    let tableHtml = '';
+    
+    if(wlWirelessMode === 'P2P') {
+      const d = parseFloat(document.getElementById('wlDistKm').value);
+      const res = wlCalcularLink(d, freq, txP, txG, txG, hA, hB, hO); 
+      wlSimulationData.push({id: 'Enlace P2P', ...res});
+    } else {
+      const clients = document.getElementById('wlClientList').getElementsByClassName('client-row');
+      for(let i = 0; i < clients.length; i++) {
+        const c = clients[i];
+        const d = parseFloat(c.querySelector('.cDist').value);
+        const rg = parseFloat(c.querySelector('.cGn').value);
+        const res = wlCalcularLink(d, freq, txP, txG, rg, hA, hB, hO);
+        wlSimulationData.push({id: \`Cliente \${wlSimulationData.length+1}\`, ...res});
+      }
+    }
+    
+    wlSimulationData.forEach(row => {
+      const fColor = row.fresnelRatio > 60 ? '#10b981' : '#f59e0b';
+      tableHtml += `
+        <tr>
+          <td><strong>\${row.id}</strong></td>
+          <td>\${row.rssi.toFixed(1)} dBm</td>
+          <td>\${row.snr.toFixed(1)} dB</td>
+          <td style="color:\${fColor}">\${row.fresnelRatio.toFixed(0)}% Clear</td>
+          <td>\${row.mbit.toFixed(0)} Mbps</td>
+        </tr>
+      `;
+    });
+    
+    document.getElementById('wlResTable').innerHTML = tableHtml;
+    document.getElementById('wlResContainer').style.display = 'block';
+    
+    // Alerta Global
+    const mainLink = wlSimulationData[0];
+    const st = document.getElementById('wlStatusMsg');
+    st.style.display = 'block';
+    if(!mainLink) return;
+
+    if(mainLink.snr > 25 && mainLink.fresnelRatio > 60) {
+      st.className = 'status-card st-ok';
+      st.innerHTML = "SISTEMA ÓPTIMO: El enlace cumple con los estándares de disponibilidad de MGM (99.9%).";
+      if(window.showToast) window.showToast("Cálculo óptimo completado", "success");
+    } else {
+      st.className = 'status-card st-warn';
+      st.innerHTML = "ATENCIÓN TÉCNICA: El enlace presenta degradación por SNR bajo o zona Fresnel obstruida.";
+      if(window.showToast) window.showToast("Cálculo completado con advertencias", "warning");
+    }
+  };
+
+  window.wlExportarPDF = function() {
+    if(!window.jspdf) {
+       if(window.showToast) window.showToast("La librería PDF aún está cargando...", "warning");
+       return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFillColor(26, 115, 232);
+    doc.rect(0, 0, 210, 40, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20);
+    doc.text("MGM SEGURIDAD - MEMORIA INALÁMBRICA", 15, 25);
+    doc.setTextColor(40);
+    doc.setFontSize(10);
+    doc.text(\`Modo: \${wlWirelessMode} | Frecuencia: \${document.getElementById('wlFreq').value} GHz\`, 15, 50);
+    doc.text(\`Resultado: \${document.getElementById('wlStatusMsg').innerText}\`, 15, 57);
+    
+    const body = wlSimulationData.map(d => [
+      d.id, 
+      d.rssi.toFixed(1) + " dBm", 
+      d.snr.toFixed(1) + " dB", 
+      d.fresnelRatio.toFixed(0) + "%", 
+      d.mbit + " Mbps"
+    ]);
+    
+    doc.autoTable({
+      startY: 65,
+      head: [['ID Enlace', 'RSSI', 'SNR', 'Zona Fresnel', 'Capacidad']],
+      body: body,
+      headStyles: { fillColor: [26, 115, 232] }
+    });
+    doc.save("MGM_Calculo_Wireless.pdf");
+    if(window.showToast) window.showToast("Reporte PDF de enlace generado.", "success");
+  };
 
 })();
