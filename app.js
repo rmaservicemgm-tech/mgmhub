@@ -2414,10 +2414,10 @@
 
       const meetBtnHtml = course.meet ? `
         <a href="${course.meet}" target="_blank" class="btn-meet-join">
-          <i class="fa-solid fa-video"></i> Entrar a la reunión
+          <i class="fa-solid fa-video"></i> Entrar a Google Meet
         </a>
       ` : `
-        <button class="btn-meet-join" onclick="showToast('Enlace disponible próximamente', 'fa-solid fa-circle-info')">
+        <button class="btn-meet-join" onclick="showToast('Enlace de Meet disponible próximamente', 'fa-solid fa-circle-info')">
           <i class="fa-solid fa-circle-info"></i> Enlace disponible pronto
         </button>
       `;
@@ -6303,5 +6303,37 @@ window.closeReferralQRModal = function() {
     };
     openAppModal('modal-rastreo-confirm');
   };
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // MÓDULO: ADVERTENCIA DE RESETEO DE PUNTOS EN DICIEMBRE
+  // ══════════════════════════════════════════════════════════════════════════════
+  document.addEventListener('DOMContentLoaded', () => {
+    const currentMonth = new Date().getMonth();
+    // Si es diciembre (11)
+    if (currentMonth === 11) {
+      // Usamos setInterval por si la vista tarda en cargar o se renderiza dinamicamente
+      const checkExist = setInterval(function() {
+        const viewPuntos = document.querySelector('#view-puntos .view-content') || document.querySelector('.view-content');
+        if (viewPuntos) {
+           const warningBanner = document.createElement('div');
+           warningBanner.style.backgroundColor = '#fff3cd';
+           warningBanner.style.color = '#856404';
+           warningBanner.style.padding = '12px';
+           warningBanner.style.textAlign = 'center';
+           warningBanner.style.fontWeight = 'bold';
+           warningBanner.style.margin = '10px 15px';
+           warningBanner.style.borderRadius = '8px';
+           warningBanner.style.border = '1px solid #ffeeba';
+           warningBanner.innerHTML = '⚠️ Recuerda que tus puntos vencerán y volverán a cero el 31 de diciembre. ¡Aprovecha y canjéalos pronto!';
+           
+           viewPuntos.insertBefore(warningBanner, viewPuntos.firstChild);
+           clearInterval(checkExist);
+        }
+      }, 1000);
+      
+      // Limpiar intervalo despues de 10 segundos para no dejarlo infinito
+      setTimeout(() => clearInterval(checkExist), 10000);
+    }
+  });
 
 })();
