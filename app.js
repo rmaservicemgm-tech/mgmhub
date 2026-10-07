@@ -121,26 +121,26 @@
   // STATE LOCAL
   // ══════════════════════════════════════════════════════════════════════════════
   const K_CLIENTS = 'mgm_local_clients';
-  const K_TX      = 'mgm_local_tx';
-  const K_SPLASH  = 'mgm_splash_date_v2';
-  const K_LIKES   = 'mgm_promo_likes';
-  const K_AUTH           = 'mgm_auth_user';
-  const K_NOTIFS          = 'mgm_notifications';
-  const K_CLEARED_NOTIFS  = 'mgm_cleared_notifs';
-  const K_SEEN_NOTIFS     = 'mgm_seen_notifs';
-  const K_NOTIFIED_TX     = 'mgm_notified_tx_v1';
-  const K_MY_COURSES      = 'mgm_my_courses';
-  const K_LAST_ACTIVITY   = 'mgm_last_activity';   // Timestamp de última actividad
-  const SESSION_MAX_MS    = 30 * 24 * 60 * 60 * 1000; // 30 días en milisegundos
+  const K_TX = 'mgm_local_tx';
+  const K_SPLASH = 'mgm_splash_date_v2';
+  const K_LIKES = 'mgm_promo_likes';
+  const K_AUTH = 'mgm_auth_user';
+  const K_NOTIFS = 'mgm_notifications';
+  const K_CLEARED_NOTIFS = 'mgm_cleared_notifs';
+  const K_SEEN_NOTIFS = 'mgm_seen_notifs';
+  const K_NOTIFIED_TX = 'mgm_notified_tx_v1';
+  const K_MY_COURSES = 'mgm_my_courses';
+  const K_LAST_ACTIVITY = 'mgm_last_activity';   // Timestamp de última actividad
+  const SESSION_MAX_MS = 30 * 24 * 60 * 60 * 1000; // 30 días en milisegundos
 
   const state = {
-    activeTab:   'home',
+    activeTab: 'home',
     activeSubtab: 'subview-cuenta',
-    calYear:     new Date().getFullYear(),
-    calMonth:    new Date().getMonth(),
+    calYear: new Date().getFullYear(),
+    calMonth: new Date().getMonth(),
     activeEventFilter: 'all',
-    activeEventData:  null,
-    activePromoData:  null,
+    activeEventData: null,
+    activePromoData: null,
     audioPlaying: false,
     audioTrackIndex: 0,
     agendaEvents: [],
@@ -153,13 +153,13 @@
     seenNotifs: JSON.parse(localStorage.getItem(K_SEEN_NOTIFS)) || [],
     authUser: JSON.parse(localStorage.getItem(K_AUTH)) || null,
     clients: JSON.parse(localStorage.getItem(K_CLIENTS)) || [
-      { cedula:'8-888-1234', nombre:'Juan Carlos Pérez', correo:'juan@email.com', telefono:'6254-0412', cumpleanos:'1990-08-15', fechaRegistro:'2026-01-10', puntos:2800, totalComprasAno:1400.00 },
-      { cedula:'4-752-9812', nombre:'María Elena Rodríguez', correo:'maria@email.com', telefono:'6611-9988', cumpleanos:'1988-11-22', fechaRegistro:'2026-02-14', puntos:450, totalComprasAno:450.00 }
+      { cedula: '8-888-1234', nombre: 'Juan Carlos Pérez', correo: 'juan@email.com', telefono: '6254-0412', cumpleanos: '1990-08-15', fechaRegistro: '2026-01-10', puntos: 2800, totalComprasAno: 1400.00 },
+      { cedula: '4-752-9812', nombre: 'María Elena Rodríguez', correo: 'maria@email.com', telefono: '6611-9988', cumpleanos: '1988-11-22', fechaRegistro: '2026-02-14', puntos: 450, totalComprasAno: 450.00 }
     ],
     transactions: JSON.parse(localStorage.getItem(K_TX)) || [
-      { fecha:'2026-08-10 16:30', cedula:'8-888-1234', factura:'RED-492104', subtotal:-5.00, multiplicador:'REDENCIÓN (100 pts = $1)', puntos:-500, asesor:'Carlos Ruiz' },
-      { fecha:'2026-08-01 11:20', cedula:'8-888-1234', factura:'FAC-2026-0891', subtotal:1400.00, multiplicador:'2X Monto × 2X Día', puntos:5600, asesor:'Carlos Ruiz' },
-      { fecha:'2026-07-15 09:40', cedula:'8-888-1234', factura:'FAC-2026-0742', subtotal:200.00, multiplicador:'1X Estándar', puntos:200, asesor:'Ana Gómez' }
+      { fecha: '2026-08-10 16:30', cedula: '8-888-1234', factura: 'RED-492104', subtotal: -5.00, multiplicador: 'REDENCIÓN (100 pts = $1)', puntos: -500, asesor: 'Carlos Ruiz' },
+      { fecha: '2026-08-01 11:20', cedula: '8-888-1234', factura: 'FAC-2026-0891', subtotal: 1400.00, multiplicador: '2X Monto × 2X Día', puntos: 5600, asesor: 'Carlos Ruiz' },
+      { fecha: '2026-07-15 09:40', cedula: '8-888-1234', factura: 'FAC-2026-0742', subtotal: 200.00, multiplicador: '1X Estándar', puntos: 200, asesor: 'Ana Gómez' }
     ]
   };
 
@@ -170,15 +170,15 @@
   (function purgeFutureSeenNotifs() {
     const now = Date.now();
     let changed = false;
-    state.notifications.forEach(function(n) {
+    state.notifications.forEach(function (n) {
       if (!n.fecha_inicio) return;
       let str = String(n.fecha_inicio).trim();
       if (str.includes('/')) {
         const parts = str.split(/[\/ :]/);
         if (parts.length >= 3 && parts[0].length <= 2) {
-          str = parts[2] + '-' + parts[1].padStart(2,'0') + '-' + parts[0].padStart(2,'0')
-              + 'T' + (parts[3] ? parts[3].padStart(2,'0') : '00') + ':'
-              + (parts[4] ? parts[4].padStart(2,'0') : '00') + ':00';
+          str = parts[2] + '-' + parts[1].padStart(2, '0') + '-' + parts[0].padStart(2, '0')
+            + 'T' + (parts[3] ? parts[3].padStart(2, '0') : '00') + ':'
+            + (parts[4] ? parts[4].padStart(2, '0') : '00') + ':00';
         }
       } else {
         str = str.replace(' ', 'T');
@@ -198,19 +198,19 @@
   // ══════════════════════════════════════════════════════════════════════════════
   const DEMO_PROMOS = [
     {
-      id:'P001', nombre:'Sábados con Triple Puntos',
-      descripcion:'Cada sábado acumula 3X MGM PUNTOS en todas tus compras.\n¡Aprovecha el fin de semana para maximizar tus beneficios!',
-      tipo:'puntos', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÍ', likes:24, enlace: 'https://mgmpty.com'
+      id: 'P001', nombre: 'Sábados con Triple Puntos',
+      descripcion: 'Cada sábado acumula 3X MGM PUNTOS en todas tus compras.\n¡Aprovecha el fin de semana para maximizar tus beneficios!',
+      tipo: 'puntos', imagen: '', fecha_inicio: '2026-01-01', fecha_fin: '2026-12-31', activa: 'SÍ', likes: 24, enlace: 'https://mgmpty.com'
     },
     {
-      id:'P002', nombre:'Descuento de Cumpleaños 🎂',
-      descripcion:'Disfruta un 10% de descuento especial el día de tu cumpleaños.\n(Si tu cumpleaños cae en domingo, tu descuento es válido el lunes siguiente).\nSolo presenta tu cédula en caja.',
-      tipo:'descuento', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÍ', likes:18, enlace: ''
+      id: 'P002', nombre: 'Descuento de Cumpleaños 🎂',
+      descripcion: 'Disfruta un 10% de descuento especial el día de tu cumpleaños.\n(Si tu cumpleaños cae en domingo, tu descuento es válido el lunes siguiente).\nSolo presenta tu cédula en caja.',
+      tipo: 'descuento', imagen: '', fecha_inicio: '2026-01-01', fecha_fin: '2026-12-31', activa: 'SÍ', likes: 18, enlace: ''
     },
     {
-      id:'P003', nombre:'Días Especiales MGM — 5X Puntos',
-      descripcion:'En fechas especiales declaradas por MGM, acumulas hasta 5X tus puntos con cualquier compra.',
-      tipo:'especial', imagen:'', fecha_inicio:'2026-01-01', fecha_fin:'2026-12-31', activa:'SÍ', likes:31
+      id: 'P003', nombre: 'Días Especiales MGM — 5X Puntos',
+      descripcion: 'En fechas especiales declaradas por MGM, acumulas hasta 5X tus puntos con cualquier compra.',
+      tipo: 'especial', imagen: '', fecha_inicio: '2026-01-01', fecha_fin: '2026-12-31', activa: 'SÍ', likes: 31
     }
   ];
 
@@ -302,7 +302,7 @@
     const d = new Date();
     d.setMonth(d.getMonth() + monthOffset);
     d.setDate(dayOfMonth);
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
   function fmtCedula(v) {
@@ -337,11 +337,11 @@
       if (isNaN(bday.getTime())) return { active: false, isSundayMoved: false };
 
       const bMonth = bday.getMonth();
-      const bDate  = bday.getDate();
+      const bDate = bday.getDate();
 
-      const curYear  = now.getFullYear();
+      const curYear = now.getFullYear();
       const curMonth = now.getMonth();
-      const curDate  = now.getDate();
+      const curDate = now.getDate();
       const curDayOfWeek = now.getDay(); // 0 = Domingo, 1 = Lunes...
 
       const bdayThisYear = new Date(curYear, bMonth, bDate, 12, 0, 0);
@@ -372,19 +372,19 @@
   }
 
   function isPromoActive(p) {
-    if (!['SÍ','SI','sí','si','1','true'].includes((p.activa||'').toString().toUpperCase().trim())) return false;
-    const today = new Date(); today.setHours(0,0,0,0);
+    if (!['SÍ', 'SI', 'sí', 'si', '1', 'true'].includes((p.activa || '').toString().toUpperCase().trim())) return false;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
     if (p.fecha_inicio) { const fi = new Date(p.fecha_inicio + 'T00:00:00'); if (today < fi) return false; }
-    if (p.fecha_fin)    { const ff = new Date(p.fecha_fin    + 'T23:59:59'); if (today > ff) return false; }
+    if (p.fecha_fin) { const ff = new Date(p.fecha_fin + 'T23:59:59'); if (today > ff) return false; }
     return true;
   }
 
   function isRewardActive(r) {
     if (!r) return false;
     const act = (r.activo || r.activa || 'SÍ').toString().toUpperCase().trim();
-    if (!['SÍ','SI','1','TRUE','DISPONIBLE'].includes(act)) return false;
+    if (!['SÍ', 'SI', '1', 'TRUE', 'DISPONIBLE'].includes(act)) return false;
     if (r.stock && r.stock.toString().toUpperCase().trim() === 'AGOTADO') return false;
-    const today = new Date(); today.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
     if (r.fecha_inicio) {
       const fi = new Date(r.fecha_inicio.toString().split('T')[0] + 'T00:00:00');
       if (!isNaN(fi.getTime()) && today < fi) return false;
@@ -407,7 +407,7 @@
       if (isNaN(ff.getTime())) {
         return { text: finStr, isExpiringSoon: false, color: 'var(--text-subtle)' };
       }
-      const today = new Date(); today.setHours(0,0,0,0);
+      const today = new Date(); today.setHours(0, 0, 0, 0);
       const diffDays = Math.ceil((ff.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
       if (diffDays <= 7 && diffDays >= 0) {
         return {
@@ -418,7 +418,7 @@
       }
       const dateFmt = ff.toLocaleDateString('es-PA', { day: 'numeric', month: 'short', year: 'numeric' });
       return { text: `⏱️ Válido hasta ${dateFmt}`, isExpiringSoon: false, color: 'var(--text-subtle)' };
-    } catch(e) {
+    } catch (e) {
       return { text: finStr, isExpiringSoon: false, color: 'var(--text-subtle)' };
     }
   }
@@ -433,8 +433,8 @@
 
   function daysUntil(dateStr) {
     if (!dateStr) return null;
-    const today = new Date(); today.setHours(0,0,0,0);
-    const target = new Date(dateStr + 'T00:00:00'); target.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const target = new Date(dateStr + 'T00:00:00'); target.setHours(0, 0, 0, 0);
     return Math.ceil((target - today) / 86400000);
   }
 
@@ -480,16 +480,16 @@
 
   function promoPlaceholderBg(tipo) {
     const maps = {
-      puntos:   'linear-gradient(135deg, #fffde7, #fff8c5)',
-      descuento:'linear-gradient(135deg, #e8f5e9, #c8e6c9)',
-      oferta:   'linear-gradient(135deg, #fce4ec, #f8bbd0)',
+      puntos: 'linear-gradient(135deg, #fffde7, #fff8c5)',
+      descuento: 'linear-gradient(135deg, #e8f5e9, #c8e6c9)',
+      oferta: 'linear-gradient(135deg, #fce4ec, #f8bbd0)',
       especial: 'linear-gradient(135deg, #ede7f6, #d1c4e9)',
     };
     return maps[tipo] || maps.especial;
   }
 
   function promoPlaceholderEmoji(tipo) {
-    const map = { puntos:'⭐', descuento:'🏷️', oferta:'🛒', especial:'🎁' };
+    const map = { puntos: '⭐', descuento: '🏷️', oferta: '🛒', especial: '🎁' };
     return map[tipo] || '🎁';
   }
 
@@ -540,39 +540,39 @@
 
   function localFallback(action, payload) {
     return new Promise(resolve => setTimeout(() => {
-      if (action === 'get_promotions') return resolve({ success:true, promos: DEMO_PROMOS.filter(isPromoActive) });
-      if (action === 'get_rewards' || action === 'get_premios') return resolve({ success:true, rewards: DEMO_REWARDS.filter(isRewardActive) });
-      if (action === 'get_terms')      return resolve({ success:true, terms: DEMO_TERMS });
-      if (action === 'get_events')     return resolve({ success:true, events: DEMO_EVENTS });
+      if (action === 'get_promotions') return resolve({ success: true, promos: DEMO_PROMOS.filter(isPromoActive) });
+      if (action === 'get_rewards' || action === 'get_premios') return resolve({ success: true, rewards: DEMO_REWARDS.filter(isRewardActive) });
+      if (action === 'get_terms') return resolve({ success: true, terms: DEMO_TERMS });
+      if (action === 'get_events') return resolve({ success: true, events: DEMO_EVENTS });
       if (action === 'register_client') {
         const rawCed = (payload.cedula || '').toString().trim().toUpperCase();
         const cleanCed = rawCed.replace(/[^A-Z0-9]/g, '');
         if (state.clients.some(c => (c.cedula || '').replace(/[^A-Z0-9]/g, '') === cleanCed)) {
-          return resolve({ success:false, message:`La cédula ${payload.cedula} ya está registrada en el sistema.` });
+          return resolve({ success: false, message: `La cédula ${payload.cedula} ya está registrada en el sistema.` });
         }
-        const newC = { ...payload, puntos:0, totalComprasAno:0, fechaRegistro: new Date().toISOString().slice(0,10) };
+        const newC = { ...payload, puntos: 0, totalComprasAno: 0, fechaRegistro: new Date().toISOString().slice(0, 10) };
         state.clients.push(newC);
         localStorage.setItem(K_CLIENTS, JSON.stringify(state.clients));
-        return resolve({ success:true, message:'✅ ¡Bienvenido/a al Programa MGM Puntos! Podrás acumular puntos en tu próxima compra.', client: newC });
+        return resolve({ success: true, message: '✅ ¡Bienvenido/a al Programa MGM Puntos! Podrás acumular puntos en tu próxima compra.', client: newC });
       }
       if (action === 'get_client') {
         const rawInput = (payload.cedula || '').toString().trim();
         const rawCed = rawInput.toUpperCase();
         const cleanCed = rawCed.replace(/[^A-Z0-9]/g, '');
         const searchEmail = rawInput.toLowerCase();
-        
+
         const c = state.clients.find(x => {
           const xCed = (x.cedula || '').toString().trim().toUpperCase();
           const xCorreo = (x.correo || '').toString().trim().toLowerCase();
-          
+
           if (xCorreo && xCorreo === searchEmail) return true;
           return xCed === rawCed || xCed.replace(/[^A-Z0-9]/g, '') === cleanCed;
         });
-        if (!c) return resolve({ success:false, message:`No encontramos ningún miembro registrado con la identificación o correo: ${payload.cedula}` });
+        if (!c) return resolve({ success: false, message: `No encontramos ningún miembro registrado con la identificación o correo: ${payload.cedula}` });
         const txs = state.transactions.filter(t => (t.cedula || '').replace(/[^A-Z0-9]/g, '') === cleanCed).slice().reverse();
-        return resolve({ success:true, client:{ ...c, historico:txs } });
+        return resolve({ success: true, client: { ...c, historico: txs } });
       }
-      return resolve({ success:false, message:'Acción no reconocida.' });
+      return resolve({ success: false, message: 'Acción no reconocida.' });
     }, 200));
   }
 
@@ -580,7 +580,7 @@
   // MÓDULO DE NAVEGACIÓN PRINCIPAL (Bottom Nav Tabs)
   // ══════════════════════════════════════════════════════════════════════════════
 
-  window.switchMainTab = function(tabName) {
+  window.switchMainTab = function (tabName) {
     document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
@@ -691,8 +691,8 @@
 
     // Si coincide con alguna pestaña interna conocida o deeplink interno, NO es externa
     const internalTabs = [
-      'home', 'inicio', 'puntos', 'agenda', 'promos', 'rma', 'asesoria', 'soporte', 
-      'toolbox', 'toolbox-calculadora-almacenamiento', 'toolbox-conversor-tecnico', 
+      'home', 'inicio', 'puntos', 'agenda', 'promos', 'rma', 'asesoria', 'soporte',
+      'toolbox', 'toolbox-calculadora-almacenamiento', 'toolbox-conversor-tecnico',
       'toolbox-calculadora-ups', 'toolbox-calculadora-voltaje', 'toolbox-calculadora-inalambrica', 'radio'
     ];
     const prefix = s.split(':')[0].trim();
@@ -742,7 +742,7 @@
   // Formato: 'tab' o 'tab:sub_o_id' — Ej: 'puntos:registro', 'agenda:EV001'
   // O Enlace Externo — Ej: 'https://mgmpty.odoo.com', 'mgmpty.odoo.com', 'wa.me/...'
   // ══════════════════════════════════════════════════════════════════════════════
-  window.navigateTo = function(seccion) {
+  window.navigateTo = function (seccion) {
     if (!seccion) return;
     const trimmed = String(seccion).trim();
     if (!trimmed) return;
@@ -776,10 +776,10 @@
     // --- Puntos: navegar a subtab ---
     if (tab === 'puntos') {
       const subviewMap = {
-        registro:   'subview-registro',
+        registro: 'subview-registro',
         beneficios: 'subview-promos',
-        terminos:   'subview-terminos',
-        cuenta:     'subview-cuenta'
+        terminos: 'subview-terminos',
+        cuenta: 'subview-cuenta'
       };
       const targetSubview = subviewMap[sub] || 'subview-cuenta';
       const btn = document.querySelector(`.puntos-subtab[data-subview="${targetSubview}"]`);
@@ -791,27 +791,27 @@
       const targetSub = String(sub).toLowerCase().trim();
       const tryOpenRadio = (attempts = 0) => {
         if (attempts > 8) return false;
-        
+
         // Acceder a emisoras desde window (scope del Modo Fiesta IIFE)
         const ems = window.mgmEmisoras || [];
         if (ems.length > 0) {
-          const station = ems.find(e => 
-            String(e.id).toLowerCase() === targetSub || 
+          const station = ems.find(e =>
+            String(e.id).toLowerCase() === targetSub ||
             String(e.nombre).toLowerCase().replace(/\s+/g, '-') === targetSub ||
             String(e.nombre).toLowerCase().includes(targetSub)
           );
-          
+
           if (station && typeof window.partySelectRadio === 'function') {
             window.partySelectRadio(station, true);
             return true;
           }
         }
-        
+
         // Retry: esperar que initPartyData termine de cargar
         setTimeout(() => tryOpenRadio(attempts + 1), 1000);
         return false;
       };
-      
+
       // Arrancar primer intento
       tryOpenRadio(0);
     }
@@ -901,7 +901,7 @@
   // MAGIE IA — BOTPRESS WIDGET OFICIAL (misma lógica que funciona en la web)
   // ══════════════════════════════════════════════════════════════════════════
 
-  window.openAsesoriaModal = function() {
+  window.openAsesoriaModal = function () {
     openAppModal('modal-asesoria');
   };
 
@@ -909,7 +909,7 @@
    * openBot() — Abre el chat oficial de Botpress (Asistente de Ventas MGM)
    * Lógica idéntica al archivo de referencia que funciona en la web.
    */
-  window.openBot = function() {
+  window.openBot = function () {
     // Cerrar modales internos si están abiertos
     closeAppModal('modal-asesoria');
 
@@ -921,12 +921,12 @@
   // Alias para compatibilidad con todos los botones de la app
   window.openMagieChatModal = window.openBot;
 
-  window.closeAppModal = function(modalId) {
+  window.closeAppModal = function (modalId) {
     const el = document.getElementById(modalId);
     if (el) el.classList.remove('active');
   };
 
-  window.openAppModal = function(modalId) {
+  window.openAppModal = function (modalId) {
     const el = document.getElementById(modalId);
     if (el) el.classList.add('active');
   };
@@ -1036,7 +1036,7 @@
           timestamp: new Date().toISOString()
         })
       });
-    } catch(e) {
+    } catch (e) {
       console.warn('[MGM Tracking] Error registrando en Sheet:', e);
     }
   }
@@ -1065,7 +1065,7 @@
       if (regFormWrap) regFormWrap.style.display = 'block';
       const loginInp = document.getElementById('login-cedula');
       if (loginInp) loginInp.value = '';
-      
+
       // Mostrar y pre-llenar código de referido si existe
       try {
         const refCode = sessionStorage.getItem('mgm_ref_code');
@@ -1075,7 +1075,7 @@
           refInput.value = refCode;
           refGroup.style.display = 'block';
         }
-      } catch (e) {}
+      } catch (e) { }
     }
   }
 
@@ -1083,7 +1083,7 @@
   function updateHomeAuthBanner() {
     const banner = document.getElementById('home-auth-banner');
     if (!banner) return;
-    
+
     if (state.authUser) {
       const primerNombre = (state.authUser.nombre || '').split(' ')[0] || 'Cliente';
       const pts = parseInt(state.authUser.puntos) || 0;
@@ -1157,7 +1157,7 @@
   // ══════════════════════════════════════════════════════════════════════════════
   function checkAndNotifyNewPoints(freshClient, eventType = 'auto') {
     if (!freshClient) return;
-    
+
     let notifiedTxs = JSON.parse(localStorage.getItem(K_NOTIFIED_TX)) || [];
     const historico = freshClient.historico || [];
     if (historico.length === 0) return;
@@ -1187,7 +1187,7 @@
         if (fStr.includes('/')) {
           const parts = fStr.split(/[\/\s:]/);
           if (parts[0].length <= 2) {
-            fStr = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}T${parts[3] ? parts[3].padStart(2,'0') : '00'}:${parts[4] ? parts[4].padStart(2,'0') : '00'}:00`;
+            fStr = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}T${parts[3] ? parts[3].padStart(2, '0') : '00'}:${parts[4] ? parts[4].padStart(2, '0') : '00'}:00`;
           }
         } else {
           fStr = fStr.replace(' ', 'T');
@@ -1439,7 +1439,7 @@
         const authPtosEl = document.getElementById('auth-puntos');
         if (authPtosEl) authPtosEl.textContent = state.authUser.puntos || 0;
       }
-    } catch(err) {
+    } catch (err) {
       console.warn('[MGM] Error refrescando puntos:', err);
     }
   }
@@ -1447,11 +1447,11 @@
   function renderDashboard(c) {
     if (!c) return;
     const pts = parseInt(c.puntos) || 0;
-    document.getElementById('dash-pts').textContent        = pts.toLocaleString('es-PA');
-    document.getElementById('dash-pts-usd').textContent    = `$${(pts * CFG.VAL_PUNTO).toFixed(2)} USD disponibles para canjear`;
-    document.getElementById('dash-holder').textContent     = (c.nombre || '').toUpperCase();
+    document.getElementById('dash-pts').textContent = pts.toLocaleString('es-PA');
+    document.getElementById('dash-pts-usd').textContent = `$${(pts * CFG.VAL_PUNTO).toFixed(2)} USD disponibles para canjear`;
+    document.getElementById('dash-holder').textContent = (c.nombre || '').toUpperCase();
     document.getElementById('dash-cedula-display').textContent = c.cedula || '';
-    document.getElementById('dash-tier').textContent       = 'MGM MIEMBRO';
+    document.getElementById('dash-tier').textContent = 'MGM MIEMBRO';
 
     const bdayEl = document.getElementById('dash-bday-banner');
     const bdayInfo = isBdayBenefitActive(c.cumpleanos);
@@ -1519,14 +1519,14 @@
       tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 20px; font-size: 12px;">Sin movimientos registrados aún.</td></tr>`;
     }
 
-    document.getElementById('puntos-login-box').style.display  = 'none';
+    document.getElementById('puntos-login-box').style.display = 'none';
     document.getElementById('puntos-dashboard-box').style.display = 'block';
 
     // Cargar panel de referidos
     renderReferidosPanel(c.cedula, c.ref_code);
   }
 
-  window.resetPuntosLogin = function() {
+  window.resetPuntosLogin = function () {
     logoutClient();
   };
 
@@ -1534,11 +1534,11 @@
   document.getElementById('form-puntos-register')?.addEventListener('submit', async e => {
     e.preventDefault();
     const data = {
-      nombre:        document.getElementById('reg-nombre').value.trim(),
-      cedula:        document.getElementById('reg-cedula').value.trim(),
-      correo:        document.getElementById('reg-correo').value.trim(),
-      telefono:      document.getElementById('reg-telefono').value.trim(),
-      cumpleanos:    document.getElementById('reg-cumpleanos').value,
+      nombre: document.getElementById('reg-nombre').value.trim(),
+      cedula: document.getElementById('reg-cedula').value.trim(),
+      correo: document.getElementById('reg-correo').value.trim(),
+      telefono: document.getElementById('reg-telefono').value.trim(),
+      cumpleanos: document.getElementById('reg-cumpleanos').value,
       referrer_code: document.getElementById('reg-referrer-code') ? document.getElementById('reg-referrer-code').value.trim() : ''
     };
     if (!data.nombre || !data.cedula || !data.correo || !data.telefono) {
@@ -1555,7 +1555,7 @@
 
     if (res.success) {
       showAlert('reg-alert', 'success', res.message || '¡Registro exitoso! Iniciando tu sesión...');
-      
+
       const clientData = res.client || {
         nombre: data.nombre,
         cedula: data.cedula,
@@ -1689,9 +1689,9 @@
         try {
           state.promos = JSON.parse(cached);
           render();
-        } catch(e) {}
+        } catch (e) { }
       }
-      
+
       fetchPromosFromGAS().then(fresh => {
         if (fresh && fresh.length > 0) {
           state.promos = fresh;
@@ -1711,9 +1711,9 @@
         try {
           state.promos = JSON.parse(cached);
           renderPromosGallery();
-        } catch(e) {}
+        } catch (e) { }
       }
-      
+
       const fresh = await fetchPromosFromGAS();
       if (fresh && fresh.length > 0) {
         state.promos = fresh;
@@ -1744,9 +1744,9 @@
         <div class="promo-full-card" onclick="openPromoDetail(${idx})">
           <div class="promo-card-img-wrap" style="background:${promoPlaceholderBg(p.tipo)};">
             ${p.imagen
-              ? `<img src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">`
-              : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:56px;">${promoPlaceholderEmoji(p.tipo)}</div>`
-            }
+          ? `<img src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">`
+          : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:56px;">${promoPlaceholderEmoji(p.tipo)}</div>`
+        }
           </div>
           <div class="promo-card-content">
             <div class="promo-card-title">${p.nombre}</div>
@@ -1776,17 +1776,17 @@
       const list = Array.isArray(data) ? data : (data.rewards || data.premios || []);
       if (Array.isArray(list) && list.length > 0) {
         return list.map((r, idx) => ({
-          id:           r.id || ('REW_GAS_' + idx),
-          nombre:       r.nombre || r.name || r.titulo || `Premio MGM #${idx + 1}`,
-          modelo:       r.modelo || r.model || '',
-          descripcion:  r.descripcion || r.desc || '',
-          puntos:       parseInt(r.puntos || r.pts || r.puntos_costo || 0),
-          imagen:       r.imagen || r.img || r.imagen_url || '',
-          link:         r.link || r.url || r.enlace || r.ficha || '',
+          id: r.id || ('REW_GAS_' + idx),
+          nombre: r.nombre || r.name || r.titulo || `Premio MGM #${idx + 1}`,
+          modelo: r.modelo || r.model || '',
+          descripcion: r.descripcion || r.desc || '',
+          puntos: parseInt(r.puntos || r.pts || r.puntos_costo || 0),
+          imagen: r.imagen || r.img || r.imagen_url || '',
+          link: r.link || r.url || r.enlace || r.ficha || '',
           fecha_inicio: r.fecha_inicio || '',
-          fecha_fin:    r.fecha_fin || r.validez || '',
-          activo:       r.activo || r.activa || 'SÍ',
-          stock:        r.stock || 'Disponible'
+          fecha_fin: r.fecha_fin || r.validez || '',
+          activo: r.activo || r.activa || 'SÍ',
+          stock: r.stock || 'Disponible'
         })).filter(isRewardActive);
       }
     } catch (err) {
@@ -1799,7 +1799,7 @@
       : DEMO_REWARDS.filter(isRewardActive);
   }
 
-  window.loadHomeRewards = async function() {
+  window.loadHomeRewards = async function () {
     const render = () => {
       const slider = document.getElementById('home-premios-slider');
       if (!slider) return;
@@ -1817,10 +1817,10 @@
         <div class="premio-slide-card" onclick="openRewardDetail(${idx})">
           <div class="premio-card-img-wrap">
             ${r.imagen
-              ? `<img src="${r.imagen}" alt="${r.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            ? `<img src="${r.imagen}" alt="${r.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                  <div style="display:none; font-size:42px; color:#cbd5e1; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
-              : `<div style="font-size:42px; color:#cbd5e1; display:flex; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
-            }
+            : `<div style="font-size:42px; color:#cbd5e1; display:flex; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
+          }
             <div class="premio-pts-tag">
               <i class="fa-solid fa-coins"></i> ${ptsFormatted} Pts
             </div>
@@ -1848,9 +1848,9 @@
         try {
           state.rewards = JSON.parse(cached);
           render();
-        } catch(e) {}
+        } catch (e) { }
       }
-      
+
       fetchRewardsFromGAS().then(fresh => {
         if (fresh && fresh.length > 0) {
           state.rewards = fresh;
@@ -1863,14 +1863,14 @@
     }
   };
 
-  window.openRewardDetail = function(idx) {
+  window.openRewardDetail = function (idx) {
     const r = state.rewards[idx];
     if (!r) return;
     state.activeRewardData = r;
 
     document.getElementById('modal-premio-title').textContent = r.nombre;
-    document.getElementById('modal-premio-desc').textContent  = r.descripcion || 'Sin descripción detallada disponible.';
-    
+    document.getElementById('modal-premio-desc').textContent = r.descripcion || 'Sin descripción detallada disponible.';
+
     const modelEl = document.getElementById('modal-premio-model');
     if (modelEl) {
       if (r.modelo) {
@@ -1976,7 +1976,7 @@
     openAppModal('modal-premio-detail');
   };
 
-  window.actionCanjearPremio = function() {
+  window.actionCanjearPremio = function () {
     const r = state.activeRewardData;
     if (!r) return;
 
@@ -2001,7 +2001,7 @@
     window.open(waUrl, '_blank');
   };
 
-  window.sharePremio = function() {
+  window.sharePremio = function () {
     const r = state.activeRewardData;
     if (!r) return;
     const shareText = `🎁 ¡Mira este premio en MGM Hub! ${r.nombre} (${r.modelo || ''}) canjeable por ${Number(r.puntos).toLocaleString('es-PA')} MGM Puntos.`;
@@ -2011,7 +2011,7 @@
         title: r.nombre,
         text: shareText,
         url: shareUrl
-      }).catch(()=>{});
+      }).catch(() => { });
     } else {
       navigator.clipboard.writeText(shareText + ' ' + window.location.href).then(() => {
         showToast('Enlace y detalle del premio copiado al portapapeles.', 'fa-solid fa-copy');
@@ -2023,13 +2023,13 @@
   // MÓDULO AGENDA & CALENDARIO (AGENDA_GAS_URL)
   // ══════════════════════════════════════════════════════════════════════════════
 
-  const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
   function formatEventUrl(rawLink) {
     if (!rawLink) return 'https://mgmpty.odoo.com/event';
     const trimmed = String(rawLink).trim();
     if (!trimmed) return 'https://mgmpty.odoo.com/event';
-    
+
     // Si el enlace es solo un ID numérico de evento de Odoo (ej. '15')
     if (/^\d+$/.test(trimmed)) {
       return `https://mgmpty.odoo.com/event/${trimmed}/register`;
@@ -2039,7 +2039,7 @@
     if (/^https?:\/\//i.test(trimmed)) return trimmed;
     // Si inicia con /, unimos con el dominio de Odoo
     if (trimmed.startsWith('/')) return `https://mgmpty.odoo.com${trimmed}`;
-    
+
     // Agregar dominio a ruta relativa que viene en Columna L sin '/' inicial
     return `https://mgmpty.odoo.com/${trimmed}`;
   }
@@ -2063,7 +2063,7 @@
                     // Prioridad de ID: campo id del GAS (col A del Sheet) → fallback generado
                     const evId = (ev.id !== undefined && ev.id !== null && String(ev.id).trim() !== '')
                       ? String(ev.id).trim()
-                      : `EV_${y}_${parseInt(m)+1}_${d}_${idx}`;
+                      : `EV_${y}_${parseInt(m) + 1}_${d}_${idx}`;
                     eventsList.push({
                       id: evId,
                       titulo: ev.title || 'Evento MGM',
@@ -2104,9 +2104,9 @@
       try {
         state.agendaEvents = JSON.parse(cached);
         renderCalendar();
-      } catch(e) {}
+      } catch (e) { }
     }
-    
+
     const fresh = await fetchEventsFromGAS();
     if (fresh && fresh !== DEMO_EVENTS) {
       state.agendaEvents = fresh;
@@ -2121,13 +2121,13 @@
   async function loadHomeNextEvent() {
     const render = () => {
       const events = state.agendaEvents;
-      const today = new Date(); today.setHours(0,0,0,0);
+      const today = new Date(); today.setHours(0, 0, 0, 0);
       const now = new Date();
       const upcoming = events
         .filter(e => {
           const eventDate = new Date(e.fecha + 'T00:00:00');
           if (eventDate < today) return false;
-          
+
           // Si el evento es hoy, verificar si ya terminó según su hora de fin
           if (eventDate.getTime() === today.getTime() && e.hora) {
             const timeMatches = e.hora.match(/\d{1,2}:\d{2}/g);
@@ -2136,12 +2136,12 @@
               const [h, m] = lastTime.split(':').map(Number);
               const eventEndTime = new Date(today);
               eventEndTime.setHours(h, m, 0, 0);
-              
+
               // Si solo tiene hora de inicio, damos un margen de 1 hora por defecto
               if (timeMatches.length === 1) {
                 eventEndTime.setHours(eventEndTime.getHours() + 1);
               }
-              
+
               if (now > eventEndTime) {
                 return false; // El evento ya pasó su hora de finalización
               }
@@ -2162,7 +2162,30 @@
       const next = upcoming[0];
       const diff = daysUntil(next.fecha);
 
-      const catMap = { webinar:'Webinar Online 📺', training:'Capacitación 🎯', curso:'Certificación 🏆' };
+      // Detectar si el evento está en curso ahora mismo
+      let isLive = false;
+      if (diff === 0 && next.hora) {
+        const timeMatches = next.hora.match(/\d{1,2}:\d{2}/g);
+        if (timeMatches && timeMatches.length >= 1) {
+          const [startH, startM] = timeMatches[0].split(':').map(Number);
+          const eventStart = new Date(today);
+          eventStart.setHours(startH, startM, 0, 0);
+
+          let eventEnd;
+          if (timeMatches.length >= 2) {
+            const [endH, endM] = timeMatches[1].split(':').map(Number);
+            eventEnd = new Date(today);
+            eventEnd.setHours(endH, endM, 0, 0);
+          } else {
+            eventEnd = new Date(eventStart);
+            eventEnd.setHours(eventEnd.getHours() + 1);
+          }
+
+          isLive = now >= eventStart && now <= eventEnd;
+        }
+      }
+
+      const catMap = { webinar: 'Webinar Online 📺', training: 'Capacitación 🎯', curso: 'Certificación 🏆' };
       const catIconMap = {
         webinar: '<i class="fa-solid fa-desktop"></i>',
         training: '<i class="fa-solid fa-users"></i>',
@@ -2175,18 +2198,35 @@
       const timeEl  = document.getElementById('home-event-time');
 
       if (iconWrap) {
-        iconWrap.innerHTML = catIconMap[next.categoria] || '<i class="fa-solid fa-calendar-star"></i>';
+        iconWrap.innerHTML = isLive
+          ? '<i class="fa-solid fa-signal-stream"></i>'
+          : (catIconMap[next.categoria] || '<i class="fa-solid fa-calendar-star"></i>');
       }
 
-      if (badgeEl) badgeEl.innerHTML = `<i class="fa-solid fa-bolt"></i> ${catMap[next.categoria] || 'Evento MGM'}`;
-      if (titleEl) titleEl.textContent = next.titulo;
-      if (timeEl) {
-        if (diff === 0)      timeEl.textContent = `🔴 ¡HOY a las ${next.hora}!`;
-        else if (diff === 1) timeEl.textContent = `⏰ Mañana a las ${next.hora}`;
-        else                 timeEl.textContent = `En ${diff} días — ${next.hora}`;
+      if (badgeEl) {
+        badgeEl.innerHTML = isLive
+          ? '<i class="fa-solid fa-circle" style="color:#22c55e;"></i> EN VIVO'
+          : `<i class="fa-solid fa-bolt"></i> ${catMap[next.categoria] || 'Evento MGM'}`;
+        badgeEl.classList.toggle('badge-live', isLive);
       }
-      // Actualizar el onclick del banner con el evento específico
+
+      if (titleEl) titleEl.textContent = next.titulo;
+
+      if (timeEl) {
+        if (isLive) {
+          timeEl.innerHTML = `<span class="live-pulse"></span> ¡EN VIVO AHORA! ${next.hora ? '— ' + next.hora : ''}`;
+          timeEl.classList.add('live-time');
+        } else {
+          timeEl.classList.remove('live-time');
+          if (diff === 0)      timeEl.textContent = `🔴 ¡HOY a las ${next.hora}!`;
+          else if (diff === 1) timeEl.textContent = `⏰ Mañana a las ${next.hora}`;
+          else                 timeEl.textContent = `En ${diff} días — ${next.hora}`;
+        }
+      }
+
+      // Estilo del banner según estado
       if (banner) {
+        banner.classList.toggle('banner-live', isLive);
         banner.onclick = () => {
           if (typeof window.navigateTo === 'function') {
             window.navigateTo(`agenda:${next.id}`);
@@ -2203,9 +2243,9 @@
         try {
           state.agendaEvents = JSON.parse(cached);
           render();
-        } catch(e) {}
+        } catch (e) { }
       }
-      
+
       fetchEventsFromGAS().then(fresh => {
         if (fresh && fresh !== DEMO_EVENTS) {
           state.agendaEvents = fresh;
@@ -2219,7 +2259,7 @@
   }
 
   function renderCalendar() {
-    const year  = state.calYear;
+    const year = state.calYear;
     const month = state.calMonth;
     const titleEl = document.getElementById('cal-month-title');
     if (titleEl) titleEl.textContent = `${MONTHS_ES[month]} ${year}`;
@@ -2227,10 +2267,10 @@
     const grid = document.getElementById('cal-grid-days-container');
     if (!grid) return;
 
-    const firstDay    = new Date(year, month, 1).getDay();
+    const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const today       = new Date();
-    const todayStr    = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
     const filteredEvents = state.agendaEvents.filter(e => {
       const eDate = new Date(e.fecha + 'T00:00:00');
@@ -2251,7 +2291,7 @@
     }
 
     for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const isToday = dateStr === todayStr;
       const eventsToday = eventsByDay[d] || [];
 
@@ -2267,7 +2307,7 @@
     grid.innerHTML = html;
   }
 
-  window.filterEvents = function(cat, el) {
+  window.filterEvents = function (cat, el) {
     state.activeEventFilter = cat;
     document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
     if (el) el.classList.add('active');
@@ -2286,7 +2326,7 @@
     renderCalendar();
   });
 
-  window.openEventDetail = function(eventId) {
+  window.openEventDetail = function (eventId) {
     const searchId = String(eventId).toLowerCase().trim();
 
     // 1) Coincidencia exacta por ID (case-insensitive)
@@ -2313,13 +2353,13 @@
     }
     state.activeEventData = ev;
 
-    document.getElementById('modal-event-cat').textContent   = ev.categoria?.toUpperCase() || 'EVENTO';
+    document.getElementById('modal-event-cat').textContent = ev.categoria?.toUpperCase() || 'EVENTO';
     document.getElementById('modal-event-title').textContent = ev.titulo;
-    document.getElementById('modal-event-desc').textContent  = ev.descripcion;
-    document.getElementById('modal-event-date').innerHTML    = `<strong>${formatDateDisplay(ev.fecha)}</strong>`;
-    document.getElementById('modal-event-time').innerHTML    = `<strong>${ev.hora || '—'} (${ev.duracion || '—'})</strong>`;
-    document.getElementById('modal-event-cost').innerHTML    = `<strong>${ev.costo || '—'}</strong>`;
-    document.getElementById('modal-event-place').innerHTML   = `<strong>${ev.lugar || '—'}</strong>`;
+    document.getElementById('modal-event-desc').textContent = ev.descripcion;
+    document.getElementById('modal-event-date').innerHTML = `<strong>${formatDateDisplay(ev.fecha)}</strong>`;
+    document.getElementById('modal-event-time').innerHTML = `<strong>${ev.hora || '—'} (${ev.duracion || '—'})</strong>`;
+    document.getElementById('modal-event-cost').innerHTML = `<strong>${ev.costo || '—'}</strong>`;
+    document.getElementById('modal-event-place').innerHTML = `<strong>${ev.lugar || '—'}</strong>`;
 
     const btnReserve = document.getElementById('modal-event-btn-reserve');
     if (btnReserve) {
@@ -2335,7 +2375,7 @@
     openAppModal('modal-event-detail');
   };
 
-  window.copyEventDeepLink = function() {
+  window.copyEventDeepLink = function () {
     const input = document.getElementById('modal-event-deeplink-input');
     if (input) {
       navigator.clipboard.writeText(input.value).then(() => {
@@ -2346,7 +2386,7 @@
     }
   };
 
-  window.openEventQR = function() {
+  window.openEventQR = function () {
     const ev = state.activeEventData;
     if (!ev) return;
     const url = formatEventUrl(ev.qr_url || ev.registro_url || ev.button_link);
@@ -2356,18 +2396,18 @@
     openAppModal('modal-event-qr');
   };
 
-  window.openEventShare = function() {
+  window.openEventShare = function () {
     closeAppModal('modal-event-detail');
     openAppModal('modal-event-share');
   };
 
-  window.shareAction = function(platform) {
+  window.shareAction = function (platform) {
     const ev = state.activeEventData;
     if (!ev) return;
     const url = formatEventUrl(ev.registro_url || ev.button_link);
     const text = `📅 ${ev.titulo}\n🗓️ ${formatDateDisplay(ev.fecha)} · ${ev.hora}\n📍 ${ev.lugar}\n\nRegistro: ${url}`;
     const encoded = encodeURIComponent(text);
-    if (platform === 'wa')   window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    if (platform === 'wa') window.open(`https://wa.me/?text=${encoded}`, '_blank');
     if (platform === 'mail') window.open(`mailto:?subject=${encodeURIComponent(ev.titulo)}&body=${encoded}`, '_blank');
     if (platform === 'copy') { navigator.clipboard.writeText(text).then(() => showToast('¡Texto copiado!', 'fa-solid fa-clipboard-check')); }
     if (platform === 'cal') {
@@ -2392,14 +2432,14 @@
         const yy = dt.getFullYear();
         const mm = String(dt.getMonth() + 1).padStart(2, '0');
         const dd = String(dt.getDate()).padStart(2, '0');
-        return `${yy}${mm}${dd}T${String(utcH).padStart(2,'0')}${String(utcM).padStart(2,'0')}00Z`;
+        return `${yy}${mm}${dd}T${String(utcH).padStart(2, '0')}${String(utcM).padStart(2, '0')}00Z`;
       }
 
       let calDates;
       const horaRaw = (ev.hora || '').trim(); // "10:00 - 11:00" o "10:00 – 11:00"
       const horaMatch = horaRaw.replace('–', '-').split('-');
       const startParsed = horaMatch[0] ? toGCalDate(dateStr, horaMatch[0]) : null;
-      const endParsed   = horaMatch[1] ? toGCalDate(dateStr, horaMatch[1]) : null;
+      const endParsed = horaMatch[1] ? toGCalDate(dateStr, horaMatch[1]) : null;
 
       if (startParsed && endParsed) {
         calDates = `${startParsed}/${endParsed}`;
@@ -2409,14 +2449,14 @@
         calDates = `${startParsed}/${endFallback || startParsed}`;
       } else {
         // Sin hora: evento de todo el día
-        const d = dateStr.replace(/-/g,'');
+        const d = dateStr.replace(/-/g, '');
         calDates = `${d}/${d}`;
       }
 
       const calDetails = [
         ev.descripcion || '',
         ev.lugar ? `📍 ${ev.lugar}` : '',
-        ev.costo  ? `💲 ${ev.costo}` : ''
+        ev.costo ? `💲 ${ev.costo}` : ''
       ].filter(Boolean).join('\n');
 
       window.open(
@@ -2453,7 +2493,7 @@
         localStorage.setItem(K_MY_COURSES, JSON.stringify(res.courses));
         renderMyCourses();
       }
-    } catch(err) {
+    } catch (err) {
       console.warn('[MGM Hub] Error consultando mis capacitaciones:', err);
     }
   }
@@ -2507,7 +2547,7 @@
     listEl.innerHTML = state.myCourses.map(course => {
       const fechaEv = parseSafeDate(course.fecha);
       const isFechaValida = !!fechaEv;
-      
+
       let countdownHtml = '';
 
       if (isFechaValida) {
@@ -2540,10 +2580,10 @@
 
       const meetBtnHtml = course.meet ? `
         <a href="${course.meet}" target="_blank" class="btn-meet-join">
-          <i class="fa-solid fa-video"></i> Entrar a Google Meet
+          <i class="fa-solid fa-video"></i> Entrar al curso
         </a>
       ` : `
-        <button class="btn-meet-join" onclick="showToast('Enlace de Meet disponible próximamente', 'fa-solid fa-circle-info')">
+        <button class="btn-meet-join" onclick="showToast('Enlace disponible próximamente', 'fa-solid fa-circle-info')">
           <i class="fa-solid fa-circle-info"></i> Enlace disponible pronto
         </button>
       `;
@@ -2590,19 +2630,19 @@
     if (!d) return '09:00 AM';
     try {
       return d.toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit', hour12: true });
-    } catch(e) {
+    } catch (e) {
       return '09:00 AM';
     }
   }
 
-  window.copyEventMeet = function(url) {
+  window.copyEventMeet = function (url) {
     if (!url) return;
     navigator.clipboard.writeText(url).then(() => {
       showToast('¡Enlace de Meet copiado!', 'fa-solid fa-clipboard-check');
     });
   };
 
-  window.handlePromoLinkClick = function(event, enlace) {
+  window.handlePromoLinkClick = function (event, enlace) {
     if (!enlace) return;
     try {
       const url = new URL(enlace);
@@ -2610,17 +2650,17 @@
         event.preventDefault();
         event.stopPropagation();
         const tab = url.searchParams.get('tab');
-        
+
         if (typeof closeCopySheet === 'function') closeCopySheet();
         if (typeof closePromoDetail === 'function') closePromoDetail();
         if (typeof switchMainTab === 'function') switchMainTab(tab);
         return;
       }
-    } catch(e) {}
+    } catch (e) { }
     event.stopPropagation();
   };
 
-  window.toggleFeedVideo = function(wrapper) {
+  window.toggleFeedVideo = function (wrapper) {
     const video = wrapper.querySelector('video');
     if (!video) return;
     if (video.paused) {
@@ -2632,7 +2672,7 @@
     }
   };
 
-  window.toggleFeedVideoMute = function(btn, event) {
+  window.toggleFeedVideoMute = function (btn, event) {
     event.stopPropagation();
     const wrapper = btn.closest('.cli-video-wrapper');
     const video = wrapper.querySelector('video');
@@ -2641,11 +2681,11 @@
     btn.innerHTML = video.muted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
   };
 
-  window.openPromoDetail = function(idx) {
+  window.openPromoDetail = function (idx) {
     const modal = document.getElementById('modal-promo-feed');
     const feed = document.getElementById('cli-modal-feed');
     if (!modal || !feed || !state.promos) return;
-    
+
     const likes = JSON.parse(localStorage.getItem(K_LIKES) || '{}');
 
     feed.innerHTML = state.promos.map((p, i) => {
@@ -2655,17 +2695,17 @@
 
       return `
       <div class="cli-feed-item" id="promo-feed-${i}">
-        ${ p.video
-           ? `<div class="cli-video-wrapper" onclick="toggleFeedVideo(this)">
+        ${p.video
+          ? `<div class="cli-video-wrapper" onclick="toggleFeedVideo(this)">
                 <video src="${p.video}" poster="${p.imagen}" preload="auto" autoplay loop muted playsinline class="cli-feed-video"></video>
                 <div class="cli-video-center-controls">
                   <button class="cli-play-overlay"><i class="fa-solid fa-play"></i></button>
                   <button class="cli-mute-overlay" onclick="toggleFeedVideoMute(this, event)"><i class="fa-solid fa-volume-xmark"></i></button>
                 </div>
               </div>`
-           : p.imagen
-             ? `<img class="cli-feed-img" src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">`
-             : `<div class="cli-feed-img-placeholder" style="background:${promoPlaceholderBg(p.tipo)};">${promoPlaceholderEmoji(p.tipo)}</div>`
+          : p.imagen
+            ? `<img class="cli-feed-img" src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">`
+            : `<div class="cli-feed-img-placeholder" style="background:${promoPlaceholderBg(p.tipo)};">${promoPlaceholderEmoji(p.tipo)}</div>`
         }
         <div class="cli-feed-gradient"></div>
 
@@ -2707,7 +2747,7 @@
         </div>
       </div>`;
     }).join('');
-    
+
     modal.style.display = 'flex';
     setTimeout(() => {
       const target = document.getElementById('promo-feed-' + idx);
@@ -2724,7 +2764,7 @@
         if (!wrapper) return;
         const video = wrapper.querySelector('video');
         if (!video) return;
-        
+
         if (entry.isIntersecting) {
           video.play().catch(e => console.warn('Autoplay prevented', e));
           wrapper.classList.remove('is-paused');
@@ -2737,7 +2777,7 @@
       root: feed,
       threshold: 0.6 // Al menos 60% visible para reproducir
     });
-    
+
     // Observar cada item
     feed.querySelectorAll('.cli-feed-item').forEach(item => {
       window._feedVideoObserver.observe(item);
@@ -2745,7 +2785,7 @@
   };
 
   // — Like dentro del feed Reels (sin confetti de posición ya que es overlay)
-  window.toggleReelsLike = function(promoId, itemIdx, currentCount, btn) {
+  window.toggleReelsLike = function (promoId, itemIdx, currentCount, btn) {
     const likes = JSON.parse(localStorage.getItem(K_LIKES) || '{}');
     const wasLiked = !!likes[promoId];
     likes[promoId] = !wasLiked;
@@ -2753,7 +2793,7 @@
 
     const icon = btn.querySelector('i');
     const countEl = document.getElementById('like-count-' + itemIdx);
-    
+
     let current = parseInt(countEl?.textContent || '0');
 
     if (likes[promoId]) {
@@ -2766,7 +2806,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'add_like', promoId })
-      }).catch(()=>{});
+      }).catch(() => { });
     } else {
       btn.classList.remove('liked');
       icon.className = 'fa-regular fa-heart';
@@ -2777,11 +2817,11 @@
   // — Abrir bottom sheet con copy completo
   let _activeCopyPromoId = null;
 
-  window.openCopySheet = function(id, encTitle, encDesc, fi, ff, encEnlace) {
+  window.openCopySheet = function (id, encTitle, encDesc, fi, ff, encEnlace) {
     _activeCopyPromoId = id;
     document.getElementById('cli-copy-title').textContent = decodeURIComponent(encTitle);
-    document.getElementById('cli-copy-desc').textContent  = decodeURIComponent(encDesc);
-    
+    document.getElementById('cli-copy-desc').textContent = decodeURIComponent(encDesc);
+
     const enlaceDecoded = encEnlace ? decodeURIComponent(encEnlace) : '';
     const linkEl = document.getElementById('cli-copy-link');
     if (linkEl) {
@@ -2798,16 +2838,16 @@
     // Ocultar fechas si no las hay
     const datesEl = document.getElementById('cli-copy-dates');
     if (datesEl) datesEl.textContent = (fi && fi !== 'undefined') ? `📅 Válida: ${fi} — ${ff}` : '';
-    
+
     // Cargar comentarios
     const listEl = document.getElementById('cli-copy-comments-list');
     listEl.innerHTML = '<div style="color: var(--text-muted); font-size: 12px; padding: 8px;">Cargando...</div>';
     loadSheetComments(id, listEl);
-    
+
     document.getElementById('cli-copy-sheet').classList.add('open');
   };
 
-  window.closeCopySheet = function() {
+  window.closeCopySheet = function () {
     document.getElementById('cli-copy-sheet').classList.remove('open');
     document.getElementById('cli-copy-comment-input').value = '';
     _activeCopyPromoId = null;
@@ -2854,14 +2894,14 @@
         localStorage.setItem('mgm_comments_' + promoId, JSON.stringify(merged));
         renderList(merged);
       }
-    } catch(e) {
+    } catch (e) {
       // Silencioso: ya mostramos el fallback local
       console.warn('[MGM] GAS comentarios no disponible, mostrando locales:', e.message);
     }
   }
 
   // — Sistema de Toasts
-  window.showToast = function(msg, icon = 'fa-solid fa-circle-info') {
+  window.showToast = function (msg, icon = 'fa-solid fa-circle-info') {
     let toast = document.getElementById('mgm-toast-el');
     if (!toast) {
       toast = document.createElement('div');
@@ -2871,9 +2911,9 @@
     }
     toast.innerHTML = `<i class="${icon}"></i> <span>${msg}</span>`;
     // Forzar reflow para que la animación funcione si ya estaba en pantalla
-    void toast.offsetWidth; 
+    void toast.offsetWidth;
     toast.classList.add('show');
-    
+
     // Limpiar timeout anterior si existe
     if (toast.hideTimeout) clearTimeout(toast.hideTimeout);
     toast.hideTimeout = setTimeout(() => {
@@ -2881,7 +2921,7 @@
     }, 3000);
   };
 
-  window.postCommentFromSheet = async function() {
+  window.postCommentFromSheet = async function () {
     if (!state.authUser) {
       showToast('Inicia sesión para comentar.', 'fa-solid fa-lock');
       openLoginModal();   // Se abre encima del feed (z-index 8000 > 3000)
@@ -2905,7 +2945,7 @@
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'add_comment', promoId, nombre: state.authUser.nombre, texto })
       });
-    } catch(e) {}
+    } catch (e) { }
 
     const local = JSON.parse(localStorage.getItem('mgm_comments_' + promoId) || '[]');
     local.push({ nombre: state.authUser.nombre, texto });
@@ -2914,18 +2954,18 @@
   };
 
 
-  window.closePromoDetail = function() {
-      const modal = document.getElementById('modal-promo-feed');
-      if (modal) {
-          modal.style.display = 'none';
-          document.getElementById('cli-modal-feed').innerHTML = ''; // Limpiar la memoria
-          if (window._feedVideoObserver) {
-              window._feedVideoObserver.disconnect();
-          }
+  window.closePromoDetail = function () {
+    const modal = document.getElementById('modal-promo-feed');
+    if (modal) {
+      modal.style.display = 'none';
+      document.getElementById('cli-modal-feed').innerHTML = ''; // Limpiar la memoria
+      if (window._feedVideoObserver) {
+        window._feedVideoObserver.disconnect();
       }
+    }
   };
 
-  window.togglePromoLike = function(promoId, btn, ev) {
+  window.togglePromoLike = function (promoId, btn, ev) {
     ev.stopPropagation();
     const likes = JSON.parse(localStorage.getItem(K_LIKES) || '{}');
     const wasLiked = !!likes[promoId];
@@ -2949,11 +2989,11 @@
   // ══════════════════════════════════════════════════════════════════════════════
   // PROMOS: COMPARTIR, WHATSAPP Y COMENTARIOS
   // ══════════════════════════════════════════════════════════════════════════════
-  
-  window.sharePromo = function(id, encTitle, encDesc) {
+
+  window.sharePromo = function (id, encTitle, encDesc) {
     const title = decodeURIComponent(encTitle);
-    const text  = decodeURIComponent(encDesc).substring(0, 100) + '...';
-    const url   = window.location.href.split('?')[0] + `?tab=promos&id=${id}`;
+    const text = decodeURIComponent(encDesc).substring(0, 100) + '...';
+    const url = window.location.href.split('?')[0] + `?tab=promos&id=${id}`;
 
     if (navigator.share) {
       navigator.share({
@@ -2967,23 +3007,23 @@
   };
 
   let activeWaPromoText = '';
-  
-  window.promptWhatsApp = function(id, encTitle) {
+
+  window.promptWhatsApp = function (id, encTitle) {
     activeWaPromoText = `Hola, quisiera mas informacion sobre la promocion: ${decodeURIComponent(encTitle)}`;
     openAppModal('modal-wa-selector');
   };
 
-  window.sendWaConsult = function(number) {
+  window.sendWaConsult = function (number) {
     if (!activeWaPromoText) return;
     window.open(`https://wa.me/507${number}?text=${encodeURIComponent(activeWaPromoText)}`, '_blank');
     closeAppModal('modal-wa-selector');
   };
 
-  window.toggleComments = function(promoId, ev) {
+  window.toggleComments = function (promoId, ev) {
     ev.stopPropagation();
     const section = document.getElementById('comments-section-' + promoId);
     if (!section) return;
-    
+
     if (section.style.display === 'none') {
       section.style.display = 'block';
       loadCardComments(promoId);
@@ -3031,12 +3071,12 @@
         localStorage.setItem('mgm_comments_' + promoId, JSON.stringify(merged));
         renderList(merged);
       }
-    } catch(err) {
+    } catch (err) {
       console.warn('[MGM] GAS card-comments no disponible:', err.message);
     }
   }
 
-  window.postComment = async function(promoId) {
+  window.postComment = async function (promoId) {
     if (!state.authUser) {
       showToast('Debes iniciar sesión para comentar.', 'fa-solid fa-lock');
       openLoginModal();
@@ -3046,9 +3086,9 @@
     const input = document.getElementById('comment-input-' + promoId);
     const texto = input.value.trim();
     if (!texto) return;
-    
+
     input.value = '';
-    
+
     // UI instantánea (Optimistic UI)
     const listEl = document.getElementById('comments-list-' + promoId);
     if (listEl.innerHTML.includes('Aún no hay comentarios')) listEl.innerHTML = '';
@@ -3058,24 +3098,24 @@
       </div>
     `;
     listEl.scrollTop = listEl.scrollHeight;
-    
+
     try {
       await fetch(CFG.NOTIFS_GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'add_comment', promoId, nombre: state.authUser.nombre, texto })
       });
-    } catch(e) { }
-    
+    } catch (e) { }
+
     // Fallback guardar local
     const localComments = JSON.parse(localStorage.getItem('mgm_comments_' + promoId) || '[]');
     localComments.push({ nombre: state.authUser.nombre, texto });
     localStorage.setItem('mgm_comments_' + promoId, JSON.stringify(localComments));
-    
+
     loadCardComments(promoId);
   };
 
-  window.toggleModalPromoLike = function() {
+  window.toggleModalPromoLike = function () {
     const p = state.activePromoData;
     if (!p) return;
     const likes = JSON.parse(localStorage.getItem(K_LIKES) || '{}');
@@ -3090,10 +3130,10 @@
   // SPLASHSCREEN / PROMO INTERSTITIAL (SPLASH_GAS_URL)
   // ══════════════════════════════════════════════════════════════════════════════
 
-  window.closeSplashOption = function(option) {
+  window.closeSplashOption = function (option) {
     const el = document.getElementById('imou-splash');
     if (el) { el.style.display = 'none'; el.classList.remove('show'); }
-    
+
     if (option === 'today') {
       localStorage.setItem(K_SPLASH, new Date().toDateString());
     } else if (option === 'session') {
@@ -3101,12 +3141,12 @@
     }
   };
 
-  window.toggleSplashSettings = function() {
+  window.toggleSplashSettings = function () {
     const menu = document.getElementById('splash-settings-menu');
     if (menu) menu.classList.toggle('show');
   };
 
-  window.closeSplashWidget = function() {
+  window.closeSplashWidget = function () {
     closeSplashOption('session'); // Por defecto se oculta en esta sesión
   };
 
@@ -3123,7 +3163,7 @@
       const hoyEsSabado = new Date().getDay() === 6;
 
       const activas = listado.filter(c => {
-        const hoy = new Date(); hoy.setHours(0,0,0,0);
+        const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
         if (c.fecha_inicio) {
           const inicio = new Date(c.fecha_inicio);
           if (!isNaN(inicio.getTime()) && hoy < inicio) return false;
@@ -3185,26 +3225,26 @@
   // SETTINGS & USER INFO
   // ==========================================================================
 
-  window.openSettingsModal = function() {
+  window.openSettingsModal = function () {
     if (!state.authUser) return;
-    
+
     // Poblar campos
     document.getElementById('set-email').value = state.authUser.correo || '';
     document.getElementById('set-phone').value = state.authUser.telefono || '';
-    
+
     // Poblar preferencias
     let pref = state.authUser.preferencias || { global: true, puntos: true, rma: true, promos: true };
     document.getElementById('set-notif-global').checked = !!pref.global;
     document.getElementById('set-notif-puntos').checked = !!pref.puntos;
     document.getElementById('set-notif-rma').checked = !!pref.rma;
     document.getElementById('set-notif-promos').checked = !!pref.promos;
-    
+
     openAppModal('modal-settings');
   };
 
-  window.updateUserPreferences = function() {
+  window.updateUserPreferences = function () {
     if (!state.authUser) return;
-    
+
     let isGlobal = document.getElementById('set-notif-global').checked;
     // Si desactiva global, desactivar el resto visualmente (opcional) o logicamente
     let pref = {
@@ -3213,19 +3253,19 @@
       rma: document.getElementById('set-notif-rma').checked,
       promos: document.getElementById('set-notif-promos').checked
     };
-    
+
     state.authUser.preferencias = pref; // Actualizar estado local inmediato
-    
+
     // Enviar a backend
     sendUserUpdateToBackend({ preferencias: pref }, 'Preferencias guardadas');
   };
 
-  window.updateUserInfoField = function(field) {
+  window.updateUserInfoField = function (field) {
     if (!state.authUser) return;
-    
+
     let val = '';
     let payload = {};
-    
+
     if (field === 'email') {
       val = document.getElementById('set-email').value.trim();
       if (!val) { showToast('Ingresa un correo válido', 'error'); return; }
@@ -3235,47 +3275,47 @@
       if (!val) { showToast('Ingresa un teléfono válido', 'error'); return; }
       payload.telefono = val;
     }
-    
+
     showMgmLoader('Actualizando...');
     sendUserUpdateToBackend(payload, 'Información actualizada');
   };
 
   function sendUserUpdateToBackend(payload, successMsg) {
     if (!state.authUser) return;
-    
+
     payload.action = 'update_user_info';
     payload.cedula = state.authUser.cedula;
-    
+
     fetch(CFG.SCRIPT_URL, {
       method: 'POST',
       body: JSON.stringify(payload),
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }
     })
-    .then(r => r.json())
-    .then(res => {
-      hideMgmLoader();
-      if (res.success && res.client) {
-        setClientSession(res.client, 'update');
-        showToast(successMsg, 'success');
-      } else {
-        showToast(res.message || 'Error al actualizar', 'error');
-      }
-    })
-    .catch(err => {
-      hideMgmLoader();
-      showToast('Error de conexión', 'error');
-      console.error(err);
-    });
+      .then(r => r.json())
+      .then(res => {
+        hideMgmLoader();
+        if (res.success && res.client) {
+          setClientSession(res.client, 'update');
+          showToast(successMsg, 'success');
+        } else {
+          showToast(res.message || 'Error al actualizar', 'error');
+        }
+      })
+      .catch(err => {
+        hideMgmLoader();
+        showToast('Error de conexión', 'error');
+        console.error(err);
+      });
   }
 
-window.openLoginModal = function() {
+  window.openLoginModal = function () {
     const isAuth = !!state.authUser;
     document.getElementById('login-view-unauth').style.display = isAuth ? 'none' : 'block';
     document.getElementById('login-view-auth').style.display = isAuth ? 'block' : 'none';
-    
+
     if (isAuth) {
       updateAuthModalProfile();
-      
+
       // Mostrar botón de notificaciones si no tienen permiso concedido
       const btnNotifs = document.getElementById('btn-enable-notifs');
       if (btnNotifs && Notification.permission !== 'granted') {
@@ -3284,33 +3324,33 @@ window.openLoginModal = function() {
         btnNotifs.style.display = 'none';
       }
     }
-    
+
     const modal = document.getElementById('modal-user-login');
     if (modal) modal.classList.add('active');
   };
 
-  window.submitLogin = async function() {
+  window.submitLogin = async function () {
     const input = document.getElementById('login-cedula-input').value.trim();
     const errorMsg = document.getElementById('login-error-msg');
     const btn = document.getElementById('btn-login-submit');
-    
+
     if (!input) {
       errorMsg.textContent = 'Por favor ingresa tu cédula o correo.';
       errorMsg.style.display = 'block';
       return;
     }
-    
+
     errorMsg.style.display = 'none';
     btn.textContent = 'Verificando...';
     btn.disabled = true;
-    
+
     try {
       const res = await fetch(CFG.PUNTOS_GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'get_client', cedula: input })
       }).then(r => r.json());
-      
+
       if (res.success && res.client) {
         setClientSession(res.client, 'login');
         openLoginModal(); // Recargar modal a vista autenticada
@@ -3330,7 +3370,7 @@ window.openLoginModal = function() {
         errorMsg.style.display = 'block';
       }
     }
-    
+
     btn.textContent = 'Ingresar a MGM Hub';
     btn.disabled = false;
   };
@@ -3340,7 +3380,7 @@ window.openLoginModal = function() {
     // Se recibe sincronizada automáticamente vía checkNotifications() y se emite solo una vez.
   }
 
-  window.logoutClient = function() {
+  window.logoutClient = function () {
     // │ Incrementar token de sesión para invalidar todas las respuestas en vuelo
     state.sessionToken = (state.sessionToken || 0) + 1;
     state.loggedOut = true; // Flag de seguridad: bloquea restauraciones posteriores
@@ -3458,7 +3498,7 @@ window.openLoginModal = function() {
   /**
    * Manejador de subida de avatar disparado desde el modal de perfil
    */
-  window.handleAvatarSelected = async function(event) {
+  window.handleAvatarSelected = async function (event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
 
@@ -3572,7 +3612,7 @@ window.openLoginModal = function() {
           updateAuthModalProfile();
         }
       }
-    } catch(err) {
+    } catch (err) {
       console.warn('[MGM] Sincronización de avatar no disponible:', err);
     }
   }
@@ -3581,7 +3621,7 @@ window.openLoginModal = function() {
   // NOTIFICATIONS (LOCAL + TRACKING BACKEND)
   // ══════════════════════════════════════════════════════════════════════════════
 
-  window.openNotificationsPanel = function() {
+  window.openNotificationsPanel = function () {
     openAppModal('modal-notifications');
     renderNotifications();
     // Ocultar badge al abrir el panel (marcar como vistas)
@@ -3595,7 +3635,7 @@ window.openLoginModal = function() {
   };
 
   // Solicitar permiso de notificaciones nativas del navegador
-  window.requestNotificationPermission = function() {
+  window.requestNotificationPermission = function () {
     if (!('Notification' in window)) {
       alert('Tu navegador no soporta notificaciones del sistema.');
       return;
@@ -3641,7 +3681,7 @@ window.openLoginModal = function() {
           notif.onclick = () => { window.focus(); navigateTo(targetUrl); notif.close(); };
         }
       }
-    } catch(e) { console.warn('Notif error:', e); }
+    } catch (e) { console.warn('Notif error:', e); }
   }
 
   // Registrar dispositivo en el Sheet de Tracking
@@ -3656,7 +3696,7 @@ window.openLoginModal = function() {
     const tokenSnapshot = state.sessionToken || 0;
     try {
       const cedula = state.authUser ? state.authUser.cedula : 'ANONIMO';
-      const email  = (state.authUser && state.authUser.email) ? state.authUser.email : '';
+      const email = (state.authUser && state.authUser.email) ? state.authUser.email : '';
       const nombre = (state.authUser && state.authUser.nombre) ? state.authUser.nombre : '';
       const res = await fetch(CFG.NOTIFS_GAS_URL, {
         method: 'POST',
@@ -3698,14 +3738,14 @@ window.openLoginModal = function() {
           // Mantener solo si sigue en el servidor (aplica a todos los tipos, incluyendo pts_)
           return serverIds.includes(localId);
         });
-        
+
         if (state.notifications.length !== originalLength) {
           hasChanged = true;
         }
 
         // Agregar nuevas notificaciones o actualizar existentes
         res.notifications.forEach(rawN => {
-        // Normalizar campos: el GAS puede devolver titulo/mensaje o title/body, y seccion/url/enlace/link
+          // Normalizar campos: el GAS puede devolver titulo/mensaje o title/body, y seccion/url/enlace/link
           // Si no viene fecha, la extraemos del timestamp embebido en el ID (ej: RMA-2026-0018-1726344000000)
           let parsedDate = rawN.date || rawN.fecha || '';
           if (parsedDate) {
@@ -3729,14 +3769,14 @@ window.openLoginModal = function() {
             parsedDate = `${yyyy}-${mm}-${dd} ${hh}:${min}`;
           }
           const n = {
-            id:      rawN.id,
-            title:   rawN.title   || rawN.titulo  || '',
-            body:    rawN.body    || rawN.mensaje  || '',
-            date:    parsedDate,
+            id: rawN.id,
+            title: rawN.title || rawN.titulo || '',
+            body: rawN.body || rawN.mensaje || '',
+            date: parsedDate,
             seccion: (rawN.seccion || rawN.enlace || rawN.url || rawN.link || '').trim(),
-            url:     (rawN.url || rawN.enlace || rawN.link || '').trim(),
+            url: (rawN.url || rawN.enlace || rawN.link || '').trim(),
             fecha_inicio: rawN.fecha_inicio || rawN.inicio || '',
-            fecha_fin:    rawN.fecha_fin || rawN.fin || rawN.expiracion || ''
+            fecha_fin: rawN.fecha_fin || rawN.fin || rawN.expiracion || ''
           };
 
           const stringId = String(n.id);
@@ -3759,11 +3799,11 @@ window.openLoginModal = function() {
                 const parts = fiStr.split(/[\/ :]/);
                 // DD/MM/YYYY [HH:mm[:ss]]
                 if (parts.length >= 3 && parts[0].length <= 2) {
-                  const d = parts[0].padStart(2,'0');
-                  const m = parts[1].padStart(2,'0');
+                  const d = parts[0].padStart(2, '0');
+                  const m = parts[1].padStart(2, '0');
                   const y = parts[2];
-                  const hh = parts[3] ? parts[3].padStart(2,'0') : '00';
-                  const mm = parts[4] ? parts[4].padStart(2,'0') : '00';
+                  const hh = parts[3] ? parts[3].padStart(2, '0') : '00';
+                  const mm = parts[4] ? parts[4].padStart(2, '0') : '00';
                   fiStr = `${y}-${m}-${d}T${hh}:${mm}:00`;
                 }
               } else {
@@ -3781,11 +3821,11 @@ window.openLoginModal = function() {
               if (ffStr.includes('/')) {
                 const parts = ffStr.split(/[\/ :]/);
                 if (parts.length >= 3 && parts[0].length <= 2) {
-                  const d = parts[0].padStart(2,'0');
-                  const m = parts[1].padStart(2,'0');
+                  const d = parts[0].padStart(2, '0');
+                  const m = parts[1].padStart(2, '0');
                   const y = parts[2];
-                  const hh = parts[3] ? parts[3].padStart(2,'0') : '23';
-                  const mm = parts[4] ? parts[4].padStart(2,'0') : '59';
+                  const hh = parts[3] ? parts[3].padStart(2, '0') : '23';
+                  const mm = parts[4] ? parts[4].padStart(2, '0') : '59';
                   ffStr = `${y}-${m}-${d}T${hh}:${mm}:59`;
                 }
               } else {
@@ -3882,7 +3922,7 @@ window.openLoginModal = function() {
           renderNotifications(); // Re-renderizar por si el panel está abierto
         }
       }
-    } catch(e) {
+    } catch (e) {
       console.warn('[MGM Hub] Error al consultar notificaciones:', e);
     }
   }
@@ -3938,7 +3978,7 @@ window.openLoginModal = function() {
       if (str.includes('/')) {
         const parts = str.split(/[\/ :]/);
         if (parts.length >= 3 && parts[0].length <= 2) {
-          str = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}T${parts[3] ? parts[3].padStart(2,'0') : '00'}:${parts[4] ? parts[4].padStart(2,'0') : '00'}:00`;
+          str = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}T${parts[3] ? parts[3].padStart(2, '0') : '00'}:${parts[4] ? parts[4].padStart(2, '0') : '00'}:00`;
         }
       } else {
         str = str.replace(' ', 'T');
@@ -3952,7 +3992,7 @@ window.openLoginModal = function() {
       if (str.includes('/')) {
         const parts = str.split(/[\/ :]/);
         if (parts.length >= 3 && parts[0].length <= 2) {
-          str = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}T${parts[3] ? parts[3].padStart(2,'0') : '23'}:${parts[4] ? parts[4].padStart(2,'0') : '59'}:59`;
+          str = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}T${parts[3] ? parts[3].padStart(2, '0') : '23'}:${parts[4] ? parts[4].padStart(2, '0') : '59'}:59`;
         }
       } else {
         str = str.replace(' ', 'T');
@@ -3978,12 +4018,12 @@ window.openLoginModal = function() {
 
     // Actualizar burbujas de los iconos del home
     const counts = { puntos: 0, agenda: 0, promos: 0, rma: 0, rastreo: 0, magie: 0, toolbox: 0, fiesta: 0 };
-    
+
     const notifsActivas = state.notifications.filter(n => notifEnVentana(n));
     notifsActivas.forEach(n => {
       let seccion = (n.seccion || n.url || '').trim();
       const titleLower = (n.title || '').toLowerCase();
-      const bodyLower  = (n.body || '').toLowerCase();
+      const bodyLower = (n.body || '').toLowerCase();
       const combinedText = `${titleLower} ${bodyLower}`;
       const hasWord = (rx) => rx.test(combinedText);
 
@@ -3996,7 +4036,7 @@ window.openLoginModal = function() {
         else if (hasWord(/\b(toolbox|herramienta|c[aá]lculo|calculadora|ups|almacenamiento)\b/i)) seccion = 'toolbox';
         else if (hasWord(/\b(fiesta|radio|m[uú]sica|dj|mix)\b/i)) seccion = 'fiesta';
       }
-      
+
       const secBase = seccion.split(':')[0].toLowerCase();
       if (counts[secBase] !== undefined) {
         counts[secBase]++;
@@ -4015,7 +4055,7 @@ window.openLoginModal = function() {
   }
 
   // Añadir notificación local (ej. Evaluación RMA)
-  window.addLocalNotification = function(notif) {
+  window.addLocalNotification = function (notif) {
     const stringId = String(notif.id);
     const alreadyExists = state.notifications.some(n => String(n.id) === stringId);
     if (!alreadyExists && !state.clearedNotifs.includes(stringId)) {
@@ -4034,7 +4074,7 @@ window.openLoginModal = function() {
   };
 
   // Limpiar cola de mensajes (Borrar todos) — abre modal elegante
-  window.clearNotifications = function() {
+  window.clearNotifications = function () {
     if (state.notifications.length === 0) return;
     // Abre el modal de confirmación elegante (en lugar del confirm() nativo)
     const modal = document.getElementById('modal-confirm-clear');
@@ -4044,7 +4084,7 @@ window.openLoginModal = function() {
   };
 
   // Borrado individual de una sola notificación (una a la vez) con sincronización multidispositivo
-  window.dismissNotification = function(notifId, e) {
+  window.dismissNotification = function (notifId, e) {
     if (e && e.stopPropagation) {
       e.stopPropagation();
     }
@@ -4062,7 +4102,7 @@ window.openLoginModal = function() {
 
     // Sincronizar borrado con el backend para que los demás dispositivos no la muestren
     if (state.authUser && state.authUser.cedula &&
-        CFG.NOTIFS_GAS_URL && CFG.NOTIFS_GAS_URL !== 'URL_TEMPORAL_PENDIENTE') {
+      CFG.NOTIFS_GAS_URL && CFG.NOTIFS_GAS_URL !== 'URL_TEMPORAL_PENDIENTE') {
       fetch(CFG.NOTIFS_GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -4076,7 +4116,7 @@ window.openLoginModal = function() {
   };
 
   // Ejecuta el borrado masivo real (llamado desde el botón "Eliminar" del modal)
-  window.confirmClearNotifications = function() {
+  window.confirmClearNotifications = function () {
     // Cerrar el modal de confirmación
     const modal = document.getElementById('modal-confirm-clear');
     if (modal) modal.classList.remove('active');
@@ -4102,7 +4142,7 @@ window.openLoginModal = function() {
 
     // Sincronizar borrado masivo con el backend para que otros dispositivos no vean estas notificaciones
     if (state.authUser && state.authUser.cedula &&
-        CFG.NOTIFS_GAS_URL && CFG.NOTIFS_GAS_URL !== 'URL_TEMPORAL_PENDIENTE') {
+      CFG.NOTIFS_GAS_URL && CFG.NOTIFS_GAS_URL !== 'URL_TEMPORAL_PENDIENTE') {
       fetch(CFG.NOTIFS_GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -4116,7 +4156,7 @@ window.openLoginModal = function() {
   };
 
   // Manejador centralizado y seguro para el clic en notificaciones
-  window.handleNotificationClick = function(notifId) {
+  window.handleNotificationClick = function (notifId) {
     const notif = state.notifications.find(item => String(item.id) === String(notifId));
     if (!notif) return;
 
@@ -4138,7 +4178,7 @@ window.openLoginModal = function() {
   };
 
   // Modal de cumpleaños: mensaje personalizado + confeti
-  window.showBirthdayModal = function(isSundayMoved) {
+  window.showBirthdayModal = function (isSundayMoved) {
     const textEl = document.getElementById('modal-birthday-text');
     if (textEl) {
       textEl.innerHTML = isSundayMoved
@@ -4172,19 +4212,19 @@ window.openLoginModal = function() {
 
     // Configuración visual por sección destino
     const SECC_CFG = {
-      puntos:   { icon: 'fa-star',          color: '#f59e0b', badgeText: '⭐ Puntos',  badgeBg: '#fef3c7', badgeTxt: '#b45309' },
-      agenda:   { icon: 'fa-calendar-days', color: '#6366f1', badgeText: '📅 Agenda',  badgeBg: '#ede9fe', badgeTxt: '#5b21b6' },
-      promos:   { icon: 'fa-fire',          color: '#ef4444', badgeText: '🔥 Promo',   badgeBg: '#fee2e2', badgeTxt: '#b91c1c' },
-      rma:      { icon: 'fa-screwdriver-wrench', color: '#0f766e', badgeText: '🔧 Mi RMA', badgeBg: '#ccfbf1', badgeTxt: '#0f766e' },
+      puntos: { icon: 'fa-star', color: '#f59e0b', badgeText: '⭐ Puntos', badgeBg: '#fef3c7', badgeTxt: '#b45309' },
+      agenda: { icon: 'fa-calendar-days', color: '#6366f1', badgeText: '📅 Agenda', badgeBg: '#ede9fe', badgeTxt: '#5b21b6' },
+      promos: { icon: 'fa-fire', color: '#ef4444', badgeText: '🔥 Promo', badgeBg: '#fee2e2', badgeTxt: '#b91c1c' },
+      rma: { icon: 'fa-screwdriver-wrench', color: '#0f766e', badgeText: '🔧 Mi RMA', badgeBg: '#ccfbf1', badgeTxt: '#0f766e' },
       external: { icon: 'fa-arrow-up-right-from-square', color: '#005bbb', badgeText: '🌐 MGM Web ↗', badgeBg: '#e8f1ff', badgeTxt: '#005bbb' },
-      default:  { icon: 'fa-circle-info',   color: '#0ea5e9', badgeText: null,         badgeBg: null,      badgeTxt: null      }
+      default: { icon: 'fa-circle-info', color: '#0ea5e9', badgeText: null, badgeBg: null, badgeTxt: null }
     };
 
     list.innerHTML = visibles.map(n => {
       // Usar campo seccion o url del backend; fallback: inferir por contenido
       let seccion = (n.seccion || n.url || '').trim();
       const titleLower = (n.title || '').toLowerCase();
-      const bodyLower  = (n.body || '').toLowerCase();
+      const bodyLower = (n.body || '').toLowerCase();
       const combinedText = `${titleLower} ${bodyLower}`;
 
       // Helper para comprobar palabras completas de forma segura
@@ -4208,98 +4248,98 @@ window.openLoginModal = function() {
       const baseCfg = SECC_CFG[tab] || SECC_CFG.default;
 
       // Icono y badge base
-      let itemIcon      = n.icon      || baseCfg.icon;
-      let itemColor     = n.iconColor || baseCfg.color;
+      let itemIcon = n.icon || baseCfg.icon;
+      let itemColor = n.iconColor || baseCfg.color;
       let itemBadgeText = n.badgeText || baseCfg.badgeText;
-      let itemBadgeBg   = n.badgeBg   || baseCfg.badgeBg;
-      let itemBadgeTxt  = n.badgeTxt  || baseCfg.badgeTxt;
+      let itemBadgeBg = n.badgeBg || baseCfg.badgeBg;
+      let itemBadgeTxt = n.badgeTxt || baseCfg.badgeTxt;
 
       if (isExternal) {
         const lowerSec = seccion.toLowerCase();
         if (lowerSec.includes('wa.me') || lowerSec.includes('whatsapp')) {
-          itemIcon      = 'fa-brands fa-whatsapp';
-          itemColor     = '#22c55e';
+          itemIcon = 'fa-brands fa-whatsapp';
+          itemColor = '#22c55e';
           itemBadgeText = '💬 WhatsApp ↗';
-          itemBadgeBg   = '#dcfce7';
-          itemBadgeTxt  = '#15803d';
+          itemBadgeBg = '#dcfce7';
+          itemBadgeTxt = '#15803d';
         } else if (lowerSec.includes('meet.google') || lowerSec.includes('zoom.us') || lowerSec.includes('teams.live')) {
-          itemIcon      = 'fa-video';
-          itemColor     = '#0284c7';
+          itemIcon = 'fa-video';
+          itemColor = '#0284c7';
           itemBadgeText = '📹 Reunión ↗';
-          itemBadgeBg   = '#e0f2fe';
-          itemBadgeTxt  = '#0369a1';
+          itemBadgeBg = '#e0f2fe';
+          itemBadgeTxt = '#0369a1';
         } else if (lowerSec.includes('odoo') || lowerSec.includes('mgm') || seccion.startsWith('/')) {
-          itemIcon      = 'fa-arrow-up-right-from-square';
-          itemColor     = '#005bbb';
+          itemIcon = 'fa-arrow-up-right-from-square';
+          itemColor = '#005bbb';
           itemBadgeText = '🌐 MGM Web ↗';
-          itemBadgeBg   = '#e8f1ff';
-          itemBadgeTxt  = '#005bbb';
+          itemBadgeBg = '#e8f1ff';
+          itemBadgeTxt = '#005bbb';
         } else {
-          itemIcon      = 'fa-arrow-up-right-from-square';
-          itemColor     = '#0ea5e9';
+          itemIcon = 'fa-arrow-up-right-from-square';
+          itemColor = '#0ea5e9';
           itemBadgeText = '🌐 Ver enlace ↗';
-          itemBadgeBg   = '#f0f9ff';
-          itemBadgeTxt  = '#0284c7';
+          itemBadgeBg = '#f0f9ff';
+          itemBadgeTxt = '#0284c7';
         }
       } else if (!n.badgeText) {
         // Refinar insignia y estilo visual según el tipo específico de evento/alerta interna
 
         // 1. RMA / Garantías / Taller técnico
         if (tab === 'rma' || hasWord(/\b(rma|garant[ií]a|garantias|taller\s+rma|taller|reparaci[oó]n)\b/i)) {
-          itemIcon      = 'fa-screwdriver-wrench';
-          itemColor     = '#0f766e';
+          itemIcon = 'fa-screwdriver-wrench';
+          itemColor = '#0f766e';
           itemBadgeText = '🔧 Mi RMA';
-          itemBadgeBg   = '#ccfbf1';
-          itemBadgeTxt  = '#0f766e';
+          itemBadgeBg = '#ccfbf1';
+          itemBadgeTxt = '#0f766e';
         }
         // 2. Canjes de premios de puntos
         else if (hasWord(/\b(redim|canje|canjeado|canjeaste|canjear|recompensa)\b/i)) {
-          itemIcon      = 'fa-gift';
-          itemColor     = '#10b981';
+          itemIcon = 'fa-gift';
+          itemColor = '#10b981';
           itemBadgeText = '🎁 Canje';
-          itemBadgeBg   = '#d1fae5';
-          itemBadgeTxt  = '#065f46';
+          itemBadgeBg = '#d1fae5';
+          itemBadgeTxt = '#065f46';
         }
         // 3. Devolución de mercadería / Nota de crédito comercial (\bnc\b como palabra entera, ¡NUNCA .includes('nc')!)
         else if (hasWord(/\b(devoluci[oó]n|devoluciones|nota(?:s)? de cr[eé]dito|\bnc\b)\b/i)) {
-          itemIcon      = 'fa-file-invoice-dollar';
-          itemColor     = '#ef4444';
+          itemIcon = 'fa-file-invoice-dollar';
+          itemColor = '#ef4444';
           itemBadgeText = '📋 Devolución';
-          itemBadgeBg   = '#fee2e2';
-          itemBadgeTxt  = '#991b1b';
+          itemBadgeBg = '#fee2e2';
+          itemBadgeTxt = '#991b1b';
         }
         // 4. Ajustes de saldo de puntos
         else if (hasWord(/\b(ajuste|ajustes)\b/i)) {
           const isFavor = hasWord(/\b(favor|acredit|bono|\(\+\))\b/i);
-          itemIcon      = isFavor ? 'fa-award' : 'fa-sliders';
-          itemColor     = isFavor ? '#8b5cf6' : '#f59e0b';
+          itemIcon = isFavor ? 'fa-award' : 'fa-sliders';
+          itemColor = isFavor ? '#8b5cf6' : '#f59e0b';
           itemBadgeText = isFavor ? '✨ Ajuste (+)' : '⚠️ Ajuste (-)';
-          itemBadgeBg   = isFavor ? '#ede9fe' : '#fef3c7';
-          itemBadgeTxt  = isFavor ? '#5b21b6' : '#92400e';
+          itemBadgeBg = isFavor ? '#ede9fe' : '#fef3c7';
+          itemBadgeTxt = isFavor ? '#5b21b6' : '#92400e';
         }
         // 5. Cumpleaños del cliente
         else if (hasWord(/\b(cumplea[nñ]os|aniversario)\b/i)) {
-          itemIcon      = 'fa-cake-candles';
-          itemColor     = '#ec4899';
+          itemIcon = 'fa-cake-candles';
+          itemColor = '#ec4899';
           itemBadgeText = '🎂 Cumpleaños';
-          itemBadgeBg   = '#fce7f3';
-          itemBadgeTxt  = '#9d174d';
+          itemBadgeBg = '#fce7f3';
+          itemBadgeTxt = '#9d174d';
         }
         // 6. Bienvenida a MGM Hub
         else if (hasWord(/\b(bienvenid[oa]s?)\b/i)) {
-          itemIcon      = 'fa-hand-peace';
-          itemColor     = '#6366f1';
+          itemIcon = 'fa-hand-peace';
+          itemColor = '#6366f1';
           itemBadgeText = '🎉 Bienvenida';
-          itemBadgeBg   = '#e0e7ff';
-          itemBadgeTxt  = '#4338ca';
+          itemBadgeBg = '#e0e7ff';
+          itemBadgeTxt = '#4338ca';
         }
         // 7. Cursos y capacitaciones
         else if (hasWord(/\b(curso|cursos|capacitaci[oó]n|capacitaciones|certificaci[oó]n|webinar)\b/i)) {
-          itemIcon      = 'fa-graduation-cap';
-          itemColor     = '#005bbb';
+          itemIcon = 'fa-graduation-cap';
+          itemColor = '#005bbb';
           itemBadgeText = '🎓 Capacitación';
-          itemBadgeBg   = '#e8f1ff';
-          itemBadgeTxt  = '#005bbb';
+          itemBadgeBg = '#e8f1ff';
+          itemBadgeTxt = '#005bbb';
         }
       }
 
@@ -4310,7 +4350,7 @@ window.openLoginModal = function() {
         ? `onclick="handleNotificationClick('${safeId}')" style="cursor:pointer;"`
         : '';
 
-      const hoverIn  = `this.style.boxShadow='0 4px 14px rgba(0,33,74,0.13)'; ${isClickable ? "this.style.transform='translateY(-1px)';" : ''}`;
+      const hoverIn = `this.style.boxShadow='0 4px 14px rgba(0,33,74,0.13)'; ${isClickable ? "this.style.transform='translateY(-1px)';" : ''}`;
       const hoverOut = `this.style.boxShadow='0 2px 6px rgba(0,33,74,0.05)'; this.style.transform='translateY(0)';`;
 
       const iconClass = itemIcon.includes('fa-') && !itemIcon.includes('fa-solid') && !itemIcon.includes('fa-brands') && !itemIcon.includes('fa-regular')
@@ -4345,7 +4385,7 @@ window.openLoginModal = function() {
   async function init() {
     // Asegurar tema estándar limpio (sin modo oscuro residual)
     document.documentElement.removeAttribute('data-theme');
-    try { localStorage.removeItem('mgm_theme'); } catch(e) {}
+    try { localStorage.removeItem('mgm_theme'); } catch (e) { }
 
     // ── Verificar expiración de sesión por inactividad (30 días) ─────────────
     if (state.authUser) {
@@ -4393,7 +4433,7 @@ window.openLoginModal = function() {
     updateHeaderUserIcon();
     updateHomeAuthBanner();
     updatePuntosAuthViews();
-    
+
     // Si el usuario está autenticado, registrar visita en tracking sheet y refrescar puntos
     if (state.authUser) {
       trackUserActivity(state.authUser.cedula, state.authUser.nombre, 'app_open');
@@ -4404,10 +4444,10 @@ window.openLoginModal = function() {
     } else {
       renderMyCourses();
     }
-    
+
     // Actualizar badge visual con las locales
     updateNotifBadge();
-    
+
     // Consultar nuevas notificaciones
     checkNotifications();
 
@@ -4424,8 +4464,8 @@ window.openLoginModal = function() {
     // QR RMA:   ?tab=rma&sub=RMA-2026-0001&email=cliente@email.com
     // Modo Fiesta: ?tab=party
     const _urlParams = new URLSearchParams(window.location.search);
-    const _deepTab   = _urlParams.get('tab');
-    const _deepSub   = _urlParams.get('sub') || _urlParams.get('id');
+    const _deepTab = _urlParams.get('tab');
+    const _deepSub = _urlParams.get('sub') || _urlParams.get('id');
     const _deepEmail = _urlParams.get('email') || '';
     if (_deepTab) {
       // Si hay email en la URL (viene del QR), guardarlo para que navigateTo lo use
@@ -4464,7 +4504,7 @@ window.openLoginModal = function() {
    MÓDULO RMA — CONSULTA DE GARANTÍA (Global, fuera del IIFE principal)
    Endpoint: mismo GAS de Notificaciones (action=get_rma)
    ========================================================================== */
-(function() {
+(function () {
   'use strict';
 
   // URL del backend — usa el mismo GAS de Notificaciones
@@ -4472,17 +4512,17 @@ window.openLoginModal = function() {
 
   // Mapa de estados → { clase CSS, icono, progreso % }
   const ESTADO_MAP = {
-    'recibido':          { cls: 'recibido',        icon: 'fa-inbox',            progress: 15,  label: 'Recibido' },
-    'en diagnóstico':    { cls: 'diagnostico',     icon: 'fa-microscope',       progress: 35,  label: 'En Diagnóstico' },
-    'en diagnóstico':    { cls: 'diagnostico',     icon: 'fa-microscope',       progress: 35,  label: 'En Diagnóstico' },
-    'en diagnostico':    { cls: 'diagnostico',     icon: 'fa-microscope',       progress: 35,  label: 'En Diagnóstico' },
-    'en reparación':     { cls: 'reparacion',      icon: 'fa-screwdriver-wrench', progress: 55, label: 'En Reparación' },
-    'en reparacion':     { cls: 'reparacion',      icon: 'fa-screwdriver-wrench', progress: 55, label: 'En Reparación' },
-    'espera de repuesto':{ cls: 'espera-repuesto', icon: 'fa-clock',            progress: 50,  label: 'Espera Repuesto' },
-    'listo para retirar':{ cls: 'listo',           icon: 'fa-circle-check',     progress: 90,  label: 'Listo para Retirar' },
-    'entregado':         { cls: 'entregado',       icon: 'fa-check-double',     progress: 100, label: 'Entregado' },
-    'sin garantía':      { cls: 'sin-garantia',    icon: 'fa-triangle-exclamation', progress: 0, label: 'Sin Garantía' },
-    'sin garantia':      { cls: 'sin-garantia',    icon: 'fa-triangle-exclamation', progress: 0, label: 'Sin Garantía' },
+    'recibido': { cls: 'recibido', icon: 'fa-inbox', progress: 15, label: 'Recibido' },
+    'en diagnóstico': { cls: 'diagnostico', icon: 'fa-microscope', progress: 35, label: 'En Diagnóstico' },
+    'en diagnóstico': { cls: 'diagnostico', icon: 'fa-microscope', progress: 35, label: 'En Diagnóstico' },
+    'en diagnostico': { cls: 'diagnostico', icon: 'fa-microscope', progress: 35, label: 'En Diagnóstico' },
+    'en reparación': { cls: 'reparacion', icon: 'fa-screwdriver-wrench', progress: 55, label: 'En Reparación' },
+    'en reparacion': { cls: 'reparacion', icon: 'fa-screwdriver-wrench', progress: 55, label: 'En Reparación' },
+    'espera de repuesto': { cls: 'espera-repuesto', icon: 'fa-clock', progress: 50, label: 'Espera Repuesto' },
+    'listo para retirar': { cls: 'listo', icon: 'fa-circle-check', progress: 90, label: 'Listo para Retirar' },
+    'entregado': { cls: 'entregado', icon: 'fa-check-double', progress: 100, label: 'Entregado' },
+    'sin garantía': { cls: 'sin-garantia', icon: 'fa-triangle-exclamation', progress: 0, label: 'Sin Garantía' },
+    'sin garantia': { cls: 'sin-garantia', icon: 'fa-triangle-exclamation', progress: 0, label: 'Sin Garantía' },
   };
 
   function getEstadoInfo(rawEstado) {
@@ -4515,11 +4555,11 @@ window.openLoginModal = function() {
   function buildRmaCard(item) {
     const estado = getEstadoInfo(item.estado);
     const fechaIngreso = item.fecha_ingreso || item.fecha || '—';
-    const modelo      = item.modelo || item.producto || item.equipo || '—';
-    const serial      = item.serial || item.numero_serie || item.serie || '';
-    const falla       = item.falla || item.descripcion || '—';
-    const tecnico     = item.tecnico || item.responsable || '—';
-    const rmaNum      = item.rma || item.numero_rma || item.id || '';
+    const modelo = item.modelo || item.producto || item.equipo || '—';
+    const serial = item.serial || item.numero_serie || item.serie || '';
+    const falla = item.falla || item.descripcion || '—';
+    const tecnico = item.tecnico || item.responsable || '—';
+    const rmaNum = item.rma || item.numero_rma || item.id || '';
 
     return `
       <div class="rma-card">
@@ -4574,7 +4614,7 @@ window.openLoginModal = function() {
       </div>`;
   }
 
-  window.buscarRMA = function() {
+  window.buscarRMA = function () {
     const input = document.getElementById('rma-cedula-input');
     if (!input) return;
     const cedula = input.value.trim();
@@ -4590,9 +4630,9 @@ window.openLoginModal = function() {
 
     // Mostrar spinner provisional mientras carga
     const resultSection = document.getElementById('rma-result-section');
-    const searchCard    = document.querySelector('.rma-search-card');
-    const cardsList     = document.getElementById('rma-cards-list');
-    const resultSub     = document.getElementById('rma-result-sub');
+    const searchCard = document.querySelector('.rma-search-card');
+    const cardsList = document.getElementById('rma-cards-list');
+    const resultSub = document.getElementById('rma-result-sub');
 
     if (cardsList) cardsList.innerHTML = '<div class="rma-spinner">Consultando base de datos...</div>';
     if (resultSection) resultSection.style.display = 'block';
@@ -4631,24 +4671,24 @@ window.openLoginModal = function() {
       });
   };
 
-  window.rmaVolverBusqueda = function() {
+  window.rmaVolverBusqueda = function () {
     const resultSection = document.getElementById('rma-result-section');
-    const searchCard    = document.querySelector('.rma-search-card');
-    const cardsList     = document.getElementById('rma-cards-list');
-    const input         = document.getElementById('rma-cedula-input');
+    const searchCard = document.querySelector('.rma-search-card');
+    const cardsList = document.getElementById('rma-cards-list');
+    const input = document.getElementById('rma-cedula-input');
 
     if (resultSection) resultSection.style.display = 'none';
-    if (searchCard)    searchCard.style.display = 'flex';
-    if (cardsList)     cardsList.innerHTML = '';
-    if (input)         { input.value = ''; input.focus(); }
+    if (searchCard) searchCard.style.display = 'flex';
+    if (cardsList) cardsList.innerHTML = '';
+    if (input) { input.value = ''; input.focus(); }
     rmaHideError();
   };
 
   // Permitir buscar con Enter
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     const input = document.getElementById('rma-cedula-input');
     if (input) {
-      input.addEventListener('keydown', function(e) {
+      input.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') window.buscarRMA();
       });
     }
@@ -4660,7 +4700,7 @@ window.openLoginModal = function() {
 // MÓDULO: CALCULADORA DE ALMACENAMIENTO CCTV
 // Se inicializa cuando el usuario navega a la vista toolbox:calculadora-almacenamiento
 // ══════════════════════════════════════════════════════════════════════════════
-(function() {
+(function () {
   'use strict';
 
   // URL del Apps Script que devuelve discos del inventario MGM
@@ -4669,12 +4709,12 @@ window.openLoginModal = function() {
   // Tabla de bitrates base (kbps) por resolución y codec (cámaras IP)
   const bitrateTable = {
     digital: {
-      "720":   { h264: 2048,  h265: 1536,  h265p: 1024,  mjpeg: 8000  },
-      "1080":  { h264: 4096,  h265: 3072,  h265p: 2048,  mjpeg: 16000 },
-      "3000":  { h264: 6144,  h265: 4608,  h265p: 3072,  mjpeg: 24000 },
-      "4000":  { h264: 8192,  h265: 6144,  h265p: 4096,  mjpeg: 32000 },
-      "5000":  { h264: 10240, h265: 7168,  h265p: 5120,  mjpeg: 40000 },
-      "8000":  { h264: 16384, h265: 10240, h265p: 8192,  mjpeg: 64000 },
+      "720": { h264: 2048, h265: 1536, h265p: 1024, mjpeg: 8000 },
+      "1080": { h264: 4096, h265: 3072, h265p: 2048, mjpeg: 16000 },
+      "3000": { h264: 6144, h265: 4608, h265p: 3072, mjpeg: 24000 },
+      "4000": { h264: 8192, h265: 6144, h265p: 4096, mjpeg: 32000 },
+      "5000": { h264: 10240, h265: 7168, h265p: 5120, mjpeg: 40000 },
+      "8000": { h264: 16384, h265: 10240, h265p: 8192, mjpeg: 64000 },
       "12000": { h264: 24576, h265: 16384, h265p: 12288, mjpeg: 96000 }
     },
     analog: {
@@ -4685,10 +4725,10 @@ window.openLoginModal = function() {
   // Factores de modo de grabación (porcentaje del tiempo activo)
   const modeFactors = {
     continuous: 1,
-    motion:     0.35,
-    events:     0.15,
-    work8:      0.33,
-    work12:     0.50
+    motion: 0.35,
+    events: 0.15,
+    work8: 0.33,
+    work12: 0.50
   };
 
   // Estado de la calculadora
@@ -4698,29 +4738,29 @@ window.openLoginModal = function() {
 
   // ─── Inicializar calculadora cuando el usuario llega a esa vista ───────────
   function initCalc() {
-    const addBtn  = document.getElementById('addCam');
+    const addBtn = document.getElementById('addCam');
     const calcBtn = document.getElementById('btnCalcular');
-    const pdfBtn  = document.getElementById('btnPDF');
+    const pdfBtn = document.getElementById('btnPDF');
 
     if (!addBtn) return; // DOM no listo todavia
 
     // Limpiar listeners previos clonando el nodo (evita duplicados)
-    const newAdd  = addBtn.cloneNode(true);
+    const newAdd = addBtn.cloneNode(true);
     const newCalc = calcBtn ? calcBtn.cloneNode(true) : null;
-    const newPdf  = pdfBtn  ? pdfBtn.cloneNode(true)  : null;
+    const newPdf = pdfBtn ? pdfBtn.cloneNode(true) : null;
     addBtn.parentNode.replaceChild(newAdd, addBtn);
     if (calcBtn && newCalc) calcBtn.parentNode.replaceChild(newCalc, calcBtn);
-    if (pdfBtn  && newPdf)  pdfBtn.parentNode.replaceChild(newPdf, pdfBtn);
+    if (pdfBtn && newPdf) pdfBtn.parentNode.replaceChild(newPdf, pdfBtn);
 
     newAdd.addEventListener('click', addCameraRow);
     if (newCalc) newCalc.addEventListener('click', calcularTotal);
-    if (newPdf)  newPdf.addEventListener('click', generarPDF);
+    if (newPdf) newPdf.addEventListener('click', generarPDF);
 
     // Limpiar lista y resultado de sesiones previas
     const camList = document.getElementById('camList');
-    const resBox  = document.getElementById('resultadoBox');
+    const resBox = document.getElementById('resultadoBox');
     if (camList) camList.innerHTML = '';
-    if (resBox)  resBox.style.display = 'none';
+    if (resBox) resBox.style.display = 'none';
 
     // Agregar primera fila de camara por defecto
     addCameraRow();
@@ -4795,39 +4835,39 @@ window.openLoginModal = function() {
   }
 
   // ─── Actualizar opciones de resolución según tecnología ───────────────────
-  window.calcActualizarRes = function(select) {
+  window.calcActualizarRes = function (select) {
     const row = select.closest('.cam-row');
-    const resSelect   = row.querySelector('.res');
+    const resSelect = row.querySelector('.res');
     const codecSelect = row.querySelector('.codec');
     resSelect.innerHTML = '';
     if (select.value === 'digital') {
       const ops = [
-        {v:"720",   t:"1MP / 720p"},
-        {v:"1080",  t:"2MP / 1080p"},
-        {v:"3000",  t:"3MP"},
-        {v:"4000",  t:"4MP"},
-        {v:"5000",  t:"5MP"},
-        {v:"8000",  t:"8MP / 4K"},
-        {v:"12000", t:"12MP / Pro"}
+        { v: "720", t: "1MP / 720p" },
+        { v: "1080", t: "2MP / 1080p" },
+        { v: "3000", t: "3MP" },
+        { v: "4000", t: "4MP" },
+        { v: "5000", t: "5MP" },
+        { v: "8000", t: "8MP / 4K" },
+        { v: "12000", t: "12MP / Pro" }
       ];
       ops.forEach(o => resSelect.add(new Option(o.t, o.v)));
       codecSelect.disabled = false;
     } else {
       const ops = [
-        {v:"720p",  t:"720p HD"},
-        {v:"1080p", t:"1080p HD"},
-        {v:"4MP",   t:"4MP HD"},
-        {v:"5MP",   t:"5MP HD"},
-        {v:"4K",    t:"8MP 4K"}
+        { v: "720p", t: "720p HD" },
+        { v: "1080p", t: "1080p HD" },
+        { v: "4MP", t: "4MP HD" },
+        { v: "5MP", t: "5MP HD" },
+        { v: "4K", t: "8MP 4K" }
       ];
       ops.forEach(o => resSelect.add(new Option(o.t, o.v)));
-      codecSelect.value    = 'h264';
+      codecSelect.value = 'h264';
       codecSelect.disabled = true;
     }
   };
 
   // ─── Renumerar cámaras tras eliminar ─────────────────────────────────────
-  window.calcRenumerar = function() {
+  window.calcRenumerar = function () {
     document.querySelectorAll('.cam-row').forEach((r, i) => {
       const span = r.querySelector('span');
       if (span) span.textContent = 'CAMARA #' + (i + 1);
@@ -4841,12 +4881,12 @@ window.openLoginModal = function() {
     const filas = [];
 
     document.querySelectorAll('.cam-row').forEach((row, i) => {
-      const tipo   = row.querySelector('.tipo').value;
-      const res    = row.querySelector('.res').value;
-      const codec  = row.querySelector('.codec').value;
-      const fps    = parseInt(row.querySelector('.fps').value) || 1;
-      const scene  = parseFloat(row.querySelector('.scene').value);
-      const mode   = row.querySelector('.mode').value;
+      const tipo = row.querySelector('.tipo').value;
+      const res = row.querySelector('.res').value;
+      const codec = row.querySelector('.codec').value;
+      const fps = parseInt(row.querySelector('.fps').value) || 1;
+      const scene = parseFloat(row.querySelector('.scene').value);
+      const mode = row.querySelector('.mode').value;
       const custom = row.querySelector('.customBR').value;
 
       let br = custom
@@ -4877,9 +4917,9 @@ window.openLoginModal = function() {
     const resultadoBox = document.getElementById('resultadoBox');
     if (resultadoBox) resultadoBox.style.display = 'block';
 
-    const resNeto   = document.getElementById('resNeto');
+    const resNeto = document.getElementById('resNeto');
     const resDiscos = document.getElementById('resDiscos');
-    if (resNeto)   resNeto.textContent   = totalNeto.toFixed(2) + ' TB';
+    if (resNeto) resNeto.textContent = totalNeto.toFixed(2) + ' TB';
     if (resDiscos) resDiscos.textContent = Math.ceil(totalConSeguridad) + ' TB Reales';
 
     // Renderizar tabla de detalle
@@ -4888,7 +4928,7 @@ window.openLoginModal = function() {
       tbody.innerHTML = filas.map(f =>
         `<tr>${f.map((td, ci) => {
           const align = ci === 0 || ci === 3 ? 'center' : ci >= 6 ? 'right' : 'left';
-          const bold  = ci === 7 ? 'font-weight:700; color:#0c4a6e;' : '';
+          const bold = ci === 7 ? 'font-weight:700; color:#0c4a6e;' : '';
           return `<td style="padding:7px 8px; border-bottom:1px solid #f0f0f0; text-align:${align}; ${bold}">${td}</td>`;
         }).join('')}</tr>`
       ).join('');
@@ -4901,14 +4941,14 @@ window.openLoginModal = function() {
   // ─── Consultar inventario de discos en MGM ────────────────────────────────
   function halarInventarioMGM(capGB) {
     const container = document.getElementById('listaDiscos');
-    const loading   = document.getElementById('loadingMGM');
-    const titulo    = document.getElementById('tituloRecomendaciones');
+    const loading = document.getElementById('loadingMGM');
+    const titulo = document.getElementById('tituloRecomendaciones');
     if (!container) return;
 
     if (loading) loading.style.display = 'block';
-    if (titulo)  titulo.style.display  = 'none';
+    if (titulo) titulo.style.display = 'none';
     container.innerHTML = '';
-    _discoSeleccionado  = null;
+    _discoSeleccionado = null;
 
     fetch(`${STORAGE_CALC_GAS}?gb=${Math.round(capGB)}`)
       .then(r => r.json())
@@ -4924,7 +4964,7 @@ window.openLoginModal = function() {
           card.style.cssText = 'background:white; border:2px solid #e2e8f0; padding:14px; border-radius:10px; cursor:pointer; transition:0.2s;';
           card.innerHTML = `
             <div style="font-weight:700; font-size:13px; color:#333; margin-bottom:4px;">${d.modelo}</div>
-            <div style="font-size:11px; color:var(--primary-blue); margin-bottom:4px;">SKU: ${d.sku} | ${d.capacidad/1024}TB</div>
+            <div style="font-size:11px; color:var(--primary-blue); margin-bottom:4px;">SKU: ${d.sku} | ${d.capacidad / 1024}TB</div>
             <div style="font-weight:700; color:#dc3545; font-size:12px; margin-bottom:4px;">Se requieren: <strong>${unidades}</strong> unidad(es)</div>
             <div style="font-weight:700; color:#10b981; font-size:13px; margin-bottom:8px;">P. Unitario: $${parseFloat(d.precio).toFixed(2)}</div>
             <label style="font-size:10px; display:flex; align-items:center; gap:5px; color:#555; cursor:pointer;">
@@ -4932,7 +4972,7 @@ window.openLoginModal = function() {
             </label>
           `;
 
-          card.addEventListener('click', function(e) {
+          card.addEventListener('click', function (e) {
             if (e.target.type === 'checkbox') {
               _mostrarPrecioEnPDF = e.target.checked;
               return;
@@ -4941,9 +4981,9 @@ window.openLoginModal = function() {
               c.style.border = '2px solid #e2e8f0';
               c.style.background = 'white';
             });
-            card.style.border     = '2px solid var(--primary-blue)';
+            card.style.border = '2px solid var(--primary-blue)';
             card.style.background = '#eff6ff';
-            _discoSeleccionado = {...d, qty: unidades};
+            _discoSeleccionado = { ...d, qty: unidades };
             _mostrarPrecioEnPDF = card.querySelector('.chk-precio').checked;
           });
 
@@ -4965,7 +5005,7 @@ window.openLoginModal = function() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    const client  = (document.getElementById('clientName') || {}).value || 'Cliente General';
+    const client = (document.getElementById('clientName') || {}).value || 'Cliente General';
     const logoUrl = 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png';
 
     // Header azul
@@ -4978,11 +5018,11 @@ window.openLoginModal = function() {
     doc.text('REPORTE TECNICO DE ALMACENAMIENTO DIGITAL', 15, 30);
     doc.text(`PROYECTO: ${client.toUpperCase()}`, 15, 38);
 
-    try { doc.addImage(logoUrl, 'PNG', 160, 8, 35, 30); } catch(e) {}
+    try { doc.addImage(logoUrl, 'PNG', 160, 8, 35, 30); } catch (e) { }
 
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(12);
-    const dias          = (document.getElementById('days') || {}).value || '?';
+    const dias = (document.getElementById('days') || {}).value || '?';
     const totalSugerido = (document.getElementById('resDiscos') || {}).textContent || '?';
     doc.text(`Dias de Respaldo: ${dias}`, 15, 55);
     doc.text(`Espacio Total Requerido: ${totalSugerido}`, 15, 63);
@@ -5023,7 +5063,7 @@ window.openLoginModal = function() {
 
   // ─── Gancho: escuchar cambios de tab para inicializar la calculadora ──────
   const _origSwitch = window.switchMainTab;
-  window.switchMainTab = function(tabName) {
+  window.switchMainTab = function (tabName) {
     if (_origSwitch) _origSwitch(tabName);
     if (tabName === 'toolbox-calculadora-almacenamiento') {
       // Guard de autenticacion: usa localStorage como los demas modulos
@@ -5041,7 +5081,7 @@ window.openLoginModal = function() {
   };
 
   // Easter egg en consola (igual que la versión standalone)
-  (function() {
+  (function () {
     const fontP = "font-family:'Segoe UI',sans-serif;";
     const fontM = "font-family:'Cascadia Code',monospace;";
     console.log(
@@ -5065,104 +5105,104 @@ window.openLoginModal = function() {
 // ══════════════════════════════════════════════════════════════════════════
 // MÓDULO: CONVERSOR TÉCNICO
 // ══════════════════════════════════════════════════════════════════════════
-(function() {
+(function () {
   let _convInitialized = false;
 
   const C = {
-   "Longitud":{ icon:"fa-ruler-horizontal", hint:"Longitudes habituales en instalación.", units:{ "Milímetros (mm)":1,"Centímetros (cm)":10,"Metros (m)":100,"Kilómetros (km)":100000,"Pulgadas (in)":25.4,"Pies (ft)":304.8,"Yardas (yd)":914.4,"Millas (mi)":1609344 } },
-   "Área":{ icon:"fa-vector-square", hint:"1 m² = 1,000,000 mm².", units:{ "mm²":1,"cm²":100,"m²":1000000,"pulgadas²":645.16,"pies²":92903.04,"hectáreas":100000000 } },
-   "Volumen":{ icon:"fa-cube", hint:"Conversión de volumen.", units:{ "mL":1,"Litros (L)":1000,"cm³":1,"m³":1000000,"Pulgadas³":16.387064,"Pies³":28316.846592,"Galones US":3785.411784 } },
-   "Peso":{ icon:"fa-weight-hanging", hint:"Masa/peso expresado en unidades habituales.", units:{ "Gramos (g)":1,"Kilogramos (kg)":1000,"Toneladas (t)":1000000,"Onzas (oz)":28.349523125,"Libras (lb)":453.59237 } },
-   "Temperatura":{ icon:"fa-thermometer-half", hint:"Conversión exacta entre °C, °F y Kelvin.", units:{"°C":"C","°F":"F","Kelvin (K)":"K"}, special:"temperature" },
-   "Voltaje":{ icon:"fa-bolt", hint:"Voltaje eléctrico.", units:{"Microvoltios (µV)":0.000001,"Milivoltios (mV)":0.001,"Voltios (V)":1,"Kilovoltios (kV)":1000} },
-   "Corriente":{ icon:"fa-wave-square", hint:"Corriente eléctrica.", units:{"Microamperios (µA)":0.000001,"Miliamperios (mA)":0.001,"Amperios (A)":1,"Kiloamperios (kA)":1000} },
-   "Potencia":{ icon:"fa-plug", hint:"Potencia eléctrica y mecánica.", units:{"Milivatios (mW)":0.001,"Vatios (W)":1,"Kilovatios (kW)":1000,"Megavatios (MW)":1000000,"Caballos de fuerza (HP)":745.699872} },
-   "Energía":{ icon:"fa-battery-three-quarters", hint:"Energía.", units:{"Milijulios (mJ)":0.001,"Julios (J)":1,"Wh":3600,"kWh":3600000,"MWh":3600000000} },
-   "Resistencia":{ icon:"fa-resistor" , hint:"Resistencia eléctrica.", units:{"Miliohmios (mΩ)":0.001,"Ohmios (Ω)":1,"Kiloohmios (kΩ)":1000,"Megaohmios (MΩ)":1000000} },
-   "Frecuencia":{ icon:"fa-signal", hint:"Frecuencia de señales y equipos.", units:{"Hz":1,"kHz":1000,"MHz":1000000,"GHz":1000000000} },
-   "Datos":{ icon:"fa-database", hint:"Conversión decimal de capacidad de datos.", units:{"bits":0.125,"Bytes (B)":1,"KB":1000,"MB":1000000,"GB":1000000000,"TB":1000000000000,"KiB":1024,"MiB":1048576,"GiB":1073741824,"TiB":1099511627776} },
-   "Velocidad de red":{ icon:"fa-network-wired", hint:"Velocidades de transmisión: bps, Kbps, Mbps y Gbps.", units:{"bps":1,"Kbps":1000,"Mbps":1000000,"Gbps":1000000000} },
-   "Tiempo":{ icon:"fa-clock", hint:"Tiempo.", units:{"Milisegundos (ms)":0.001,"Segundos (s)":1,"Minutos (min)":60,"Horas (h)":3600,"Días":86400} },
-   "Presión":{ icon:"fa-gauge", hint:"Presión.", units:{"Pa":1,"kPa":1000,"bar":100000,"PSI":6894.757293,"atm":101325} },
-   "Flujo":{ icon:"fa-faucet", hint:"Flujo volumétrico.", units:{"L/s":1,"L/min":0.0166666666667,"m³/h":0.277777777778,"CFM":0.471947443} },
-   "Iluminación":{ icon:"fa-lightbulb", hint:"Unidades fotométricas.", units:{"Lux (lx)":1,"Kilolux (klx)":1000} },
-   "Ángulo":{ icon:"fa-drafting-compass", hint:"Ángulos.", units:{"Grados (°)":1,"Radianes (rad)":57.2957795131} },
-   "dBm / potencia":{ icon:"fa-chart-bar", hint:"dBm es potencia logarítmica.", units:{"mW":1,"W":1000,"dBm":"dBm"}, special:"dbm" },
-   "AWG / cable":{ icon:"fa-cable-car", hint:"Equivalencias nominales AWG ↔ diámetro ↔ área del conductor.", units:{}, special:"awg" }
+    "Longitud": { icon: "fa-ruler-horizontal", hint: "Longitudes habituales en instalación.", units: { "Milímetros (mm)": 1, "Centímetros (cm)": 10, "Metros (m)": 100, "Kilómetros (km)": 100000, "Pulgadas (in)": 25.4, "Pies (ft)": 304.8, "Yardas (yd)": 914.4, "Millas (mi)": 1609344 } },
+    "Área": { icon: "fa-vector-square", hint: "1 m² = 1,000,000 mm².", units: { "mm²": 1, "cm²": 100, "m²": 1000000, "pulgadas²": 645.16, "pies²": 92903.04, "hectáreas": 100000000 } },
+    "Volumen": { icon: "fa-cube", hint: "Conversión de volumen.", units: { "mL": 1, "Litros (L)": 1000, "cm³": 1, "m³": 1000000, "Pulgadas³": 16.387064, "Pies³": 28316.846592, "Galones US": 3785.411784 } },
+    "Peso": { icon: "fa-weight-hanging", hint: "Masa/peso expresado en unidades habituales.", units: { "Gramos (g)": 1, "Kilogramos (kg)": 1000, "Toneladas (t)": 1000000, "Onzas (oz)": 28.349523125, "Libras (lb)": 453.59237 } },
+    "Temperatura": { icon: "fa-thermometer-half", hint: "Conversión exacta entre °C, °F y Kelvin.", units: { "°C": "C", "°F": "F", "Kelvin (K)": "K" }, special: "temperature" },
+    "Voltaje": { icon: "fa-bolt", hint: "Voltaje eléctrico.", units: { "Microvoltios (µV)": 0.000001, "Milivoltios (mV)": 0.001, "Voltios (V)": 1, "Kilovoltios (kV)": 1000 } },
+    "Corriente": { icon: "fa-wave-square", hint: "Corriente eléctrica.", units: { "Microamperios (µA)": 0.000001, "Miliamperios (mA)": 0.001, "Amperios (A)": 1, "Kiloamperios (kA)": 1000 } },
+    "Potencia": { icon: "fa-plug", hint: "Potencia eléctrica y mecánica.", units: { "Milivatios (mW)": 0.001, "Vatios (W)": 1, "Kilovatios (kW)": 1000, "Megavatios (MW)": 1000000, "Caballos de fuerza (HP)": 745.699872 } },
+    "Energía": { icon: "fa-battery-three-quarters", hint: "Energía.", units: { "Milijulios (mJ)": 0.001, "Julios (J)": 1, "Wh": 3600, "kWh": 3600000, "MWh": 3600000000 } },
+    "Resistencia": { icon: "fa-resistor", hint: "Resistencia eléctrica.", units: { "Miliohmios (mΩ)": 0.001, "Ohmios (Ω)": 1, "Kiloohmios (kΩ)": 1000, "Megaohmios (MΩ)": 1000000 } },
+    "Frecuencia": { icon: "fa-signal", hint: "Frecuencia de señales y equipos.", units: { "Hz": 1, "kHz": 1000, "MHz": 1000000, "GHz": 1000000000 } },
+    "Datos": { icon: "fa-database", hint: "Conversión decimal de capacidad de datos.", units: { "bits": 0.125, "Bytes (B)": 1, "KB": 1000, "MB": 1000000, "GB": 1000000000, "TB": 1000000000000, "KiB": 1024, "MiB": 1048576, "GiB": 1073741824, "TiB": 1099511627776 } },
+    "Velocidad de red": { icon: "fa-network-wired", hint: "Velocidades de transmisión: bps, Kbps, Mbps y Gbps.", units: { "bps": 1, "Kbps": 1000, "Mbps": 1000000, "Gbps": 1000000000 } },
+    "Tiempo": { icon: "fa-clock", hint: "Tiempo.", units: { "Milisegundos (ms)": 0.001, "Segundos (s)": 1, "Minutos (min)": 60, "Horas (h)": 3600, "Días": 86400 } },
+    "Presión": { icon: "fa-gauge", hint: "Presión.", units: { "Pa": 1, "kPa": 1000, "bar": 100000, "PSI": 6894.757293, "atm": 101325 } },
+    "Flujo": { icon: "fa-faucet", hint: "Flujo volumétrico.", units: { "L/s": 1, "L/min": 0.0166666666667, "m³/h": 0.277777777778, "CFM": 0.471947443 } },
+    "Iluminación": { icon: "fa-lightbulb", hint: "Unidades fotométricas.", units: { "Lux (lx)": 1, "Kilolux (klx)": 1000 } },
+    "Ángulo": { icon: "fa-drafting-compass", hint: "Ángulos.", units: { "Grados (°)": 1, "Radianes (rad)": 57.2957795131 } },
+    "dBm / potencia": { icon: "fa-chart-bar", hint: "dBm es potencia logarítmica.", units: { "mW": 1, "W": 1000, "dBm": "dBm" }, special: "dbm" },
+    "AWG / cable": { icon: "fa-cable-car", hint: "Equivalencias nominales AWG ↔ diámetro ↔ área del conductor.", units: {}, special: "awg" }
   };
 
   const awg = [
-    ["0000 (4/0)",11.684,107.219],["000 (3/0)",10.405,85.029],["00 (2/0)",9.266,67.431],["0 (1/0)",8.251,53.475],
-    ["1",7.348,42.408],["2",6.544,33.631],["3",5.827,26.670],["4",5.189,21.150],["5",4.621,16.770],["6",4.115,13.300],
-    ["7",3.665,10.550],["8",3.264,8.370],["9",2.906,6.630],["10",2.588,5.260],["11",2.305,4.170],["12",2.053,3.310],
-    ["13",1.828,2.620],["14",1.628,2.080],["15",1.450,1.650],["16",1.291,1.310],["17",1.150,1.040],["18",1.024,0.823],
-    ["19",0.912,0.653],["20",0.812,0.518],["21",0.723,0.410],["22",0.644,0.326],["23",0.573,0.258],["24",0.511,0.205],
-    ["25",0.455,0.162],["26",0.405,0.129],["27",0.361,0.102],["28",0.321,0.0810],["29",0.287,0.0642],["30",0.255,0.0509],
-    ["31",0.227,0.0404],["32",0.202,0.0320],["33",0.180,0.0254],["34",0.160,0.0201],["35",0.143,0.0169],["36",0.127,0.0127],
-    ["37",0.114,0.0100],["38",0.101,0.0080],["39",0.0897,0.0063],["40",0.0799,0.0050]
+    ["0000 (4/0)", 11.684, 107.219], ["000 (3/0)", 10.405, 85.029], ["00 (2/0)", 9.266, 67.431], ["0 (1/0)", 8.251, 53.475],
+    ["1", 7.348, 42.408], ["2", 6.544, 33.631], ["3", 5.827, 26.670], ["4", 5.189, 21.150], ["5", 4.621, 16.770], ["6", 4.115, 13.300],
+    ["7", 3.665, 10.550], ["8", 3.264, 8.370], ["9", 2.906, 6.630], ["10", 2.588, 5.260], ["11", 2.305, 4.170], ["12", 2.053, 3.310],
+    ["13", 1.828, 2.620], ["14", 1.628, 2.080], ["15", 1.450, 1.650], ["16", 1.291, 1.310], ["17", 1.150, 1.040], ["18", 1.024, 0.823],
+    ["19", 0.912, 0.653], ["20", 0.812, 0.518], ["21", 0.723, 0.410], ["22", 0.644, 0.326], ["23", 0.573, 0.258], ["24", 0.511, 0.205],
+    ["25", 0.455, 0.162], ["26", 0.405, 0.129], ["27", 0.361, 0.102], ["28", 0.321, 0.0810], ["29", 0.287, 0.0642], ["30", 0.255, 0.0509],
+    ["31", 0.227, 0.0404], ["32", 0.202, 0.0320], ["33", 0.180, 0.0254], ["34", 0.160, 0.0201], ["35", 0.143, 0.0169], ["36", 0.127, 0.0127],
+    ["37", 0.114, 0.0100], ["38", 0.101, 0.0080], ["39", 0.0897, 0.0063], ["40", 0.0799, 0.0050]
   ];
 
   let currentCat = "Longitud";
 
-  function populateCategories(filter="") {
+  function populateCategories(filter = "") {
     const catEl = document.getElementById("conv-categories");
     if (!catEl) return;
     catEl.innerHTML = "";
-    Object.keys(C).filter(x => x.toLowerCase().includes(filter.toLowerCase()) || Object.keys(C[x].units).some(u=>u.toLowerCase().includes(filter.toLowerCase())))
-    .forEach(x => {
-      const b = document.createElement("button"); 
-      b.className = "conv-cat-btn" + (x === currentCat ? " active" : "");
-      const icon = C[x].icon || "fa-circle";
-      b.innerHTML = '<i class="fas ' + icon + ' cat-icon"></i><span>' + x + '</span>'; 
-      b.onclick = () => selectCategory(x); 
-      catEl.appendChild(b);
-    });
+    Object.keys(C).filter(x => x.toLowerCase().includes(filter.toLowerCase()) || Object.keys(C[x].units).some(u => u.toLowerCase().includes(filter.toLowerCase())))
+      .forEach(x => {
+        const b = document.createElement("button");
+        b.className = "conv-cat-btn" + (x === currentCat ? " active" : "");
+        const icon = C[x].icon || "fa-circle";
+        b.innerHTML = '<i class="fas ' + icon + ' cat-icon"></i><span>' + x + '</span>';
+        b.onclick = () => selectCategory(x);
+        catEl.appendChild(b);
+      });
   }
 
   function selectCategory(cat) {
-    currentCat = cat; 
+    currentCat = cat;
     const searchEl = document.getElementById("conv-search");
     if (searchEl) populateCategories(searchEl.value);
-    
+
     const data = C[cat];
     const fromEl = document.getElementById("conv-from");
     const toEl = document.getElementById("conv-to");
-    if(!fromEl || !toEl) return;
+    if (!fromEl || !toEl) return;
 
     fromEl.innerHTML = ""; toEl.innerHTML = "";
-    
+
     if (data.special === "awg") {
-      ["AWG","Diámetro (mm)","Área (mm²)"].forEach(u => { fromEl.add(new Option(u,u)); toEl.add(new Option(u,u)); });
+      ["AWG", "Diámetro (mm)", "Área (mm²)"].forEach(u => { fromEl.add(new Option(u, u)); toEl.add(new Option(u, u)); });
     } else {
-      Object.keys(data.units).forEach(u => { fromEl.add(new Option(u,u)); toEl.add(new Option(u,u)); });
+      Object.keys(data.units).forEach(u => { fromEl.add(new Option(u, u)); toEl.add(new Option(u, u)); });
     }
-    
+
     if (toEl.options.length > 1) toEl.selectedIndex = 1;
     const hintEl = document.getElementById("conv-hint");
     if (hintEl) hintEl.textContent = data.hint || "";
-    
+
     convert();
   }
 
-  function tempConvert(v,a,b){
-    let c = a==="°C" ? v : a==="°F" ? (v-32)*5/9 : v-273.15;
-    return b==="°C" ? c : b==="°F" ? c*9/5+32 : c+273.15;
+  function tempConvert(v, a, b) {
+    let c = a === "°C" ? v : a === "°F" ? (v - 32) * 5 / 9 : v - 273.15;
+    return b === "°C" ? c : b === "°F" ? c * 9 / 5 + 32 : c + 273.15;
   }
-  function dbmToMw(v){ return Math.pow(10, v/10); }
-  function mwToDbm(v){ return 10*Math.log10(v); }
-  function dbmConvert(v,a,b){
-    let mw = a==="dBm" ? dbmToMw(v) : a==="W" ? v*1000 : v;
-    return b==="dBm" ? mwToDbm(mw) : b==="W" ? mw/1000 : mw;
+  function dbmToMw(v) { return Math.pow(10, v / 10); }
+  function mwToDbm(v) { return 10 * Math.log10(v); }
+  function dbmConvert(v, a, b) {
+    let mw = a === "dBm" ? dbmToMw(v) : a === "W" ? v * 1000 : v;
+    return b === "dBm" ? mwToDbm(mw) : b === "W" ? mw / 1000 : mw;
   }
-  function awgConvert(v,a,b){
-    if (a===b) return v;
-    if (a==="AWG"){
-      const row = awg.find(r => Math.abs(parseFloat(r[0])===v));
+  function awgConvert(v, a, b) {
+    if (a === b) return v;
+    if (a === "AWG") {
+      const row = awg.find(r => Math.abs(parseFloat(r[0]) === v));
       if (!row) return NaN;
-      return b==="Diámetro (mm)" ? row[1] : row[2];
+      return b === "Diámetro (mm)" ? row[1] : row[2];
     }
-    let row = awg.reduce((best,r) => Math.abs(r[b==="Diámetro (mm)"?1:2]-v) < Math.abs(best[b==="Diámetro (mm)"?1:2]-v) ? r : best, awg[0]);
-    return parseFloat(row[0].replace(/[^\d.-]/g,"")) || 0;
+    let row = awg.reduce((best, r) => Math.abs(r[b === "Diámetro (mm)" ? 1 : 2] - v) < Math.abs(best[b === "Diámetro (mm)" ? 1 : 2] - v) ? r : best, awg[0]);
+    return parseFloat(row[0].replace(/[^\d.-]/g, "")) || 0;
   }
 
   function formatNum(n) {
@@ -5182,7 +5222,7 @@ window.openLoginModal = function() {
 
     const data = C[currentCat], v = parseFloat(valueEl.value);
     if (Number.isNaN(v)) { resEl.textContent = "—"; return; }
-    
+
     let out;
     if (data.special === "temperature") out = tempConvert(v, fromEl.value, toEl.value);
     else if (data.special === "dbm") out = dbmConvert(v, fromEl.value, toEl.value);
@@ -5191,7 +5231,7 @@ window.openLoginModal = function() {
       const base = v * data.units[fromEl.value];
       out = base / data.units[toEl.value];
     }
-    
+
     const formatted = formatNum(out);
     resEl.textContent = formatted + " " + toEl.value;
     resLbl.textContent = v + " " + fromEl.value + " =";
@@ -5199,22 +5239,22 @@ window.openLoginModal = function() {
 
   function initConversor() {
     if (_convInitialized) return;
-    
+
     const searchEl = document.getElementById("conv-search");
     const valueEl = document.getElementById("conv-value");
     const fromEl = document.getElementById("conv-from");
     const toEl = document.getElementById("conv-to");
     const swapEl = document.getElementById("conv-swap");
-    
+
     if (searchEl) searchEl.addEventListener("input", e => populateCategories(e.target.value));
     [valueEl, fromEl, toEl].forEach(e => { if (e) e.addEventListener("input", convert); });
-    
+
     if (swapEl) {
       swapEl.onclick = () => {
         const x = fromEl.value; fromEl.value = toEl.value; toEl.value = x; convert();
       };
     }
-    
+
     document.querySelectorAll(".conversor-module .conv-tab").forEach(t => {
       t.onclick = () => {
         document.querySelectorAll(".conversor-module .conv-tab").forEach(x => x.classList.remove("active"));
@@ -5231,25 +5271,25 @@ window.openLoginModal = function() {
 
   // Calculadora segura dentro del conversor
   let calcExpr = "";
-  window.calcInput = function(x) {
+  window.calcInput = function (x) {
     if (x === "%") x = "/100";
-    calcExpr += x; 
+    calcExpr += x;
     const d = document.getElementById("conv-calcDisplay");
-    if(d) d.value = calcExpr || "0";
+    if (d) d.value = calcExpr || "0";
   };
-  window.calcClear = function() { calcExpr = ""; const d = document.getElementById("conv-calcDisplay"); if(d) d.value = "0"; };
-  window.calcBack = function() { calcExpr = calcExpr.slice(0, -1); const d = document.getElementById("conv-calcDisplay"); if(d) d.value = calcExpr || "0"; };
-  window.calcEqual = function() {
+  window.calcClear = function () { calcExpr = ""; const d = document.getElementById("conv-calcDisplay"); if (d) d.value = "0"; };
+  window.calcBack = function () { calcExpr = calcExpr.slice(0, -1); const d = document.getElementById("conv-calcDisplay"); if (d) d.value = calcExpr || "0"; };
+  window.calcEqual = function () {
     try {
       if (!/^[0-9+\-*/().\s]+$/.test(calcExpr)) throw Error();
       const result = Function('"use strict";return (' + calcExpr + ')')();
       if (!Number.isFinite(result)) throw Error();
-      calcExpr = String(result); 
+      calcExpr = String(result);
       const d = document.getElementById("conv-calcDisplay");
-      if(d) d.value = result;
+      if (d) d.value = result;
     } catch (e) {
       const d = document.getElementById("conv-calcDisplay");
-      if(d) d.value = "Error";
+      if (d) d.value = "Error";
       calcExpr = "";
       if (typeof showToast === 'function') {
         showToast('Expresión matemática inválida', 'fa-solid fa-triangle-exclamation');
@@ -5264,7 +5304,7 @@ window.openLoginModal = function() {
     const calcPanel = document.getElementById("calc-panel");
     if (!mainView || !mainView.classList.contains("active")) return;
     if (!calcPanel || !calcPanel.classList.contains("active")) return;
-    
+
     if (document.activeElement.tagName === "INPUT" && document.activeElement.id !== "conv-calcDisplay") return;
     if (/[0-9+\-*/().%]/.test(e.key)) calcInput(e.key);
     else if (e.key === "Enter") calcEqual();
@@ -5274,7 +5314,7 @@ window.openLoginModal = function() {
 
   // Guard e inicialización de la pestaña
   const _origSwitchConv = window.switchMainTab;
-  window.switchMainTab = function(tabName) {
+  window.switchMainTab = function (tabName) {
     if (_origSwitchConv) _origSwitchConv(tabName);
     if (tabName === 'toolbox-conversor-tecnico') {
       const _authData = localStorage.getItem('mgm_auth_user');
@@ -5295,15 +5335,15 @@ window.openLoginModal = function() {
 // ══════════════════════════════════════════════════════════════════════════
 //  CALCULADORA UPS — gancho de navegacion (mismo patron que almacenamiento)
 // ══════════════════════════════════════════════════════════════════════════
-(function() {
+(function () {
   var _origSwitchUps = window.switchMainTab;
-  window.switchMainTab = function(tabName) {
+  window.switchMainTab = function (tabName) {
     if (_origSwitchUps) _origSwitchUps(tabName);
     if (tabName === 'toolbox-calculadora-ups') {
       var _authData = localStorage.getItem('mgm_auth_user');
       if (!_authData) {
         var viewEl = document.getElementById('view-toolbox');
-        document.querySelectorAll('.view-container').forEach(function(v){ v.classList.remove('active'); });
+        document.querySelectorAll('.view-container').forEach(function (v) { v.classList.remove('active'); });
         if (viewEl) viewEl.classList.add('active');
         if (typeof showToast === 'function') showToast('Debes iniciar sesion para usar las Calculadoras Tecnicas.', 'fa-solid fa-lock');
         return;
@@ -5315,7 +5355,7 @@ window.openLoginModal = function() {
 // ══════════════════════════════════════════════════════════════════════════
 //  OFFLINE SUPPORT LOGIC
 // ══════════════════════════════════════════════════════════════════════════
-(function() {
+(function () {
   function updateOnlineStatus() {
     const offlineIcon = document.getElementById('offline-icon');
     if (!navigator.onLine) {
@@ -5333,7 +5373,7 @@ window.openLoginModal = function() {
 
   window.addEventListener('online', updateOnlineStatus);
   window.addEventListener('offline', updateOnlineStatus);
-  
+
   // Initial check
   if (!navigator.onLine) {
     const offlineIcon = document.getElementById('offline-icon');
@@ -5350,18 +5390,18 @@ async function renderReferidosPanel(cedula, refCodeFromClient) {
 
   // Mostrar código de referido en la tarjeta
   const refCodeEl = document.getElementById('dash-ref-code');
-  const shareBtn  = document.getElementById('btn-share-whatsapp');
+  const shareBtn = document.getElementById('btn-share-whatsapp');
 
   // Generar código local si el backend aún no lo devuelve
-  const refCode = refCodeFromClient || ('MGM-' + (cedula.toString().replace(/[^0-9]/g,'').slice(-4) || '0000'));
+  const refCode = refCodeFromClient || ('MGM-' + (cedula.toString().replace(/[^0-9]/g, '').slice(-4) || '0000'));
 
   if (refCodeEl) refCodeEl.textContent = refCode;
 
   const appUrl = window.location.origin + window.location.pathname;
-  const link   = `${appUrl}?ref=${encodeURIComponent(refCode)}`;
-  const msg    = encodeURIComponent(`¡Hola! Te invito a unirte al programa de puntos MGM. Usa mi código *${refCode}* al registrarte y gana 300 puntos de bienvenida (al comprar  o mas) 🎁:\n${link}`);
+  const link = `${appUrl}?ref=${encodeURIComponent(refCode)}`;
+  const msg = encodeURIComponent(`¡Hola! Te invito a unirte al programa de puntos MGM. Usa mi código *${refCode}* al registrarte y gana 300 puntos de bienvenida (al comprar  o mas) 🎁:\n${link}`);
   if (shareBtn) shareBtn.href = `https://wa.me/?text=${msg}`;
-  
+
   const qrContainer = document.getElementById('qr-code-container');
   const qrImg = document.getElementById('ref-qr-img');
   if (qrContainer && qrImg) {
@@ -5372,11 +5412,11 @@ async function renderReferidosPanel(cedula, refCodeFromClient) {
   }
 
   // Guardar link para copyReferralCode
-  try { sessionStorage.setItem('mgm_my_ref_link', link); } catch(e) {}
+  try { sessionStorage.setItem('mgm_my_ref_link', link); } catch (e) { }
 
   // Obtener lista de referidos del GAS
   const container = document.getElementById('ref-list-container');
-  const statsEl   = document.getElementById('dash-ref-stats');
+  const statsEl = document.getElementById('dash-ref-stats');
   const ptsTotalEl = document.getElementById('dash-ref-pts-total');
 
   try {
@@ -5413,7 +5453,7 @@ async function renderReferidosPanel(cedula, refCodeFromClient) {
         statsEl.style.display = 'block';
       }
     }
-  } catch(e) {
+  } catch (e) {
     console.warn('[MGM Referidos] Error cargando referidos:', e);
   }
 }
@@ -5428,7 +5468,7 @@ function copyReferralCode() {
       if (el) el.textContent = '¡Copiado!';
       setTimeout(() => { if (el) el.textContent = orig; }, 1800);
     });
-  } catch(e) {}
+  } catch (e) { }
 }
 
 // ==========================================
@@ -5454,18 +5494,18 @@ function releaseQRWakeLock() {
   }
 }
 
-window.openReferralQRModal = function(qrSrc, refCode) {
+window.openReferralQRModal = function (qrSrc, refCode) {
   const qrImg = document.getElementById('modal-ref-qr-img');
   const codeDisplay = document.getElementById('modal-ref-code-display');
-  
+
   if (qrImg) qrImg.src = qrSrc;
   if (codeDisplay) codeDisplay.textContent = refCode;
-  
+
   openAppModal('modal-referral-qr');
   requestQRWakeLock();
 };
 
-window.closeReferralQRModal = function() {
+window.closeReferralQRModal = function () {
   closeAppModal('modal-referral-qr');
   releaseQRWakeLock();
 };
@@ -5473,71 +5513,71 @@ window.closeReferralQRModal = function() {
 // ══════════════════════════════════════════════════════════════════════════════
 // MODO FIESTA — LÓGICA COMPLETA (Radios, Spotify, Chat, Promo-Audio por hora)
 // ══════════════════════════════════════════════════════════════════════════════
-(function() {
+(function () {
 
   // ── Estado ────────────────────────────────────────────────────────────────
   window.mgmEmisoras = [];    // Expuesto globalmente para deeplinks
-  let emisoras      = window.mgmEmisoras;     // Radios en vivo
-  let spotifyItems  = [];     // Playlists Spotify
-  let promoTracks   = [];     // Audios promocionales (hoja Playlist)
-  let currentMode   = 'radio'; // 'radio' | 'spotify'
-  let currentRadio  = null;
-  let currentSpotify= null;
-  let hls           = null;
-  let isPlaying     = false;
+  let emisoras = window.mgmEmisoras;     // Radios en vivo
+  let spotifyItems = [];     // Playlists Spotify
+  let promoTracks = [];     // Audios promocionales (hoja Playlist)
+  let currentMode = 'radio'; // 'radio' | 'spotify'
+  let currentRadio = null;
+  let currentSpotify = null;
+  let hls = null;
+  let isPlaying = false;
   let timerInterval = null;
-  let secondsElapsed= 0;
-  let hasInitialized= false;
+  let secondsElapsed = 0;
+  let hasInitialized = false;
 
   // Claves de caché localStorage para Modo Fiesta
-  const K_CACHE_RADIOS  = 'MGM_CACHE_RADIOS';
-  const K_CACHE_FIESTA  = 'MGM_CACHE_FIESTA_PROMOS';
+  const K_CACHE_RADIOS = 'MGM_CACHE_RADIOS';
+  const K_CACHE_FIESTA = 'MGM_CACHE_FIESTA_PROMOS';
 
   // Promo-audio en Modo Fiesta: cada hora se pausa la radio y suena un promo
-  let partyPromoInterval    = null;
-  let partyPromoIndex       = 0;
-  let isPlayingPartyPromo   = false;
+  let partyPromoInterval = null;
+  let partyPromoIndex = 0;
+  let isPlayingPartyPromo = false;
   const PARTY_PROMO_INTERVAL_MS = 60 * 60 * 1000; // 1 hora
 
   // Chat polling
-  let chatPollInterval  = null;
-  let lastChatCount     = 0;
-  const CHAT_POLL_MS    = 8000;
+  let chatPollInterval = null;
+  let lastChatCount = 0;
+  const CHAT_POLL_MS = 8000;
 
   // ── Elementos DOM ─────────────────────────────────────────────────────────
-  const partyAudio    = document.getElementById('party-audio-player');
-  const heroImg       = document.getElementById('party-hero-img');
-  const heroTitle     = document.getElementById('party-hero-title');
-  const heroSub       = document.getElementById('party-hero-sub');
-  const heroPlayBtn   = document.getElementById('party-hero-play-btn');
-  const heroTag       = document.getElementById('party-hero-tag');
-  const miniPlayer    = document.getElementById('party-mini-player');
-  const miniImg       = document.getElementById('party-mini-img');
-  const miniTitle     = document.getElementById('party-mini-title');
-  const miniSub       = document.getElementById('party-mini-sub');
-  const miniPlayBtn   = document.getElementById('party-mini-play-btn');
-  const miniCloseBtn  = document.getElementById('party-mini-close-btn');
-  const stationsList  = document.getElementById('party-stations-list');
-  const spotifyList   = document.getElementById('party-spotify-list');
-  const spotifyPanel  = document.getElementById('party-spotify-panel');
-  const spotifyEmbed  = document.getElementById('party-spotify-embed');
-  const timeCount     = document.getElementById('party-time-count');
-  const tabRadioBtn   = document.getElementById('party-tab-radio');
+  const partyAudio = document.getElementById('party-audio-player');
+  const heroImg = document.getElementById('party-hero-img');
+  const heroTitle = document.getElementById('party-hero-title');
+  const heroSub = document.getElementById('party-hero-sub');
+  const heroPlayBtn = document.getElementById('party-hero-play-btn');
+  const heroTag = document.getElementById('party-hero-tag');
+  const miniPlayer = document.getElementById('party-mini-player');
+  const miniImg = document.getElementById('party-mini-img');
+  const miniTitle = document.getElementById('party-mini-title');
+  const miniSub = document.getElementById('party-mini-sub');
+  const miniPlayBtn = document.getElementById('party-mini-play-btn');
+  const miniCloseBtn = document.getElementById('party-mini-close-btn');
+  const stationsList = document.getElementById('party-stations-list');
+  const spotifyList = document.getElementById('party-spotify-list');
+  const spotifyPanel = document.getElementById('party-spotify-panel');
+  const spotifyEmbed = document.getElementById('party-spotify-embed');
+  const timeCount = document.getElementById('party-time-count');
+  const tabRadioBtn = document.getElementById('party-tab-radio');
   const tabSpotifyBtn = document.getElementById('party-tab-spotify');
-  const tabChatBtn    = document.getElementById('party-tab-chat');
+  const tabChatBtn = document.getElementById('party-tab-chat');
   const tabRadioPanel = document.getElementById('party-panel-radio');
-  const tabSpotifyPanel=document.getElementById('party-panel-spotify');
-  const tabChatPanel  = document.getElementById('party-panel-chat');
-  const promoNotice   = document.getElementById('party-promo-notice');
+  const tabSpotifyPanel = document.getElementById('party-panel-spotify');
+  const tabChatPanel = document.getElementById('party-panel-chat');
+  const promoNotice = document.getElementById('party-promo-notice');
 
   // ── Tabs internos del Modo Fiesta ─────────────────────────────────────────
   function switchPartyTab(tab) {
     [tabRadioPanel].forEach(p => p && p.classList.add('hidden'));
     [tabRadioBtn].forEach(b => b && b.classList.remove('active'));
-    if (tab === 'radio')   { tabRadioPanel?.classList.remove('hidden');   tabRadioBtn?.classList.add('active'); }
+    if (tab === 'radio') { tabRadioPanel?.classList.remove('hidden'); tabRadioBtn?.classList.add('active'); }
   }
 
-  if (tabRadioBtn)   tabRadioBtn.onclick   = () => switchPartyTab('radio');
+  if (tabRadioBtn) tabRadioBtn.onclick = () => switchPartyTab('radio');
 
   // ── Carga inicial ─────────────────────────────────────────────────────────
   async function initPartyData() {
@@ -5550,7 +5590,7 @@ window.closeReferralQRModal = function() {
         try {
           const r = JSON.parse(cachedRadios);
           if (Array.isArray(r) && r.length > 0) { emisoras = r; window.mgmEmisoras = r; renderRadioList(); }
-        } catch(e) {}
+        } catch (e) { }
       }
       const cachedPromos = localStorage.getItem(K_CACHE_FIESTA);
       if (cachedPromos) {
@@ -5563,7 +5603,7 @@ window.closeReferralQRModal = function() {
               playNextPartyPromo(true);
             }
           }
-        } catch(e) {}
+        } catch (e) { }
       }
 
       // Carga paralela: radios, spotify, promos-audio
@@ -5576,8 +5616,8 @@ window.closeReferralQRModal = function() {
       });
 
       const [radiosRes, spotifyRes, promoRes] = await Promise.allSettled([
-        gasUrl ? safeJson(`${gasUrl}?action=radios`)   : Promise.resolve([]),
-        gasUrl ? safeJson(`${gasUrl}?action=spotify`)  : Promise.resolve([]),
+        gasUrl ? safeJson(`${gasUrl}?action=radios`) : Promise.resolve([]),
+        gasUrl ? safeJson(`${gasUrl}?action=spotify`) : Promise.resolve([]),
         safeJson(`${CFG.AUDIO_GAS_URL}?action=playlist`)
       ]);
 
@@ -5604,10 +5644,10 @@ window.closeReferralQRModal = function() {
       // Promo tracks — no bloquea si falla
       if (promoRes.status === 'fulfilled' && Array.isArray(promoRes.value)) {
         const freshPromos = promoRes.value.map(t => ({
-          title:  t.title  || t.titulo  || 'MGM Audio',
+          title: t.title || t.titulo || 'MGM Audio',
           artist: t.artist || t.artista || 'MGM',
-          src:    t.url    || t.src     || '',
-          cover:  t.cover  || t.imagen  || 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'
+          src: t.url || t.src || '',
+          cover: t.cover || t.imagen || 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'
         })).filter(t => t.src);
         if (freshPromos.length > 0) {
           promoTracks = freshPromos;
@@ -5617,7 +5657,7 @@ window.closeReferralQRModal = function() {
         console.warn('[PartyMode] Promos no disponibles:', promoRes.reason || 'vacío');
       }
 
-    } catch(e) {
+    } catch (e) {
       console.error('[PartyMode] Error crítico en initPartyData:', e);
       emisoras = EMISORAS_FALLBACK; // garantizamos siempre tener radios
     } finally {
@@ -5657,7 +5697,7 @@ window.closeReferralQRModal = function() {
         <div class="card-left">
           <div class="card-thumb"><img src="${item.logo}" alt="${item.nombre}" loading="lazy" onerror="this.src='https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'"></div>
           <div class="card-info">
-            <span class="card-name ${isCurrent?'active-text':''}">${item.nombre}</span>
+            <span class="card-name ${isCurrent ? 'active-text' : ''}">${item.nombre}</span>
             <span class="card-freq">${item.freq || 'Online'} • Panamá</span>
           </div>
         </div>
@@ -5667,14 +5707,14 @@ window.closeReferralQRModal = function() {
     });
   }
 
-  window.partySelectRadio = function(radio, autoPlay = true) { return selectRadio(radio, autoPlay); };
+  window.partySelectRadio = function (radio, autoPlay = true) { return selectRadio(radio, autoPlay); };
   function selectRadio(radio, autoPlay = true) {
     // Si está reproduciendo un promo, detenerlo
     if (isPlayingPartyPromo) stopPartyPromo();
 
-    currentMode   = 'radio';
-    currentRadio  = radio;
-    currentSpotify= null;
+    currentMode = 'radio';
+    currentRadio = radio;
+    currentSpotify = null;
     hideSpotifyEmbed();
     updateHeroUI({ nombre: radio.nombre, sub: `${radio.freq || 'Online'} • EN VIVO`, logo: radio.logo, isLive: true });
     renderRadioList();
@@ -5709,10 +5749,10 @@ window.closeReferralQRModal = function() {
   }
 
   // ── Botón Random ─────────────────────────────────────────────────────────
-  window.partyPlayRandom = function() {
+  window.partyPlayRandom = function () {
     if (!emisoras.length) return;
     const pool = emisoras.filter(r => !currentRadio || r.id !== currentRadio.id);
-    const pick  = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : emisoras[0];
+    const pick = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : emisoras[0];
     selectRadio(pick, true);
     if (typeof showToast === 'function') showToast(`🎲 Cambiando a: ${pick.nombre}`, 'fa-solid fa-shuffle');
   };
@@ -5736,7 +5776,7 @@ window.closeReferralQRModal = function() {
             <img src="${item.logo}" alt="${item.nombre}" loading="lazy" onerror="this.src='https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png'" style="object-fit:cover">
           </div>
           <div class="card-info">
-            <span class="card-name ${isActive?'active-text':''}"><i class="fa-brands fa-spotify" style="color:#1DB954;margin-right:4px"></i>${item.nombre}</span>
+            <span class="card-name ${isActive ? 'active-text' : ''}"><i class="fa-brands fa-spotify" style="color:#1DB954;margin-right:4px"></i>${item.nombre}</span>
             <span class="card-freq">${item.tipo || 'playlist'} • Spotify</span>
           </div>
         </div>
@@ -5750,10 +5790,10 @@ window.closeReferralQRModal = function() {
     // Convierte cualquier URL de Spotify en URL de embed
     // https://open.spotify.com/playlist/xxx → https://open.spotify.com/embed/playlist/xxx
     try {
-      const url  = new URL(spotifyUrl);
+      const url = new URL(spotifyUrl);
       const path = url.pathname; // /playlist/xxx o /track/xxx o /album/xxx
       return `https://open.spotify.com/embed${path}?utm_source=generator&theme=0`;
-    } catch(e) {
+    } catch (e) {
       // Si ya es un embed ID directo
       if (spotifyUrl.includes('embed')) return spotifyUrl;
       return `https://open.spotify.com/embed/playlist/${spotifyUrl}?utm_source=generator&theme=0`;
@@ -5764,13 +5804,13 @@ window.closeReferralQRModal = function() {
     // Pausa la radio cuando se abre Spotify
     if (isPlayingPartyPromo) stopPartyPromo();
     partyAudio.pause();
-    currentMode   = 'spotify';
-    currentSpotify= item;
-    updateHeroUI({ nombre: item.nombre, sub: `${item.tipo||'playlist'} • Spotify`, logo: item.logo, isLive: false });
+    currentMode = 'spotify';
+    currentSpotify = item;
+    updateHeroUI({ nombre: item.nombre, sub: `${item.tipo || 'playlist'} • Spotify`, logo: item.logo, isLive: false });
     renderSpotifyList();
 
     // Mostrar el embed de Spotify
-    if (spotifyPanel)  spotifyPanel.classList.remove('hidden');
+    if (spotifyPanel) spotifyPanel.classList.remove('hidden');
     if (spotifyEmbed) {
       spotifyEmbed.src = getSpotifyEmbedUrl(item.spotifyUrl);
     }
@@ -5778,19 +5818,19 @@ window.closeReferralQRModal = function() {
   }
 
   function hideSpotifyEmbed() {
-    if (spotifyPanel)  spotifyPanel.classList.add('hidden');
-    if (spotifyEmbed)  spotifyEmbed.src = '';
+    if (spotifyPanel) spotifyPanel.classList.add('hidden');
+    if (spotifyEmbed) spotifyEmbed.src = '';
   }
 
   // ── Reproductor Compartido ─────────────────────────────────────────────────
   function updateHeroUI({ nombre, sub, logo, isLive }) {
-    if (heroImg)   heroImg.src = logo;
+    if (heroImg) heroImg.src = logo;
     if (heroTitle) heroTitle.textContent = nombre;
-    if (heroSub)   heroSub.textContent   = sub;
-    if (heroTag)   heroTag.textContent   = isLive ? '⚡ EN VIVO' : '♫ SPOTIFY';
-    if (miniImg)   miniImg.src   = logo;
+    if (heroSub) heroSub.textContent = sub;
+    if (heroTag) heroTag.textContent = isLive ? '⚡ EN VIVO' : '♫ SPOTIFY';
+    if (miniImg) miniImg.src = logo;
     if (miniTitle) miniTitle.textContent = nombre;
-    if (miniSub)   miniSub.textContent   = isLive ? '● EN VIVO' : '♫ Spotify';
+    if (miniSub) miniSub.textContent = isLive ? '● EN VIVO' : '♫ Spotify';
     if (miniPlayer) miniPlayer.style.display = 'flex';
   }
 
@@ -5814,11 +5854,11 @@ window.closeReferralQRModal = function() {
     stopTimer();
     timerInterval = setInterval(() => { secondsElapsed++; updateTimerDisplay(); }, 1000);
   }
-  function stopTimer()  { if (timerInterval) clearInterval(timerInterval); }
+  function stopTimer() { if (timerInterval) clearInterval(timerInterval); }
   function updateTimerDisplay() {
     if (!timeCount) return;
-    const m = Math.floor(secondsElapsed/60), s = secondsElapsed%60;
-    timeCount.textContent = `${m}:${s<10?'0':''}${s}`;
+    const m = Math.floor(secondsElapsed / 60), s = secondsElapsed % 60;
+    timeCount.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
   }
 
   if (heroPlayBtn) heroPlayBtn.onclick = togglePlay;
@@ -5838,7 +5878,7 @@ window.closeReferralQRModal = function() {
   }
 
   if (partyAudio) {
-    partyAudio.onplay  = () => setPlayState(true);
+    partyAudio.onplay = () => setPlayState(true);
     partyAudio.onpause = () => setPlayState(false);
     partyAudio.onerror = () => setPlayState(false);
   }
@@ -5924,10 +5964,10 @@ window.closeReferralQRModal = function() {
     if (!gasUrl) { renderChatOffline(); return; }
 
     try {
-      const res  = await fetch(`${gasUrl}?action=chat`);
+      const res = await fetch(`${gasUrl}?action=chat`);
       const msgs = await res.json();
       renderChatMessages(Array.isArray(msgs) ? msgs : []);
-    } catch(e) {
+    } catch (e) {
       console.warn('[Chat] Error:', e);
     }
   }
@@ -5947,9 +5987,9 @@ window.closeReferralQRModal = function() {
     const myName = (state?.authUser?.nombre || localStorage.getItem('mgm_chat_name') || '').trim();
     container.innerHTML = msgs.map(m => {
       const isMe = myName && m.nombre === myName;
-      const hora = m.ts ? new Date(m.ts).toLocaleTimeString('es-PA', {hour:'2-digit',minute:'2-digit'}) : '';
+      const hora = m.ts ? new Date(m.ts).toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' }) : '';
       return `
-        <div class="party-chat-msg ${isMe?'me':'them'}">
+        <div class="party-chat-msg ${isMe ? 'me' : 'them'}">
           ${!isMe ? `<div class="party-chat-author">${m.nombre}</div>` : ''}
           <div class="party-chat-bubble">${escapeHtml(m.mensaje)}</div>
           <div class="party-chat-time">${hora}</div>
@@ -5960,17 +6000,17 @@ window.closeReferralQRModal = function() {
   }
 
   function escapeHtml(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  window.sendPartyChat = async function() {
-    const input   = document.getElementById('party-chat-input');
+  window.sendPartyChat = async function () {
+    const input = document.getElementById('party-chat-input');
     const mensaje = input ? input.value.trim() : '';
     if (!mensaje) return;
 
     const gasUrl = CFG.RADIOS_GAS_URL && CFG.RADIOS_GAS_URL !== 'PENDIENTE_RADIOS_GAS_URL'
       ? CFG.RADIOS_GAS_URL : null;
-    if (!gasUrl) { if(typeof showToast==='function') showToast('Chat no disponible.','fa-solid fa-circle-exclamation'); return; }
+    if (!gasUrl) { if (typeof showToast === 'function') showToast('Chat no disponible.', 'fa-solid fa-circle-exclamation'); return; }
 
     const nombre = (state?.authUser?.nombre || localStorage.getItem('mgm_chat_name') || 'Invitado').trim();
     const cedula = state?.authUser?.cedula || '';
@@ -5980,7 +6020,7 @@ window.closeReferralQRModal = function() {
     if (container) {
       const emptyEl = container.querySelector('.party-chat-empty');
       if (emptyEl) emptyEl.remove();
-      const hora = new Date().toLocaleTimeString('es-PA',{hour:'2-digit',minute:'2-digit'});
+      const hora = new Date().toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' });
       container.innerHTML += `<div class="party-chat-msg me"><div class="party-chat-bubble">${escapeHtml(mensaje)}</div><div class="party-chat-time">${hora}</div></div>`;
       container.scrollTop = container.scrollHeight;
     }
@@ -5992,13 +6032,13 @@ window.closeReferralQRModal = function() {
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'chat_send', nombre, mensaje, cedula })
       });
-    } catch(e) { console.warn('[Chat] Error enviando:', e); }
+    } catch (e) { console.warn('[Chat] Error enviando:', e); }
   };
 
   // ── Hook en tab switching ──────────────────────────────────────────────────
   const _orig = window.switchMainTab;
   if (typeof _orig === 'function') {
-    window.switchMainTab = function(tabName) {
+    window.switchMainTab = function (tabName) {
       _orig(tabName);
       if (tabName === 'party') {
         // Ocultar mini-bar de promos normal cuando entra Modo Fiesta
@@ -6016,7 +6056,7 @@ window.closeReferralQRModal = function() {
     };
   }
 
-  window.initPartyMode = function() {
+  window.initPartyMode = function () {
     // ⚠️ AUTOPLAY FIX: Los navegadores bloquean audio si no hay gesto del usuario.
     // Desbloqueamos el elemento de audio SINCÓNICAMENTE en el mismo clic.
     if (partyAudio && !partyAudio._unlocked) {
@@ -6039,26 +6079,26 @@ window.closeReferralQRModal = function() {
 
   // ── Fallback de emisoras hardcodeadas ────────────────────────────────────
   const EMISORAS_FALLBACK = [
-    { id:1,  nombre:'Super Q FM',          freq:'90.5 FM',  url:'https://sqserver.superqpanama.net:8005/superqpanama',  logo:'https://www.dropbox.com/scl/fi/qy3byy8j6jjy8g8sdjh5t/super-q-fm.webp?rlkey=63wpvscqhigec1gygiscuzb6a&st=q4v5oah4&raw=1', isHls:false },
-    { id:2,  nombre:'Tropi Q',             freq:'99.7 FM',  url:'https://www.streaming507.net:8140/stream',            logo:'https://www.dropbox.com/scl/fi/njbuxdn3knw3kd7ltcdky/tropi-q.webp?rlkey=y9zgnk8k71x050qjbop4y1p0m&st=88rrlpet&raw=1', isHls:false },
-    { id:3,  nombre:'Fabulosa Estéreo',    freq:'100.5 FM', url:'https://servidor24-1.brlogic.com:7018/live',          logo:'https://www.dropbox.com/scl/fi/m9dswoee6gcmrycl3xkv5/fabulosa-estereo.webp?rlkey=gbmzowm7byzvjqnqgfmp7x6wb&st=p0m5wme0&raw=1', isHls:false },
-    { id:4,  nombre:'Caliente',            freq:'96.9 FM',  url:'https://s9.stweb.tv/thinkindot-fast-2/live/playlist.m3u8', logo:'https://www.dropbox.com/scl/fi/ykp1jg3jj19oc5axcmf68/caliente-radio.webp?rlkey=jy8smgfw5ubi4ee47uyc9hl87&st=7tazfj3v&raw=1', isHls:true },
-    { id:5,  nombre:'La Exitosa',          freq:'95.3 FM',  url:'https://stream-280.surfernetwork.com/k7qfxuec8e9uv',  logo:'https://www.dropbox.com/scl/fi/rskllf6acpb4a1jag6frc/la-exitosa.webp?rlkey=oet4qvpgi9zxvopo4ehykz7z5&st=cr64clnf&raw=1', isHls:false },
-    { id:6,  nombre:'La Mega',             freq:'98.1 FM',  url:'https://usest-sp1.golivestream.net/8022/stream',      logo:'https://www.dropbox.com/scl/fi/kur6v7aysqi2gvhqbd6qh/la-mega-981-fm.webp?rlkey=wd7buytaaq5vk3w6lyesro8d0&st=ui5s8qk1&raw=1', isHls:false },
-    { id:7,  nombre:'FM Lo Nuestro',       freq:'102.1 FM', url:'https://www.streaming507.net:8136/stream',            logo:'https://www.dropbox.com/scl/fi/9y4g34gndxmj5v1z56ep9/lo-nuestro-1021.webp?rlkey=gnwt91rm8v8w363jxbdkh2zkq&st=p1sbvc29&raw=1', isHls:false },
-    { id:8,  nombre:'La KY',               freq:'92.5 FM',  url:'https://18163.live.streamtheworld.com/LAKY_PANAMA.mp3', logo:'https://www.dropbox.com/scl/fi/sbnq1k3vjmyn7u7wruo6m/la-ky.webp?rlkey=euuvvkzpu7bduyudv0ft8w36c&st=rbn48q4y&raw=1', isHls:false },
-    { id:9,  nombre:'WAO',                 freq:'97.1 FM',  url:'https://stream-179.zeno.fm/g7ayu7wbr2zuv',           logo:'https://www.dropbox.com/scl/fi/yctrvxzu27enbhky4pxlf/wao-9712.webp?rlkey=a1waf6l012zqoc0mou8rt2xy0&st=cj0aznei&raw=1', isHls:false },
-    { id:10, nombre:'Quiubo Estéreo',      freq:'103.3 FM', url:'https://14623.live.streamtheworld.com/QUBO.mp3',     logo:'https://www.dropbox.com/scl/fi/5hohjp4puegs9me0fsa07/quiubo-estereo.webp?rlkey=k4unnguk4xalhdl5ragcnrvxa&st=w1x7z1wx&raw=1', isHls:false },
-    { id:11, nombre:'Panama Hit Radio',    freq:'Online',   url:'https://www.streaming507.net:8024/stream',           logo:'https://www.dropbox.com/scl/fi/g0nec9icf98862bt33a44/panama-hit-radio.webp?rlkey=z40pdi1swldb27hx0q6oho2vp&st=uqgc33er&raw=1', isHls:false },
-    { id:12, nombre:'Theurbanflow507',     freq:'Online',   url:'https://radio.chatarrarecords.com/listen/theurbanflow507.net/radio.mp3', logo:'https://www.dropbox.com/scl/fi/qlo4kqt6nne3sl2m39rr5/theurbanflow507.webp?rlkey=mc411a2ivdcg0y63prkf5lunv&st=k4nop25b&raw=1', isHls:false },
-    { id:13, nombre:'Marbella Stereo',     freq:'104.3 FM', url:'https://sonic.host-live.com:10839/stream',           logo:'https://www.dropbox.com/scl/fi/pba2hu4cm1fzlpr9mdevu/marbella-stereo.webp?rlkey=qbvll0kavqpvr2st6ng6a8ykv&st=jq6iiwh5&raw=1', isHls:false },
-    { id:14, nombre:'Play',                freq:'103.7 FM', url:'https://playerservices.streamtheworld.com/api/livestream-redirect/PLAY_PANAMA.mp3', logo:'https://www.dropbox.com/scl/fi/xn6jtv6097y8beh05il5f/play.webp?rlkey=f4bj36p5cvwl6pydyfedbx6sd&st=fw8dktyt&raw=1', isHls:false },
-    { id:15, nombre:'FM 99',               freq:'99.3 FM',  url:'https://c34.radioboss.fm/stream/969',                logo:'https://www.dropbox.com/scl/fi/9mg6unzojz3ccyz8qt64d/fm99.webp?rlkey=dlnujiemgcbh1ew3q9ludwtor&st=5selgm1w&raw=1', isHls:false },
-    { id:16, nombre:'Wakala Radio',        freq:'Online',   url:'https://wakalaradio.radioca.st/stream',              logo:'https://www.dropbox.com/scl/fi/mdon1hgxrw1roesbdfvmy/wakala-radio.webp?rlkey=91vk78tv3utr9o7h8ujlbouep&st=ujvxkmel&raw=1', isHls:false },
-    { id:17, nombre:'La Tipik',            freq:'107.3 FM', url:'https://stream.mixesurbanospty.com:8090/tipik.mp3',  logo:'https://www.dropbox.com/scl/fi/vorm7mmijk0coooiqmtvr/la-tipik.webp?rlkey=cykebvrlm98whbm43s66muw61&st=zfce31ph&raw=1', isHls:false },
-    { id:18, nombre:'Mixes Azuero',        freq:'Online',   url:'https://stream.zeno.fm/zpft5vns4tzuv',              logo:'https://www.dropbox.com/scl/fi/uq4l8sndjw8jmia313s4e/mixes-azuero-radio-panama.webp?rlkey=pnewg6e7pynsj67sbj319zwig&st=61x8vzt2&raw=1', isHls:false },
-    { id:19, nombre:'Ep3 Radio - Reventon',freq:'Online',   url:'https://radiostream.interven.ca/listen/elpincay/radio.mp3', logo:'https://www.dropbox.com/scl/fi/bzjkxp7oisig26z9nbgla/ep3-radio-reventon.webp?rlkey=fihq6atkdyomsqlf6veiit4lc&st=r72z6xc6&raw=1', isHls:false },
-    { id:20, nombre:'Rockeros Online',     freq:'Online',   url:'https://stream.zeno.fm/ds3c8nx8yuquv',              logo:'https://www.dropbox.com/scl/fi/u9myr05zcenq2uaoi58m5/rockeros-online-radio.webp?rlkey=xaaxb3yam1mv8am712czzrpuh&st=afgtw2h3&raw=1', isHls:false }
+    { id: 1, nombre: 'Super Q FM', freq: '90.5 FM', url: 'https://sqserver.superqpanama.net:8005/superqpanama', logo: 'https://www.dropbox.com/scl/fi/qy3byy8j6jjy8g8sdjh5t/super-q-fm.webp?rlkey=63wpvscqhigec1gygiscuzb6a&st=q4v5oah4&raw=1', isHls: false },
+    { id: 2, nombre: 'Tropi Q', freq: '99.7 FM', url: 'https://www.streaming507.net:8140/stream', logo: 'https://www.dropbox.com/scl/fi/njbuxdn3knw3kd7ltcdky/tropi-q.webp?rlkey=y9zgnk8k71x050qjbop4y1p0m&st=88rrlpet&raw=1', isHls: false },
+    { id: 3, nombre: 'Fabulosa Estéreo', freq: '100.5 FM', url: 'https://servidor24-1.brlogic.com:7018/live', logo: 'https://www.dropbox.com/scl/fi/m9dswoee6gcmrycl3xkv5/fabulosa-estereo.webp?rlkey=gbmzowm7byzvjqnqgfmp7x6wb&st=p0m5wme0&raw=1', isHls: false },
+    { id: 4, nombre: 'Caliente', freq: '96.9 FM', url: 'https://s9.stweb.tv/thinkindot-fast-2/live/playlist.m3u8', logo: 'https://www.dropbox.com/scl/fi/ykp1jg3jj19oc5axcmf68/caliente-radio.webp?rlkey=jy8smgfw5ubi4ee47uyc9hl87&st=7tazfj3v&raw=1', isHls: true },
+    { id: 5, nombre: 'La Exitosa', freq: '95.3 FM', url: 'https://stream-280.surfernetwork.com/k7qfxuec8e9uv', logo: 'https://www.dropbox.com/scl/fi/rskllf6acpb4a1jag6frc/la-exitosa.webp?rlkey=oet4qvpgi9zxvopo4ehykz7z5&st=cr64clnf&raw=1', isHls: false },
+    { id: 6, nombre: 'La Mega', freq: '98.1 FM', url: 'https://usest-sp1.golivestream.net/8022/stream', logo: 'https://www.dropbox.com/scl/fi/kur6v7aysqi2gvhqbd6qh/la-mega-981-fm.webp?rlkey=wd7buytaaq5vk3w6lyesro8d0&st=ui5s8qk1&raw=1', isHls: false },
+    { id: 7, nombre: 'FM Lo Nuestro', freq: '102.1 FM', url: 'https://www.streaming507.net:8136/stream', logo: 'https://www.dropbox.com/scl/fi/9y4g34gndxmj5v1z56ep9/lo-nuestro-1021.webp?rlkey=gnwt91rm8v8w363jxbdkh2zkq&st=p1sbvc29&raw=1', isHls: false },
+    { id: 8, nombre: 'La KY', freq: '92.5 FM', url: 'https://18163.live.streamtheworld.com/LAKY_PANAMA.mp3', logo: 'https://www.dropbox.com/scl/fi/sbnq1k3vjmyn7u7wruo6m/la-ky.webp?rlkey=euuvvkzpu7bduyudv0ft8w36c&st=rbn48q4y&raw=1', isHls: false },
+    { id: 9, nombre: 'WAO', freq: '97.1 FM', url: 'https://stream-179.zeno.fm/g7ayu7wbr2zuv', logo: 'https://www.dropbox.com/scl/fi/yctrvxzu27enbhky4pxlf/wao-9712.webp?rlkey=a1waf6l012zqoc0mou8rt2xy0&st=cj0aznei&raw=1', isHls: false },
+    { id: 10, nombre: 'Quiubo Estéreo', freq: '103.3 FM', url: 'https://14623.live.streamtheworld.com/QUBO.mp3', logo: 'https://www.dropbox.com/scl/fi/5hohjp4puegs9me0fsa07/quiubo-estereo.webp?rlkey=k4unnguk4xalhdl5ragcnrvxa&st=w1x7z1wx&raw=1', isHls: false },
+    { id: 11, nombre: 'Panama Hit Radio', freq: 'Online', url: 'https://www.streaming507.net:8024/stream', logo: 'https://www.dropbox.com/scl/fi/g0nec9icf98862bt33a44/panama-hit-radio.webp?rlkey=z40pdi1swldb27hx0q6oho2vp&st=uqgc33er&raw=1', isHls: false },
+    { id: 12, nombre: 'Theurbanflow507', freq: 'Online', url: 'https://radio.chatarrarecords.com/listen/theurbanflow507.net/radio.mp3', logo: 'https://www.dropbox.com/scl/fi/qlo4kqt6nne3sl2m39rr5/theurbanflow507.webp?rlkey=mc411a2ivdcg0y63prkf5lunv&st=k4nop25b&raw=1', isHls: false },
+    { id: 13, nombre: 'Marbella Stereo', freq: '104.3 FM', url: 'https://sonic.host-live.com:10839/stream', logo: 'https://www.dropbox.com/scl/fi/pba2hu4cm1fzlpr9mdevu/marbella-stereo.webp?rlkey=qbvll0kavqpvr2st6ng6a8ykv&st=jq6iiwh5&raw=1', isHls: false },
+    { id: 14, nombre: 'Play', freq: '103.7 FM', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/PLAY_PANAMA.mp3', logo: 'https://www.dropbox.com/scl/fi/xn6jtv6097y8beh05il5f/play.webp?rlkey=f4bj36p5cvwl6pydyfedbx6sd&st=fw8dktyt&raw=1', isHls: false },
+    { id: 15, nombre: 'FM 99', freq: '99.3 FM', url: 'https://c34.radioboss.fm/stream/969', logo: 'https://www.dropbox.com/scl/fi/9mg6unzojz3ccyz8qt64d/fm99.webp?rlkey=dlnujiemgcbh1ew3q9ludwtor&st=5selgm1w&raw=1', isHls: false },
+    { id: 16, nombre: 'Wakala Radio', freq: 'Online', url: 'https://wakalaradio.radioca.st/stream', logo: 'https://www.dropbox.com/scl/fi/mdon1hgxrw1roesbdfvmy/wakala-radio.webp?rlkey=91vk78tv3utr9o7h8ujlbouep&st=ujvxkmel&raw=1', isHls: false },
+    { id: 17, nombre: 'La Tipik', freq: '107.3 FM', url: 'https://stream.mixesurbanospty.com:8090/tipik.mp3', logo: 'https://www.dropbox.com/scl/fi/vorm7mmijk0coooiqmtvr/la-tipik.webp?rlkey=cykebvrlm98whbm43s66muw61&st=zfce31ph&raw=1', isHls: false },
+    { id: 18, nombre: 'Mixes Azuero', freq: 'Online', url: 'https://stream.zeno.fm/zpft5vns4tzuv', logo: 'https://www.dropbox.com/scl/fi/uq4l8sndjw8jmia313s4e/mixes-azuero-radio-panama.webp?rlkey=pnewg6e7pynsj67sbj319zwig&st=61x8vzt2&raw=1', isHls: false },
+    { id: 19, nombre: 'Ep3 Radio - Reventon', freq: 'Online', url: 'https://radiostream.interven.ca/listen/elpincay/radio.mp3', logo: 'https://www.dropbox.com/scl/fi/bzjkxp7oisig26z9nbgla/ep3-radio-reventon.webp?rlkey=fihq6atkdyomsqlf6veiit4lc&st=r72z6xc6&raw=1', isHls: false },
+    { id: 20, nombre: 'Rockeros Online', freq: 'Online', url: 'https://stream.zeno.fm/ds3c8nx8yuquv', logo: 'https://www.dropbox.com/scl/fi/u9myr05zcenq2uaoi58m5/rockeros-online-radio.webp?rlkey=xaaxb3yam1mv8am712czzrpuh&st=afgtw2h3&raw=1', isHls: false }
   ];
 
 })();
@@ -6066,7 +6106,7 @@ window.closeReferralQRModal = function() {
    MÓDULO RASTREO — SEGUIMIENTO DE DESPACHOS (Global)
    Endpoint: RASTREO_GAS_URL
    ========================================================================== */
-(function() {
+(function () {
   'use strict';
 
   // URL del backend (Debe reemplazarse con el despliegue de rastreo_backend.gs)
@@ -6074,10 +6114,10 @@ window.closeReferralQRModal = function() {
 
   // Mapa de estados de Rastreo → { clase CSS, icono, progress % }
   const RASTREO_ESTADO_MAP = {
-    '1': { cls: 'recibido',        icon: 'fa-box',               progress: 25,  label: 'Pago Confirmado' },
-    '2': { cls: 'diagnostico',     icon: 'fa-boxes-packing',     progress: 50,  label: 'Empacado / Preparando' },
-    '3': { cls: 'reparacion',      icon: 'fa-truck-fast',        progress: 75,  label: 'En Camino' },
-    '4': { cls: 'entregado',       icon: 'fa-check-double',      progress: 100, label: 'Completado' }
+    '1': { cls: 'recibido', icon: 'fa-box', progress: 25, label: 'Pago Confirmado' },
+    '2': { cls: 'diagnostico', icon: 'fa-boxes-packing', progress: 50, label: 'Empacado / Preparando' },
+    '3': { cls: 'reparacion', icon: 'fa-truck-fast', progress: 75, label: 'En Camino' },
+    '4': { cls: 'entregado', icon: 'fa-check-double', progress: 100, label: 'Completado' }
   };
 
   function getRastreoEstadoInfo(rawEstado) {
@@ -6135,7 +6175,7 @@ window.closeReferralQRModal = function() {
       </div>`;
   }
 
-  window.toggleManualRastreoSearch = function() {
+  window.toggleManualRastreoSearch = function () {
     const form = document.getElementById("rastreoConsultaForm");
     const icon = document.getElementById("manualRastreoToggleIcon");
     if (!form) return;
@@ -6149,14 +6189,14 @@ window.closeReferralQRModal = function() {
     }
   };
 
-  window.cerrarDetalleRastreo = function() {
+  window.cerrarDetalleRastreo = function () {
     const res = document.getElementById("rastreo-resultado");
     if (res) res.innerHTML = "";
     const dashboard = document.getElementById("rastreoUserDashboard");
     if (dashboard) dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  window.consultarRastreoAutomatico = function(rastreo, email) {
+  window.consultarRastreoAutomatico = function (rastreo, email) {
     const form = document.getElementById("rastreoConsultaForm");
     if (form) {
       form.rastreo.value = rastreo;
@@ -6167,7 +6207,7 @@ window.closeReferralQRModal = function() {
   };
 
   // Cargar paquetes activos para el cliente logueado
-  window.loadUserActiveRastreos = async function() {
+  window.loadUserActiveRastreos = async function () {
     const container = document.getElementById("rastreoUserDashboard");
     const consultaForm = document.getElementById("rastreoConsultaForm");
     const toggleWrap = document.getElementById("manualRastreoSearchToggleWrap");
@@ -6176,39 +6216,39 @@ window.closeReferralQRModal = function() {
     const headerBadge = document.getElementById("rastreoHeaderUserBadge");
 
     let user = null;
-    try { user = JSON.parse(localStorage.getItem('mgm_auth_user')) || (window.state && window.state.authUser); } catch(e) {}
+    try { user = JSON.parse(localStorage.getItem('mgm_auth_user')) || (window.state && window.state.authUser); } catch (e) { }
 
     if (!user) {
       // Cliente no logueado
-      if(container) container.style.display = "none";
-      if(consultaForm) consultaForm.style.display = "block";
-      if(toggleWrap) toggleWrap.style.display = "none";
-      if(headerTitle) headerTitle.textContent = "Rastrear Pedido";
-      if(headerSubtitle) headerSubtitle.textContent = "Ingresa los datos para ver el estado de tu envío";
-      if(headerBadge) headerBadge.innerHTML = "";
+      if (container) container.style.display = "none";
+      if (consultaForm) consultaForm.style.display = "block";
+      if (toggleWrap) toggleWrap.style.display = "none";
+      if (headerTitle) headerTitle.textContent = "Rastrear Pedido";
+      if (headerSubtitle) headerSubtitle.textContent = "Ingresa los datos para ver el estado de tu envío";
+      if (headerBadge) headerBadge.innerHTML = "";
       return;
     }
 
     // Cliente Logueado
-    if(headerTitle) headerTitle.textContent = "Mis Pedidos";
-    if(headerSubtitle) headerSubtitle.textContent = "Seguimiento de tus envíos";
-    if(headerBadge) {
+    if (headerTitle) headerTitle.textContent = "Mis Pedidos";
+    if (headerSubtitle) headerSubtitle.textContent = "Seguimiento de tus envíos";
+    if (headerBadge) {
       headerBadge.innerHTML = `<span class="rma-user-badge-header" style="background:#E0F2FE; color:#0369A1;"><i class="fa-solid fa-circle-user"></i> ${user.nombre || 'Mi Cuenta'}</span>`;
     }
 
-    if(container) {
+    if (container) {
       container.style.display = "block";
       container.innerHTML = `<div style="text-align:center; padding: 20px; color: #64748b;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i>Buscando tus envíos...</div>`;
     }
-    if(consultaForm) consultaForm.style.display = "none";
-    if(toggleWrap) toggleWrap.style.display = "block";
+    if (consultaForm) consultaForm.style.display = "none";
+    if (toggleWrap) toggleWrap.style.display = "block";
 
     try {
       const res = await fetch(`${RASTREO_GAS_URL}?action=buscar_cedula&cedula=${encodeURIComponent(user.cedula)}`);
       const payload = await res.json();
 
       if (payload.error || !payload.data || payload.data.length === 0) {
-        if(container) container.innerHTML = `
+        if (container) container.innerHTML = `
           <div style="background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 16px; padding: 30px 20px; text-align: center;">
             <div style="background: #E2E8F0; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #64748B;">
               <span class="material-icons-round" style="font-size:24px;">local_shipping</span>
@@ -6219,19 +6259,19 @@ window.closeReferralQRModal = function() {
         `;
       } else {
         const items = payload.data;
-        if(container) {
+        if (container) {
           container.innerHTML = `<div class="rma-equipos-list">${items.map(buildRastreoCard).join('')}</div>`;
         }
       }
     } catch (err) {
-      if(container) container.innerHTML = `<div style="color: #EF4444; text-align:center; padding: 15px; font-size:13px;">Error de conexión con el servidor.</div>`;
+      if (container) container.innerHTML = `<div style="color: #EF4444; text-align:center; padding: 15px; font-size:13px;">Error de conexión con el servidor.</div>`;
     }
   };
 
   // Manejo del Submit del formulario
   const consultaForm = document.getElementById("rastreoConsultaForm");
   if (consultaForm) {
-    consultaForm.addEventListener("submit", async function(e) {
+    consultaForm.addEventListener("submit", async function (e) {
       e.preventDefault();
       const rastreo = consultaForm.rastreo.value.trim();
       const email = consultaForm.email.value.trim();
@@ -6250,7 +6290,7 @@ window.closeReferralQRModal = function() {
       try {
         const res = await fetch(`${RASTREO_GAS_URL}?action=buscar_factura&factura=${encodeURIComponent(rastreo)}&email=${encodeURIComponent(email)}`);
         const payload = await res.json();
-        
+
         loader.classList.add("hidden");
         rastreoSetLoading(false);
 
@@ -6274,20 +6314,20 @@ window.closeReferralQRModal = function() {
               </div>
               <div class="timeline-track">
                 ${historial.map((h, idx) => {
-                  const isLatest = idx === historial.length - 1;
-                  const hInfo = getRastreoEstadoInfo(h.estado);
-                  const isDone = hInfo.progress === 100;
-                  const stepClass = isDone ? 'done' : (isLatest ? 'latest' : '');
-                  const iconName = isDone ? 'task_alt' : (isLatest ? 'pending' : 'check');
-                  
-                  // Sobrescribir colores en el style para que match con Rastreo
-                  const styleOverride = isLatest ? 'background: #0284C7; border-color: #0284C7;' : '';
-                  const boxOverride = isLatest ? 'box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);' : '';
+            const isLatest = idx === historial.length - 1;
+            const hInfo = getRastreoEstadoInfo(h.estado);
+            const isDone = hInfo.progress === 100;
+            const stepClass = isDone ? 'done' : (isLatest ? 'latest' : '');
+            const iconName = isDone ? 'task_alt' : (isLatest ? 'pending' : 'check');
 
-                  return `
+            // Sobrescribir colores en el style para que match con Rastreo
+            const styleOverride = isLatest ? 'background: #0284C7; border-color: #0284C7;' : '';
+            const boxOverride = isLatest ? 'box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);' : '';
+
+            return `
                     <div class="timeline-step ${stepClass}">
                       <div class="timeline-dot" style="${styleOverride} ${boxOverride}">
-                        <span class="material-icons-round" style="font-size:11px; ${isLatest?'color:white;':''}">${iconName}</span>
+                        <span class="material-icons-round" style="font-size:11px; ${isLatest ? 'color:white;' : ''}">${iconName}</span>
                       </div>
                       <div class="timeline-header">
                         <span class="timeline-estado">${hInfo.label}</span>
@@ -6295,7 +6335,7 @@ window.closeReferralQRModal = function() {
                       </div>
                       ${h.notas ? `<div class="timeline-notas">${h.notas}</div>` : ''}
                     </div>`;
-                }).join('')}
+          }).join('')}
               </div>
             </div>`;
         }
@@ -6455,11 +6495,11 @@ window.closeReferralQRModal = function() {
       `;
       document.body.appendChild(m);
     }
-    
+
     const header = document.getElementById('rastreo-alert-header');
     const iconWrap = document.getElementById('rastreo-alert-icon-wrap');
     const icon = document.getElementById('rastreo-alert-icon');
-    
+
     if (isSuccess) {
       header.style.background = 'linear-gradient(135deg, #f0fdf4 0%, #fcfdfa 100%)';
       iconWrap.style.background = 'linear-gradient(135deg, #dcfce7, #bbf7d0)';
@@ -6475,21 +6515,21 @@ window.closeReferralQRModal = function() {
       icon.className = 'fa-solid fa-xmark';
       icon.style.color = '#ef4444';
     }
-    
+
     document.getElementById('rastreo-alert-title').innerHTML = title;
     document.getElementById('rastreo-alert-msg').innerHTML = message;
-    
+
     openAppModal('modal-rastreo-alert');
   }
 
-  window.confirmarRecepcionRastreo = function(id_rastreo, email) {
+  window.confirmarRecepcionRastreo = function (id_rastreo, email) {
     ensureRastreoConfirmModal();
     const btnOk = document.getElementById("btn-rastreo-confirm-ok");
     btnOk.onclick = async () => {
       closeAppModal('modal-rastreo-confirm');
-      
+
       const btn = document.getElementById("btn-confirmar-recepcion");
-      if(btn) { btn.disabled = true; btn.innerHTML = "Confirmando..."; }
+      if (btn) { btn.disabled = true; btn.innerHTML = "Confirmando..."; }
 
       try {
         const res = await fetch(RASTREO_GAS_URL, {
@@ -6501,18 +6541,18 @@ window.closeReferralQRModal = function() {
           })
         });
         const data = await res.json();
-        if(data.success) {
+        if (data.success) {
           showRastreoAlert("¡Excelente!", "Gracias por confirmar la entrega.", true);
           // Refrescar el form para que aparezca como completado
           const form = document.getElementById("rastreoConsultaForm");
-          if(form) form.dispatchEvent(new Event("submit"));
+          if (form) form.dispatchEvent(new Event("submit"));
         } else {
           showRastreoAlert("Ocurrió un problema", data.message, false);
-          if(btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons-round">task_alt</span><span>¡Ya recibí mi paquete!</span>'; }
+          if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons-round">task_alt</span><span>¡Ya recibí mi paquete!</span>'; }
         }
-      } catch(err) {
+      } catch (err) {
         showRastreoAlert("Error", "Error de conexión con el servidor.", false);
-        if(btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons-round">task_alt</span><span>¡Ya recibí mi paquete!</span>'; }
+        if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons-round">task_alt</span><span>¡Ya recibí mi paquete!</span>'; }
       }
     };
     openAppModal('modal-rastreo-confirm');
@@ -6526,25 +6566,25 @@ window.closeReferralQRModal = function() {
     // Si es diciembre (11)
     if (currentMonth === 11) {
       // Usamos setInterval por si la vista tarda en cargar o se renderiza dinamicamente
-      const checkExist = setInterval(function() {
+      const checkExist = setInterval(function () {
         const viewPuntos = document.querySelector('#view-puntos .view-content') || document.querySelector('.view-content');
         if (viewPuntos) {
-           const warningBanner = document.createElement('div');
-           warningBanner.style.backgroundColor = '#fff3cd';
-           warningBanner.style.color = '#856404';
-           warningBanner.style.padding = '12px';
-           warningBanner.style.textAlign = 'center';
-           warningBanner.style.fontWeight = 'bold';
-           warningBanner.style.margin = '10px 15px';
-           warningBanner.style.borderRadius = '8px';
-           warningBanner.style.border = '1px solid #ffeeba';
-           warningBanner.innerHTML = '⚠️ Recuerda que tus puntos vencerán y volverán a cero el 31 de diciembre. ¡Aprovecha y canjéalos pronto!';
-           
-           viewPuntos.insertBefore(warningBanner, viewPuntos.firstChild);
-           clearInterval(checkExist);
+          const warningBanner = document.createElement('div');
+          warningBanner.style.backgroundColor = '#fff3cd';
+          warningBanner.style.color = '#856404';
+          warningBanner.style.padding = '12px';
+          warningBanner.style.textAlign = 'center';
+          warningBanner.style.fontWeight = 'bold';
+          warningBanner.style.margin = '10px 15px';
+          warningBanner.style.borderRadius = '8px';
+          warningBanner.style.border = '1px solid #ffeeba';
+          warningBanner.innerHTML = '⚠️ Recuerda que tus puntos vencerán y volverán a cero el 31 de diciembre. ¡Aprovecha y canjéalos pronto!';
+
+          viewPuntos.insertBefore(warningBanner, viewPuntos.firstChild);
+          clearInterval(checkExist);
         }
       }, 1000);
-      
+
       // Limpiar intervalo despues de 10 segundos para no dejarlo infinito
       setTimeout(() => clearInterval(checkExist), 10000);
     }
@@ -6557,20 +6597,20 @@ window.closeReferralQRModal = function() {
     // Resistencias Ω/m a 20°C
     const resBase = {
       cobre: { 14: 0.0082, 16: 0.0131, 18: 0.0209, 20: 0.0333, 22: 0.0529, 24: 0.0842 },
-      cca:   { 14: 0.0135, 16: 0.0216, 18: 0.0345, 20: 0.0549, 22: 0.0873, 24: 0.1389 }
+      cca: { 14: 0.0135, 16: 0.0216, 18: 0.0345, 20: 0.0549, 22: 0.0873, 24: 0.1389 }
     };
-    
+
     const btnAddDev = document.getElementById("vdAddDev");
     const btnCalcular = document.getElementById("vdBtnCalcular");
     const btnPDF = document.getElementById("vdBtnPDF");
-    
-    if(btnAddDev) btnAddDev.addEventListener("click", addDeviceRow);
-    if(btnCalcular) btnCalcular.addEventListener("click", calcularVoltaje);
-    if(btnPDF) btnPDF.addEventListener("click", generarPDF);
+
+    if (btnAddDev) btnAddDev.addEventListener("click", addDeviceRow);
+    if (btnCalcular) btnCalcular.addEventListener("click", calcularVoltaje);
+    if (btnPDF) btnPDF.addEventListener("click", generarPDF);
 
     function addDeviceRow() {
       const container = document.getElementById("vdDeviceList");
-      if(!container) return;
+      if (!container) return;
       const index = container.children.length + 1;
       const div = document.createElement("div");
       div.className = "vd-cam-row";
@@ -6607,14 +6647,14 @@ window.closeReferralQRModal = function() {
       `;
       container.appendChild(div);
     }
-    
-    window.vdRenumerar = function() {
-      document.querySelectorAll(".vd-cam-row").forEach((r, i) => r.querySelector(".vd-cam-header span").innerText = "EQUIPO #" + (i+1));
+
+    window.vdRenumerar = function () {
+      document.querySelectorAll(".vd-cam-row").forEach((r, i) => r.querySelector(".vd-cam-header span").innerText = "EQUIPO #" + (i + 1));
     };
 
     function calcularVoltaje() {
       const tempInput = document.getElementById("vdTemp");
-      if(!tempInput) return;
+      if (!tempInput) return;
       const temp = parseFloat(tempInput.value) || 20;
       const tempFactor = 1 + (0.00393 * (temp - 20)); // Coeficiente térmico del cobre
       let detalleHtml = "";
@@ -6637,7 +6677,7 @@ window.closeReferralQRModal = function() {
         if (porcDrop > 10) { estado = "CRÍTICO"; clase = "vd-critico"; tieneCriticos = true; }
         else if (porcDrop > 5) { estado = "Precaución"; clase = ""; }
         detalleHtml += `<tr>
-          <td>${i+1}</td>
+          <td>${i + 1}</td>
           <td>${tipo}</td>
           <td>${vFuente}V</td>
           <td>${amps.toFixed(2)}A</td>
@@ -6648,7 +6688,7 @@ window.closeReferralQRModal = function() {
           <td class="${clase}">${vFinal.toFixed(2)}V</td>
           <td class="${clase}">${estado} (${porcDrop.toFixed(1)}%)</td>
         </tr>`;
-        filasPDF.push([i+1, tipo, vFuente+"V", dist+"m", awg, cond.toUpperCase(), vDrop.toFixed(2)+"V", vFinal.toFixed(2)+"V", estado]);
+        filasPDF.push([i + 1, tipo, vFuente + "V", dist + "m", awg, cond.toUpperCase(), vDrop.toFixed(2) + "V", vFinal.toFixed(2) + "V", estado]);
       });
       const alertBox = document.getElementById("vdStatusAlert");
       if (tieneCriticos) {
@@ -6660,15 +6700,15 @@ window.closeReferralQRModal = function() {
       }
       document.querySelector("#vdTablaDetalle tbody").innerHTML = detalleHtml;
       document.getElementById("vdResultadoBox").style.display = "block";
-      
+
       // Toast genérico de MGM
-      if(window.showToast) window.showToast("Cálculo completado exitosamente", "success");
+      if (window.showToast) window.showToast("Cálculo completado exitosamente", "success");
     }
 
     function generarPDF() {
-      if(!window.jspdf) {
-         if(window.showToast) window.showToast("La librería PDF aún está cargando...", "warning");
-         return;
+      if (!window.jspdf) {
+        if (window.showToast) window.showToast("La librería PDF aún está cargando...", "warning");
+        return;
       }
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -6681,7 +6721,7 @@ window.closeReferralQRModal = function() {
       doc.setFontSize(10);
       doc.text("INFORME DE CAÍDA DE TENSIÓN DC", 15, 30);
       doc.text(`PROYECTO: ${client.toUpperCase()}`, 15, 38);
-      
+
       // Imagen PDF
       doc.addImage("https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png", 'PNG', 160, 8, 35, 30);
       doc.autoTable({
@@ -6691,12 +6731,12 @@ window.closeReferralQRModal = function() {
         styles: { fontSize: 8 }
       });
       doc.save(`MGM_Voltaje_${client.replace(/\s/g, '_')}.pdf`);
-      
-      if(window.showToast) window.showToast("Reporte PDF generado y descargado.", "success");
+
+      if (window.showToast) window.showToast("Reporte PDF generado y descargado.", "success");
     }
-    
-    if(document.getElementById("vdDeviceList")) {
-        addDeviceRow();
+
+    if (document.getElementById("vdDeviceList")) {
+      addDeviceRow();
     }
   });
 
@@ -6706,14 +6746,14 @@ window.closeReferralQRModal = function() {
   let wlWirelessMode = 'P2P';
   let wlSimulationData = [];
 
-  window.wlSetMode = function(m) {
+  window.wlSetMode = function (m) {
     wlWirelessMode = m;
     document.getElementById('btnP2P').classList.toggle('active', m === 'P2P');
     document.getElementById('btnP2MP').classList.toggle('active', m === 'P2MP');
     document.getElementById('wlP2mpSection').style.display = m === 'P2MP' ? 'block' : 'none';
   };
 
-  window.wlAddClient = function() {
+  window.wlAddClient = function () {
     const container = document.getElementById('wlClientList');
     const id = container.children.length + 1;
     const div = document.createElement('div');
@@ -6731,7 +6771,7 @@ window.closeReferralQRModal = function() {
   function wlCalcularLink(dist, freq, txPwr, txGn, rxGn, hA, hB, hObs) {
     const fspl = 32.44 + (20 * Math.log10(dist)) + (20 * Math.log10(freq * 1000));
     const rssi = (txPwr + txGn + rxGn) - fspl - 2; // -2 por pérdidas cables
-    const noise = -96 + (10 * Math.log10(parseInt(document.getElementById('wlChan').value)/20));
+    const noise = -96 + (10 * Math.log10(parseInt(document.getElementById('wlChan').value) / 20));
     const snr = rssi - noise;
     // Fresnel
     const lambda = 0.3 / freq;
@@ -6741,13 +6781,13 @@ window.closeReferralQRModal = function() {
     const fresnelRatio = (clearance / f1) * 100;
     // Throughput aprox
     let mbit = 0;
-    if(snr > 30) mbit = parseInt(document.getElementById('wlChan').value) * 5;
-    else if(snr > 20) mbit = parseInt(document.getElementById('wlChan').value) * 3;
-    else if(snr > 12) mbit = parseInt(document.getElementById('wlChan').value) * 1.5;
+    if (snr > 30) mbit = parseInt(document.getElementById('wlChan').value) * 5;
+    else if (snr > 20) mbit = parseInt(document.getElementById('wlChan').value) * 3;
+    else if (snr > 12) mbit = parseInt(document.getElementById('wlChan').value) * 1.5;
     return { rssi, snr, fresnelRatio, mbit, fspl };
   }
 
-  window.wlEjecutarSimulacion = function() {
+  window.wlEjecutarSimulacion = function () {
     const freq = parseFloat(document.getElementById('wlFreq').value);
     const txP = parseFloat(document.getElementById('wlTxPwr').value);
     const txG = parseFloat(document.getElementById('wlTxGn').value);
@@ -6756,22 +6796,22 @@ window.closeReferralQRModal = function() {
     const hO = parseFloat(document.getElementById('wlHObs').value);
     wlSimulationData = [];
     let tableHtml = '';
-    
-    if(wlWirelessMode === 'P2P') {
+
+    if (wlWirelessMode === 'P2P') {
       const d = parseFloat(document.getElementById('wlDistKm').value);
-      const res = wlCalcularLink(d, freq, txP, txG, txG, hA, hB, hO); 
-      wlSimulationData.push({id: 'Enlace P2P', ...res});
+      const res = wlCalcularLink(d, freq, txP, txG, txG, hA, hB, hO);
+      wlSimulationData.push({ id: 'Enlace P2P', ...res });
     } else {
       const clients = document.getElementById('wlClientList').getElementsByClassName('client-row');
-      for(let i = 0; i < clients.length; i++) {
+      for (let i = 0; i < clients.length; i++) {
         const c = clients[i];
         const d = parseFloat(c.querySelector('.cDist').value);
         const rg = parseFloat(c.querySelector('.cGn').value);
         const res = wlCalcularLink(d, freq, txP, txG, rg, hA, hB, hO);
-        wlSimulationData.push({id: `Cliente ${wlSimulationData.length+1}`, ...res});
+        wlSimulationData.push({ id: `Cliente ${wlSimulationData.length + 1}`, ...res });
       }
     }
-    
+
     wlSimulationData.forEach(row => {
       const fColor = row.fresnelRatio > 60 ? '#10b981' : '#f59e0b';
       tableHtml += `
@@ -6784,31 +6824,31 @@ window.closeReferralQRModal = function() {
         </tr>
       `;
     });
-    
+
     document.getElementById('wlResTable').innerHTML = tableHtml;
     document.getElementById('wlResContainer').style.display = 'block';
-    
+
     // Alerta Global
     const mainLink = wlSimulationData[0];
     const st = document.getElementById('wlStatusMsg');
     st.style.display = 'block';
-    if(!mainLink) return;
+    if (!mainLink) return;
 
-    if(mainLink.snr > 25 && mainLink.fresnelRatio > 60) {
+    if (mainLink.snr > 25 && mainLink.fresnelRatio > 60) {
       st.className = 'status-card st-ok';
       st.innerHTML = "SISTEMA ÓPTIMO: El enlace cumple con los estándares de disponibilidad de MGM (99.9%).";
-      if(window.showToast) window.showToast("Cálculo óptimo completado", "success");
+      if (window.showToast) window.showToast("Cálculo óptimo completado", "success");
     } else {
       st.className = 'status-card st-warn';
       st.innerHTML = "ATENCIÓN TÉCNICA: El enlace presenta degradación por SNR bajo o zona Fresnel obstruida.";
-      if(window.showToast) window.showToast("Cálculo completado con advertencias", "warning");
+      if (window.showToast) window.showToast("Cálculo completado con advertencias", "warning");
     }
   };
 
-  window.wlExportarPDF = function() {
-    if(!window.jspdf) {
-       if(window.showToast) window.showToast("La librería PDF aún está cargando...", "warning");
-       return;
+  window.wlExportarPDF = function () {
+    if (!window.jspdf) {
+      if (window.showToast) window.showToast("La librería PDF aún está cargando...", "warning");
+      return;
     }
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -6821,15 +6861,15 @@ window.closeReferralQRModal = function() {
     doc.setFontSize(10);
     doc.text(`Modo: ${wlWirelessMode} | Frecuencia: ${document.getElementById('wlFreq').value} GHz`, 15, 50);
     doc.text(`Resultado: ${document.getElementById('wlStatusMsg').innerText}`, 15, 57);
-    
+
     const body = wlSimulationData.map(d => [
-      d.id, 
-      d.rssi.toFixed(1) + " dBm", 
-      d.snr.toFixed(1) + " dB", 
-      d.fresnelRatio.toFixed(0) + "%", 
+      d.id,
+      d.rssi.toFixed(1) + " dBm",
+      d.snr.toFixed(1) + " dB",
+      d.fresnelRatio.toFixed(0) + "%",
       d.mbit + " Mbps"
     ]);
-    
+
     doc.autoTable({
       startY: 65,
       head: [['ID Enlace', 'RSSI', 'SNR', 'Zona Fresnel', 'Capacidad']],
@@ -6837,28 +6877,28 @@ window.closeReferralQRModal = function() {
       headStyles: { fillColor: [26, 115, 232] }
     });
     doc.save("MGM_Calculo_Wireless.pdf");
-    if(window.showToast) window.showToast("Reporte PDF de enlace generado.", "success");
+    if (window.showToast) window.showToast("Reporte PDF de enlace generado.", "success");
   };
 
 })();
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // CALCULADORAS NUEVAS - Ganchos de navegación (Autenticación requerida)
-  // ══════════════════════════════════════════════════════════════════════════════
-  (function() {
-    const _origSwitchNewCalc = window.switchMainTab;
-    window.switchMainTab = function(tabName) {
-      if (_origSwitchNewCalc) _origSwitchNewCalc(tabName);
-      if (tabName === 'toolbox-calculadora-voltaje' || tabName === 'toolbox-calculadora-inalambrica') {
-        const _authData = localStorage.getItem('mgm_auth_user');
-        if (!_authData) {
-          const viewEl = document.getElementById('view-toolbox');
-          document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
-          if (viewEl) viewEl.classList.add('active');
-          if (typeof showToast === 'function') showToast('Debes iniciar sesión para usar las Calculadoras Técnicas.', 'fa-solid fa-lock');
-          return;
-        }
+// ══════════════════════════════════════════════════════════════════════════════
+// CALCULADORAS NUEVAS - Ganchos de navegación (Autenticación requerida)
+// ══════════════════════════════════════════════════════════════════════════════
+(function () {
+  const _origSwitchNewCalc = window.switchMainTab;
+  window.switchMainTab = function (tabName) {
+    if (_origSwitchNewCalc) _origSwitchNewCalc(tabName);
+    if (tabName === 'toolbox-calculadora-voltaje' || tabName === 'toolbox-calculadora-inalambrica') {
+      const _authData = localStorage.getItem('mgm_auth_user');
+      if (!_authData) {
+        const viewEl = document.getElementById('view-toolbox');
+        document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+        if (viewEl) viewEl.classList.add('active');
+        if (typeof showToast === 'function') showToast('Debes iniciar sesión para usar las Calculadoras Técnicas.', 'fa-solid fa-lock');
+        return;
       }
-    };
-  })();
+    }
+  };
+})();
 
