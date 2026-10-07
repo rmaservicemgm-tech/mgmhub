@@ -2122,8 +2122,33 @@
     const render = () => {
       const events = state.agendaEvents;
       const today = new Date(); today.setHours(0,0,0,0);
+      const now = new Date();
       const upcoming = events
-        .filter(e => new Date(e.fecha + 'T00:00:00') >= today)
+        .filter(e => {
+          const eventDate = new Date(e.fecha + 'T00:00:00');
+          if (eventDate < today) return false;
+          
+          // Si el evento es hoy, verificar si ya terminó según su hora de fin
+          if (eventDate.getTime() === today.getTime() && e.hora) {
+            const timeMatches = e.hora.match(/\d{1,2}:\d{2}/g);
+            if (timeMatches && timeMatches.length > 0) {
+              const lastTime = timeMatches[timeMatches.length - 1];
+              const [h, m] = lastTime.split(':').map(Number);
+              const eventEndTime = new Date(today);
+              eventEndTime.setHours(h, m, 0, 0);
+              
+              // Si solo tiene hora de inicio, damos un margen de 1 hora por defecto
+              if (timeMatches.length === 1) {
+                eventEndTime.setHours(eventEndTime.getHours() + 1);
+              }
+              
+              if (now > eventEndTime) {
+                return false; // El evento ya pasó su hora de finalización
+              }
+            }
+          }
+          return true;
+        })
         .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
       const banner = document.getElementById('home-event-banner');
