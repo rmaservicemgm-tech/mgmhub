@@ -3460,13 +3460,63 @@
           </div>
         </div>
 
-        <div style="text-align: center; margin-top: 24px;">
+        <!-- CONTENEDOR ENCAPSULADO DEL FOOTER -->
+        <div id="mgm-footer-container" style="text-align: center; margin-top: 24px; font-family: inherit;">
           <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM Hub"
-            style="height: 24px; opacity: 0.5; margin-bottom: 8px;">
-          <p style="font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.05em;">MGM HUB
-            VERSIÓN 2.5.0</p>
-          <p style="font-size: 10px; color: #cbd5e1; margin-top: 2px;">Todos los derechos reservados &copy; 2026</p>
+            style="height: 24px; opacity: 0.5; margin-bottom: 8px; display: inline-block;">
+
+          <!-- Línea Principal: Versión -->
+          <p id="mgm-version-text"
+            style="font-size: 11px; font-weight: 600; color: var(--text-muted, #64748b); letter-spacing: 0.05em; margin: 0; padding: 0;">
+            MGM HUB — Monagrillo v2.5.0 (Build 179)
+          </p>
+
+          <!-- Línea Secundaria: Fecha de actualización + Derechos reservados -->
+          <p style="font-size: 10px; color: #cbd5e1; margin-top: 4px; margin-bottom: 0; padding: 0;">
+            <span id="mgm-updated-at">Actualizado: 07/10/2026</span> • Todos los derechos reservados &copy; 2026
+          </p>
+
+          <script>
+            (function () {
+              'use strict';
+              var GAS_URL = "https://script.google.com/macros/s/AKfycby48ZmOGg7G3vp_NdOAwGy4-BoGgtRIk179MpetrggFvLNfLe9FlB72UJwvce2hsH5lBg/exec";
+
+              // Búsqueda de elementos scoped dentro de este contenedor específico
+              var container = document.getElementById("mgm-footer-container");
+              if (!container) return;
+
+              var versionElem = container.querySelector("#mgm-version-text");
+              var updatedElem = container.querySelector("#mgm-updated-at");
+
+              fetch(GAS_URL)
+                .then(function (response) {
+                  if (!response.ok) throw new Error("Error en la respuesta de la red");
+                  return response.json();
+                })
+                .then(function (data) {
+                  if (data) {
+                    // Actualizar texto de versión
+                    if (versionElem) {
+                      var app = data.appName || "MGM HUB";
+                      var release = data.releaseName ? " — " + data.releaseName : "";
+                      var ver = data.version ? " v" + data.version : "";
+                      var build = data.build ? " (Build " + data.build + ")" : "";
+                      versionElem.textContent = app + release + ver + build;
+                    }
+
+                    // Actualizar fecha
+                    if (updatedElem && data.updatedAt) {
+                      updatedElem.textContent = "Actualizado: " + data.updatedAt;
+                    }
+                  }
+                })
+                .catch(function (error) {
+                  console.warn("MGM Footer: No se pudo cargar la versión desde Google Sheets:", error);
+                });
+            })();
+          </script>
         </div>
+        <!-- FIN CONTENEDOR ENCAPSULADO -->
 
       </div>
     </div>
