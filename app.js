@@ -4056,8 +4056,9 @@ window.openLoginModal = function() {
     const modal = document.getElementById('modal-confirm-clear');
     if (modal) modal.classList.remove('active');
 
-    // Recopilar TODOS los IDs antes de limpiar el array para sincronizar borrado completo
-    const idsToClear = state.notifications.map(n => String(n.id));
+    // Filtrar solo las notificaciones activas para borrar
+    const notifsActivas = state.notifications.filter(n => notifEnVentana(n));
+    const idsToClear = notifsActivas.map(n => String(n.id));
     if (idsToClear.length === 0) return;
 
     // Guardar las IDs borradas localmente para que no vuelvan a aparecer del backend
@@ -4068,7 +4069,8 @@ window.openLoginModal = function() {
     });
     localStorage.setItem(K_CLEARED_NOTIFS, JSON.stringify(state.clearedNotifs));
 
-    state.notifications = [];
+    // Mantener en el estado solo las notificaciones programadas a futuro (no activas aún)
+    state.notifications = state.notifications.filter(n => !notifEnVentana(n));
     localStorage.setItem(K_NOTIFS, JSON.stringify(state.notifications));
     renderNotifications();
     updateNotifBadge();
