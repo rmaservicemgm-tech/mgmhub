@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>MGM Hub â€” Soluciones & Beneficios MGM</title>
+  <title>MGM Hub — Soluciones & Beneficios MGM</title>
   <meta name="description" content="Aplicación Móvil MGM Hub: MGM Puntos, Calendario de Capacitaciones, Promociones del Mes y Asistente IA Magie.">
   <meta name="theme-color" content="#ffffff">
   <link rel="manifest" href="manifest.json">
@@ -21,7 +21,7 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
-  <!-- ðŸŽ‰ canvas-confetti â€” celebraciones MGM Hub -->
+  <!-- ðŸŽ‰ canvas-confetti — celebraciones MGM Hub -->
   <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   
   <!-- HLS.js para soporte de streams .m3u8 (Radios) -->
@@ -124,7 +124,7 @@
       <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" id="install-logo">
       <div id="install-badge">HUB</div>
       <h1 id="install-title">MGM Hub</h1>
-      <p id="install-sub">Tu centro de beneficios, promociones y puntos MGM â€” siempre a la mano.</p>
+      <p id="install-sub">Tu centro de beneficios, promociones y puntos MGM — siempre a la mano.</p>
       <div id="install-features">
         <div class="install-feature">
           <i class="fa-solid fa-star" style="color:#ffb800;"></i>
@@ -2218,7 +2218,7 @@
                   }
                   window.showToast('QR escaneado correctamente', 'fa-solid fa-check');
                 } else {
-                  window.showToast('El codigo QR no es valido para RMA', 'fa-solid fa-triangle-exclamation');
+                  window.showToast('El código QR no es válido para RMA', 'fa-solid fa-triangle-exclamation');
                 }
               } catch (e) {
                 if (decodedText.startsWith('RMA-')) {
@@ -2226,7 +2226,7 @@
                   if (rf && rf.rma) { rf.rma.value = decodedText; rf.email.focus(); }
                   window.showToast('RMA escaneado. Ingresa el correo.', 'fa-solid fa-qrcode');
                 } else {
-                  window.showToast('El codigo QR no es valido.', 'fa-solid fa-triangle-exclamation');
+                  window.showToast('El código QR no es válido.', 'fa-solid fa-triangle-exclamation');
                 }
               }
             }
@@ -2271,7 +2271,7 @@
          â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div class="app-modal" id="modal-asesoria">
       <div class="modal-content-card full-screen">
-        <button class="modal-close-x" onclick="closeAppModal('modal-asesoria')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-asesoria')">✕</button>
 
         <div class="asesoria-banner-header">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
@@ -2330,7 +2330,7 @@
          â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div class="app-modal" id="modal-event-detail">
       <div class="modal-content-card">
-        <button class="modal-close-x" onclick="closeAppModal('modal-event-detail')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-event-detail')">✕</button>
 
         <div style="display: inline-block; background: var(--primary-blue-lt); border: 1px solid var(--primary-blue); color: var(--primary-blue); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 12px; margin-bottom: 12px; text-transform: uppercase;" id="modal-event-cat">
           Capacitación
@@ -2367,7 +2367,7 @@
     <!-- MODAL QR DE EVENTO -->
     <div class="app-modal" id="modal-event-qr">
       <div class="modal-content-card" style="text-align: center;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-event-qr')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-event-qr')">✕</button>
         <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--text-dark);">Escanea para Registrarte</h4>
         <img id="qr-image-src" src="" alt="QR Code" style="width: 190px; height: 190px; border-radius: 12px; background: #f8fafc; padding: 8px; margin: 0 auto 16px; display: block; border: 1px solid var(--border-light);">
         <button class="btn-submit" onclick="closeAppModal('modal-event-qr')">Entendido</button>
@@ -2378,7 +2378,7 @@
     <!-- MODAL QR DE REFERIDO (PANTALLA COMPLETA Y BRILLANTE) -->
     <div class="app-modal" id="modal-referral-qr" style="background: #ffffff !important; z-index: 99999;">
       <div class="modal-content-card" style="text-align: center; background: #ffffff !important; box-shadow: none; border: none; max-width: 100%; padding: 40px 20px;">
-        <button class="modal-close-x" onclick="closeReferralQRModal()" style="color: #000; background: #f1f5f9; top: 20px; right: 20px; width: 40px; height: 40px; font-size: 20px;">âœ•</button>
+        <button class="modal-close-x" onclick="closeReferralQRModal()" style="color: #000; background: #f1f5f9; top: 20px; right: 20px; width: 40px; height: 40px; font-size: 20px;">✕</button>
         <h4 style="font-size: 20px; font-weight: 800; margin-bottom: 25px; color: #000;">Mi Código de Referido</h4>
         <img id="modal-ref-qr-img" src="" alt="QR Referido" style="width: 250px; height: 250px; border-radius: 0; background: #fff; margin: 0 auto 25px; display: block; border: 2px solid #000;">
         <div id="modal-ref-code-display" style="font-size: 32px; font-weight: 900; color: #000; letter-spacing: 2px; margin-bottom: 25px; font-family: monospace;"></div>
@@ -2389,7 +2389,7 @@
     <!-- MODAL COMPARTIR EVENTO -->
     <div class="app-modal" id="modal-event-share">
       <div class="modal-content-card" style="text-align: center;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-event-share')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-event-share')">✕</button>
         <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 16px; color: var(--text-dark);">Compartir Evento</h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
           <div class="feature-item" style="cursor: pointer; justify-content: center;" onclick="shareAction('wa')">
@@ -2412,7 +2412,7 @@
     <!-- MODAL DETALLE DE PREMIO -->
     <div class="app-modal" id="modal-premio-detail">
       <div class="modal-content-card" style="max-height: 85vh; overflow-y: auto; padding: 20px; position: relative;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-premio-detail')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-premio-detail')">✕</button>
 
         <div style="text-align: center; margin-bottom: 14px; position: relative;">
           <div id="modal-premio-img-wrap" style="width: 100%; height: 185px; border-radius: 14px; background: #f8fafc; border: 1px solid var(--border-light); display: flex; align-items: center; justify-content: center; overflow: hidden;">
@@ -2460,7 +2460,7 @@
     <!-- MODAL LOGIN / PERFIL -->
     <div class="app-modal" id="modal-user-login">
       <div class="modal-content-card" style="position: relative;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-user-login')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-user-login')">✕</button>
         <div id="login-view-unauth">
           <h4 style="font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--text-dark); text-align: center;">Iniciar Sesión</h4>
           <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 16px;">Ingresa tu cédula o correo para acceder a tus beneficios y recibir notificaciones especiales.</p>
@@ -2546,7 +2546,7 @@
     </style>
     <div class="app-modal" id="modal-settings" style="z-index: 10000;">
       <div class="modal-content-card">
-        <button class="modal-close-x" onclick="closeAppModal('modal-settings')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-settings')">✕</button>
         <h4 style="font-size: 18px; font-weight: 800; margin-bottom: 20px; color: var(--text-dark); border-bottom: 1px solid var(--border-light); padding-bottom: 12px; text-align: left;">
           <i class="fa-solid fa-gear" style="color: var(--text-muted); margin-right: 6px;"></i> Configuración
         </h4>
@@ -2626,7 +2626,7 @@
     <!-- MODAL CUMPLEAÃ‘OS -->
     <div class="app-modal" id="modal-birthday" style="z-index: 10000;">
       <div class="modal-content-card" style="text-align: center; max-width: 340px; padding: 30px 20px; position: relative;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-birthday')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-birthday')">✕</button>
         <div style="font-size: 60px; margin-bottom: 10px; animation: bounce 2s infinite;">ðŸŽ‰ðŸŽ‚</div>
         <h3 style="color: var(--text-dark); margin: 0 0 10px 0; font-size: 22px;">¡Feliz Cumpleaños!</h3>
         <p id="modal-birthday-text" style="color: var(--text-body); font-size: 15px; line-height: 1.5; margin: 0 0 20px 0;">
@@ -2648,7 +2648,7 @@
           <h4 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0;"><i class="fa-regular fa-bell" style="color: #ef4444; margin-right: 6px;"></i> Notificaciones</h4>
           <div style="display: flex; gap: 12px; align-items: center;">
             <button onclick="clearNotifications()" style="background: transparent; border: none; font-size: 12px; color: var(--primary-blue); font-weight: 700; cursor: pointer; padding: 4px 8px;">Limpiar</button>
-            <button onclick="closeAppModal('modal-notifications')" style="background: transparent; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;">âœ•</button>
+            <button onclick="closeAppModal('modal-notifications')" style="background: transparent; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;">✕</button>
           </div>
         </div>
         <div id="notif-list" style="padding: 12px; overflow-y: auto; flex: 1; background: #f8fafc; min-height: 200px;">
@@ -2657,7 +2657,7 @@
       </div>
     </div>
 
-    <!-- MODAL CONFIRMACIÃ“N â€” LIMPIAR NOTIFICACIONES -->
+    <!-- MODAL CONFIRMACIÃ“N — LIMPIAR NOTIFICACIONES -->
     <div class="app-modal" id="modal-confirm-clear" style="z-index: 9500;">
       <div class="modal-content-card" style="max-width: 320px; padding: 0; overflow: hidden; border-radius: 22px;">
         <!-- Icono + encabezado -->
@@ -2721,7 +2721,7 @@
       </div>
     </div>
 
-    <!-- MODAL CONFIRMACIÃ“N â€” QUITAR EQUIPO DE LA LISTA -->
+    <!-- MODAL CONFIRMACIÃ“N — QUITAR EQUIPO DE LA LISTA -->
     <div class="app-modal" id="modal-confirm-quitar-rma" style="z-index: 9500;">
       <div class="modal-content-card" style="max-width: 320px; padding: 0; overflow: hidden; border-radius: 22px;">
         <!-- Icono + encabezado -->
@@ -2797,7 +2797,7 @@
               <div onclick="closeSplashOption('today')">No volver a mostrar hoy</div>
             </div>
           </div>
-          <button class="splash-close-btn" onclick="closeSplashOption('session')">âœ•</button>
+          <button class="splash-close-btn" onclick="closeSplashOption('session')">✕</button>
         </div>
         <div id="splash-content-wrap" style="cursor: pointer;">
           <img id="splash-img" src="" alt="Promoción Especial">
@@ -2831,7 +2831,7 @@
         },
         "configuration": {
           "version": "v2",
-          "botName": "Magie â€” Asistente IA MGM",
+          "botName": "Magie — Asistente IA MGM",
           "botAvatar": "https://mgmpty.odoo.com/web/image/69925-9cdb234e/magiechat.png",
           "color": "#143266",
           "variant": "solid",
@@ -2994,7 +2994,7 @@
         <div class="header-brand">
           <div>
             <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-bolt"></i> Calc. Caída de Voltaje DC</h2>
-            <span style="font-size: 12px; color: var(--text-muted);">MGM Seguridad â€” Calculadora Profesional</span>
+            <span style="font-size: 12px; color: var(--text-muted);">MGM Seguridad — Calculadora Profesional</span>
           </div>
           <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
@@ -3115,7 +3115,7 @@
           <div class="header-brand">
             <div>
               <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-wifi"></i> Calc. Enlaces Inalámbricos</h2>
-              <span style="font-size: 12px; color: var(--text-muted);">MGM Seguridad â€” Ingeniería de Radiofrecuencia</span>
+              <span style="font-size: 12px; color: var(--text-muted);">MGM Seguridad — Ingeniería de Radiofrecuencia</span>
             </div>
             <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
           </div>
@@ -3209,7 +3209,7 @@
         <div class="header-brand">
           <div>
             <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-hdd"></i> Calc. Almacenamiento CCTV</h2>
-            <span style="font-size: 12px; color: var(--text-muted);">MGM Tecno Sistemas â€” Calculadora Profesional</span>
+            <span style="font-size: 12px; color: var(--text-muted);">MGM Tecno Sistemas — Calculadora Profesional</span>
           </div>
           <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
@@ -3284,7 +3284,7 @@
         <div class="header-brand">
           <div>
             <h2 style="font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;"><i class="fas fa-exchange-alt"></i> Conversor Técnico</h2>
-            <span style="font-size: 12px; color: var(--text-muted);">MGM Tecno Sistemas â€” Herramientas Profesionales</span>
+            <span style="font-size: 12px; color: var(--text-muted);">MGM Tecno Sistemas — Herramientas Profesionales</span>
           </div>
           <button onclick="switchMainTab('toolbox')" style="padding: 8px 14px; font-size: 12px; border-radius: 8px; background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
@@ -3317,7 +3317,7 @@
 
           <div class="conv-result">
             <div class="conv-label" id="conv-resultLabel">Resultado</div>
-            <div class="conv-value-text" id="conv-result">â€”</div>
+            <div class="conv-value-text" id="conv-result">—</div>
           </div>
           <div class="conv-hint" id="conv-hint"></div>
         </section>
@@ -3565,7 +3565,7 @@
   </div> <!-- FIN APP ROOT -->
 
 <div class="cli-modal" id="modal-promo-feed">
-      <button class="cli-modal-close" onclick="closePromoDetail()">âœ•</button>
+      <button class="cli-modal-close" onclick="closePromoDetail()">✕</button>
       <div class="cli-modal-feed" id="cli-modal-feed">
         <!-- Promo items injected here -->
       </div>
@@ -3597,10 +3597,10 @@
       </div>
     </div>
 
-    <!-- MODAL SELECTOR WHATSAPP â€” z-index alto, después del feed para ganar en DOM -->
+    <!-- MODAL SELECTOR WHATSAPP — z-index alto, después del feed para ganar en DOM -->
     <div class="app-modal" id="modal-wa-selector" style="z-index:9000;">
       <div class="modal-content-card" style="text-align: center; max-width: 300px;">
-        <button class="modal-close-x" onclick="closeAppModal('modal-wa-selector')">âœ•</button>
+        <button class="modal-close-x" onclick="closeAppModal('modal-wa-selector')">✕</button>
         <div style="font-size: 32px; color: #25d366; margin-bottom: 12px;"><i class="fa-brands fa-whatsapp"></i></div>
         <h4 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">¿A quién deseas consultar?</h4>
         <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Elige uno de nuestros asesores para enviar tu consulta sobre la promoción.</p>
@@ -3640,7 +3640,7 @@
         if (iosHint) iosHint.style.display = 'none';
       });
 
-      // Detectar iOS (Safari) â€” no tiene beforeinstallprompt
+      // Detectar iOS (Safari) — no tiene beforeinstallprompt
       const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
                  && !window.MSStream;
       const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -3809,7 +3809,7 @@
     </div>
   </div>
 
-  <!-- TOAST GLOBAL â€” fuera de todo stacking context -->
+  <!-- TOAST GLOBAL — fuera de todo stacking context -->
   <div id="mgm-toast-el" class="mgm-toast"></div>
 
   <!-- Modal de Recordatorio de Instalación -->
@@ -3943,13 +3943,13 @@
   <div id="qrScannerModal" class="qr-scanner-modal" style="z-index:99999;">
     <div class="qr-scanner-content">
       <div class="qr-scanner-header">
-        <h3>Escanear Codigo QR</h3>
+        <h3>Escanear Código QR</h3>
         <button onclick="closeQrScannerModal()" class="close-qr-btn">
           <span class="material-icons-round">close</span>
         </button>
       </div>
       <div id="qr-reader" style="width:100%; border-radius: 12px; overflow: hidden; margin-top: 10px;"></div>
-      <p class="qr-hint">Apunta la camara al codigo QR de tu orden de servicio o correo electronico.</p>
+      <p class="qr-hint">Apunta la cámara al código QR de tu orden de servicio o correo electronico.</p>
     </div>
   </div>
 </body>
