@@ -7014,7 +7014,10 @@ window.mgmEncuestas = (function () {
     var banner = document.getElementById('enc-banner');
     if (!banner) return;
 
-    var closedKey = 'mgm_enc_closed_' + enc.id;
+    var authData = _getAuthUser();
+    var cedula   = authData ? authData.cedula : '';
+    var closedKey = 'mgm_enc_closed_' + enc.id + (cedula ? '_' + cedula : '');
+    
     if (localStorage.getItem(closedKey)) {
       banner.style.display = 'none';
       return;
@@ -7388,7 +7391,11 @@ window.mgmEncuestas = (function () {
   }
 
   function cerrarBanner(id) {
-    if (id) localStorage.setItem('mgm_enc_closed_' + id, 'true');
+    var authData = _getAuthUser();
+    var cedula   = authData ? authData.cedula : '';
+    var closedKey = 'mgm_enc_closed_' + id + (cedula ? '_' + cedula : '');
+    
+    if (id) localStorage.setItem(closedKey, 'true');
     ocultarBanner();
     if (typeof closeAppModal === 'function') closeAppModal('modal-confirm-banner');
   }
