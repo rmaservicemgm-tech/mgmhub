@@ -2209,8 +2209,8 @@
 
       if (iconWrap) {
         iconWrap.innerHTML = isLive
-          ? '<i class="fa-solid fa-signal-stream"></i>'
-          : (catIconMap[next.categoria] || '<i class="fa-solid fa-calendar-star"></i>');
+          ? '<i class="fa-solid fa-tower-broadcast"></i>'
+          : (catIconMap[next.categoria] || '<i class="fa-solid fa-calendar-days"></i>');
       }
 
       if (badgeEl) {
