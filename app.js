@@ -7155,8 +7155,10 @@ window.mgmEncuestas = (function () {
       // Etiquetas min/max
       var labels = document.createElement('div');
       labels.style.cssText = 'display:flex; justify-content:space-between; margin-top:8px;';
-      labels.innerHTML = '<span style="font-size:11px; color:#94a3b8;">Nada satisfecho</span>'
-        + '<span style="font-size:11px; color:#94a3b8;">Muy satisfecho</span>';
+      var minTxt = cfg.minLabel || 'Nada satisfecho';
+      var maxTxt = cfg.maxLabel || 'Muy satisfecho';
+      labels.innerHTML = '<span style="font-size:11px; color:#94a3b8;">' + _esc(minTxt) + '</span>'
+        + '<span style="font-size:11px; color:#94a3b8;">' + _esc(maxTxt) + '</span>';
       cont.appendChild(grid);
       cont.appendChild(labels);
 
@@ -7236,9 +7238,16 @@ window.mgmEncuestas = (function () {
       return;
     }
 
-    // Deshabilitar boton para evitar doble envio
+    // Deshabilitar boton y mostrar loader
     var btnSig = document.getElementById('enc-btn-siguiente');
-    if (btnSig) { btnSig.disabled = true; btnSig.style.opacity = '0.6'; }
+    if (btnSig) { 
+      btnSig.disabled = true; 
+      btnSig.style.opacity = '0.6'; 
+      btnSig.innerHTML = 'Enviando... <i class="fa-solid fa-circle-notch fa-spin"></i>';
+    }
+    if (typeof window.showMgmLoader === 'function') {
+      window.showMgmLoader('Enviando respuestas...');
+    }
 
     // Usamos GET para evitar CORS preflight con Apps Script
     var urlEnvio = CFG.ENCUESTAS_GAS_URL
@@ -7251,6 +7260,7 @@ window.mgmEncuestas = (function () {
     fetch(urlEnvio)
     .then(function (r) { return r.json(); })
     .then(function (data) {
+      if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
       cerrarModal();
       ocultarBanner();
       if (data.success) {
@@ -7262,7 +7272,12 @@ window.mgmEncuestas = (function () {
       }
     })
     .catch(function () {
-      if (btnSig) { btnSig.disabled = false; btnSig.style.opacity = '1'; }
+      if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
+      if (btnSig) { 
+        btnSig.disabled = false; 
+        btnSig.style.opacity = '1'; 
+        btnSig.innerHTML = 'Enviar respuestas <i class="fa-solid fa-paper-plane"></i>';
+      }
       if (typeof showToast === 'function') showToast('Error de red. Verifica tu conexion e intenta de nuevo.', 'fa-solid fa-wifi');
     });
   }
