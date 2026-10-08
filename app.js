@@ -2487,6 +2487,15 @@
       const eventId = banner.getAttribute('data-event-id');
       if (eventId) localStorage.setItem(eventId, 'true');
     }
+    closeAppModal('modal-confirm-banner');
+  };
+
+  window.promptCloseEventBanner = function () {
+    var btnOk = document.getElementById('btn-confirm-banner-ok');
+    if (btnOk) {
+      btnOk.onclick = window.closeEventBanner;
+    }
+    openAppModal('modal-confirm-banner');
   };
 
   // ══════════════════════════════════════════════════════════════════════════════
@@ -7021,13 +7030,12 @@ window.mgmEncuestas = (function () {
 
     banner.style.position = 'relative';
     banner.innerHTML = '<div class="enc-banner-icon"><i class="fa-solid fa-clipboard-question"></i></div>'
-      + '<div class="enc-banner-content" style="padding-right:20px;">'
+      + '<div class="enc-banner-content" style="padding-right:10px;">'
       +   '<div class="enc-banner-label">Encuesta disponible</div>'
       +   '<div class="enc-banner-title">' + _esc(enc.nombre) + '</div>'
       +   (puntosHtml ? puntosHtml : '')
       + '</div>'
-      + '<i class="fa-solid fa-chevron-right enc-banner-arrow" style="margin-right:15px;"></i>'
-      + '<button onclick="event.stopPropagation(); window.mgmEncuestas.cerrarBanner(\'' + enc.id + '\')" style="position:absolute; top:8px; right:8px; background:transparent; border:none; color:rgba(0,33,74,0.3); font-size:16px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>';
+      + '<button onclick="event.stopPropagation(); window.mgmEncuestas.promptCerrarBanner(\'' + enc.id + '\')" style="background:transparent; border:none; color:rgba(255,255,255,0.5); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; width:32px; height:32px; padding:0; flex-shrink:0;"><i class="fa-solid fa-circle-xmark"></i></button>';
 
     banner.style.display = 'flex';
 
@@ -7382,6 +7390,15 @@ window.mgmEncuestas = (function () {
   function cerrarBanner(id) {
     if (id) localStorage.setItem('mgm_enc_closed_' + id, 'true');
     ocultarBanner();
+    if (typeof closeAppModal === 'function') closeAppModal('modal-confirm-banner');
+  }
+
+  function promptCerrarBanner(id) {
+    var btnOk = document.getElementById('btn-confirm-banner-ok');
+    if (btnOk) {
+      btnOk.onclick = function() { cerrarBanner(id); };
+    }
+    if (typeof openAppModal === 'function') openAppModal('modal-confirm-banner');
   }
 
   // ── API publica ───────────────────────────────────────────────
@@ -7394,7 +7411,8 @@ window.mgmEncuestas = (function () {
     siguiente:       siguiente,
     anterior:        anterior,
     ocultarBanner:   ocultarBanner,
-    cerrarBanner:    cerrarBanner
+    cerrarBanner:    cerrarBanner,
+    promptCerrarBanner: promptCerrarBanner
   };
 
 })();
