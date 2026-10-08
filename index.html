@@ -3487,10 +3487,10 @@
         <div class="settings-section">
           <h5 class="settings-subtitle">Privacidad y Sesión</h5>
           <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
-            <button class="btn-submit" onclick="logoutUser()" style="background: #ef4444; color: white; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <button class="btn-submit" onclick="openAppModal('modal-confirm-logout')" style="background: #ef4444; color: white; display: flex; align-items: center; justify-content: center; gap: 8px;">
               <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
             </button>
-            <button class="btn-submit" onclick="clearAppCache()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <button class="btn-submit" onclick="openAppModal('modal-confirm-cache')" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; gap: 8px;">
               <i class="fa-solid fa-broom"></i> Limpiar Caché de la App
             </button>
           </div>
@@ -3655,6 +3655,40 @@
             onmouseout="this.style.background='#fff'; this.style.color='#ef4444'">
             <i class="fa-solid fa-trash-can" style="margin-right: 5px; font-size: 12px;"></i>Eliminar
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL CONFIRMACIÓN — CERRAR SESIÓN -->
+    <div class="app-modal" id="modal-confirm-logout" style="z-index: 9500;">
+      <div class="modal-content-card" style="max-width: 320px; padding: 0; overflow: hidden; border-radius: 22px;">
+        <div style="background: linear-gradient(135deg, #fff1f2 0%, #fef9ec 100%); padding: 28px 24px 20px; text-align: center; border-bottom: 1px solid var(--border-light);">
+          <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 2px solid #fca5a5; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; box-shadow: 0 4px 16px rgba(239,68,68,0.18);">
+            <i class="fa-solid fa-arrow-right-from-bracket" style="font-size: 24px; color: #ef4444;"></i>
+          </div>
+          <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">¿Cerrar Sesión?</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">Tu sesión actual será finalizada. Tendrás que volver a ingresar con tu correo para ver tus puntos.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; background: #fff;">
+          <button onclick="closeAppModal('modal-confirm-logout')" style="padding: 16px 12px; background: #fff; border: none; border-right: 1px solid var(--border-light); font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: background 0.18s, color 0.18s; border-radius: 0 0 0 22px;" onmouseover="this.style.background='#f8fafc'; this.style.color='var(--text-body)'" onmouseout="this.style.background='#fff'; this.style.color='var(--text-muted)'"><i class="fa-solid fa-xmark" style="margin-right: 5px; font-size: 12px;"></i>Cancelar</button>
+          <button onclick="confirmLogoutUser()" style="padding: 16px 12px; background: #fff; border: none; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; color: #ef4444; cursor: pointer; transition: background 0.18s, color 0.18s; border-radius: 0 0 22px 0;" onmouseover="this.style.background='#fef2f2'; this.style.color='#dc2626'" onmouseout="this.style.background='#fff'; this.style.color='#ef4444'"><i class="fa-solid fa-arrow-right-from-bracket" style="margin-right: 5px; font-size: 12px;"></i>Salir</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL CONFIRMACIÓN — LIMPIAR CACHÉ -->
+    <div class="app-modal" id="modal-confirm-cache" style="z-index: 9500;">
+      <div class="modal-content-card" style="max-width: 320px; padding: 0; overflow: hidden; border-radius: 22px;">
+        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); padding: 28px 24px 20px; text-align: center; border-bottom: 1px solid var(--border-light);">
+          <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #dcfce7, #bbf7d0); border: 2px solid #86efac; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; box-shadow: 0 4px 16px rgba(34,197,94,0.18);">
+            <i class="fa-solid fa-broom" style="font-size: 24px; color: #10b981;"></i>
+          </div>
+          <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">¿Limpiar Caché?</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">Se borrarán datos temporales de la app pero <strong>no se cerrará tu sesión</strong>. La app se recargará al instante.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; background: #fff;">
+          <button onclick="closeAppModal('modal-confirm-cache')" style="padding: 16px 12px; background: #fff; border: none; border-right: 1px solid var(--border-light); font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: background 0.18s, color 0.18s; border-radius: 0 0 0 22px;" onmouseover="this.style.background='#f8fafc'; this.style.color='var(--text-body)'" onmouseout="this.style.background='#fff'; this.style.color='var(--text-muted)'"><i class="fa-solid fa-xmark" style="margin-right: 5px; font-size: 12px;"></i>Cancelar</button>
+          <button onclick="confirmClearAppCache()" style="padding: 16px 12px; background: #fff; border: none; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; color: #10b981; cursor: pointer; transition: background 0.18s, color 0.18s; border-radius: 0 0 22px 0;" onmouseover="this.style.background='#ecfdf5'; this.style.color='#059669'" onmouseout="this.style.background='#fff'; this.style.color='#10b981'"><i class="fa-solid fa-check" style="margin-right: 5px; font-size: 12px;"></i>Limpiar</button>
         </div>
       </div>
     </div>

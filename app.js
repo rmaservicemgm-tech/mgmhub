@@ -3301,32 +3301,37 @@
   };
 
   window.logoutUser = function () {
-    if (confirm("¿Estás seguro de que deseas cerrar tu sesión?")) {
-      localStorage.removeItem(K_AUTH);
-      state.authUser = null;
-      closeAppModal('modal-settings');
-      if (typeof showToast === 'function') showToast("Has cerrado sesión exitosamente", "fa-solid fa-check");
-      if (typeof updatePuntosAuthViews === 'function') updatePuntosAuthViews();
-      switchMainTab('home');
-    }
+    openAppModal('modal-confirm-logout');
+  };
+
+  window.confirmLogoutUser = function () {
+    localStorage.removeItem(K_AUTH);
+    state.authUser = null;
+    closeAppModal('modal-confirm-logout');
+    closeAppModal('modal-settings');
+    if (typeof showToast === 'function') showToast("Cerrando sesión...", "fa-solid fa-spinner fa-spin");
+    setTimeout(() => location.reload(), 600);
   };
 
   window.clearAppCache = function () {
-    if (confirm("¿Estás seguro de que deseas limpiar la caché? Esto no cerrará tu sesión, pero borrará datos descargados como promociones y eventos.")) {
-      // Remover todo excepto auth y preferencias de encuestas cerradas
-      let keysToKeep = [K_AUTH, 'mgm_enc_closed_'];
-      let keysToRemove = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        let key = localStorage.key(i);
-        if (key && !keysToKeep.some(k => key.includes(k))) {
-          keysToRemove.push(key);
-        }
+    openAppModal('modal-confirm-cache');
+  };
+
+  window.confirmClearAppCache = function () {
+    // Remover todo excepto auth y preferencias de encuestas cerradas
+    let keysToKeep = [K_AUTH, 'mgm_enc_closed_'];
+    let keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      let key = localStorage.key(i);
+      if (key && !keysToKeep.some(k => key.includes(k))) {
+        keysToRemove.push(key);
       }
-      keysToRemove.forEach(k => localStorage.removeItem(k));
-      closeAppModal('modal-settings');
-      if (typeof showToast === 'function') showToast("Caché limpiada correctamente", "fa-solid fa-broom");
-      setTimeout(() => location.reload(), 1000);
     }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    closeAppModal('modal-confirm-cache');
+    closeAppModal('modal-settings');
+    if (typeof showToast === 'function') showToast("Caché limpiada correctamente", "fa-solid fa-broom");
+    setTimeout(() => location.reload(), 1000);
   };
 
   window.updateUserInfoField = function (field) {
