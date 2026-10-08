@@ -7426,8 +7426,7 @@ window.mgmEncuestas = (function () {
 
 // Inicializar el modulo cuando la app este lista
 document.addEventListener('DOMContentLoaded', function () {
-  // Pequeño delay para que el estado de auth ya este cargado
-  setTimeout(function () { mgmEncuestas.init(); }, 1200);
+  mgmEncuestas.init();
 });
 
 
