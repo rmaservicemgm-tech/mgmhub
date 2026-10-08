@@ -2155,7 +2155,8 @@
         .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
       const next = upcoming[0];
-      const closedKey = 'mgm_evento_cerrado_' + btoa(next.titulo).substring(0, 15);
+      const cedula = state.authUser ? state.authUser.cedula : '';
+      const closedKey = 'mgm_evento_cerrado_' + btoa(next.titulo).substring(0, 15) + (cedula ? '_' + cedula : '');
       
       const banner = document.getElementById('home-event-banner');
       if (!upcoming.length || localStorage.getItem(closedKey)) {
