@@ -5343,6 +5343,196 @@
       <p class="qr-hint">Apunta la cámara al código QR de tu orden de servicio o correo electronico.</p>
     </div>
   </div>
+
+  <!-- ENCUESTA BANNER — visible solo cuando hay encuesta activa -->
+  <div id="enc-banner" style="display:none;" onclick="mgmEncuestas.abrirDesdeBanner()">
+  </div>
+
+  <!-- ENCUESTA MODAL -->
+  <div id="enc-modal" role="dialog" aria-modal="true" aria-labelledby="enc-modal-titulo"
+    style="display:none; position:fixed; inset:0; z-index:9500; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); align-items:flex-end; justify-content:center;">
+    <div id="enc-card"
+      style="background:#fff; width:100%; max-width:480px; border-radius:24px 24px 0 0; padding:0 0 env(safe-area-inset-bottom,16px); max-height:92vh; display:flex; flex-direction:column; transform:translateY(100%); transition:transform .35s cubic-bezier(.32,1,.34,1); overflow:hidden;">
+
+      <!-- Header -->
+      <div style="background:linear-gradient(135deg,#00214a 0%,#003580 100%); padding:20px 20px 16px; position:relative; flex-shrink:0;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="background:rgba(255,255,255,0.15); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <i class="fa-solid fa-clipboard-question" style="color:#fff; font-size:18px;"></i>
+          </div>
+          <div>
+            <div style="color:rgba(255,255,255,0.7); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">MGM Encuesta</div>
+            <div id="enc-modal-titulo" style="color:#fff; font-size:16px; font-weight:700; line-height:1.2;"></div>
+          </div>
+        </div>
+        <!-- Badge de puntos -->
+        <div id="enc-puntos-badge"
+          style="display:none; margin-top:12px; background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); border-radius:20px; padding:6px 14px; display:inline-flex; align-items:center; gap:6px;">
+          <i class="fa-solid fa-coins" style="color:#f59e0b; font-size:13px;"></i>
+          <span id="enc-puntos-texto" style="color:#fbbf24; font-size:13px; font-weight:700;"></span>
+        </div>
+        <!-- Boton cerrar -->
+        <button onclick="mgmEncuestas.cerrarModal()"
+          style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.15); border:none; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#fff; font-size:16px;"
+          aria-label="Cerrar encuesta">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Progreso -->
+      <div style="padding:0 20px; flex-shrink:0; background:#f8faff; border-bottom:1px solid #eef2ff;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 0 8px;">
+          <span id="enc-progreso-texto" style="font-size:12px; color:#6b7280; font-weight:500;"></span>
+          <div style="flex:1; margin:0 12px; height:4px; background:#e5e7eb; border-radius:2px; overflow:hidden;">
+            <div id="enc-progreso-bar" style="height:100%; background:linear-gradient(90deg,#00214a,#0ea5e9); border-radius:2px; transition:width .4s ease; width:0%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cuerpo: pregunta activa -->
+      <div id="enc-body" style="padding:24px 20px; overflow-y:auto; flex:1;">
+        <div id="enc-pregunta-texto" style="font-size:17px; font-weight:600; color:#1e293b; line-height:1.4; margin-bottom:20px;"></div>
+        <div id="enc-respuesta-container"></div>
+      </div>
+
+      <!-- Footer con botones -->
+      <div style="padding:12px 20px 16px; border-top:1px solid #f1f5f9; flex-shrink:0; display:flex; gap:10px;">
+        <button id="enc-btn-anterior"
+          style="flex:0 0 auto; padding:12px 18px; border-radius:12px; border:1.5px solid #e2e8f0; background:#fff; color:#475569; font-size:14px; font-weight:600; cursor:pointer; display:none;"
+          onclick="mgmEncuestas.anterior()">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <button id="enc-btn-siguiente"
+          style="flex:1; padding:13px; border-radius:12px; border:none; background:linear-gradient(135deg,#00214a,#003580); color:#fff; font-size:15px; font-weight:700; cursor:pointer; transition:opacity .2s;"
+          onclick="mgmEncuestas.siguiente()">
+          Siguiente <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENCUESTA PANTALLA DE EXITO -->
+  <div id="enc-success"
+    style="display:none; position:fixed; inset:0; z-index:9600; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:24px; padding:36px 28px; text-align:center; max-width:320px; width:90%; animation:enc-pop .4s cubic-bezier(.34,1.56,.64,1);">
+      <div style="width:72px; height:72px; background:linear-gradient(135deg,#10b981,#059669); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+        <i class="fa-solid fa-check" style="color:#fff; font-size:32px;"></i>
+      </div>
+      <h3 style="color:#1e293b; font-size:20px; font-weight:700; margin:0 0 8px;">Gracias por responder</h3>
+      <p id="enc-success-msg" style="color:#64748b; font-size:14px; margin:0 0 24px; line-height:1.5;"></p>
+      <div id="enc-success-puntos"
+        style="display:none; background:#fef3c7; border:1px solid #fde68a; border-radius:14px; padding:12px 16px; margin-bottom:20px;">
+        <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
+          <i class="fa-solid fa-coins" style="color:#f59e0b; font-size:20px;"></i>
+          <span id="enc-success-puntos-txt" style="color:#92400e; font-size:18px; font-weight:800;"></span>
+        </div>
+      </div>
+      <button onclick="mgmEncuestas.cerrarExito()"
+        style="width:100%; padding:14px; border-radius:14px; border:none; background:linear-gradient(135deg,#00214a,#003580); color:#fff; font-size:15px; font-weight:700; cursor:pointer;">
+        Perfecto <i class="fa-solid fa-star" style="color:#f59e0b;"></i>
+      </button>
+    </div>
+  </div>
+
+  <style>
+    @keyframes enc-pop {
+      0%   { transform: scale(.7); opacity: 0; }
+      100% { transform: scale(1);  opacity: 1; }
+    }
+    @keyframes enc-slide-in {
+      0%   { transform: translateY(100%); }
+      100% { transform: translateY(0); }
+    }
+
+    /* Banner de encuesta en home */
+    #enc-banner {
+      margin: 0 16px 14px;
+      background: linear-gradient(135deg, #00214a 0%, #003580 60%, #0ea5e9 100%);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,33,74,0.25);
+      animation: enc-banner-pulse 3s ease-in-out infinite;
+      transition: transform .15s, box-shadow .15s;
+    }
+    #enc-banner:active { transform: scale(.98); }
+
+    @keyframes enc-banner-pulse {
+      0%, 100% { box-shadow: 0 4px 16px rgba(0,33,74,0.25); }
+      50%       { box-shadow: 0 6px 24px rgba(0,33,74,0.40); }
+    }
+
+    .enc-banner-icon {
+      width: 44px; height: 44px; flex-shrink: 0;
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .enc-banner-icon i { color: #fff; font-size: 20px; }
+    .enc-banner-content { flex: 1; }
+    .enc-banner-label { color: rgba(255,255,255,0.7); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+    .enc-banner-title { color: #fff; font-size: 14px; font-weight: 700; line-height: 1.3; margin: 2px 0; }
+    .enc-banner-pts { display: inline-flex; align-items: center; gap: 4px; background: rgba(245,158,11,0.25); border-radius: 20px; padding: 3px 10px; }
+    .enc-banner-pts i { color: #fbbf24; font-size: 11px; }
+    .enc-banner-pts span { color: #fef3c7; font-size: 11px; font-weight: 700; }
+    .enc-banner-arrow { color: rgba(255,255,255,0.5); font-size: 14px; flex-shrink: 0; }
+
+    /* Tipos de respuesta */
+    .enc-escala-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+      gap: 8px;
+    }
+    .enc-escala-btn {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+      background: #f8faff;
+      font-size: 15px;
+      font-weight: 700;
+      color: #475569;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .enc-escala-btn:hover, .enc-escala-btn.selected {
+      border-color: #00214a;
+      background: #00214a;
+      color: #fff;
+    }
+    .enc-sino-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .enc-sino-btn {
+      padding: 18px;
+      border-radius: 14px;
+      border: 2px solid #e2e8f0;
+      background: #f8faff;
+      font-size: 22px;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .enc-sino-btn span { font-size: 14px; font-weight: 700; color: #475569; }
+    .enc-sino-btn:hover, .enc-sino-btn.selected {
+      border-color: #00214a; background: #f0f5ff;
+    }
+    .enc-sino-btn.selected { border-color: #00214a; background: #00214a; }
+    .enc-sino-btn.selected span { color: #fff; }
+    .enc-texto-area {
+      width: 100%; box-sizing: border-box;
+      border: 2px solid #e2e8f0; border-radius: 14px;
+      padding: 14px; font-size: 15px; font-family: inherit;
+      resize: none; min-height: 110px; outline: none;
+      color: #1e293b; background: #f8faff;
+      transition: border-color .2s;
+    }
+    .enc-texto-area:focus { border-color: #00214a; background: #fff; }
+  </style>
+
+  <script src="app.js"></script>
 </body>
+
 
 </html>

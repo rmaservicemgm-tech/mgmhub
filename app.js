@@ -105,6 +105,9 @@
     // (El nuevo radios_backend.gs maneja: ?action=playlist|radios|spotify|chat)
     RADIOS_GAS_URL: 'https://script.google.com/macros/s/AKfycbwlzKNgocSThMfZJ5qPi1cJNrBreEeAVbvN-anObK3jW1vFnPIRadt77tMp4qTdBiAg/exec',
 
+    // 9. ENCUESTAS MGM HUB
+    ENCUESTAS_GAS_URL: 'https://script.google.com/macros/s/AKfycbwfPemmh8l6R_aRGDkJrC1InYWgJpLoVAz6QOWtNElBUIqW2ABEUCVPiqeg1zBv7D9SHA/exec',
+
     VAL_PUNTO: 0.01,
     BOTPRESS_BOT_ID: 'e5a3c8a6-9aec-41a3-870d-d1985dc8c7df',
     SPLASH_ENABLED: true,
@@ -6901,4 +6904,441 @@ window.closeReferralQRModal = function () {
     }
   };
 })();
+
+
+// ============================================================
+// MGM ENCUESTAS — Modulo frontend
+// ============================================================
+// Puntos de entrada:
+//   1. Banner en home (solo si hay encuesta activa)
+//   2. Notificacion con link ?encuesta=ENC-001
+//   3. URL directa ?encuesta=ENC-001
+// ============================================================
+
+window.mgmEncuestas = (function () {
+
+  // Estado interno del modulo
+  var _encuesta     = null;   // { id, nombre, puntos, ... }
+  var _preguntas    = [];     // Array de preguntas de la encuesta activa
+  var _respuestas   = {};     // { P1: valor, P2: valor, ... }
+  var _pasoActual   = 0;      // Indice de la pregunta actual (0-based)
+  var _encId        = null;   // ID de la encuesta cargada en el modal
+
+  // ── Inicializacion ──────────────────────────────────────────
+
+  /**
+   * Llamar al cargar la app (o tras login).
+   * 1. Detecta ?encuesta=ID en la URL y abre directo si existe
+   * 2. Si no, verifica si hay encuesta activa y muestra el banner
+   */
+  function init() {
+    // Detectar enlace directo desde notificacion
+    var params = new URLSearchParams(window.location.search);
+    var encParam = params.get('encuesta');
+    if (encParam) {
+      _cargarYAbrirPorId(encParam);
+      return;
+    }
+    // Verificar si hay encuesta activa para mostrar banner
+    _verificarEncuestaActiva();
+  }
+
+  // ── Verificacion de encuesta activa (para el banner) ────────
+
+  function _verificarEncuestaActiva() {
+    var authData = _getAuthUser();
+    var cedula   = authData ? authData.cedula : '';
+
+    var url = CFG.ENCUESTAS_GAS_URL
+      + '?action=get_encuesta_activa'
+      + (cedula ? '&cedula=' + encodeURIComponent(cedula) : '');
+
+    fetch(url)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.success && data.encuesta) {
+          _encuesta  = data.encuesta;
+          _preguntas = data.preguntas || [];
+          _mostrarBanner(data.encuesta);
+        }
+        // Si no hay encuesta activa o el usuario ya respondio: no mostrar nada
+      })
+      .catch(function () { /* silencioso — red u offline */ });
+  }
+
+  // ── Banner en pantalla de inicio ────────────────────────────
+
+  function _mostrarBanner(enc) {
+    var banner = document.getElementById('enc-banner');
+    if (!banner) return;
+
+    var puntosHtml = '';
+    if (enc.puntos > 0) {
+      puntosHtml = '<div class="enc-banner-pts">'
+        + '<i class="fa-solid fa-coins"></i>'
+        + '<span>Gana ' + enc.puntos + ' MGM Puntos</span>'
+        + '</div>';
+    }
+
+    banner.innerHTML = '<div class="enc-banner-icon"><i class="fa-solid fa-clipboard-question"></i></div>'
+      + '<div class="enc-banner-content">'
+      +   '<div class="enc-banner-label">Encuesta disponible</div>'
+      +   '<div class="enc-banner-title">' + _esc(enc.nombre) + '</div>'
+      +   (puntosHtml ? puntosHtml : '')
+      + '</div>'
+      + '<i class="fa-solid fa-chevron-right enc-banner-arrow"></i>';
+
+    banner.style.display = 'flex';
+
+    // Insertar el banner en la vista home, debajo del home-auth-banner
+    var homeView = document.getElementById('view-home');
+    var authBanner = document.getElementById('home-auth-banner');
+    if (homeView && authBanner) {
+      homeView.insertBefore(banner, authBanner.nextSibling);
+    }
+  }
+
+  function ocultarBanner() {
+    var banner = document.getElementById('enc-banner');
+    if (banner) banner.style.display = 'none';
+  }
+
+  // ── Abrir modal desde banner ─────────────────────────────────
+
+  function abrirDesdeBanner() {
+    if (!_encuesta || !_preguntas.length) return;
+
+    var authData = _getAuthUser();
+    if (!authData) {
+      // Usuario no registrado: invitar a login
+      if (typeof openLoginModal === 'function') openLoginModal();
+      if (typeof showToast === 'function') showToast('Inicia sesion para responder la encuesta.', 'fa-solid fa-lock');
+      return;
+    }
+
+    _abrirModal(_encuesta, _preguntas);
+  }
+
+  // ── Cargar encuesta por ID (enlace directo) ───────────────────
+
+  function _cargarYAbrirPorId(encId) {
+    var authData = _getAuthUser();
+    var cedula   = authData ? authData.cedula : '';
+
+    var url = CFG.ENCUESTAS_GAS_URL
+      + '?action=get_encuesta_by_id'
+      + '&id=' + encodeURIComponent(encId)
+      + (cedula ? '&cedula=' + encodeURIComponent(cedula) : '');
+
+    fetch(url)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.success || !data.encuesta) {
+          if (typeof showToast === 'function') showToast('Encuesta no encontrada.', 'fa-solid fa-exclamation-triangle');
+          return;
+        }
+        if (data.yaRespondio) {
+          if (typeof showToast === 'function') showToast('Ya respondiste esta encuesta.', 'fa-solid fa-check-circle');
+          return;
+        }
+        if (!authData) {
+          if (typeof openLoginModal === 'function') openLoginModal();
+          if (typeof showToast === 'function') showToast('Inicia sesion para responder la encuesta.', 'fa-solid fa-lock');
+          return;
+        }
+        _encuesta  = data.encuesta;
+        _preguntas = data.preguntas || [];
+        _abrirModal(data.encuesta, data.preguntas);
+      })
+      .catch(function () {
+        if (typeof showToast === 'function') showToast('No se pudo cargar la encuesta.', 'fa-solid fa-exclamation-triangle');
+      });
+  }
+
+  // ── Abrir modal ──────────────────────────────────────────────
+
+  function _abrirModal(enc, preguntas) {
+    _encId      = enc.id;
+    _preguntas  = preguntas || [];
+    _respuestas = {};
+    _pasoActual = 0;
+
+    // Poblar header
+    var titulo = document.getElementById('enc-modal-titulo');
+    if (titulo) titulo.textContent = enc.nombre || '';
+
+    // Badge de puntos
+    var badge   = document.getElementById('enc-puntos-badge');
+    var txtPts  = document.getElementById('enc-puntos-texto');
+    if (badge && txtPts) {
+      if (enc.puntos > 0) {
+        txtPts.textContent = 'Gana ' + enc.puntos + ' MGM Puntos por responder';
+        badge.style.display = 'inline-flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    // Mostrar modal con animacion
+    var modal = document.getElementById('enc-modal');
+    var card  = document.getElementById('enc-card');
+    if (modal) {
+      modal.style.display = 'flex';
+      requestAnimationFrame(function () {
+        if (card) card.style.transform = 'translateY(0)';
+      });
+    }
+
+    // Renderizar primera pregunta
+    _renderPregunta();
+  }
+
+  // ── Cerrar modal ─────────────────────────────────────────────
+
+  function cerrarModal() {
+    var modal = document.getElementById('enc-modal');
+    var card  = document.getElementById('enc-card');
+    if (card) card.style.transform = 'translateY(100%)';
+    setTimeout(function () {
+      if (modal) modal.style.display = 'none';
+    }, 350);
+  }
+
+  // ── Renderizar pregunta actual ───────────────────────────────
+
+  function _renderPregunta() {
+    var p = _preguntas[_pasoActual];
+    if (!p) return;
+
+    var total = _preguntas.length;
+    var paso  = _pasoActual + 1;
+
+    // Texto de la pregunta
+    var txtEl = document.getElementById('enc-pregunta-texto');
+    if (txtEl) txtEl.textContent = p.texto || '';
+
+    // Progreso
+    var progrTxt = document.getElementById('enc-progreso-texto');
+    var progrBar = document.getElementById('enc-progreso-bar');
+    if (progrTxt) progrTxt.textContent = 'Pregunta ' + paso + ' de ' + total;
+    if (progrBar) progrBar.style.width = Math.round((paso / total) * 100) + '%';
+
+    // Contenedor de respuesta
+    var cont = document.getElementById('enc-respuesta-container');
+    if (!cont) return;
+    cont.innerHTML = '';
+
+    var pid = p.id;
+    var valorActual = _respuestas[pid];
+
+    if (p.tipo === 'escala') {
+      var cfg  = p.config || {};
+      var min  = cfg.min !== undefined ? cfg.min : 0;
+      var max  = cfg.max !== undefined ? cfg.max : 10;
+      var grid = document.createElement('div');
+      grid.className = 'enc-escala-grid';
+
+      for (var n = min; n <= max; n++) {
+        (function (val) {
+          var btn = document.createElement('button');
+          btn.className = 'enc-escala-btn' + (valorActual === val ? ' selected' : '');
+          btn.textContent = val;
+          btn.addEventListener('click', function () {
+            _respuestas[pid] = val;
+            cont.querySelectorAll('.enc-escala-btn').forEach(function (b) { b.classList.remove('selected'); });
+            btn.classList.add('selected');
+          });
+          grid.appendChild(btn);
+        })(n);
+      }
+
+      // Etiquetas min/max
+      var labels = document.createElement('div');
+      labels.style.cssText = 'display:flex; justify-content:space-between; margin-top:8px;';
+      labels.innerHTML = '<span style="font-size:11px; color:#94a3b8;">Nada satisfecho</span>'
+        + '<span style="font-size:11px; color:#94a3b8;">Muy satisfecho</span>';
+      cont.appendChild(grid);
+      cont.appendChild(labels);
+
+    } else if (p.tipo === 'si_no') {
+      var sinoGrid = document.createElement('div');
+      sinoGrid.className = 'enc-sino-grid';
+
+      ['Si', 'No'].forEach(function (op) {
+        var btn = document.createElement('button');
+        btn.className = 'enc-sino-btn' + (valorActual === op ? ' selected' : '');
+        btn.innerHTML = (op === 'Si' ? '👍' : '👎') + '<span>' + op + '</span>';
+        btn.addEventListener('click', function () {
+          _respuestas[pid] = op;
+          sinoGrid.querySelectorAll('.enc-sino-btn').forEach(function (b) { b.classList.remove('selected'); });
+          btn.classList.add('selected');
+        });
+        sinoGrid.appendChild(btn);
+      });
+      cont.appendChild(sinoGrid);
+
+    } else if (p.tipo === 'texto') {
+      var ta = document.createElement('textarea');
+      ta.className = 'enc-texto-area';
+      ta.placeholder = 'Escribe tu respuesta aqui...';
+      ta.value = valorActual || '';
+      ta.addEventListener('input', function () { _respuestas[pid] = ta.value; });
+      cont.appendChild(ta);
+    }
+
+    // Botones de navegacion
+    var btnAnterior  = document.getElementById('enc-btn-anterior');
+    var btnSiguiente = document.getElementById('enc-btn-siguiente');
+    if (btnAnterior) btnAnterior.style.display = _pasoActual > 0 ? 'flex' : 'none';
+    if (btnSiguiente) {
+      var esUltima = _pasoActual === total - 1;
+      btnSiguiente.innerHTML = esUltima
+        ? 'Enviar respuestas <i class="fa-solid fa-paper-plane"></i>'
+        : 'Siguiente <i class="fa-solid fa-arrow-right"></i>';
+    }
+  }
+
+  // ── Navegacion entre preguntas ───────────────────────────────
+
+  function siguiente() {
+    var p = _preguntas[_pasoActual];
+    if (!p) return;
+
+    // Validar respuesta si la pregunta es requerida
+    if (p.requerida && (_respuestas[p.id] === undefined || _respuestas[p.id] === '')) {
+      if (typeof showToast === 'function') showToast('Por favor responde esta pregunta para continuar.', 'fa-solid fa-circle-info');
+      return;
+    }
+
+    if (_pasoActual < _preguntas.length - 1) {
+      _pasoActual++;
+      _renderPregunta();
+    } else {
+      _enviarRespuestas();
+    }
+  }
+
+  function anterior() {
+    if (_pasoActual > 0) {
+      _pasoActual--;
+      _renderPregunta();
+    }
+  }
+
+  // ── Envio de respuestas ──────────────────────────────────────
+
+  function _enviarRespuestas() {
+    var authData = _getAuthUser();
+    if (!authData) {
+      if (typeof showToast === 'function') showToast('Sesion expirada. Inicia sesion de nuevo.', 'fa-solid fa-lock');
+      cerrarModal();
+      if (typeof openLoginModal === 'function') openLoginModal();
+      return;
+    }
+
+    // Deshabilitar boton para evitar doble envio
+    var btnSig = document.getElementById('enc-btn-siguiente');
+    if (btnSig) { btnSig.disabled = true; btnSig.style.opacity = '0.6'; }
+
+    var payload = JSON.stringify({
+      action:     'guardar_respuesta',
+      cedula:     authData.cedula,
+      nombre:     authData.nombre || '',
+      encId:      _encId,
+      respuestas: _respuestas
+    });
+
+    fetch(CFG.ENCUESTAS_GAS_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    payload
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      cerrarModal();
+      ocultarBanner();
+      if (data.success) {
+        _mostrarExito(data.puntos || 0, data.encuesta || _encuesta.nombre || '');
+      } else if (data.reason === 'ya_respondio') {
+        if (typeof showToast === 'function') showToast('Ya habian registrado tu respuesta anteriormente.', 'fa-solid fa-check-circle');
+      } else {
+        if (typeof showToast === 'function') showToast('No se pudo guardar tu respuesta. Intenta de nuevo.', 'fa-solid fa-exclamation-triangle');
+      }
+    })
+    .catch(function () {
+      if (btnSig) { btnSig.disabled = false; btnSig.style.opacity = '1'; }
+      if (typeof showToast === 'function') showToast('Error de red. Verifica tu conexion e intenta de nuevo.', 'fa-solid fa-wifi');
+    });
+  }
+
+  // ── Pantalla de exito ────────────────────────────────────────
+
+  function _mostrarExito(puntos, nombreEnc) {
+    var successEl = document.getElementById('enc-success');
+    var msgEl     = document.getElementById('enc-success-msg');
+    var ptsEl     = document.getElementById('enc-success-puntos');
+    var ptsTxt    = document.getElementById('enc-success-puntos-txt');
+
+    if (msgEl) msgEl.textContent = 'Tu opinion sobre "' + nombreEnc + '" ha sido registrada. Gracias por ayudarnos a mejorar.';
+
+    if (ptsEl && ptsTxt) {
+      if (puntos > 0) {
+        ptsTxt.textContent = '+' + puntos + ' MGM Puntos acreditados';
+        ptsEl.style.display = 'block';
+      } else {
+        ptsEl.style.display = 'none';
+      }
+    }
+
+    if (successEl) successEl.style.display = 'flex';
+
+    // Confeti de celebracion (usa mgmConfetti existente en app.js)
+    if (puntos > 0 && typeof mgmConfetti !== 'undefined') {
+      setTimeout(function () { mgmConfetti.gold(); }, 200);
+    }
+  }
+
+  function cerrarExito() {
+    var successEl = document.getElementById('enc-success');
+    if (successEl) successEl.style.display = 'none';
+  }
+
+  // ── Utilidades ───────────────────────────────────────────────
+
+  function _getAuthUser() {
+    try {
+      var raw = localStorage.getItem('mgm_auth_user');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
+  function _esc(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ── API publica ───────────────────────────────────────────────
+
+  return {
+    init:            init,
+    abrirDesdeBanner: abrirDesdeBanner,
+    cerrarModal:     cerrarModal,
+    cerrarExito:     cerrarExito,
+    siguiente:       siguiente,
+    anterior:        anterior,
+    ocultarBanner:   ocultarBanner
+  };
+
+})();
+
+// Inicializar el modulo cuando la app este lista
+document.addEventListener('DOMContentLoaded', function () {
+  // Pequeño delay para que el estado de auth ya este cargado
+  setTimeout(function () { mgmEncuestas.init(); }, 1200);
+});
+
+
 
