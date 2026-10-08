@@ -7240,19 +7240,15 @@ window.mgmEncuestas = (function () {
     var btnSig = document.getElementById('enc-btn-siguiente');
     if (btnSig) { btnSig.disabled = true; btnSig.style.opacity = '0.6'; }
 
-    var payload = JSON.stringify({
-      action:     'guardar_respuesta',
-      cedula:     authData.cedula,
-      nombre:     authData.nombre || '',
-      encId:      _encId,
-      respuestas: _respuestas
-    });
+    // Usamos GET para evitar CORS preflight con Apps Script
+    var urlEnvio = CFG.ENCUESTAS_GAS_URL
+      + '?action=guardar_respuesta'
+      + '&cedula='     + encodeURIComponent(authData.cedula)
+      + '&nombre='     + encodeURIComponent(authData.nombre || '')
+      + '&encId='      + encodeURIComponent(_encId)
+      + '&respuestas=' + encodeURIComponent(JSON.stringify(_respuestas));
 
-    fetch(CFG.ENCUESTAS_GAS_URL, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    payload
-    })
+    fetch(urlEnvio)
     .then(function (r) { return r.json(); })
     .then(function (data) {
       cerrarModal();
