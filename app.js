@@ -3260,11 +3260,17 @@
     document.getElementById('set-phone').value = state.authUser.telefono || '';
 
     // Poblar preferencias
-    let pref = state.authUser.preferencias || { global: true, puntos: true, rma: true, promos: true };
+    let pref = state.authUser.preferencias || { global: true, puntos: true, rma: true, promos: true, agenda: true, encuestas: true };
     document.getElementById('set-notif-global').checked = !!pref.global;
     document.getElementById('set-notif-puntos').checked = !!pref.puntos;
     document.getElementById('set-notif-rma').checked = !!pref.rma;
     document.getElementById('set-notif-promos').checked = !!pref.promos;
+    
+    let chkAgenda = document.getElementById('set-notif-agenda');
+    if (chkAgenda) chkAgenda.checked = pref.agenda !== false;
+    
+    let chkEncuestas = document.getElementById('set-notif-encuestas');
+    if (chkEncuestas) chkEncuestas.checked = pref.encuestas !== false;
 
     openAppModal('modal-settings');
   };
@@ -3273,18 +3279,53 @@
     if (!state.authUser) return;
 
     let isGlobal = document.getElementById('set-notif-global').checked;
-    // Si desactiva global, desactivar el resto visualmente (opcional) o logicamente
+    
     let pref = {
       global: isGlobal,
       puntos: document.getElementById('set-notif-puntos').checked,
       rma: document.getElementById('set-notif-rma').checked,
       promos: document.getElementById('set-notif-promos').checked
     };
+    
+    let chkAgenda = document.getElementById('set-notif-agenda');
+    if (chkAgenda) pref.agenda = chkAgenda.checked;
+    
+    let chkEncuestas = document.getElementById('set-notif-encuestas');
+    if (chkEncuestas) pref.encuestas = chkEncuestas.checked;
 
     state.authUser.preferencias = pref; // Actualizar estado local inmediato
 
     // Enviar a backend
     sendUserUpdateToBackend({ preferencias: pref }, 'Preferencias guardadas');
+  };
+
+  window.logoutUser = function () {
+    if (confirm("¿Estás seguro de que deseas cerrar tu sesión?")) {
+      localStorage.removeItem(K_AUTH);
+      state.authUser = null;
+      closeAppModal('modal-settings');
+      if (typeof showToast === 'function') showToast("Has cerrado sesión exitosamente", "fa-solid fa-check");
+      if (typeof updatePuntosAuthViews === 'function') updatePuntosAuthViews();
+      switchMainTab('home');
+    }
+  };
+
+  window.clearAppCache = function () {
+    if (confirm("¿Estás seguro de que deseas limpiar la caché? Esto no cerrará tu sesión, pero borrará datos descargados como promociones y eventos.")) {
+      // Remover todo excepto auth y preferencias de encuestas cerradas
+      let keysToKeep = [K_AUTH, 'mgm_enc_closed_'];
+      let keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        let key = localStorage.key(i);
+        if (key && !keysToKeep.some(k => key.includes(k))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+      closeAppModal('modal-settings');
+      if (typeof showToast === 'function') showToast("Caché limpiada correctamente", "fa-solid fa-broom");
+      setTimeout(() => location.reload(), 1000);
+    }
   };
 
   window.updateUserInfoField = function (field) {

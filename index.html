@@ -3442,6 +3442,28 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
+
+          <div class="setting-row" id="row-notif-agenda">
+            <div class="setting-info">
+              <span class="setting-title"><i class="fa-solid fa-calendar-days"
+                  style="color:#8b5cf6; width: 16px; text-align: center;"></i> Agenda y Cursos</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="set-notif-agenda" onchange="updateUserPreferences()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-row" id="row-notif-encuestas">
+            <div class="setting-info">
+              <span class="setting-title"><i class="fa-solid fa-clipboard-question"
+                  style="color:#0ea5e9; width: 16px; text-align: center;"></i> Nuevas Encuestas</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="set-notif-encuestas" onchange="updateUserPreferences()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
         </div>
 
         <div class="settings-section">
@@ -3459,6 +3481,18 @@
               <input type="tel" id="set-phone" value="" placeholder="6000-0000">
               <button class="btn-sm" onclick="updateUserInfoField('phone')">Actualizar</button>
             </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h5 class="settings-subtitle">Privacidad y Sesión</h5>
+          <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+            <button class="btn-submit" onclick="logoutUser()" style="background: #ef4444; color: white; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
+            </button>
+            <button class="btn-submit" onclick="clearAppCache()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <i class="fa-solid fa-broom"></i> Limpiar Caché de la App
+            </button>
           </div>
         </div>
 
