@@ -2154,15 +2154,21 @@
         })
         .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
+      const next = upcoming[0];
+      const closedKey = 'mgm_evento_cerrado_' + btoa(next.titulo).substring(0, 15);
+      
       const banner = document.getElementById('home-event-banner');
-      if (!upcoming.length) {
+      if (!upcoming.length || localStorage.getItem(closedKey)) {
         if (banner) banner.style.display = 'none';
         return;
       } else {
-        if (banner) banner.style.display = '';
+        if (banner) {
+          banner.style.display = '';
+          banner.setAttribute('data-event-id', closedKey);
+        }
       }
 
-      const next = upcoming[0];
+
       const diff = daysUntil(next.fecha);
 
       // Detectar si el evento está en curso ahora mismo
@@ -2472,6 +2478,15 @@
       );
     }
     closeAppModal('modal-event-share');
+  };
+
+  window.closeEventBanner = function () {
+    const banner = document.getElementById('home-event-banner');
+    if (banner) {
+      banner.style.display = 'none';
+      const eventId = banner.getAttribute('data-event-id');
+      if (eventId) localStorage.setItem(eventId, 'true');
+    }
   };
 
   // ══════════════════════════════════════════════════════════════════════════════
@@ -6948,7 +6963,22 @@ window.mgmEncuestas = (function () {
   function _verificarEncuestaActiva() {
     var authData = _getAuthUser();
     var cedula   = authData ? authData.cedula : '';
+    var cacheKey = 'mgm_encuesta_activa_' + cedula;
 
+    // 1. Mostrar rapido desde cache
+    var cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        var cData = JSON.parse(cached);
+        if (cData.encuesta) {
+          _encuesta  = cData.encuesta;
+          _preguntas = cData.preguntas || [];
+          _mostrarBanner(cData.encuesta);
+        }
+      } catch(e) {}
+    }
+
+    // 2. Fetch en background
     var url = CFG.ENCUESTAS_GAS_URL
       + '?action=get_encuesta_activa'
       + (cedula ? '&cedula=' + encodeURIComponent(cedula) : '');
@@ -6957,13 +6987,16 @@ window.mgmEncuestas = (function () {
       .then(function (r) { return r.json(); })
       .then(function (data) {
         if (data.success && data.encuesta) {
+          localStorage.setItem(cacheKey, JSON.stringify(data));
           _encuesta  = data.encuesta;
           _preguntas = data.preguntas || [];
           _mostrarBanner(data.encuesta);
+        } else {
+          localStorage.removeItem(cacheKey);
+          ocultarBanner();
         }
-        // Si no hay encuesta activa o el usuario ya respondio: no mostrar nada
       })
-      .catch(function () { /* silencioso — red u offline */ });
+      .catch(function () { /* silencioso */ });
   }
 
   // ── Banner en pantalla de inicio ────────────────────────────
@@ -6971,6 +7004,12 @@ window.mgmEncuestas = (function () {
   function _mostrarBanner(enc) {
     var banner = document.getElementById('enc-banner');
     if (!banner) return;
+
+    var closedKey = 'mgm_enc_closed_' + enc.id;
+    if (localStorage.getItem(closedKey)) {
+      banner.style.display = 'none';
+      return;
+    }
 
     var puntosHtml = '';
     if (enc.puntos > 0) {
@@ -6980,13 +7019,15 @@ window.mgmEncuestas = (function () {
         + '</div>';
     }
 
+    banner.style.position = 'relative';
     banner.innerHTML = '<div class="enc-banner-icon"><i class="fa-solid fa-clipboard-question"></i></div>'
-      + '<div class="enc-banner-content">'
+      + '<div class="enc-banner-content" style="padding-right:20px;">'
       +   '<div class="enc-banner-label">Encuesta disponible</div>'
       +   '<div class="enc-banner-title">' + _esc(enc.nombre) + '</div>'
       +   (puntosHtml ? puntosHtml : '')
       + '</div>'
-      + '<i class="fa-solid fa-chevron-right enc-banner-arrow"></i>';
+      + '<i class="fa-solid fa-chevron-right enc-banner-arrow" style="margin-right:15px;"></i>'
+      + '<button onclick="event.stopPropagation(); window.mgmEncuestas.cerrarBanner(\'' + enc.id + '\')" style="position:absolute; top:8px; right:8px; background:transparent; border:none; color:rgba(0,33,74,0.3); font-size:16px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>';
 
     banner.style.display = 'flex';
 
@@ -7338,6 +7379,11 @@ window.mgmEncuestas = (function () {
       .replace(/"/g, '&quot;');
   }
 
+  function cerrarBanner(id) {
+    if (id) localStorage.setItem('mgm_enc_closed_' + id, 'true');
+    ocultarBanner();
+  }
+
   // ── API publica ───────────────────────────────────────────────
 
   return {
@@ -7347,7 +7393,8 @@ window.mgmEncuestas = (function () {
     cerrarExito:     cerrarExito,
     siguiente:       siguiente,
     anterior:        anterior,
-    ocultarBanner:   ocultarBanner
+    ocultarBanner:   ocultarBanner,
+    cerrarBanner:    cerrarBanner
   };
 
 })();
