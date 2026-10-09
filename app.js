@@ -1021,6 +1021,12 @@
 
     // 11. Sincronizar foto de perfil desde el backend (siempre, para reflejar cambios de otros dispositivos)
     syncUserAvatarFromBackend(state.authUser.cedula);
+
+    // 12. Sincronizar encuestas activas (Stale-While-Revalidate por usuario)
+    if (typeof window.mgmEncuestas !== 'undefined') {
+      window.mgmEncuestas.ocultarBanner(); // Ocultamos el genérico mientras carga el específico
+      window.mgmEncuestas.init();
+    }
   }
 
   // Registrar actividad del usuario en el Sheet de Tracking (Google Apps Script)
@@ -3476,6 +3482,12 @@
     updateHomeAuthBanner();
     updatePuntosAuthViews();
     closeAppModal('modal-user-login');
+
+    // Sincronizar encuestas (limpiar caché de usuario y cargar vista genérica)
+    if (typeof window.mgmEncuestas !== 'undefined') {
+      window.mgmEncuestas.ocultarBanner();
+      window.mgmEncuestas.init();
+    }
   };
 
   function updateHeaderUserIcon() {
