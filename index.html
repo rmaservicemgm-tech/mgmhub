@@ -2293,36 +2293,68 @@
 
           // Quitar / borrar RMA cerrado de la lista del cliente
           window.quitarRmaDeLista = function (rma, isDelete) {
-            if (confirm(isDelete ? '¿Seguro que deseas borrar este equipo de tu historial permanentemente?' : '¿Deseas archivar este equipo?')) {
-              try {
-                const listKey = isDelete ? 'mgm_deleted_rmas' : 'mgm_dismissed_rmas';
-                var list = JSON.parse(localStorage.getItem(listKey) || '[]');
-                if (!list.includes(rma)) {
-                  list.push(rma);
-                  localStorage.setItem(listKey, JSON.stringify(list));
-                }
-
-                // Sincronizar con el backend si se archiva
-                if (!isDelete) {
-                  let user = null;
-                  try { user = JSON.parse(localStorage.getItem('mgm_auth_user')) || (window.state && window.state.authUser); } catch (e) { }
-                  if (user && typeof API_URL !== 'undefined') {
-                    fetch(API_URL, {
-                      method: 'POST',
-                      body: JSON.stringify({
-                        action: 'archivar_rma',
-                        rma: rma,
-                        cedula: user.cedula || user.email || ''
-                      })
-                    }).catch(e => console.error('Error enviando archivar_rma:', e));
-                  }
-                }
-
-                if (window.loadUserActiveRmas) window.loadUserActiveRmas();
-              } catch (e) {
-                console.error('Error modificando RMA:', e);
-              }
+            const modal = document.getElementById('modal-confirm-quitar-rma');
+            if (!modal) return;
+            
+            // Configurar modal visualmente
+            const titleEl = document.getElementById('modal-quitar-title');
+            const descEl = document.getElementById('modal-quitar-desc');
+            const rmaLabel = document.getElementById('modal-quitar-rma-number');
+            const iconWrap = document.getElementById('modal-quitar-icon-wrapper');
+            const iconEl = document.getElementById('modal-quitar-icon');
+            const btnOk = document.getElementById('btn-quitar-rma-ok');
+            
+            if (rmaLabel) rmaLabel.textContent = rma;
+            
+            if (isDelete) {
+              if (titleEl) titleEl.textContent = '¿Borrar permanentemente?';
+              if (descEl) descEl.innerHTML = 'El equipo <strong id="modal-quitar-rma-number" style="color: var(--primary-blue);">' + rma + '</strong> será eliminado permanentemente de tu historial local.';
+              if (iconWrap) { iconWrap.style.background = 'linear-gradient(135deg, #fee2e2, #fecaca)'; iconWrap.style.borderColor = '#fca5a5'; }
+              if (iconEl) { iconEl.className = 'fa-regular fa-trash-can'; iconEl.style.color = '#ef4444'; }
+              if (btnOk) { btnOk.innerHTML = '<i class="fa-regular fa-trash-can" style="margin-right: 5px; font-size: 12px;"></i>Borrar'; btnOk.style.color = '#ef4444'; }
+            } else {
+              if (titleEl) titleEl.textContent = '¿Archivar de la lista?';
+              if (descEl) descEl.innerHTML = 'El equipo <strong id="modal-quitar-rma-number" style="color: var(--primary-blue);">' + rma + '</strong> será retirado de tu vista principal.<br>Podrás restaurarlo cuando quieras.';
+              if (iconWrap) { iconWrap.style.background = 'linear-gradient(135deg, #dbeafe, #bfdbfe)'; iconWrap.style.borderColor = '#93c5fd'; }
+              if (iconEl) { iconEl.className = 'fa-solid fa-box-archive'; iconEl.style.color = '#3b82f6'; }
+              if (btnOk) { btnOk.innerHTML = '<i class="fa-solid fa-box-archive" style="margin-right: 5px; font-size: 12px;"></i>Archivar'; btnOk.style.color = '#3b82f6'; }
             }
+
+            if (btnOk) {
+              btnOk.onclick = function () {
+                modal.classList.remove('active');
+                try {
+                  const listKey = isDelete ? 'mgm_deleted_rmas' : 'mgm_dismissed_rmas';
+                  var list = JSON.parse(localStorage.getItem(listKey) || '[]');
+                  if (!list.includes(rma)) {
+                    list.push(rma);
+                    localStorage.setItem(listKey, JSON.stringify(list));
+                  }
+
+                  // Sincronizar con el backend si se archiva
+                  if (!isDelete) {
+                    let user = null;
+                    try { user = JSON.parse(localStorage.getItem('mgm_auth_user')) || (window.state && window.state.authUser); } catch (e) { }
+                    if (user && typeof API_URL !== 'undefined') {
+                      fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                          action: 'archivar_rma',
+                          rma: rma,
+                          cedula: user.cedula || user.email || ''
+                        })
+                      }).catch(e => console.error('Error enviando archivar_rma:', e));
+                    }
+                  }
+
+                  if (window.loadUserActiveRmas) window.loadUserActiveRmas();
+                } catch (e) {
+                  console.error('Error modificando RMA:', e);
+                }
+              };
+            }
+            
+            modal.classList.add('active');
           };
 
           // Restaurar todos los RMAs archivados
@@ -3808,7 +3840,7 @@
         <!-- Icono + encabezado -->
         <div
           style="background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%); padding: 28px 24px 20px; text-align: center; border-bottom: 1px solid var(--border-light);">
-          <div style="
+          <div id="modal-quitar-icon-wrapper" style="
             width: 60px; height: 60px; border-radius: 50%;
             background: linear-gradient(135deg, #dbeafe, #bfdbfe);
             border: 2px solid #93c5fd;
@@ -3816,11 +3848,11 @@
             margin: 0 auto 14px;
             box-shadow: 0 4px 16px rgba(59,130,246,0.18);
           ">
-            <i class="fa-solid fa-box-archive" style="font-size: 24px; color: #3b82f6;"></i>
+            <i id="modal-quitar-icon" class="fa-solid fa-box-archive" style="font-size: 24px; color: #3b82f6;"></i>
           </div>
-          <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">¿Quitar de la lista?
+          <h3 id="modal-quitar-title" style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">¿Quitar de la lista?
           </h3>
-          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
+          <p id="modal-quitar-desc" style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
             El equipo <strong id="modal-quitar-rma-number" style="color: var(--primary-blue);"></strong> será retirado
             de tu seguimiento.<br>Ya está finalizado y podrás restaurarlo cuando quieras.
           </p>

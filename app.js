@@ -6345,7 +6345,10 @@ window.closeReferralQRModal = function () {
   };
 
   window.quitarRastreoDeLista = function (rastreo, isDelete) {
-    if (confirm(isDelete ? '¿Seguro que deseas borrar este paquete de tu historial permanentemente?' : '¿Deseas archivar este paquete?')) {
+    const modal = document.getElementById('modal-confirm-quitar-rma');
+    if (!modal) {
+      // Fallback si no está el modal en el DOM
+      if (!confirm(isDelete ? '¿Seguro que deseas borrar este paquete de tu historial permanentemente?' : '¿Deseas archivar este paquete?')) return;
       try {
         const listKey = isDelete ? 'mgm_deleted_rastreos' : 'mgm_dismissed_rastreos';
         let list = JSON.parse(localStorage.getItem(listKey) || '[]');
@@ -6357,7 +6360,50 @@ window.closeReferralQRModal = function () {
       } catch (e) {
         console.error('Error modificando rastreo:', e);
       }
+      return;
     }
+
+    const titleEl = document.getElementById('modal-quitar-title');
+    const descEl = document.getElementById('modal-quitar-desc');
+    const rmaLabel = document.getElementById('modal-quitar-rma-number');
+    const iconWrap = document.getElementById('modal-quitar-icon-wrapper');
+    const iconEl = document.getElementById('modal-quitar-icon');
+    const btnOk = document.getElementById('btn-quitar-rma-ok');
+
+    if (rmaLabel) rmaLabel.textContent = rastreo;
+
+    if (isDelete) {
+      if (titleEl) titleEl.textContent = '¿Borrar paquete permanentemente?';
+      if (descEl) descEl.innerHTML = 'El paquete <strong id="modal-quitar-rma-number" style="color: var(--primary-blue);">' + rastreo + '</strong> será eliminado permanentemente de tu historial local.';
+      if (iconWrap) { iconWrap.style.background = 'linear-gradient(135deg, #fee2e2, #fecaca)'; iconWrap.style.borderColor = '#fca5a5'; }
+      if (iconEl) { iconEl.className = 'fa-regular fa-trash-can'; iconEl.style.color = '#ef4444'; }
+      if (btnOk) { btnOk.innerHTML = '<i class="fa-regular fa-trash-can" style="margin-right: 5px; font-size: 12px;"></i>Borrar'; btnOk.style.color = '#ef4444'; }
+    } else {
+      if (titleEl) titleEl.textContent = '¿Archivar paquete?';
+      if (descEl) descEl.innerHTML = 'El paquete <strong id="modal-quitar-rma-number" style="color: var(--primary-blue);">' + rastreo + '</strong> será retirado de tu vista principal.<br>Podrás restaurarlo luego.';
+      if (iconWrap) { iconWrap.style.background = 'linear-gradient(135deg, #dbeafe, #bfdbfe)'; iconWrap.style.borderColor = '#93c5fd'; }
+      if (iconEl) { iconEl.className = 'fa-solid fa-box-archive'; iconEl.style.color = '#3b82f6'; }
+      if (btnOk) { btnOk.innerHTML = '<i class="fa-solid fa-box-archive" style="margin-right: 5px; font-size: 12px;"></i>Archivar'; btnOk.style.color = '#3b82f6'; }
+    }
+
+    if (btnOk) {
+      btnOk.onclick = function () {
+        modal.classList.remove('active');
+        try {
+          const listKey = isDelete ? 'mgm_deleted_rastreos' : 'mgm_dismissed_rastreos';
+          let list = JSON.parse(localStorage.getItem(listKey) || '[]');
+          if (!list.includes(rastreo)) {
+            list.push(rastreo);
+            localStorage.setItem(listKey, JSON.stringify(list));
+          }
+          if (window.loadUserActiveRastreos) window.loadUserActiveRastreos();
+        } catch (e) {
+          console.error('Error modificando rastreo:', e);
+        }
+      };
+    }
+    
+    modal.classList.add('active');
   };
 
   window.consultarRastreoAutomatico = function (rastreo, email) {
