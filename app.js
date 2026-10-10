@@ -2433,8 +2433,45 @@
 
     const btnReserve = document.getElementById('modal-event-btn-reserve');
     if (btnReserve) {
-      btnReserve.href = formatEventUrl(ev.registro_url || ev.button_link);
-      btnReserve.innerHTML = `<i class="fa-solid fa-ticket"></i> ${ev.button_text || 'Reservar Cupo'}`;
+      let eventIsPast = false;
+      try {
+        const today = new Date();
+        const eventDate = new Date(ev.fecha + 'T00:00:00');
+        today.setHours(0,0,0,0);
+        
+        if (eventDate < today) {
+          eventIsPast = true;
+        } else if (eventDate.getTime() === today.getTime() && ev.hora) {
+          const timeMatches = ev.hora.match(/\d{1,2}:\d{2}/g);
+          if (timeMatches && timeMatches.length > 0) {
+            const firstTime = timeMatches[0];
+            const [h, m] = firstTime.split(':').map(Number);
+            const eventStartTime = new Date();
+            eventStartTime.setHours(h, m, 0, 0);
+            if (new Date() > eventStartTime) {
+              eventIsPast = true;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Error verificando fecha:', e);
+      }
+
+      if (eventIsPast) {
+        btnReserve.removeAttribute('href');
+        btnReserve.style.pointerEvents = 'none';
+        btnReserve.style.background = '#94a3b8';
+        btnReserve.style.borderColor = '#94a3b8';
+        btnReserve.style.color = '#ffffff';
+        btnReserve.innerHTML = '<i class="fa-solid fa-clock-rotate-left"></i> Evento expirado';
+      } else {
+        btnReserve.href = formatEventUrl(ev.registro_url || ev.button_link);
+        btnReserve.style.pointerEvents = 'auto';
+        btnReserve.style.background = '';
+        btnReserve.style.borderColor = '';
+        btnReserve.style.color = '';
+        btnReserve.innerHTML = `<i class="fa-solid fa-ticket"></i> ${ev.button_text || 'Reservar Cupo'}`;
+      }
     }
 
     const deepLinkInput = document.getElementById('modal-event-deeplink-input');
