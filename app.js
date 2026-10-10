@@ -1507,6 +1507,40 @@
     const tbody = document.getElementById('dash-tx-body');
     tbody.innerHTML = '';
     const historico = c.historico || [];
+
+    // Cálculo de puntos acumulados en el tiempo
+    let pts1m = 0, pts3m = 0, pts6m = 0;
+    const now = new Date();
+    
+    const parseTxDate = (dStr) => {
+      if (!dStr) return new Date(0);
+      let s = String(dStr).replace(' ', 'T');
+      if (s.length === 10) s += 'T00:00:00';
+      return new Date(s);
+    };
+
+    if (historico.length > 0) {
+      historico.forEach(tx => {
+        const txPts = parseInt(tx.puntos) || 0;
+        if (txPts > 0) {
+          const txDate = parseTxDate(tx.fecha);
+          if (!isNaN(txDate.getTime())) {
+            const diffDays = (now.getTime() - txDate.getTime()) / (1000 * 60 * 60 * 24);
+            if (diffDays <= 30) pts1m += txPts;
+            if (diffDays <= 90) pts3m += txPts;
+            if (diffDays <= 180) pts6m += txPts;
+          }
+        }
+      });
+    }
+    
+    const el1m = document.getElementById('acc-1m');
+    const el3m = document.getElementById('acc-3m');
+    const el6m = document.getElementById('acc-6m');
+    if (el1m) el1m.innerHTML = `${pts1m.toLocaleString('es-PA')} <span style="font-size: 11px; font-weight: 700;">PTS</span>`;
+    if (el3m) el3m.innerHTML = `${pts3m.toLocaleString('es-PA')} <span style="font-size: 11px; font-weight: 700;">PTS</span>`;
+    if (el6m) el6m.innerHTML = `${pts6m.toLocaleString('es-PA')} <span style="font-size: 11px; font-weight: 700;">PTS</span>`;
+
     if (historico.length > 0) {
       historico.forEach(tx => {
         const isRed = (tx.puntos || 0) < 0;
