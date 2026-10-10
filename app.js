@@ -2169,7 +2169,8 @@
 
       const next = upcoming[0];
       const cedula = state.authUser ? state.authUser.cedula : '';
-      const closedKey = 'mgm_evento_cerrado_' + btoa(next.titulo).substring(0, 15) + (cedula ? '_' + cedula : '');
+      const safeTitulo = encodeURIComponent(next.titulo || '').replace(/%/g, '').substring(0, 15);
+      const closedKey = 'mgm_evento_cerrado_' + safeTitulo + (cedula ? '_' + cedula : '');
       
       if (localStorage.getItem(closedKey)) {
         if (banner) banner.style.display = 'none';
