@@ -6309,6 +6309,14 @@ window.closeReferralQRModal = function () {
         <div class="rma-card-bottom">
           <span class="rma-card-date"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${fechaActualizacion}</span>
           <div class="rma-card-actions">
+            ${isDone ? `
+              <button class="btn-action-ver" onclick="event.stopPropagation(); window.quitarRastreoDeLista('${numRastreo}', true)" style="background: var(--bg-card-alt); color: #EF4444; border: 1px solid #FECACA; padding: 6px 10px;">
+                <i class="fa-regular fa-trash-can" style="margin-right: 5px; font-size: 12px;"></i>Borrar
+              </button>
+              <button class="btn-action-ver" onclick="event.stopPropagation(); window.quitarRastreoDeLista('${numRastreo}', false)" style="background: var(--bg-card-alt); color: var(--text-dark); border: 1px solid var(--border-light); padding: 6px 10px;">
+                <i class="fa-solid fa-box-archive" style="margin-right: 5px; font-size: 12px;"></i>Archivar
+              </button>
+            ` : ''}
             <button class="btn-action-ver" style="background: linear-gradient(135deg, #0284C7, #0369A1);">Ver Seguimiento</button>
           </div>
         </div>
@@ -6334,6 +6342,22 @@ window.closeReferralQRModal = function () {
     if (res) res.innerHTML = "";
     const dashboard = document.getElementById("rastreoUserDashboard");
     if (dashboard) dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  window.quitarRastreoDeLista = function (rastreo, isDelete) {
+    if (confirm(isDelete ? '¿Seguro que deseas borrar este paquete de tu historial permanentemente?' : '¿Deseas archivar este paquete?')) {
+      try {
+        const listKey = isDelete ? 'mgm_deleted_rastreos' : 'mgm_dismissed_rastreos';
+        let list = JSON.parse(localStorage.getItem(listKey) || '[]');
+        if (!list.includes(rastreo)) {
+          list.push(rastreo);
+          localStorage.setItem(listKey, JSON.stringify(list));
+        }
+        if (window.loadUserActiveRastreos) window.loadUserActiveRastreos();
+      } catch (e) {
+        console.error('Error modificando rastreo:', e);
+      }
+    }
   };
 
   window.consultarRastreoAutomatico = function (rastreo, email) {
@@ -6387,6 +6411,13 @@ window.closeReferralQRModal = function () {
       const res = await fetch(`${RASTREO_GAS_URL}?action=buscar_cedula&cedula=${encodeURIComponent(user.cedula)}`);
       const payload = await res.json();
 
+      let dismissed = [];
+      let deleted = [];
+      try {
+        dismissed = JSON.parse(localStorage.getItem('mgm_dismissed_rastreos') || '[]');
+        deleted = JSON.parse(localStorage.getItem('mgm_deleted_rastreos') || '[]');
+      } catch (e) { }
+
       if (payload.error || !payload.data || payload.data.length === 0) {
         if (container) container.innerHTML = `
           <div style="background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 16px; padding: 30px 20px; text-align: center;">
@@ -6398,9 +6429,51 @@ window.closeReferralQRModal = function () {
           </div>
         `;
       } else {
-        const items = payload.data;
+        let changed = false;
+        const now = new Date();
+        const itemsVisibles = payload.data.filter(item => {
+          const numRastreo = String(item.id_rastreo).trim();
+          if (deleted.includes(numRastreo) || dismissed.includes(numRastreo)) return false;
+
+          const estado = getRastreoEstadoInfo(item.estado);
+          if (estado.progress === 100 && item.fecha_actualizacion) {
+            let parts = item.fecha_actualizacion.split(/[\/ -]/);
+            let dObj = null;
+            if (parts.length >= 3) {
+              // Assume DD/MM/YYYY or YYYY-MM-DD
+              if (parts[0].length === 4) dObj = new Date(parts[0], parts[1]-1, parts[2]);
+              else dObj = new Date(parts[2], parts[1]-1, parts[0]);
+            }
+            if (dObj && !isNaN(dObj.getTime())) {
+              const diffDays = (now - dObj) / (1000 * 60 * 60 * 24);
+              if (diffDays > 30) {
+                dismissed.push(numRastreo);
+                changed = true;
+                return false;
+              }
+            }
+          }
+          return true;
+        });
+
+        if (changed) {
+          localStorage.setItem('mgm_dismissed_rastreos', JSON.stringify(dismissed));
+        }
+
         if (container) {
-          container.innerHTML = `<div class="rma-equipos-list">${items.map(buildRastreoCard).join('')}</div>`;
+          if (itemsVisibles.length === 0) {
+            container.innerHTML = `
+              <div style="background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 16px; padding: 30px 20px; text-align: center;">
+                <div style="background: #E2E8F0; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #64748B;">
+                  <span class="material-icons-round" style="font-size:24px;">inventory_2</span>
+                </div>
+                <h4 style="margin:0 0 6px 0; font-size:15px; color:#334155;">Historial Limpio</h4>
+                <p style="margin:0; font-size:13px; color:#64748B; line-height:1.4;">Tus paquetes entregados de más de 30 días han sido archivados automáticamente.</p>
+              </div>
+            `;
+          } else {
+            container.innerHTML = `<div class="rma-equipos-list">${itemsVisibles.map(buildRastreoCard).join('')}</div>`;
+          }
         }
       }
     } catch (err) {

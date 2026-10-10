@@ -2291,28 +2291,19 @@
             }
           };
 
-          // Quitar / ocultar RMA cerrado de la lista del cliente
-          window.quitarRmaDeLista = function (rma) {
-            // Poner el número de RMA en el modal
-            const rmaLabel = document.getElementById('modal-quitar-rma-number');
-            if (rmaLabel) rmaLabel.textContent = rma;
+          // Quitar / borrar RMA cerrado de la lista del cliente
+          window.quitarRmaDeLista = function (rma, isDelete) {
+            if (confirm(isDelete ? '¿Seguro que deseas borrar este equipo de tu historial permanentemente?' : '¿Deseas archivar este equipo?')) {
+              try {
+                const listKey = isDelete ? 'mgm_deleted_rmas' : 'mgm_dismissed_rmas';
+                var list = JSON.parse(localStorage.getItem(listKey) || '[]');
+                if (!list.includes(rma)) {
+                  list.push(rma);
+                  localStorage.setItem(listKey, JSON.stringify(list));
+                }
 
-            // Asignar acción al botón de confirmar
-            const btnOk = document.getElementById('btn-quitar-rma-ok');
-            if (btnOk) {
-              btnOk.onclick = function () {
-                // Cerrar modal
-                var m = document.getElementById('modal-confirm-quitar-rma');
-                if (m) m.classList.remove('active');
-                // Archivar en localStorage
-                try {
-                  var dismissed = JSON.parse(localStorage.getItem('mgm_dismissed_rmas') || '[]');
-                  if (!dismissed.includes(rma)) {
-                    dismissed.push(rma);
-                    localStorage.setItem('mgm_dismissed_rmas', JSON.stringify(dismissed));
-                  }
-
-                  // Sincronizar con el backend de Google Sheets
+                // Sincronizar con el backend si se archiva
+                if (!isDelete) {
                   let user = null;
                   try { user = JSON.parse(localStorage.getItem('mgm_auth_user')) || (window.state && window.state.authUser); } catch (e) { }
                   if (user && typeof API_URL !== 'undefined') {
@@ -2325,17 +2316,13 @@
                       })
                     }).catch(e => console.error('Error enviando archivar_rma:', e));
                   }
-
-                  if (window.loadUserActiveRmas) window.loadUserActiveRmas();
-                } catch (e) {
-                  console.error('Error archivando RMA:', e);
                 }
-              };
-            }
 
-            // Abrir modal directamente (sin depender de openAppModal global)
-            var modal = document.getElementById('modal-confirm-quitar-rma');
-            if (modal) modal.classList.add('active');
+                if (window.loadUserActiveRmas) window.loadUserActiveRmas();
+              } catch (e) {
+                console.error('Error modificando RMA:', e);
+              }
+            }
           };
 
           // Restaurar todos los RMAs archivados
@@ -2446,8 +2433,10 @@
 
               // Obtener lista de RMAs ocultados/cerrados por el usuario
               let dismissed = [];
+              let deleted = [];
               try {
                 dismissed = JSON.parse(localStorage.getItem('mgm_dismissed_rmas') || '[]');
+                deleted = JSON.parse(localStorage.getItem('mgm_deleted_rmas') || '[]');
 
                 // Sincronizar los que el backend ya reporta como archivados
                 if (data.archivados && Array.isArray(data.archivados)) {
@@ -2466,8 +2455,40 @@
               } catch (e) { }
 
               if (data.success && Array.isArray(data.rmas) && data.rmas.length > 0) {
-                // Filtrar los que el usuario haya quitado de su lista
-                const rmasVisibles = data.rmas.filter(r => !dismissed.includes(String(r.rma).trim()));
+                // Filtrar los que el usuario haya quitado de su lista y auto-archivar antiguos
+                let autoArchived = false;
+                const now = new Date();
+                const rmasVisibles = data.rmas.filter(r => {
+                  const rmaClean = String(r.rma).trim();
+                  if (deleted.includes(rmaClean) || dismissed.includes(rmaClean)) return false;
+                  
+                  const estLower = (r.estado || '').toLowerCase();
+                  const isDone = estLower.includes('reparad') || estLower.includes('entregad') || estLower.includes('listo') || estLower.includes('cerrad') || estLower.includes('finalizad');
+                  
+                  if (isDone && (r.actualizacion || r.fecha)) {
+                    const fechaStr = r.actualizacion || r.fecha;
+                    let parts = fechaStr.split(/[\/ -]/);
+                    let dObj = null;
+                    if (parts.length >= 3) {
+                      if (parts[0].length === 4) dObj = new Date(parts[0], parts[1]-1, parts[2]);
+                      else dObj = new Date(parts[2], parts[1]-1, parts[0]);
+                    }
+                    if (dObj && !isNaN(dObj.getTime())) {
+                      const diffDays = (now - dObj) / (1000 * 60 * 60 * 24);
+                      if (diffDays > 30) {
+                        dismissed.push(rmaClean);
+                        autoArchived = true;
+                        return false;
+                      }
+                    }
+                  }
+                  
+                  return true;
+                });
+                
+                if (autoArchived) {
+                  localStorage.setItem('mgm_dismissed_rmas', JSON.stringify(dismissed));
+                }
 
                 // NUEVO: Verificar si hay algún RMA cerrado pendiente de evaluación
                 const rmaPendienteEval = rmasVisibles.find(r => {
@@ -2555,9 +2576,13 @@
                                 <span class="material-icons-round" style="font-size:14px;">arrow_forward</span>
                               </button>
                               ${isDone ? `
-                                <button type="button" class="btn-action-borrar" onclick="window.quitarRmaDeLista('${safeRma}')" title="Quitar este equipo cerrado de la lista">
+                                <button type="button" class="btn-action-borrar" onclick="window.quitarRmaDeLista('${safeRma}', true)" title="Borrar este equipo permanentemente" style="color: #EF4444;">
                                   <span class="material-icons-round" style="font-size:14px;">delete_outline</span>
-                                  <span>Quitar</span>
+                                  <span>Borrar</span>
+                                </button>
+                                <button type="button" class="btn-action-borrar" onclick="window.quitarRmaDeLista('${safeRma}', false)" title="Archivar este equipo cerrado">
+                                  <span class="material-icons-round" style="font-size:14px;">inventory_2</span>
+                                  <span>Archivar</span>
                                 </button>
                               ` : ''}
                             </div>
