@@ -1122,10 +1122,10 @@
     } else {
       banner.innerHTML = `
         <div class="home-auth-banner-card unauth">
-          <div class="hab-badge"><i class="fa-solid fa-crown"></i> MGM PUNTOS</div>
+          <div class="hab-badge" style="background: rgba(255, 255, 255, 0.15); color: #fff; border: 1px solid rgba(255,255,255,0.2);"><i class="fa-solid fa-rocket" style="color: #60a5fa;"></i> BIENVENIDO A MGM HUB</div>
           <div class="hab-body">
-            <h3 class="hab-title">¿Tienes puntos por canjear?</h3>
-            <p class="hab-sub">Inicia sesión con tu cédula o regístrate para consultar tu saldo acumulado y beneficios.</p>
+            <h3 class="hab-title">Tu centro de soluciones</h3>
+            <p class="hab-sub">Inicia sesión para canjear <strong>Puntos</strong>, gestionar tus equipos en <strong>RMA</strong>, y reservar cupos en <strong>Eventos</strong>.</p>
           </div>
           <div class="hab-actions">
             <button type="button" class="hab-btn primary" onclick="openLoginModal()"><i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</button>
