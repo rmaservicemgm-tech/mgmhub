@@ -2282,6 +2282,16 @@
     } else {
       render();
     }
+
+    // Auto-actualizar el banner cada minuto por si el evento termina
+    if (!window.mgmBannerInterval) {
+      window.mgmBannerInterval = setInterval(() => {
+        const homeView = document.getElementById('view-home');
+        if (homeView && homeView.classList.contains('active') && state.agendaEvents.length > 0) {
+          loadHomeNextEvent();
+        }
+      }, 60000);
+    }
   }
 
   function renderCalendar() {
