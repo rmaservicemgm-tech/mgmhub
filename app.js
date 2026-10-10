@@ -2160,12 +2160,18 @@
         })
         .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
+      const banner = document.getElementById('home-event-banner');
+      
+      if (!upcoming.length) {
+        if (banner) banner.style.display = 'none';
+        return;
+      }
+
       const next = upcoming[0];
       const cedula = state.authUser ? state.authUser.cedula : '';
       const closedKey = 'mgm_evento_cerrado_' + btoa(next.titulo).substring(0, 15) + (cedula ? '_' + cedula : '');
       
-      const banner = document.getElementById('home-event-banner');
-      if (!upcoming.length || localStorage.getItem(closedKey)) {
+      if (localStorage.getItem(closedKey)) {
         if (banner) banner.style.display = 'none';
         return;
       } else {
@@ -2266,6 +2272,9 @@
         if (fresh && fresh !== DEMO_EVENTS) {
           state.agendaEvents = fresh;
           localStorage.setItem('MGM_CACHE_EVENTS', JSON.stringify(fresh));
+          render();
+        } else if (!cached) {
+          state.agendaEvents = DEMO_EVENTS;
           render();
         }
       });
