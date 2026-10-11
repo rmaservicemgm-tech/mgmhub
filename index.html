@@ -19,7 +19,7 @@
   <!-- Google Fonts & FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap">
-  <link rel="stylesheet" href="styles.css?v=18">
+  <link rel="stylesheet" href="styles.css?v=19">
   <!-- jsPDF para exportacion de cotizaciones desde la Calculadora de Almacenamiento -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script defer
@@ -2998,13 +2998,25 @@
       <div class="modal-content-card full-screen">
         <button class="modal-close-x" onclick="closeAppModal('modal-asesoria')">✕</button>
 
-        <div class="asesoria-banner-header">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
-            <i class="fa-brands fa-whatsapp" style="font-size: 26px; color: #25d366;"></i>
-            <h3 style="font-size: 17px; font-weight: 800; color: #fff;">Asesoría MGM en Línea</h3>
+        <div class="asesoria-banner-header" id="dynamicHeaderAsesoria">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i class="fa-brands fa-whatsapp" style="font-size: 26px; color: #25d366;"></i>
+              <h3 style="font-size: 17px; font-weight: 800; color: #fff; margin: 0;">Asesoría MGM en Línea</h3>
+            </div>
+            <!-- INDICADOR DE ESTADO EN LÍNEA / FUERA DE HORARIO -->
+            <div class="asesoria-status-pill online" id="asesoriaStatusPill">
+              <span class="status-dot-pulse" id="asesoriaStatusDot"></span>
+              <span id="asesoriaStatusText">En línea</span>
+            </div>
           </div>
-          <p style="font-size: 12px; color: rgba(255,255,255,0.75);">Elige el canal de atención especializada según tu
-            necesidad:</p>
+          <p id="asesoriaHeaderSubtext" style="font-size: 12px; color: rgba(255,255,255,0.85); margin: 0 0 6px 0; line-height: 1.4;">
+            Elige el canal de atención especializada según tu necesidad:
+          </p>
+          <div class="asesoria-horario-row">
+            <i class="fa-regular fa-clock"></i>
+            <span>Horario: Lun a Vie 7:30 AM - 6:00 PM | Sáb 7:30 AM - 4:00 PM</span>
+          </div>
         </div>
 
         <div class="wa-contact-list-modal">
@@ -3020,12 +3032,23 @@
             <i class="fa-solid fa-robot" style="color: var(--accent-purple); font-size: 20px;"></i>
           </div>
 
-          <!-- ASESOR DE VENTAS -->
+          <!-- ASESOR DE VENTAS 1 -->
           <a class="wa-card-item" target="_blank"
             href="https://wa.me/50762540412?text=Consulta%20desde%20MGM%20Hub%20App">
             <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" class="wa-avatar-img">
             <div class="wa-card-info" style="flex: 1;">
-              <strong>Asesor de Ventas & Cotizaciones</strong>
+              <strong>Asesor de Ventas 1 & Cotizaciones</strong>
+              <span>Atención directa para distribuidores y pedidos</span>
+            </div>
+            <i class="fa-brands fa-whatsapp" style="color: var(--accent-green); font-size: 22px;"></i>
+          </a>
+
+          <!-- ASESOR DE VENTAS 2 -->
+          <a class="wa-card-item" target="_blank"
+            href="https://wa.me/50760090401?text=Consulta%20desde%20MGM%20Hub%20App">
+            <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM" class="wa-avatar-img">
+            <div class="wa-card-info" style="flex: 1;">
+              <strong>Asesor de Ventas 2 & Cotizaciones</strong>
               <span>Atención directa para distribuidores y pedidos</span>
             </div>
             <i class="fa-brands fa-whatsapp" style="color: var(--accent-green); font-size: 22px;"></i>
@@ -5196,7 +5219,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=31"></script>
+  <script src="app.js?v=32"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
   <script>

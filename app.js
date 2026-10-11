@@ -907,7 +907,41 @@
   // MAGIE IA — BOTPRESS WIDGET OFICIAL (misma lógica que funciona en la web)
   // ══════════════════════════════════════════════════════════════════════════
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // HORARIO DE ATENCIÓN WHATSAPP (Sincronizado con la web de MGM)
+  // Lunes a Viernes: 7:30 AM a 6:00 PM | Sábados: 7:30 AM a 4:00 PM
+  // ══════════════════════════════════════════════════════════════════════════
+  window.actualizarHorarioAsesoria = function () {
+    const now = new Date();
+    const day = now.getDay(); // 0: Dom, 1-5: Lun-Vie, 6: Sab
+    const hour = now.getHours();
+    const minutes = now.getMinutes();
+    const time = hour + minutes / 60;
+
+    const online = (day >= 1 && day <= 5 && time >= 7.5 && time < 18) || (day === 6 && time >= 7.5 && time < 16);
+
+    const pill = document.getElementById('asesoriaStatusPill');
+    const text = document.getElementById('asesoriaStatusText');
+    const subtext = document.getElementById('asesoriaHeaderSubtext');
+    const header = document.getElementById('dynamicHeaderAsesoria');
+
+    if (!pill || !text) return;
+
+    if (online) {
+      pill.className = 'asesoria-status-pill online';
+      text.innerText = 'En línea';
+      if (subtext) subtext.innerText = 'Elige el canal de atención especializada según tu necesidad:';
+      if (header) header.style.background = 'linear-gradient(135deg, var(--primary-navy), #003a82)';
+    } else {
+      pill.className = 'asesoria-status-pill offline';
+      text.innerText = 'Fuera de horario';
+      if (subtext) subtext.innerText = 'Atención fuera de horario. Por favor deja tu mensaje o consulta con Magie IA 24/7.';
+      if (header) header.style.background = 'linear-gradient(135deg, #334155, #1e293b)';
+    }
+  };
+
   window.openAsesoriaModal = function () {
+    window.actualizarHorarioAsesoria();
     openAppModal('modal-asesoria');
   };
 
@@ -7733,6 +7767,9 @@ window.mgmEncuestas = (function () {
 // Inicializar el modulo cuando la app este lista
 document.addEventListener('DOMContentLoaded', function () {
   mgmEncuestas.init();
+  if (typeof window.actualizarHorarioAsesoria === 'function') {
+    window.actualizarHorarioAsesoria();
+  }
 });
 
 
