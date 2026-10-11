@@ -237,7 +237,8 @@
           <div class="next-event-title-text" id="home-event-title">Sincronizando agenda...</div>
           <div class="next-event-countdown" id="home-event-time">Calculando fecha...</div>
         </div>
-        <button onclick="event.stopPropagation(); window.promptCloseEventBanner();" style="background: transparent; border: none; color: rgba(255,255,255,0.5); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0;">
+        <button onclick="event.stopPropagation(); window.promptCloseEventBanner();"
+          style="background: transparent; border: none; color: rgba(255,255,255,0.5); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0;">
           <i class="fa-solid fa-circle-xmark"></i>
         </button>
       </div>
@@ -836,33 +837,49 @@
           </div>
 
           <!-- PUNTOS ACUMULADOS EN EL TIEMPO -->
-          <div class="accumulated-points-row" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 16px 0; margin-top: 8px;">
-            
-            <div class="accumulated-card" style="background: white; border: 1.5px solid #10b981; border-radius: 12px; padding: 12px; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">
-              <div style="position: absolute; top: -12px; right: -8px; background: #fdb173; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <div class="accumulated-points-row"
+            style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 16px 0; margin-top: 8px;">
+
+            <div class="accumulated-card"
+              style="background: white; border: 1.5px solid #10b981; border-radius: 12px; padding: 12px; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">
+              <div
+                style="position: absolute; top: -12px; right: -8px; background: #fdb173; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 <i class="fa-regular fa-calendar"></i>
               </div>
-              <div style="color: #fdb173; margin-bottom: 8px; font-size: 20px;"><i class="fa-solid fa-piggy-bank" style="opacity: 0.8;"></i></div>
-              <div style="font-size: 11.5px; color: var(--text-dark); font-weight: 600; margin-bottom: 4px;">En 30 días acumulaste</div>
-              <div style="font-size: 18px; font-weight: 800; color: #10b981;" id="acc-1m">0 <span style="font-size: 11px; font-weight: 700;">PTS</span></div>
+              <div style="color: #fdb173; margin-bottom: 8px; font-size: 20px;"><i class="fa-solid fa-piggy-bank"
+                  style="opacity: 0.8;"></i></div>
+              <div style="font-size: 11.5px; color: var(--text-dark); font-weight: 600; margin-bottom: 4px;">En 30 días
+                acumulaste</div>
+              <div style="font-size: 18px; font-weight: 800; color: #10b981;" id="acc-1m">0 <span
+                  style="font-size: 11px; font-weight: 700;">PTS</span></div>
             </div>
 
-            <div class="accumulated-card" style="background: white; border: 1px solid var(--border-light); border-radius: 12px; padding: 12px; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">
-              <div style="position: absolute; top: -12px; right: -8px; background: #fdb173; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <div class="accumulated-card"
+              style="background: white; border: 1px solid var(--border-light); border-radius: 12px; padding: 12px; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">
+              <div
+                style="position: absolute; top: -12px; right: -8px; background: #fdb173; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 <i class="fa-regular fa-calendar-days"></i>
               </div>
-              <div style="color: #fdb173; margin-bottom: 8px; font-size: 20px;"><i class="fa-solid fa-piggy-bank" style="opacity: 0.8;"></i></div>
-              <div style="font-size: 11.5px; color: var(--text-dark); font-weight: 600; margin-bottom: 4px;">En 3 meses acumulaste</div>
-              <div style="font-size: 18px; font-weight: 800; color: #10b981;" id="acc-3m">0 <span style="font-size: 11px; font-weight: 700;">PTS</span></div>
+              <div style="color: #fdb173; margin-bottom: 8px; font-size: 20px;"><i class="fa-solid fa-piggy-bank"
+                  style="opacity: 0.8;"></i></div>
+              <div style="font-size: 11.5px; color: var(--text-dark); font-weight: 600; margin-bottom: 4px;">En 3 meses
+                acumulaste</div>
+              <div style="font-size: 18px; font-weight: 800; color: #10b981;" id="acc-3m">0 <span
+                  style="font-size: 11px; font-weight: 700;">PTS</span></div>
             </div>
 
-            <div class="accumulated-card" style="background: white; border: 1px solid var(--border-light); border-radius: 12px; padding: 12px; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">
-              <div style="position: absolute; top: -12px; right: -8px; background: #fdb173; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <div class="accumulated-card"
+              style="background: white; border: 1px solid var(--border-light); border-radius: 12px; padding: 12px; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">
+              <div
+                style="position: absolute; top: -12px; right: -8px; background: #fdb173; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 <i class="fa-regular fa-calendar-check"></i>
               </div>
-              <div style="color: #fdb173; margin-bottom: 8px; font-size: 20px;"><i class="fa-solid fa-piggy-bank" style="opacity: 0.8;"></i></div>
-              <div style="font-size: 11.5px; color: var(--text-dark); font-weight: 600; margin-bottom: 4px;">En 6 meses acumulaste</div>
-              <div style="font-size: 18px; font-weight: 800; color: #10b981;" id="acc-6m">0 <span style="font-size: 11px; font-weight: 700;">PTS</span></div>
+              <div style="color: #fdb173; margin-bottom: 8px; font-size: 20px;"><i class="fa-solid fa-piggy-bank"
+                  style="opacity: 0.8;"></i></div>
+              <div style="font-size: 11.5px; color: var(--text-dark); font-weight: 600; margin-bottom: 4px;">En 6 meses
+                acumulaste</div>
+              <div style="font-size: 18px; font-weight: 800; color: #10b981;" id="acc-6m">0 <span
+                  style="font-size: 11px; font-weight: 700;">PTS</span></div>
             </div>
 
           </div>
@@ -2295,7 +2312,7 @@
           window.quitarRmaDeLista = function (rma, isDelete) {
             const modal = document.getElementById('modal-confirm-quitar-rma');
             if (!modal) return;
-            
+
             // Configurar modal visualmente
             const titleEl = document.getElementById('modal-quitar-title');
             const descEl = document.getElementById('modal-quitar-desc');
@@ -2303,9 +2320,9 @@
             const iconWrap = document.getElementById('modal-quitar-icon-wrapper');
             const iconEl = document.getElementById('modal-quitar-icon');
             const btnOk = document.getElementById('btn-quitar-rma-ok');
-            
+
             if (rmaLabel) rmaLabel.textContent = rma;
-            
+
             if (isDelete) {
               if (titleEl) titleEl.textContent = '¿Borrar permanentemente?';
               if (descEl) descEl.innerHTML = 'El equipo <strong id="modal-quitar-rma-number" style="color: var(--primary-blue);">' + rma + '</strong> será eliminado permanentemente de tu historial local.';
@@ -2353,7 +2370,7 @@
                 }
               };
             }
-            
+
             modal.classList.add('active');
           };
 
@@ -2493,17 +2510,17 @@
                 const rmasVisibles = data.rmas.filter(r => {
                   const rmaClean = String(r.rma).trim();
                   if (deleted.includes(rmaClean) || dismissed.includes(rmaClean)) return false;
-                  
+
                   const estLower = (r.estado || '').toLowerCase();
                   const isDone = estLower.includes('reparad') || estLower.includes('entregad') || estLower.includes('listo') || estLower.includes('cerrad') || estLower.includes('finalizad');
-                  
+
                   if (isDone && (r.actualizacion || r.fecha)) {
                     const fechaStr = r.actualizacion || r.fecha;
                     let parts = fechaStr.split(/[\/ -]/);
                     let dObj = null;
                     if (parts.length >= 3) {
-                      if (parts[0].length === 4) dObj = new Date(parts[0], parts[1]-1, parts[2]);
-                      else dObj = new Date(parts[2], parts[1]-1, parts[0]);
+                      if (parts[0].length === 4) dObj = new Date(parts[0], parts[1] - 1, parts[2]);
+                      else dObj = new Date(parts[2], parts[1] - 1, parts[0]);
                     }
                     if (dObj && !isNaN(dObj.getTime())) {
                       const diffDays = (now - dObj) / (1000 * 60 * 60 * 24);
@@ -2514,10 +2531,10 @@
                       }
                     }
                   }
-                  
+
                   return true;
                 });
-                
+
                 if (autoArchived) {
                   localStorage.setItem('mgm_dismissed_rmas', JSON.stringify(dismissed));
                 }
@@ -2999,7 +3016,8 @@
         <button class="modal-close-x" onclick="closeAppModal('modal-asesoria')">✕</button>
 
         <div class="asesoria-banner-header" id="dynamicHeaderAsesoria">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 10px;">
               <i class="fa-brands fa-whatsapp" style="font-size: 26px; color: #25d366;"></i>
               <h3 style="font-size: 17px; font-weight: 800; color: #fff; margin: 0;">Asesoría MGM en Línea</h3>
@@ -3010,7 +3028,8 @@
               <span id="asesoriaStatusText">En línea</span>
             </div>
           </div>
-          <p id="asesoriaHeaderSubtext" style="font-size: 12px; color: rgba(255,255,255,0.85); margin: 0 0 6px 0; line-height: 1.4;">
+          <p id="asesoriaHeaderSubtext"
+            style="font-size: 12px; color: rgba(255,255,255,0.85); margin: 0 0 6px 0; line-height: 1.4;">
             Elige el canal de atención especializada según tu necesidad:
           </p>
           <div class="asesoria-horario-row">
@@ -3599,10 +3618,12 @@
         <div class="settings-section">
           <h5 class="settings-subtitle">Privacidad y Sesión</h5>
           <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
-            <button class="btn-submit" onclick="openAppModal('modal-confirm-logout')" style="background: #ef4444; color: white; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <button class="btn-submit" onclick="openAppModal('modal-confirm-logout')"
+              style="background: #ef4444; color: white; display: flex; align-items: center; justify-content: center; gap: 8px;">
               <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
             </button>
-            <button class="btn-submit" onclick="openAppModal('modal-confirm-cache')" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <button class="btn-submit" onclick="openAppModal('modal-confirm-cache')"
+              style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; gap: 8px;">
               <i class="fa-solid fa-broom"></i> Limpiar Caché de la App
             </button>
           </div>
@@ -3774,16 +3795,28 @@
     <!-- MODAL CONFIRMACIÓN — CERRAR SESIÓN -->
     <div class="app-modal" id="modal-confirm-logout" style="z-index: 10500;">
       <div class="modal-content-card" style="max-width: 320px; padding: 0; overflow: hidden; border-radius: 22px;">
-        <div style="background: linear-gradient(135deg, #fff1f2 0%, #fef9ec 100%); padding: 28px 24px 20px; text-align: center; border-bottom: 1px solid var(--border-light);">
-          <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 2px solid #fca5a5; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; box-shadow: 0 4px 16px rgba(239,68,68,0.18);">
+        <div
+          style="background: linear-gradient(135deg, #fff1f2 0%, #fef9ec 100%); padding: 28px 24px 20px; text-align: center; border-bottom: 1px solid var(--border-light);">
+          <div
+            style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 2px solid #fca5a5; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; box-shadow: 0 4px 16px rgba(239,68,68,0.18);">
             <i class="fa-solid fa-arrow-right-from-bracket" style="font-size: 24px; color: #ef4444;"></i>
           </div>
           <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">¿Cerrar Sesión?</h3>
-          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">Tu sesión actual será finalizada. Tendrás que volver a ingresar con tu correo para ver tus puntos.</p>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">Tu sesión actual será
+            finalizada. Tendrás que volver a ingresar con tu correo para ver tus puntos.</p>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; background: #fff;">
-          <button onclick="closeAppModal('modal-confirm-logout')" style="padding: 16px 12px; background: #fff; border: none; border-right: 1px solid var(--border-light); font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: background 0.18s, color 0.18s; border-radius: 0 0 0 22px;" onmouseover="this.style.background='#f8fafc'; this.style.color='var(--text-body)'" onmouseout="this.style.background='#fff'; this.style.color='var(--text-muted)'"><i class="fa-solid fa-xmark" style="margin-right: 5px; font-size: 12px;"></i>Cancelar</button>
-          <button onclick="confirmLogoutUser()" style="padding: 16px 12px; background: #fff; border: none; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; color: #ef4444; cursor: pointer; transition: background 0.18s, color 0.18s; border-radius: 0 0 22px 0;" onmouseover="this.style.background='#fef2f2'; this.style.color='#dc2626'" onmouseout="this.style.background='#fff'; this.style.color='#ef4444'"><i class="fa-solid fa-arrow-right-from-bracket" style="margin-right: 5px; font-size: 12px;"></i>Salir</button>
+          <button onclick="closeAppModal('modal-confirm-logout')"
+            style="padding: 16px 12px; background: #fff; border: none; border-right: 1px solid var(--border-light); font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: background 0.18s, color 0.18s; border-radius: 0 0 0 22px;"
+            onmouseover="this.style.background='#f8fafc'; this.style.color='var(--text-body)'"
+            onmouseout="this.style.background='#fff'; this.style.color='var(--text-muted)'"><i class="fa-solid fa-xmark"
+              style="margin-right: 5px; font-size: 12px;"></i>Cancelar</button>
+          <button onclick="confirmLogoutUser()"
+            style="padding: 16px 12px; background: #fff; border: none; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; color: #ef4444; cursor: pointer; transition: background 0.18s, color 0.18s; border-radius: 0 0 22px 0;"
+            onmouseover="this.style.background='#fef2f2'; this.style.color='#dc2626'"
+            onmouseout="this.style.background='#fff'; this.style.color='#ef4444'"><i
+              class="fa-solid fa-arrow-right-from-bracket"
+              style="margin-right: 5px; font-size: 12px;"></i>Salir</button>
         </div>
       </div>
     </div>
@@ -3791,16 +3824,27 @@
     <!-- MODAL CONFIRMACIÓN — LIMPIAR CACHÉ -->
     <div class="app-modal" id="modal-confirm-cache" style="z-index: 10500;">
       <div class="modal-content-card" style="max-width: 320px; padding: 0; overflow: hidden; border-radius: 22px;">
-        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); padding: 28px 24px 20px; text-align: center; border-bottom: 1px solid var(--border-light);">
-          <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #dcfce7, #bbf7d0); border: 2px solid #86efac; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; box-shadow: 0 4px 16px rgba(34,197,94,0.18);">
+        <div
+          style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); padding: 28px 24px 20px; text-align: center; border-bottom: 1px solid var(--border-light);">
+          <div
+            style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #dcfce7, #bbf7d0); border: 2px solid #86efac; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; box-shadow: 0 4px 16px rgba(34,197,94,0.18);">
             <i class="fa-solid fa-broom" style="font-size: 24px; color: #10b981;"></i>
           </div>
           <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">¿Limpiar Caché?</h3>
-          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">Se borrarán datos temporales de la app pero <strong>no se cerrará tu sesión</strong>. La app se recargará al instante.</p>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">Se borrarán datos
+            temporales de la app pero <strong>no se cerrará tu sesión</strong>. La app se recargará al instante.</p>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; background: #fff;">
-          <button onclick="closeAppModal('modal-confirm-cache')" style="padding: 16px 12px; background: #fff; border: none; border-right: 1px solid var(--border-light); font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: background 0.18s, color 0.18s; border-radius: 0 0 0 22px;" onmouseover="this.style.background='#f8fafc'; this.style.color='var(--text-body)'" onmouseout="this.style.background='#fff'; this.style.color='var(--text-muted)'"><i class="fa-solid fa-xmark" style="margin-right: 5px; font-size: 12px;"></i>Cancelar</button>
-          <button onclick="confirmClearAppCache()" style="padding: 16px 12px; background: #fff; border: none; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; color: #10b981; cursor: pointer; transition: background 0.18s, color 0.18s; border-radius: 0 0 22px 0;" onmouseover="this.style.background='#ecfdf5'; this.style.color='#059669'" onmouseout="this.style.background='#fff'; this.style.color='#10b981'"><i class="fa-solid fa-check" style="margin-right: 5px; font-size: 12px;"></i>Limpiar</button>
+          <button onclick="closeAppModal('modal-confirm-cache')"
+            style="padding: 16px 12px; background: #fff; border: none; border-right: 1px solid var(--border-light); font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: background 0.18s, color 0.18s; border-radius: 0 0 0 22px;"
+            onmouseover="this.style.background='#f8fafc'; this.style.color='var(--text-body)'"
+            onmouseout="this.style.background='#fff'; this.style.color='var(--text-muted)'"><i class="fa-solid fa-xmark"
+              style="margin-right: 5px; font-size: 12px;"></i>Cancelar</button>
+          <button onclick="confirmClearAppCache()"
+            style="padding: 16px 12px; background: #fff; border: none; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; color: #10b981; cursor: pointer; transition: background 0.18s, color 0.18s; border-radius: 0 0 22px 0;"
+            onmouseover="this.style.background='#ecfdf5'; this.style.color='#059669'"
+            onmouseout="this.style.background='#fff'; this.style.color='#10b981'"><i class="fa-solid fa-check"
+              style="margin-right: 5px; font-size: 12px;"></i>Limpiar</button>
         </div>
       </div>
     </div>
@@ -3808,7 +3852,8 @@
     <!-- MODAL CONFIRMACIÓN — CERRAR BANNER -->
     <div class="app-modal" id="modal-confirm-banner" style="z-index: 10500;">
       <div class="modal-content-card" style="max-width: 320px; padding: 0; overflow: hidden; border-radius: 22px;">
-        <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 28px 24px 20px; text-align: center; border-bottom: 1px solid var(--border-light);">
+        <div
+          style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 28px 24px 20px; text-align: center; border-bottom: 1px solid var(--border-light);">
           <div style="
             width: 60px; height: 60px; border-radius: 50%;
             background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
@@ -3821,7 +3866,8 @@
           </div>
           <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">¿Ocultar aviso?</h3>
           <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
-            Si lo cierras, <strong style="color: var(--text-dark);">no volverá a aparecer</strong> hasta que haya uno nuevo.
+            Si lo cierras, <strong style="color: var(--text-dark);">no volverá a aparecer</strong> hasta que haya uno
+            nuevo.
           </p>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; background: #fff;">
@@ -3873,7 +3919,8 @@
           ">
             <i id="modal-quitar-icon" class="fa-solid fa-box-archive" style="font-size: 24px; color: #3b82f6;"></i>
           </div>
-          <h3 id="modal-quitar-title" style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">¿Quitar de la lista?
+          <h3 id="modal-quitar-title"
+            style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 6px;">¿Quitar de la lista?
           </h3>
           <p id="modal-quitar-desc" style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
             El equipo <strong id="modal-quitar-rma-number" style="color: var(--primary-blue);"></strong> será retirado
@@ -5194,13 +5241,15 @@
   </div>
 
   <!-- MODAL SELECTOR WHATSAPP — z-index alto, después del feed para ganar en DOM -->
-  <div class="app-modal" id="modal-wa-selector" style="z-index:9000;">
+  <div class="app-modal" id="modal-wa-selector" style="z-index: index 10500;">
     <div class="modal-content-card" style="text-align: center; max-width: 320px;">
       <button class="modal-close-x" onclick="closeAppModal('modal-wa-selector')">✕</button>
       <div style="font-size: 32px; color: #25d366; margin-bottom: 12px;"><i class="fa-brands fa-whatsapp"></i></div>
-      <h4 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">Consultar por WhatsApp</h4>
-      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">Conecta con nuestro equipo comercial para más información sobre esta promoción.</p>
-      
+      <h4 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">Consultar por WhatsApp
+      </h4>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">Conecta con nuestro equipo comercial
+        para más información sobre esta promoción.</p>
+
       <!-- Opción Rotador Automático -->
       <button onclick="sendWaConsultAuto()"
         style="width: 100%; background: linear-gradient(135deg, #00214a, #0369a1); color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 13.5px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,33,74,0.18);">
@@ -5595,13 +5644,17 @@
       style="background:#fff; width:100%; max-width:480px; border-radius:24px 24px 0 0; padding:0 0 env(safe-area-inset-bottom,16px); max-height:92vh; display:flex; flex-direction:column; transform:translateY(100%); transition:transform .35s cubic-bezier(.32,1,.34,1); overflow:hidden;">
 
       <!-- Header -->
-      <div style="background:linear-gradient(135deg,#00214a 0%,#003580 100%); padding:20px 20px 16px; position:relative; flex-shrink:0;">
+      <div
+        style="background:linear-gradient(135deg,#00214a 0%,#003580 100%); padding:20px 20px 16px; position:relative; flex-shrink:0;">
         <div style="display:flex; align-items:center; gap:10px;">
-          <div style="background:rgba(255,255,255,0.15); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <div
+            style="background:rgba(255,255,255,0.15); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
             <i class="fa-solid fa-clipboard-question" style="color:#fff; font-size:18px;"></i>
           </div>
           <div>
-            <div style="color:rgba(255,255,255,0.7); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">MGM Encuesta</div>
+            <div
+              style="color:rgba(255,255,255,0.7); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
+              MGM Encuesta</div>
             <div id="enc-modal-titulo" style="color:#fff; font-size:16px; font-weight:700; line-height:1.2;"></div>
           </div>
         </div>
@@ -5624,14 +5677,17 @@
         <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 0 8px;">
           <span id="enc-progreso-texto" style="font-size:12px; color:#6b7280; font-weight:500;"></span>
           <div style="flex:1; margin:0 12px; height:4px; background:#e5e7eb; border-radius:2px; overflow:hidden;">
-            <div id="enc-progreso-bar" style="height:100%; background:linear-gradient(90deg,#00214a,#0ea5e9); border-radius:2px; transition:width .4s ease; width:0%;"></div>
+            <div id="enc-progreso-bar"
+              style="height:100%; background:linear-gradient(90deg,#00214a,#0ea5e9); border-radius:2px; transition:width .4s ease; width:0%;">
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Cuerpo: pregunta activa -->
       <div id="enc-body" style="padding:24px 20px; overflow-y:auto; flex:1;">
-        <div id="enc-pregunta-texto" style="font-size:17px; font-weight:600; color:#1e293b; line-height:1.4; margin-bottom:20px;"></div>
+        <div id="enc-pregunta-texto"
+          style="font-size:17px; font-weight:600; color:#1e293b; line-height:1.4; margin-bottom:20px;"></div>
         <div id="enc-respuesta-container"></div>
       </div>
 
@@ -5654,8 +5710,10 @@
   <!-- ENCUESTA PANTALLA DE EXITO -->
   <div id="enc-success"
     style="display:none; position:fixed; inset:0; z-index:9600; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); align-items:center; justify-content:center;">
-    <div style="background:#fff; border-radius:24px; padding:36px 28px; text-align:center; max-width:320px; width:90%; animation:enc-pop .4s cubic-bezier(.34,1.56,.64,1);">
-      <div style="width:72px; height:72px; background:linear-gradient(135deg,#10b981,#059669); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+    <div
+      style="background:#fff; border-radius:24px; padding:36px 28px; text-align:center; max-width:320px; width:90%; animation:enc-pop .4s cubic-bezier(.34,1.56,.64,1);">
+      <div
+        style="width:72px; height:72px; background:linear-gradient(135deg,#10b981,#059669); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
         <i class="fa-solid fa-check" style="color:#fff; font-size:32px;"></i>
       </div>
       <h3 style="color:#1e293b; font-size:20px; font-weight:700; margin:0 0 8px;">Gracias por responder</h3>
@@ -5676,12 +5734,25 @@
 
   <style>
     @keyframes enc-pop {
-      0%   { transform: scale(.7); opacity: 0; }
-      100% { transform: scale(1);  opacity: 1; }
+      0% {
+        transform: scale(.7);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
+
     @keyframes enc-slide-in {
-      0%   { transform: translateY(100%); }
-      100% { transform: translateY(0); }
+      0% {
+        transform: translateY(100%);
+      }
+
+      100% {
+        transform: translateY(0);
+      }
     }
 
     /* Banner de encuesta en home */
@@ -5694,25 +5765,74 @@
       align-items: center;
       gap: 12px;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,33,74,0.15);
+      box-shadow: 0 2px 8px rgba(0, 33, 74, 0.15);
       transition: transform .15s, box-shadow .15s;
     }
-    #enc-banner:active { transform: scale(.98); }
+
+    #enc-banner:active {
+      transform: scale(.98);
+    }
 
     .enc-banner-icon {
-      width: 44px; height: 44px; flex-shrink: 0;
-      background: rgba(255,255,255,0.15);
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.15);
       border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .enc-banner-icon i { color: #fff; font-size: 20px; }
-    .enc-banner-content { flex: 1; }
-    .enc-banner-label { color: rgba(255,255,255,0.7); font-size: 11px; font-weight: 600; letter-spacing: .5px; }
-    .enc-banner-title { color: #fff; font-size: 14px; font-weight: 700; line-height: 1.3; margin: 2px 0; }
-    .enc-banner-pts { display: inline-flex; align-items: center; gap: 4px; background: rgba(245,158,11,0.25); border-radius: 20px; padding: 3px 10px; }
-    .enc-banner-pts i { color: #fbbf24; font-size: 11px; }
-    .enc-banner-pts span { color: #fef3c7; font-size: 11px; font-weight: 700; }
-    .enc-banner-arrow { color: rgba(255,255,255,0.5); font-size: 14px; flex-shrink: 0; }
+
+    .enc-banner-icon i {
+      color: #fff;
+      font-size: 20px;
+    }
+
+    .enc-banner-content {
+      flex: 1;
+    }
+
+    .enc-banner-label {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .5px;
+    }
+
+    .enc-banner-title {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin: 2px 0;
+    }
+
+    .enc-banner-pts {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(245, 158, 11, 0.25);
+      border-radius: 20px;
+      padding: 3px 10px;
+    }
+
+    .enc-banner-pts i {
+      color: #fbbf24;
+      font-size: 11px;
+    }
+
+    .enc-banner-pts span {
+      color: #fef3c7;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .enc-banner-arrow {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 14px;
+      flex-shrink: 0;
+    }
 
     /* Tipos de respuesta */
     .enc-escala-grid {
@@ -5720,6 +5840,7 @@
       grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
       gap: 8px;
     }
+
     .enc-escala-btn {
       aspect-ratio: 1;
       border-radius: 12px;
@@ -5730,14 +5851,24 @@
       color: #475569;
       cursor: pointer;
       transition: all .15s;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .enc-escala-btn:hover, .enc-escala-btn.selected {
+
+    .enc-escala-btn:hover,
+    .enc-escala-btn.selected {
       border-color: #00214a;
       background: #00214a;
       color: #fff;
     }
-    .enc-sino-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .enc-sino-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
     .enc-sino-btn {
       padding: 18px;
       border-radius: 14px;
@@ -5746,23 +5877,53 @@
       font-size: 22px;
       cursor: pointer;
       transition: all .15s;
-      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
     }
-    .enc-sino-btn span { font-size: 14px; font-weight: 700; color: #475569; }
-    .enc-sino-btn:hover, .enc-sino-btn.selected {
-      border-color: #00214a; background: #f0f5ff;
+
+    .enc-sino-btn span {
+      font-size: 14px;
+      font-weight: 700;
+      color: #475569;
     }
-    .enc-sino-btn.selected { border-color: #00214a; background: #00214a; }
-    .enc-sino-btn.selected span { color: #fff; }
+
+    .enc-sino-btn:hover,
+    .enc-sino-btn.selected {
+      border-color: #00214a;
+      background: #f0f5ff;
+    }
+
+    .enc-sino-btn.selected {
+      border-color: #00214a;
+      background: #00214a;
+    }
+
+    .enc-sino-btn.selected span {
+      color: #fff;
+    }
+
     .enc-texto-area {
-      width: 100%; box-sizing: border-box;
-      border: 2px solid #e2e8f0; border-radius: 14px;
-      padding: 14px; font-size: 15px; font-family: inherit;
-      resize: none; min-height: 110px; outline: none;
-      color: #1e293b; background: #f8faff;
+      width: 100%;
+      box-sizing: border-box;
+      border: 2px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 15px;
+      font-family: inherit;
+      resize: none;
+      min-height: 110px;
+      outline: none;
+      color: #1e293b;
+      background: #f8faff;
       transition: border-color .2s;
     }
-    .enc-texto-area:focus { border-color: #00214a; background: #fff; }
+
+    .enc-texto-area:focus {
+      border-color: #00214a;
+      background: #fff;
+    }
   </style>
 
   <script src="app.js"></script>
