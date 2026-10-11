@@ -108,6 +108,9 @@
     // 9. ENCUESTAS MGM HUB
     ENCUESTAS_GAS_URL: 'https://script.google.com/macros/s/AKfycbwfPemmh8l6R_aRGDkJrC1InYWgJpLoVAz6QOWtNElBUIqW2ABEUCVPiqeg1zBv7D9SHA/exec',
 
+    // 10. ROTADOR DE WHATSAPP CON CONTEO DE CLICS (Luris y Kity)
+    ROTADOR_WA_GAS_URL: 'https://script.google.com/macros/s/AKfycbwMC3_lK9RHoCoRLtRrzOwjj8JqRTR61E1mB2NdP0cdDtf-00HykM0n9V0-KBymqe3ERQ/exec',
+
     VAL_PUNTO: 0.01,
     BOTPRESS_BOT_ID: 'e5a3c8a6-9aec-41a3-870d-d1985dc8c7df',
     SPLASH_ENABLED: true,
@@ -3132,16 +3135,50 @@
   };
 
   let activeWaPromoText = '';
+  let activeWaPromoName = 'General';
+
+  const ASESORES_WA = [
+    { nombre: 'Luris', tel: '62540412' },
+    { nombre: 'Kity',  tel: '60090401' }
+  ];
+
+  function registrarClicEnGAS(asesorNombre, promoNombre) {
+    try {
+      if (!CFG.ROTADOR_WA_GAS_URL) return;
+      const pingUrl = `${CFG.ROTADOR_WA_GAS_URL}?promo=${encodeURIComponent(promoNombre || activeWaPromoName)}&asesor=${encodeURIComponent(asesorNombre || 'Auto')}`;
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(pingUrl);
+      } else {
+        fetch(pingUrl, { mode: 'no-cors', keepalive: true }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('Error registrando clic de WhatsApp en GAS:', e);
+    }
+  }
 
   window.promptWhatsApp = function (id, encTitle) {
-    activeWaPromoText = `Hola, quisiera mas informacion sobre la promocion: ${decodeURIComponent(encTitle)}`;
+    const titulo = decodeURIComponent(encTitle || '');
+    activeWaPromoName = titulo || 'General';
+    activeWaPromoText = `Hola, quisiera mas informacion sobre la promocion: ${titulo}`;
     openAppModal('modal-wa-selector');
   };
 
-  window.sendWaConsult = function (number) {
-    if (!activeWaPromoText) return;
+  window.sendWaConsult = function (number, nombreAsesor) {
+    if (!activeWaPromoText) activeWaPromoText = 'Hola, vi una promoción en MGM Hub y deseo más información.';
+    registrarClicEnGAS(nombreAsesor || number, activeWaPromoName);
     window.open(`https://wa.me/507${number}?text=${encodeURIComponent(activeWaPromoText)}`, '_blank');
     closeAppModal('modal-wa-selector');
+  };
+
+  window.sendWaConsultAuto = function () {
+    const ultimoIdx = parseInt(localStorage.getItem('MGM_WA_LAST_TURN') || '-1', 10);
+    const nuevoIdx = (isNaN(ultimoIdx) || ultimoIdx < 0 || ultimoIdx >= ASESORES_WA.length)
+      ? (Math.random() < 0.5 ? 0 : 1)
+      : ((ultimoIdx + 1) % ASESORES_WA.length);
+    localStorage.setItem('MGM_WA_LAST_TURN', nuevoIdx.toString());
+
+    const elegido = ASESORES_WA[nuevoIdx];
+    sendWaConsult(elegido.tel, elegido.nombre);
   };
 
   window.toggleComments = function (promoId, ev) {

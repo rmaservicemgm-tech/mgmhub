@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MGM Hub — Conectando con WhatsApp</title>
+  <link rel="icon" type="image/png" href="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #001738;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+    .card {
+      background: #00214a;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 36px 28px;
+      max-width: 380px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+    .logo-badge {
+      width: 68px;
+      height: 68px;
+      background: #25d366;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      color: #ffffff;
+      margin: 0 auto 18px;
+      box-shadow: 0 8px 24px rgba(37, 211, 102, 0.35);
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+      100% { transform: scale(1); }
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    p {
+      font-size: 14px;
+      color: #94a3b8;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+    .btn-wa {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #25d366;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 15px 24px;
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(37, 211, 102, 0.3);
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-wa:active {
+      transform: scale(0.98);
+      background: #1eb956;
+    }
+    .footer-text {
+      margin-top: 20px;
+      font-size: 11px;
+      color: #64748b;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="logo-badge">
+      <i class="fa-brands fa-whatsapp"></i>
+    </div>
+    <h1 id="title-text">Conectando con WhatsApp...</h1>
+    <p id="desc-text">Te estamos asignando con nuestro equipo comercial para atender tu consulta.</p>
+
+    <a id="btn-redirect" class="btn-wa" href="#">
+      <i class="fa-brands fa-whatsapp"></i> Iniciar Chat
+    </a>
+
+    <div class="footer-text">
+      MGM Hub • Atención Comercial
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // 1. ASESORES CONFIGURADOS (Luris y Kity)
+      var ASESORES = [
+        { nombre: 'Luris', tel: '50762540412' },
+        { nombre: 'Kity',  tel: '50760090401' }
+      ];
+
+      // URL del Web App de Google Apps Script para registrar conteo en el Sheet
+      var GAS_URL = 'https://script.google.com/macros/s/AKfycbwMC3_lK9RHoCoRLtRrzOwjj8JqRTR61E1mB2NdP0cdDtf-00HykM0n9V0-KBymqe3ERQ/exec';
+
+      // 2. LEER PARÁMETROS DE LA URL
+      var urlParams = new URLSearchParams(window.location.search);
+      var promoParam = urlParams.get('promo') || urlParams.get('p') || 'General';
+      var textParam = urlParams.get('text') || urlParams.get('t') || '';
+
+      var mensajeFinal = textParam
+        ? textParam
+        : (promoParam !== 'General'
+            ? 'Hola, me interesa la promoción de MGM Hub: ' + promoParam
+            : 'Hola, vi una promoción en MGM Hub y deseo más información.');
+
+      // 3. SELECCIÓN EQUITATIVA (ROUND-ROBIN CON LOCALSTORAGE + FALLBACK RANDOM)
+      var ultimoIdx = parseInt(localStorage.getItem('MGM_WA_LAST_TURN') || '-1', 10);
+      var nuevoIdx;
+
+      if (isNaN(ultimoIdx) || ultimoIdx < 0 || ultimoIdx >= ASESORES.length) {
+        nuevoIdx = Math.random() < 0.5 ? 0 : 1;
+      } else {
+        nuevoIdx = (ultimoIdx + 1) % ASESORES.length;
+      }
+
+      localStorage.setItem('MGM_WA_LAST_TURN', nuevoIdx.toString());
+      var asesorElegido = ASESORES[nuevoIdx];
+
+      // 4. CONSTRUIR ENLACE DE WHATSAPP
+      var waUrl = 'https://wa.me/' + asesorElegido.tel + '?text=' + encodeURIComponent(mensajeFinal);
+
+      // Actualizar UI por si el navegador bloquea la redirección automática
+      var btn = document.getElementById('btn-redirect');
+      var title = document.getElementById('title-text');
+      var desc = document.getElementById('desc-text');
+
+      if (btn) btn.href = waUrl;
+      if (title) title.innerText = 'Asignado: ' + asesorElegido.nombre;
+      if (desc) desc.innerText = 'Redirigiendo al chat de WhatsApp con ' + asesorElegido.nombre + '...';
+
+      // 5. REGISTRAR CLIC EN GOOGLE SHEETS EN SEGUNDO PLANO (PING SILENCIOSO)
+      try {
+        var pingUrl = GAS_URL + '?promo=' + encodeURIComponent(promoParam) + '&asesor=' + encodeURIComponent(asesorElegido.nombre);
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(pingUrl);
+        } else {
+          fetch(pingUrl, { mode: 'no-cors', keepalive: true }).catch(function () {});
+        }
+      } catch (e) {
+        // No detener la experiencia del usuario si falla el tracking
+      }
+
+      // 6. REDIRECCIÓN INMEDIATA (0.15s para dar tiempo a que el navegador registre el touch)
+      setTimeout(function () {
+        window.location.replace(waUrl);
+      }, 150);
+    })();
+  </script>
+
+</body>
+</html>
