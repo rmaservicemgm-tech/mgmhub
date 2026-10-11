@@ -3176,10 +3176,11 @@
     { nombre: 'Kity',  tel: '60090401' }
   ];
 
-  function registrarClicEnGAS(asesorNombre, promoNombre) {
+  function registrarClicEnGAS(asesorNombre, promoNombre, telefono) {
     try {
       if (!CFG.ROTADOR_WA_GAS_URL) return;
-      const pingUrl = `${CFG.ROTADOR_WA_GAS_URL}?promo=${encodeURIComponent(promoNombre || activeWaPromoName)}&asesor=${encodeURIComponent(asesorNombre || 'Auto')}&format=json`;
+      const telParam = telefono ? `&tel=${encodeURIComponent('507' + telefono)}` : '';
+      const pingUrl = `${CFG.ROTADOR_WA_GAS_URL}?promo=${encodeURIComponent(promoNombre || activeWaPromoName)}&asesor=${encodeURIComponent(asesorNombre || 'Auto')}${telParam}&format=json`;
       try {
         const img = new Image();
         img.src = pingUrl;
@@ -3201,7 +3202,7 @@
 
   window.sendWaConsult = function (number, nombreAsesor) {
     if (!activeWaPromoText) activeWaPromoText = 'Hola, vi una promoción en MGM Hub y deseo más información.';
-    registrarClicEnGAS(nombreAsesor || number, activeWaPromoName);
+    registrarClicEnGAS(nombreAsesor || number, activeWaPromoName, number);
     window.open(`https://wa.me/507${number}?text=${encodeURIComponent(activeWaPromoText)}`, '_blank');
     closeAppModal('modal-wa-selector');
   };

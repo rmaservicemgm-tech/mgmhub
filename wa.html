@@ -154,7 +154,7 @@
       if (desc) desc.innerText = 'Redirigiendo al chat de WhatsApp con ' + asesorElegido.nombre + '...';
 
       // 5. REGISTRAR CLIC EN GOOGLE SHEETS (PING GET CON IMAGEN + FETCH KEEPALIVE)
-      var pingUrl = GAS_URL + '?promo=' + encodeURIComponent(promoParam) + '&asesor=' + encodeURIComponent(asesorElegido.nombre) + '&format=json';
+      var pingUrl = GAS_URL + '?promo=' + encodeURIComponent(promoParam) + '&asesor=' + encodeURIComponent(asesorElegido.nombre) + '&tel=' + encodeURIComponent(asesorElegido.tel) + '&format=json';
       
       try {
         // Disparo inmediato vía GET de imagen (no sufre restricciones CORS ni unload)
