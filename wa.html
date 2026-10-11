@@ -153,22 +153,23 @@
       if (title) title.innerText = 'Asignado: ' + asesorElegido.nombre;
       if (desc) desc.innerText = 'Redirigiendo al chat de WhatsApp con ' + asesorElegido.nombre + '...';
 
-      // 5. REGISTRAR CLIC EN GOOGLE SHEETS EN SEGUNDO PLANO (PING SILENCIOSO)
+      // 5. REGISTRAR CLIC EN GOOGLE SHEETS (PING GET CON IMAGEN + FETCH KEEPALIVE)
+      var pingUrl = GAS_URL + '?promo=' + encodeURIComponent(promoParam) + '&asesor=' + encodeURIComponent(asesorElegido.nombre) + '&format=json';
+      
       try {
-        var pingUrl = GAS_URL + '?promo=' + encodeURIComponent(promoParam) + '&asesor=' + encodeURIComponent(asesorElegido.nombre);
-        if (navigator.sendBeacon) {
-          navigator.sendBeacon(pingUrl);
-        } else {
-          fetch(pingUrl, { mode: 'no-cors', keepalive: true }).catch(function () {});
-        }
-      } catch (e) {
-        // No detener la experiencia del usuario si falla el tracking
-      }
+        // Disparo inmediato vía GET de imagen (no sufre restricciones CORS ni unload)
+        var beaconImg = new Image();
+        beaconImg.src = pingUrl;
+      } catch (e) {}
 
-      // 6. REDIRECCIÓN INMEDIATA (0.15s para dar tiempo a que el navegador registre el touch)
+      try {
+        fetch(pingUrl, { method: 'GET', mode: 'no-cors', keepalive: true }).catch(function () {});
+      } catch (e) {}
+
+      // 6. REDIRECCIÓN (700ms para garantizar que el servidor de Google reciba la solicitud)
       setTimeout(function () {
         window.location.replace(waUrl);
-      }, 150);
+      }, 700);
     })();
   </script>
 

@@ -3179,11 +3179,13 @@
   function registrarClicEnGAS(asesorNombre, promoNombre) {
     try {
       if (!CFG.ROTADOR_WA_GAS_URL) return;
-      const pingUrl = `${CFG.ROTADOR_WA_GAS_URL}?promo=${encodeURIComponent(promoNombre || activeWaPromoName)}&asesor=${encodeURIComponent(asesorNombre || 'Auto')}`;
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon(pingUrl);
-      } else {
-        fetch(pingUrl, { mode: 'no-cors', keepalive: true }).catch(() => {});
+      const pingUrl = `${CFG.ROTADOR_WA_GAS_URL}?promo=${encodeURIComponent(promoNombre || activeWaPromoName)}&asesor=${encodeURIComponent(asesorNombre || 'Auto')}&format=json`;
+      try {
+        const img = new Image();
+        img.src = pingUrl;
+      } catch (err) {}
+      if (window.fetch) {
+        fetch(pingUrl, { method: 'GET', mode: 'no-cors', keepalive: true }).catch(() => {});
       }
     } catch (e) {
       console.warn('Error registrando clic de WhatsApp en GAS:', e);
