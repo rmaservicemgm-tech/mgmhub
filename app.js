@@ -114,6 +114,10 @@
     // 11. PUNTOS DE MAESTRÍA & HORAS DE EXPERIENCIA TÉCNICA
     MAESTRIA_GAS_URL: 'https://script.google.com/macros/s/AKfycbzp057ONvcbY1AYgojy3mQ7Gi4hfNK15pDeryITKtnlU0vyBYASihEdUx2fuAawKhw/exec',
 
+    // 12. UTILIDADES DE LA APP (Orden tarjetas Home, config general)
+    // Reutiliza el mismo spreadsheet del rotador de WhatsApp — agregar pestaña "Tarjetas_Home"
+    UTILIDADES_GAS_URL: 'https://script.google.com/macros/s/AKfycbwMC3_lK9RHoCoRLtRrzOwjj8JqRTR61E1mB2NdP0cdDtf-00HykM0n9V0-KBymqe3ERQ/exec',
+
     VAL_PUNTO: 0.01,
     BOTPRESS_BOT_ID: 'e5a3c8a6-9aec-41a3-870d-d1985dc8c7df',
     SPLASH_ENABLED: true,
@@ -703,7 +707,7 @@
 
     // Si coincide con alguna pestaña interna conocida o deeplink interno, NO es externa
     const internalTabs = [
-      'home', 'inicio', 'puntos', 'agenda', 'promos', 'rma', 'asesoria', 'soporte',
+      'home', 'inicio', 'puntos', 'maestria', 'agenda', 'promos', 'rma', 'asesoria', 'soporte',
       'toolbox', 'toolbox-calculadora-almacenamiento', 'toolbox-conversor-tecnico',
       'toolbox-calculadora-ups', 'toolbox-calculadora-voltaje', 'toolbox-calculadora-inalambrica', 'radio'
     ];
@@ -787,6 +791,10 @@
 
     // --- Puntos: navegar a subtab ---
     if (tab === 'puntos') {
+      if (sub === 'maestria') {
+        switchMainTab('maestria');
+        return;
+      }
       const subviewMap = {
         registro: 'subview-registro',
         beneficios: 'subview-promos',
@@ -1752,6 +1760,135 @@
       : DEMO_PROMOS.filter(isPromoActive);
   }
 
+  // ══════════════════════════════════════════════════════════════════════════════
+  // UTILIDADES: ORDEN DE TARJETAS DEL HOME (desde Sheet "Tarjetas_Home")
+  // Sheet columns: id | orden | activa | (opcional) titulo | badge
+  // ══════════════════════════════════════════════════════════════════════════════
+  const CACHE_KEY_HOME_CARDS = 'MGM_CACHE_HOME_CARDS_ORDER';
+  const CACHE_KEY_HOME_BLOCKS = 'MGM_CACHE_HOME_BLOCKS_ORDER';
+
+  function applyHomeCardsOrder(items) {
+    const grid = document.querySelector('.quick-grid');
+    if (!grid || !Array.isArray(items) || items.length === 0) return;
+
+    items.forEach(item => {
+      const card = grid.querySelector(`.quick-card[data-card-id="${item.id}"]`);
+      if (!card) return;
+
+      // Orden CSS (funciona con display:grid y display:flex)
+      const orden = parseInt(item.orden, 10);
+      if (!isNaN(orden)) card.style.order = orden;
+
+      // Mostrar / ocultar tarjeta
+      const activa = String(item.activa).trim().toLowerCase();
+      const visible = activa === 'true' || activa === 'si' || activa === 's\u00ED' || activa === 'sí' || activa === '1' || activa === 'yes';
+      card.style.display = visible ? '' : 'none';
+
+      // Titulo personalizado si viene en sheet
+      if (item.titulo) {
+        const titleEl = card.querySelector('.card-title');
+        if (titleEl) {
+          const badgeSpan = titleEl.querySelector('span');
+          if (badgeSpan) {
+            titleEl.firstChild.textContent = item.titulo + ' ';
+          } else {
+            titleEl.textContent = item.titulo;
+          }
+        }
+      }
+    });
+  }
+
+  function applyHomeBlocksOrder(blocks, modo) {
+    const homeView = document.getElementById('view-home');
+    if (!homeView) return;
+
+    const blockEls = Array.from(homeView.querySelectorAll('[data-home-block]'));
+    if (blockEls.length === 0) return;
+
+    const isAleatorio = modo === 'aleatorio' || modo === 'rotar';
+
+    if (Array.isArray(blocks) && blocks.length > 0) {
+      const blockMap = {};
+      blocks.forEach(b => { blockMap[b.id] = b; });
+
+      let fallbackOrder = 1;
+      blockEls.forEach(el => {
+        const id = el.getAttribute('data-home-block');
+        const cfg = blockMap[id];
+        if (cfg) {
+          let orderNum = parseInt(cfg.orden, 10);
+          if (isNaN(orderNum)) orderNum = fallbackOrder;
+          el.style.order = orderNum;
+
+          const activa = String(cfg.activa).trim().toLowerCase();
+          const visible = (cfg.activa === undefined) || activa === 'true' || activa === 'si' || activa === 's\u00ED' || activa === 'sí' || activa === '1' || activa === 'yes';
+          el.style.display = visible ? '' : 'none';
+        } else {
+          el.style.order = 100 + fallbackOrder;
+        }
+        fallbackOrder++;
+      });
+    }
+
+    // Modo aleatorio para que "nunca se vea igual":
+    // Mantiene auth-banner al inicio (orden 0) y baraja el orden visual del resto
+    if (isAleatorio) {
+      const dynamicBlocks = blockEls.filter(el => el.getAttribute('data-home-block') !== 'auth-banner' && el.style.display !== 'none');
+      const orders = dynamicBlocks.map((_, i) => i + 2).sort(() => Math.random() - 0.5);
+      dynamicBlocks.forEach((el, idx) => {
+        el.style.order = orders[idx];
+      });
+    }
+  }
+
+  async function loadHomeCardsOrder() {
+    // 1. Aplicar cache local de inmediato (cero layout shift)
+    try {
+      const cachedBlocks = localStorage.getItem(CACHE_KEY_HOME_BLOCKS);
+      if (cachedBlocks) {
+        const parsed = JSON.parse(cachedBlocks);
+        applyHomeBlocksOrder(parsed.blocks || parsed, parsed.modo || 'fijo');
+      }
+      const cachedCards = localStorage.getItem(CACHE_KEY_HOME_CARDS);
+      if (cachedCards) applyHomeCardsOrder(JSON.parse(cachedCards));
+    } catch (e) { /* ignora errores de parse */ }
+
+    // 2. Consultar el backend de Utilidades (soporta get_home_config o get_home_cards)
+    try {
+      const url = `${CFG.UTILIDADES_GAS_URL}?action=get_home_config`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data && data.success) {
+        if (Array.isArray(data.cards) && data.cards.length > 0) {
+          applyHomeCardsOrder(data.cards);
+          localStorage.setItem(CACHE_KEY_HOME_CARDS, JSON.stringify(data.cards));
+        }
+        if (Array.isArray(data.blocks) && data.blocks.length > 0) {
+          const modo = data.modoBloques || data.modo || 'fijo';
+          applyHomeBlocksOrder(data.blocks, modo);
+          localStorage.setItem(CACHE_KEY_HOME_BLOCKS, JSON.stringify({ blocks: data.blocks, modo: modo }));
+        }
+      } else if (data && data.cards) {
+        applyHomeCardsOrder(data.cards);
+        localStorage.setItem(CACHE_KEY_HOME_CARDS, JSON.stringify(data.cards));
+      }
+    } catch (err) {
+      // Fallback si la version anterior del GAS solo tiene get_home_cards
+      try {
+        const fallbackUrl = `${CFG.UTILIDADES_GAS_URL}?action=get_home_cards`;
+        const res2 = await fetch(fallbackUrl);
+        const data2 = await res2.json();
+        if (data2 && data2.success && Array.isArray(data2.cards)) {
+          applyHomeCardsOrder(data2.cards);
+          localStorage.setItem(CACHE_KEY_HOME_CARDS, JSON.stringify(data2.cards));
+        }
+      } catch (e2) {
+        console.warn('[Home Config] No se pudo cargar configuracion desde Utilidades:', err);
+      }
+    }
+  }
   async function loadHomePromos() {
     const render = () => {
       const slider = document.getElementById('home-promos-slider');
@@ -2870,7 +3007,17 @@
 
     if (nameLbl) nameLbl.textContent = data.nombre || (state.authUser ? state.authUser.nombre : 'Técnico MGM');
     if (companyLbl) companyLbl.textContent = data.empresa || 'Empresa Integradora';
-    if (statusLbl) statusLbl.textContent = data.estatus || 'Técnico Registrado';
+    let estatus = data.estatus ? String(data.estatus).trim() : '';
+    const initialStatuses = [
+      'técnico en proceso', 'tecnico en proceso',
+      'técnico en progreso', 'tecnico en progreso',
+      'técnico registrado', 'tecnico registrado',
+      'en proceso', 'en progreso', 'inicial'
+    ];
+    if (!estatus || initialStatuses.includes(estatus.toLowerCase())) {
+      estatus = 'Especialista';
+    }
+    if (statusLbl) statusLbl.textContent = estatus;
     if (kpiHoras) kpiHoras.textContent = `${data.total_horas || 0}h`;
     if (kpiPuntos) kpiPuntos.textContent = `${data.total_puntos || 0}`;
     if (kpiCursos) kpiCursos.textContent = `${data.total_cursos || 0}`;
@@ -4859,7 +5006,8 @@
     await Promise.allSettled([
       loadHomePromos(),
       loadHomeRewards(),
-      loadHomeNextEvent()
+      loadHomeNextEvent(),
+      loadHomeCardsOrder()          // ← Orden de tarjetas desde Sheet "Utilidades"
     ]);
 
     checkAndShowSplash();
@@ -7537,6 +7685,7 @@ window.mgmEncuestas = (function () {
       + '</div>'
       + '<button onclick="event.stopPropagation(); window.mgmEncuestas.promptCerrarBanner(\'' + enc.id + '\')" style="background:transparent; border:none; color:rgba(255,255,255,0.5); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; width:32px; height:32px; padding:0; flex-shrink:0;"><i class="fa-solid fa-circle-xmark"></i></button>';
 
+    banner.setAttribute('data-home-block', 'encuestas');
     banner.style.display = 'flex';
 
     // Insertar el banner en la vista home, debajo del home-auth-banner

@@ -223,9 +223,15 @@
     <main id="view-home" class="view-container active">
 
       <!-- BANNER INTELIGENTE DE BIENVENIDA / AUTENTICACIÓN (PUNTOS) -->
-      <div id="home-auth-banner" class="home-auth-banner"></div>
+      <div data-home-block="auth-banner">
+        <div id="home-auth-banner" class="home-auth-banner"></div>
+      </div>
+
+      <!-- BANNER DE ENCUESTA ACTIVA (Visible dinamicamente si hay encuesta activa) -->
+      <div id="enc-banner" data-home-block="encuestas" style="display:none;" onclick="mgmEncuestas.abrirDesdeBanner()"></div>
 
       <!-- HERO BANNER: PRÓXIMO EVENTO O EVENTO EN CURSO -->
+      <div data-home-block="evento">
       <div class="next-event-hero" id="home-event-banner" style="cursor:pointer;">
         <div class="next-event-icon-box" id="home-event-icon-wrap">
           <i class="fa-solid fa-calendar-star" id="home-event-icon"></i>
@@ -242,7 +248,9 @@
           <i class="fa-solid fa-circle-xmark"></i>
         </button>
       </div>
+      </div><!-- /data-home-block=evento -->
 
+      <div data-home-block="accesos">
       <!-- SECCIÓN: ACCESOS DIRECTOS RÁPIDOS -->
       <div class="section-header">
         <h2 class="section-title"><i class="fa-solid fa-grip" style="color: var(--primary-blue);"></i> Servicios Rápidos
@@ -250,7 +258,7 @@
       </div>
 
       <div class="quick-grid">
-        <div class="quick-card" onclick="switchMainTab('puntos')">
+        <div class="quick-card" data-card-id="puntos" onclick="switchMainTab('puntos')">
           <div class="card-icon-pill pill-puntos" style="position:relative;">
             <i class="fa-solid fa-coins"></i>
             <span id="badge-home-puntos"
@@ -262,7 +270,7 @@
           </div>
         </div>
 
-        <div class="quick-card" onclick="switchMainTab('agenda')">
+        <div class="quick-card" data-card-id="agenda" onclick="switchMainTab('agenda')">
           <div class="card-icon-pill pill-agenda" style="position:relative;">
             <i class="fa-solid fa-calendar-days"></i>
             <span id="badge-home-agenda"
@@ -275,7 +283,7 @@
         </div>
 
         <!-- ACCESO DIRECTO PUNTOS DE MAESTRÍA -->
-        <div class="quick-card" onclick="switchMainTab('maestria')">
+        <div class="quick-card" data-card-id="maestria" onclick="switchMainTab('maestria')">
           <div class="card-icon-pill pill-maestria" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #D97706; position:relative;">
             <i class="fa-solid fa-award"></i>
             <span id="badge-home-maestria"
@@ -290,7 +298,7 @@
           </div>
         </div>
 
-        <div class="quick-card" onclick="switchMainTab('promos')">
+        <div class="quick-card" data-card-id="promos" onclick="switchMainTab('promos')">
           <div class="card-icon-pill pill-promos" style="position:relative;">
             <i class="fa-solid fa-fire"></i>
             <span id="badge-home-promos"
@@ -302,7 +310,7 @@
           </div>
         </div>
 
-        <div class="quick-card" onclick="switchMainTab('rma')">
+        <div class="quick-card" data-card-id="rma" onclick="switchMainTab('rma')">
           <div class="card-icon-pill pill-rma" style="position:relative;">
             <i class="fa-solid fa-wrench"></i>
             <span id="badge-home-rma"
@@ -315,7 +323,7 @@
         </div>
 
         <!-- ACCESO DIRECTO MAGIE IA BOTPRESS -->
-        <div class="quick-card" onclick="openBot()">
+        <div class="quick-card" data-card-id="magie" onclick="openBot()">
           <div class="card-icon-pill pill-chat" style="position:relative;">
             <i class="fa-solid fa-robot"></i>
             <span id="badge-home-magie"
@@ -328,7 +336,7 @@
         </div>
 
         <!-- ACCESO DIRECTO TOOLBOX -->
-        <div class="quick-card" onclick="switchMainTab('toolbox')">
+        <div class="quick-card" data-card-id="toolbox" onclick="switchMainTab('toolbox')">
           <div class="card-icon-pill pill-toolbox" style="position:relative;">
             <i class="fa-solid fa-toolbox"></i>
             <span id="badge-home-toolbox"
@@ -341,7 +349,7 @@
         </div>
 
         <!-- RASTREO DE PAQUETES -->
-        <div class="quick-card" onclick="switchMainTab('rastreo')">
+        <div class="quick-card" data-card-id="rastreo" onclick="switchMainTab('rastreo')">
           <div class="card-icon-pill pill-tracking" style="background:#E0F2FE; color:#0284C7; position:relative;">
             <i class="fa-solid fa-box-open"></i>
             <span id="badge-home-rastreo"
@@ -354,7 +362,7 @@
         </div>
 
         <!-- MODO FIESTA -->
-        <div class="quick-card" onclick="initPartyMode()">
+        <div class="quick-card" data-card-id="fiesta" onclick="initPartyMode()">
           <div class="card-icon-pill" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; position:relative;">
             <i class="fa-solid fa-music"></i>
             <span id="badge-home-fiesta"
@@ -365,8 +373,9 @@
             <div class="card-desc">Radio en vivo.</div>
           </div>
         </div>
-      </div>
+      </div><!-- /data-home-block=accesos -->
 
+      <div data-home-block="promos">
       <!-- SECCIÓN: PROMOCIONES DESTACADAS EN TIEMPO REAL -->
       <div class="section-header">
         <h2 class="section-title"><i class="fa-solid fa-sparkles" style="color: var(--accent-gold-dark);"></i> Promos de
@@ -377,7 +386,9 @@
       <div class="promos-slider-container" id="home-promos-slider">
         <div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Cargando promociones del mes...</div>
       </div>
+      </div><!-- /data-home-block=promos -->
 
+      <div data-home-block="premios">
       <!-- SECCIÓN: PREMIOS CANJEABLES POR PUNTOS -->
       <div class="section-header" style="margin-top: 10px;">
         <h2 class="section-title"><i class="fa-solid fa-gift" style="color: #10b981;"></i> Premios por Puntos</h2>
@@ -387,7 +398,9 @@
       <div class="premios-slider-container" id="home-premios-slider">
         <div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Cargando catálogo de premios...</div>
       </div>
+      </div><!-- /data-home-block=premios -->
 
+      <div data-home-block="publicidad">
       <!-- SECCIÓN: BANNER PUBLICITARIO / DESTACADOS -->
       <style>
         .mgm-ad-container {
@@ -752,6 +765,8 @@
         })();
       </script>
 
+      </div><!-- /data-home-block=publicidad -->
+      <div data-home-block="experiencia">
       <!-- SECCIÓN: BENEFICIOS MGM (CON PADDING PARA SCROLL COMPLETO) -->
       <div class="section-header">
         <h2 class="section-title"><i class="fa-solid fa-shield-check" style="color: var(--primary-blue);"></i>
@@ -774,6 +789,7 @@
           </div>
         </div>
       </div>
+      </div><!-- /data-home-block=experiencia -->
 
     </main>
 
@@ -1092,6 +1108,7 @@
           </div>
         </div>
       </div>
+      </div><!-- /data-home-block=experiencia -->
 
     </main>
 
@@ -4052,48 +4069,26 @@
           max-width: 620px;
           margin: 0 auto;
         }
-        .maestria-topbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 14px;
+        .maestria-header {
+          margin-bottom: 16px;
+          padding: 2px 2px 0 2px;
         }
-        .maestria-back-btn {
-          background: var(--bg-card, #ffffff);
-          border: 1px solid var(--border-light, #e2e8f0);
-          color: var(--text-dark, #0f172a);
-          width: 38px;
-          height: 38px;
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          font-size: 15px;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-        }
-        .maestria-title {
-          font-size: 17px;
+        .maestria-header h2 {
+          font-size: 20px;
           font-weight: 800;
-          color: var(--text-dark, #0f172a);
+          color: var(--primary-navy, #00214a);
+          margin: 0 0 4px 0;
           display: flex;
           align-items: center;
           gap: 8px;
+          letter-spacing: -0.3px;
         }
-        .maestria-reload-btn {
-          background: var(--bg-card, #ffffff);
-          border: 1px solid var(--border-light, #e2e8f0);
-          color: var(--primary-blue, #00214a);
-          width: 38px;
-          height: 38px;
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          font-size: 14px;
+        .maestria-header p {
+          font-size: 12.5px;
+          color: var(--text-muted, #64748b);
+          margin: 0;
         }
-        .maestria-hero {
+                .maestria-hero {
           background: linear-gradient(135deg, #00214a 0%, #0369a1 100%);
           color: #ffffff;
           border-radius: 20px;
@@ -4323,20 +4318,13 @@
       </style>
 
       <div class="maestria-view-wrap">
-        <!-- TOPBAR -->
-        <div class="maestria-topbar">
-          <button class="maestria-back-btn" onclick="switchMainTab('home')" title="Volver al Inicio">
-            <i class="fa-solid fa-arrow-left"></i>
-          </button>
-          <div class="maestria-title">
-            <i class="fa-solid fa-award" style="color: #f59e0b;"></i>
-            Puntos de Maestría
-          </div>
-          <button class="maestria-reload-btn" onclick="loadMaestriaData(true)" title="Actualizar datos">
-            <i class="fa-solid fa-rotate" id="maestria-reload-icon"></i>
-          </button>
+        <!-- ENCABEZADO DE SECCIÓN -->
+        <div class="maestria-header">
+          <h2>
+            <i class="fa-solid fa-award" style="color: #f59e0b;"></i> Puntos de Maestría
+          </h2>
+          <p>Acreditación y horas de experiencia técnica MGM</p>
         </div>
-
         <!-- ESTADO NO AUTENTICADO: ACCESO PRIVADO -->
         <div id="maestria-unauth-box" class="maestria-unauth-card" style="display:none;">
           <div class="maestria-unauth-icon">
@@ -4356,7 +4344,7 @@
           <!-- HERO DEL TÉCNICO -->
           <div class="maestria-hero" id="maestria-hero-box">
             <div class="maestria-hero-badge" id="maestria-hero-status">
-              <i class="fa-solid fa-shield-halved"></i> <span id="maestria-status-lbl">Cargando perfil...</span>
+              <i class="fa-solid fa-shield-halved"></i> <span id="maestria-status-lbl">Especialista</span>
             </div>
             <div class="maestria-hero-profile">
               <div class="maestria-avatar">
@@ -5209,13 +5197,9 @@
       </div>
     </main>
 
-
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-         MODAL 2: DETALLES DE PROMOCIÓN (INSTAGRAM STYLE FEED)
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-    <!-- Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢
-         VISTA: CONVERSOR TÃƒâ€°CNICO
-         Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢ -->
+    <!-- ======================================================================
+         VISTA: CONVERSOR TÉCNICO
+         ====================================================================== -->
     <main id="view-toolbox-conversor-tecnico" class="view-container">
       <div class="calc-module conversor-module">
         <div class="header-brand">
@@ -5231,12 +5215,15 @@
         </div>
 
         <div class="conv-tabs">
-          <button class="conv-tab active" data-tab="conv-panel">ðŸ”„ Conversor</button>
-          <button class="conv-tab" data-tab="calc-panel">ðŸ”¢ Calculadora</button>
+          <button class="conv-tab active" data-tab="conv-panel"><i class="fa-solid fa-arrows-rotate"></i> Conversor</button>
+          <button class="conv-tab" data-tab="calc-panel"><i class="fa-solid fa-calculator"></i> Calculadora</button>
         </div>
 
         <section id="conv-panel" class="conv-panel active">
-          <input id="conv-search" class="conv-search" placeholder="ðŸ” Buscar una unidad o categoríaâ€¦">
+          <div style="position:relative; margin-bottom:16px;">
+            <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-subtle); font-size:13px; pointer-events:none;"></i>
+            <input id="conv-search" class="conv-search" style="margin-bottom:0;" placeholder="Buscar una unidad o categoría...">
+          </div>
           <div id="conv-categories" class="conv-grid"></div>
 
           <div class="converter-box">
@@ -5244,7 +5231,7 @@
               <label>DE</label>
               <select id="conv-from"></select>
             </div>
-            <button class="conv-swap" id="conv-swap" title="Intercambiar">â‡„</button>
+            <button class="conv-swap" id="conv-swap" title="Intercambiar"><i class="fas fa-exchange-alt"></i></button>
             <div class="conv-field">
               <label>A</label>
               <select id="conv-to"></select>
@@ -5268,13 +5255,13 @@
             <input id="conv-calcDisplay" class="conv-calc-display" value="0" readonly>
             <div class="conv-calc-grid">
               <button class="conv-clear" onclick="calcClear()">C</button>
-              <button onclick="calcBack()">âŒ«</button>
+              <button onclick="calcBack()"><i class="fa-solid fa-delete-left"></i></button>
               <button onclick="calcInput('%')">%</button>
-              <button class="conv-op" onclick="calcInput('/')">Ã·</button>
+              <button class="conv-op" onclick="calcInput('/')">&divide;</button>
               <button onclick="calcInput('7')">7</button><button onclick="calcInput('8')">8</button>
-              <button onclick="calcInput('9')">9</button><button class="conv-op" onclick="calcInput('*')">Ã—</button>
+              <button onclick="calcInput('9')">9</button><button class="conv-op" onclick="calcInput('*')">&times;</button>
               <button onclick="calcInput('4')">4</button><button onclick="calcInput('5')">5</button>
-              <button onclick="calcInput('6')">6</button><button class="conv-op" onclick="calcInput('-')">âˆ’</button>
+              <button onclick="calcInput('6')">6</button><button class="conv-op" onclick="calcInput('-')">&minus;</button>
               <button onclick="calcInput('1')">1</button><button onclick="calcInput('2')">2</button>
               <button onclick="calcInput('3')">3</button><button class="conv-op" onclick="calcInput('+')">+</button>
               <button onclick="calcInput('0')">0</button><button onclick="calcInput('.')">.</button>
@@ -5286,9 +5273,9 @@
       </div>
     </main>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    <!-- ======================================================================
          VISTA: CALCULADORA DE AUTONOMÍA UPS
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+         ====================================================================== -->
     <main id="view-toolbox-calculadora-ups" class="view-container">
       <style>
         .ups-grid-config {
@@ -6028,10 +6015,6 @@
       <div id="qr-reader" style="width:100%; border-radius: 12px; overflow: hidden; margin-top: 10px;"></div>
       <p class="qr-hint">Apunta la cámara al código QR de tu orden de servicio o correo electronico.</p>
     </div>
-  </div>
-
-  <!-- ENCUESTA BANNER — visible solo cuando hay encuesta activa -->
-  <div id="enc-banner" style="display:none;" onclick="mgmEncuestas.abrirDesdeBanner()">
   </div>
 
   <!-- ENCUESTA MODAL -->
