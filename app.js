@@ -1,4 +1,4 @@
-﻿/**
+/**
  * MGM HUB MOBILE APP - app.js
  * Lógica principal de la WebApp Móvil PWA
  * Módulos: Navegación · MGM Puntos · Agenda & Cursos · Promociones · Asesoría & Magie IA · Multi-Audio Player Streaming
@@ -1771,20 +1771,16 @@
     const grid = document.querySelector('.quick-grid');
     if (!grid || !Array.isArray(items) || items.length === 0) return;
 
-    items.forEach(item => {
+    const sorted = items.slice().sort((a, b) => (parseInt(a.orden, 10) || 0) - (parseInt(b.orden, 10) || 0));
+
+    sorted.forEach(item => {
       const card = grid.querySelector(`.quick-card[data-card-id="${item.id}"]`);
       if (!card) return;
 
-      // Orden CSS (funciona con display:grid y display:flex)
-      const orden = parseInt(item.orden, 10);
-      if (!isNaN(orden)) card.style.order = orden;
-
-      // Mostrar / ocultar tarjeta
-      const activa = String(item.activa).trim().toLowerCase();
-      const visible = activa === 'true' || activa === 'si' || activa === 's\u00ED' || activa === 'sí' || activa === '1' || activa === 'yes';
+      const activaStr = String(item.activa).trim().toLowerCase();
+      const visible = (item.activa === true || activaStr === 'true' || activaStr === 'si' || activaStr === 's\u00ED' || activaStr === 'sí' || activaStr === '1' || activaStr === 'yes');
       card.style.display = visible ? '' : 'none';
 
-      // Titulo personalizado si viene en sheet
       if (item.titulo) {
         const titleEl = card.querySelector('.card-title');
         if (titleEl) {
@@ -1796,54 +1792,71 @@
           }
         }
       }
+
+      if (item.badge) {
+        const titleEl = card.querySelector('.card-title');
+        if (titleEl) {
+          let badgeSpan = titleEl.querySelector('span');
+          if (!badgeSpan) {
+            badgeSpan = document.createElement('span');
+            badgeSpan.style.cssText = 'font-size: 9.5px; background: #2563EB; color: white; padding: 1px 6px; border-radius: 6px; font-weight: 800; letter-spacing: 0.3px;';
+            titleEl.appendChild(badgeSpan);
+          }
+          badgeSpan.textContent = item.badge;
+        }
+      }
+    });
+
+    sorted.forEach(item => {
+      const activaStr = String(item.activa).trim().toLowerCase();
+      const visible = (item.activa === true || activaStr === 'true' || activaStr === 'si' || activaStr === 's\u00ED' || activaStr === 'sí' || activaStr === '1' || activaStr === 'yes');
+      if (!visible) return;
+      const card = grid.querySelector(`.quick-card[data-card-id="${item.id}"]`);
+      if (card) grid.appendChild(card);
     });
   }
 
   function applyHomeBlocksOrder(blocks, modo) {
     const homeView = document.getElementById('view-home');
-    if (!homeView) return;
+    if (!homeView || !Array.isArray(blocks) || blocks.length === 0) return;
 
-    const blockEls = Array.from(homeView.querySelectorAll('[data-home-block]'));
-    if (blockEls.length === 0) return;
-
+    let ordered = blocks.slice();
     const isAleatorio = modo === 'aleatorio' || modo === 'rotar';
 
-    if (Array.isArray(blocks) && blocks.length > 0) {
-      const blockMap = {};
-      blocks.forEach(b => { blockMap[b.id] = b; });
-
-      let fallbackOrder = 1;
-      blockEls.forEach(el => {
-        const id = el.getAttribute('data-home-block');
-        const cfg = blockMap[id];
-        if (cfg) {
-          let orderNum = parseInt(cfg.orden, 10);
-          if (isNaN(orderNum)) orderNum = fallbackOrder;
-          el.style.order = orderNum;
-
-          const activa = String(cfg.activa).trim().toLowerCase();
-          const visible = (cfg.activa === undefined) || activa === 'true' || activa === 'si' || activa === 's\u00ED' || activa === 'sí' || activa === '1' || activa === 'yes';
-          el.style.display = visible ? '' : 'none';
-        } else {
-          el.style.order = 100 + fallbackOrder;
-        }
-        fallbackOrder++;
-      });
-    }
-
-    // Modo aleatorio para que "nunca se vea igual":
-    // Mantiene auth-banner al inicio (orden 0) y baraja el orden visual del resto
     if (isAleatorio) {
-      const dynamicBlocks = blockEls.filter(el => el.getAttribute('data-home-block') !== 'auth-banner' && el.style.display !== 'none');
-      const orders = dynamicBlocks.map((_, i) => i + 2).sort(() => Math.random() - 0.5);
-      dynamicBlocks.forEach((el, idx) => {
-        el.style.order = orders[idx];
-      });
+      const fixed = ordered.filter(b => b.id === 'auth-banner');
+      const others = ordered.filter(b => b.id !== 'auth-banner');
+      for (let i = others.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = others[i]; others[i] = others[j]; others[j] = tmp;
+      }
+      ordered = fixed.concat(others);
+    } else {
+      ordered.sort((a, b) => (parseInt(a.orden, 10) || 0) - (parseInt(b.orden, 10) || 0));
     }
+
+    ordered.forEach(b => {
+      const el = homeView.querySelector(`[data-home-block="${b.id}"]`);
+      if (!el) return;
+      const activaStr = String(b.activa).trim().toLowerCase();
+      const visible = (b.activa === undefined || b.activa === true || activaStr === 'true' || activaStr === 'si' || activaStr === 's\u00ED' || activaStr === 'sí' || activaStr === '1' || activaStr === 'yes');
+      if (!visible) {
+        el.style.display = 'none';
+      } else {
+        if (el.id !== 'enc-banner') el.style.display = '';
+      }
+    });
+
+    ordered.forEach(b => {
+      const activaStr = String(b.activa).trim().toLowerCase();
+      const visible = (b.activa === undefined || b.activa === true || activaStr === 'true' || activaStr === 'si' || activaStr === 's\u00ED' || activaStr === 'sí' || activaStr === '1' || activaStr === 'yes');
+      if (!visible) return;
+      const el = homeView.querySelector(`[data-home-block="${b.id}"]`);
+      if (el) homeView.appendChild(el);
+    });
   }
 
-  async function loadHomeCardsOrder() {
-    // 1. Aplicar cache local de inmediato (cero layout shift)
+  async function loadHomeCardsOrder(customUrl) {
     try {
       const cachedBlocks = localStorage.getItem(CACHE_KEY_HOME_BLOCKS);
       if (cachedBlocks) {
@@ -1852,13 +1865,22 @@
       }
       const cachedCards = localStorage.getItem(CACHE_KEY_HOME_CARDS);
       if (cachedCards) applyHomeCardsOrder(JSON.parse(cachedCards));
-    } catch (e) { /* ignora errores de parse */ }
+    } catch (e) { }
 
-    // 2. Consultar el backend de Utilidades (soporta get_home_config o get_home_cards)
+    const baseUrl = customUrl || CFG.UTILIDADES_GAS_URL;
+    if (!baseUrl) return;
+
     try {
-      const url = `${CFG.UTILIDADES_GAS_URL}?action=get_home_config`;
+      const url = `${baseUrl}?action=get_home_config`;
       const res = await fetch(url);
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (jsonErr) {
+        console.warn('[Home Config] Respuesta no válida de Google Sheets (posible falta de doGet o nueva versión de implementación):', text.slice(0, 120));
+        return;
+      }
 
       if (data && data.success) {
         if (Array.isArray(data.cards) && data.cards.length > 0) {
@@ -1870,23 +1892,9 @@
           applyHomeBlocksOrder(data.blocks, modo);
           localStorage.setItem(CACHE_KEY_HOME_BLOCKS, JSON.stringify({ blocks: data.blocks, modo: modo }));
         }
-      } else if (data && data.cards) {
-        applyHomeCardsOrder(data.cards);
-        localStorage.setItem(CACHE_KEY_HOME_CARDS, JSON.stringify(data.cards));
       }
     } catch (err) {
-      // Fallback si la version anterior del GAS solo tiene get_home_cards
-      try {
-        const fallbackUrl = `${CFG.UTILIDADES_GAS_URL}?action=get_home_cards`;
-        const res2 = await fetch(fallbackUrl);
-        const data2 = await res2.json();
-        if (data2 && data2.success && Array.isArray(data2.cards)) {
-          applyHomeCardsOrder(data2.cards);
-          localStorage.setItem(CACHE_KEY_HOME_CARDS, JSON.stringify(data2.cards));
-        }
-      } catch (e2) {
-        console.warn('[Home Config] No se pudo cargar configuracion desde Utilidades:', err);
-      }
+      console.warn('[Home Config] Error al conectar con Google Sheets:', err);
     }
   }
   async function loadHomePromos() {
@@ -8085,6 +8093,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // =============================================================================
 // BLOQUES DEL HOME - ORDEN DINAMICO DESDE GOOGLE SHEETS
+
+// =============================================================================
+// BLOQUES DEL HOME - ORDEN DINAMICO DESDE GOOGLE SHEETS
+// Reordena los bloques moviendo nodos en el DOM (no usa CSS order/flex)
 // =============================================================================
 
 function applyHomeBlocksOrder(blocks, modo) {
@@ -8098,19 +8110,20 @@ function applyHomeBlocksOrder(blocks, modo) {
       var j = Math.floor(Math.random() * (i + 1));
       var tmp = others[i]; others[i] = others[j]; others[j] = tmp;
     }
-    var counter = 1;
-    fixed.forEach(function(b)  { b._cssOrder = counter++; });
-    others.forEach(function(b) { b._cssOrder = counter++; });
     ordered = fixed.concat(others);
   } else {
-    ordered.forEach(function(b) { b._cssOrder = b.orden; });
+    ordered.sort(function(a, b) { return (a.orden || 0) - (b.orden || 0); });
   }
   ordered.forEach(function(b) {
     var el = home.querySelector('[data-home-block="' + b.id + '"]');
     if (!el) return;
-    el.style.order = b._cssOrder || b.orden || 0;
     if (!b.activa) { el.style.display = 'none'; }
     else { if (el.id !== 'enc-banner') el.style.display = ''; }
+  });
+  ordered.forEach(function(b) {
+    if (!b.activa) return;
+    var el = home.querySelector('[data-home-block="' + b.id + '"]');
+    if (el) home.appendChild(el);
   });
 }
 
@@ -8126,11 +8139,16 @@ function loadHomeCardsOrder(scriptUrl) {
       if (data.cards && data.cards.length > 0) {
         var grid = document.querySelector('.quick-grid');
         if (grid) {
-          data.cards.forEach(function(c) {
+          var sorted = data.cards.slice().sort(function(a, b) { return (a.orden||0)-(b.orden||0); });
+          sorted.forEach(function(c) {
             var card = grid.querySelector('[data-card-id="' + c.id + '"]');
             if (!card) return;
-            card.style.order   = c.orden || 0;
             card.style.display = c.activa ? '' : 'none';
+          });
+          sorted.forEach(function(c) {
+            if (!c.activa) return;
+            var card = grid.querySelector('[data-card-id="' + c.id + '"]');
+            if (card) grid.appendChild(card);
           });
         }
       }
