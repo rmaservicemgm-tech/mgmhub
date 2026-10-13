@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MGM HUB MOBILE APP - app.js
  * Lógica principal de la WebApp Móvil PWA
  * Módulos: Navegación · MGM Puntos · Agenda & Cursos · Promociones · Asesoría & Magie IA · Multi-Audio Player Streaming
@@ -8076,7 +8076,64 @@ document.addEventListener('DOMContentLoaded', function () {
   if (typeof window.actualizarHorarioAsesoria === 'function') {
     window.actualizarHorarioAsesoria();
   }
+  // Cargar orden dinamico de bloques del home desde Google Sheets
+  loadHomeCardsOrder('https://script.google.com/macros/s/AKfycbwMC3_lK9RHoCoRLtRrzOwjj8JqRTR61E1mB2NdP0cdDtf-00HykM0n9V0-KBymqe3ERQ/exec');
 });
 
 
 
+
+// =============================================================================
+// BLOQUES DEL HOME - ORDEN DINAMICO DESDE GOOGLE SHEETS
+// =============================================================================
+
+function applyHomeBlocksOrder(blocks, modo) {
+  var home = document.getElementById('view-home');
+  if (!home) return;
+  var ordered = blocks.slice();
+  if (modo === 'aleatorio' || modo === 'rotar') {
+    var fixed  = ordered.filter(function(b) { return b.id === 'auth-banner'; });
+    var others = ordered.filter(function(b) { return b.id !== 'auth-banner' && b.activa; });
+    for (var i = others.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = others[i]; others[i] = others[j]; others[j] = tmp;
+    }
+    var counter = 1;
+    fixed.forEach(function(b)  { b._cssOrder = counter++; });
+    others.forEach(function(b) { b._cssOrder = counter++; });
+    ordered = fixed.concat(others);
+  } else {
+    ordered.forEach(function(b) { b._cssOrder = b.orden; });
+  }
+  ordered.forEach(function(b) {
+    var el = home.querySelector('[data-home-block="' + b.id + '"]');
+    if (!el) return;
+    el.style.order = b._cssOrder || b.orden || 0;
+    if (!b.activa) { el.style.display = 'none'; }
+    else { if (el.id !== 'enc-banner') el.style.display = ''; }
+  });
+}
+
+function loadHomeCardsOrder(scriptUrl) {
+  if (!scriptUrl) return;
+  fetch(scriptUrl + '?action=get_home_config')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data || !data.success) return;
+      if (data.blocks && data.blocks.length > 0) {
+        applyHomeBlocksOrder(data.blocks, data.modoBloques || 'fijo');
+      }
+      if (data.cards && data.cards.length > 0) {
+        var grid = document.querySelector('.quick-grid');
+        if (grid) {
+          data.cards.forEach(function(c) {
+            var card = grid.querySelector('[data-card-id="' + c.id + '"]');
+            if (!card) return;
+            card.style.order   = c.orden || 0;
+            card.style.display = c.activa ? '' : 'none';
+          });
+        }
+      }
+    })
+    .catch(function() {});
+}
