@@ -111,6 +111,9 @@
     // 10. ROTADOR DE WHATSAPP CON CONTEO DE CLICS (Luris y Kity)
     ROTADOR_WA_GAS_URL: 'https://script.google.com/macros/s/AKfycbwMC3_lK9RHoCoRLtRrzOwjj8JqRTR61E1mB2NdP0cdDtf-00HykM0n9V0-KBymqe3ERQ/exec',
 
+    // 11. PUNTOS DE MAESTRÍA & HORAS DE EXPERIENCIA TÉCNICA
+    MAESTRIA_GAS_URL: 'https://script.google.com/macros/s/AKfycbzp057ONvcbY1AYgojy3mQ7Gi4hfNK15pDeryITKtnlU0vyBYASihEdUx2fuAawKhw/exec',
+
     VAL_PUNTO: 0.01,
     BOTPRESS_BOT_ID: 'e5a3c8a6-9aec-41a3-870d-d1985dc8c7df',
     SPLASH_ENABLED: true,
@@ -677,6 +680,11 @@
           window.loadUserActiveRastreos();
         }
       }, 150);
+    }
+    if (tabName === 'maestria') {
+      if (typeof window.loadMaestriaData === 'function') {
+        window.loadMaestriaData();
+      }
     }
   };
 
@@ -7766,6 +7774,154 @@ window.mgmEncuestas = (function () {
   };
 
 })();
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MÓDULO: PUNTOS DE MAESTRÍA & HORAS TÉCNICAS (MAESTRIA_GAS_URL)
+// ══════════════════════════════════════════════════════════════════════════════
+
+window.currentMaestriaCedula = null;
+
+window.searchMaestriaByInput = function() {
+  const inp = document.getElementById('maestria-search-cedula');
+  if (!inp) return;
+  const val = inp.value.trim();
+  if (!val) {
+    if (typeof showToast === 'function') showToast('Ingresa una cédula para consultar', 'fa-solid fa-circle-exclamation');
+    return;
+  }
+  window.loadMaestriaData(true, val);
+};
+
+window.loadMaestriaData = async function(forceRefresh = false, cedulaOverride = null) {
+  const cedula = cedulaOverride || (window.currentMaestriaCedula) || (state.authUser ? state.authUser.cedula : '6-701-719');
+  window.currentMaestriaCedula = cedula;
+
+  const searchInp = document.getElementById('maestria-search-cedula');
+  if (searchInp && !searchInp.value) searchInp.value = cedula;
+
+  const reloadIcon = document.getElementById('maestria-reload-icon');
+  if (reloadIcon) reloadIcon.classList.add('fa-spin');
+
+  const cacheKey = `MGM_CACHE_MAESTRIA_${cedula.replace(/[^a-zA-Z0-9]/g, '')}`;
+  
+  if (!forceRefresh) {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const data = JSON.parse(cached);
+        renderMaestriaUI(data);
+      } catch(e) {}
+    }
+  }
+
+  try {
+    const url = `${CFG.MAESTRIA_GAS_URL}?action=get_maestria&cedula=${encodeURIComponent(cedula)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data && data.success) {
+      localStorage.setItem(cacheKey, JSON.stringify(data));
+      renderMaestriaUI(data);
+    } else {
+      if (typeof showToast === 'function') showToast(data.message || 'No se encontraron datos', 'fa-solid fa-circle-info');
+    }
+  } catch(err) {
+    console.warn('[MGM Maestría] Error consultando backend:', err);
+  } finally {
+    if (reloadIcon) reloadIcon.classList.remove('fa-spin');
+  }
+};
+
+function renderMaestriaUI(data) {
+  // 1. Hero
+  const nameLbl = document.getElementById('maestria-name-lbl');
+  const companyLbl = document.getElementById('maestria-company-text');
+  const statusLbl = document.getElementById('maestria-status-lbl');
+  const kpiHoras = document.getElementById('maestria-kpi-horas');
+  const kpiPuntos = document.getElementById('maestria-kpi-puntos');
+  const kpiCursos = document.getElementById('maestria-kpi-cursos');
+  const cursosCountBadge = document.getElementById('maestria-cursos-badge-count');
+
+  if (nameLbl) nameLbl.textContent = data.nombre || (data.cedula ? `Técnico (${data.cedula})` : 'Técnico MGM');
+  if (companyLbl) companyLbl.textContent = data.empresa || 'Empresa Independiente';
+  if (statusLbl) statusLbl.textContent = data.estatus || 'Técnico Registrado';
+  if (kpiHoras) kpiHoras.textContent = `${data.total_horas || 0}h`;
+  if (kpiPuntos) kpiPuntos.textContent = `${data.total_puntos || 0}`;
+  if (kpiCursos) kpiCursos.textContent = `${data.total_cursos || 0}`;
+  if (cursosCountBadge) cursosCountBadge.textContent = `${data.total_cursos || 0}`;
+
+  // 2. Ramas técnicas
+  const ramasList = document.getElementById('maestria-ramas-list');
+  if (ramasList && data.ramas) {
+    let ramasHtml = '';
+    const ramasArray = Object.keys(data.ramas).map(k => ({ key: k, ...data.ramas[k] }))
+      .filter(r => r.cursos > 0 || r.horas > 0 || ['cctv', 'acceso', 'alarmas', 'redes'].includes(r.key));
+    
+    // Meta inicial base de referencia: 10h
+    ramasArray.forEach(r => {
+      const pct = Math.min(100, Math.round((r.horas / 10) * 100));
+      ramasHtml += `
+        <div class="maestria-rama-row">
+          <div class="maestria-rama-head">
+            <span><i class="fa-solid ${r.icono || 'fa-tag'}" style="color: ${r.color || '#0284c7'}; margin-right: 6px;"></i> ${r.nombre}</span>
+            <span style="color: ${r.color || '#0284c7'}; font-weight: 800;">${r.horas}h <span style="font-size:11px; color:#64748b; font-weight:600;">(${r.cursos} ${r.cursos === 1 ? 'curso' : 'cursos'})</span></span>
+          </div>
+          <div class="maestria-rama-track">
+            <div class="maestria-rama-bar" style="width: ${Math.max(6, pct)}%; background: ${r.color || '#0284c7'};"></div>
+          </div>
+        </div>
+      `;
+    });
+    ramasList.innerHTML = ramasHtml || '<p style="font-size:12px; color:#64748b;">Sin horas registradas aún en las ramas técnicas.</p>';
+  }
+
+  // 3. Historial de Cursos Acreditados
+  const histContainer = document.getElementById('maestria-historial-container');
+  if (histContainer) {
+    if (!data.historial || data.historial.length === 0) {
+      histContainer.innerHTML = `
+        <div style="text-align: center; padding: 25px 15px; color: #64748b;">
+          <i class="fa-solid fa-graduation-cap" style="font-size: 32px; opacity: 0.35; margin-bottom: 8px;"></i>
+          <p style="font-size: 13px; margin: 0;">No hay cursos acreditados todavía para esta cédula.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const catBadgeStyles = {
+      cctv: { bg: '#dbeafe', color: '#1d4ed8', icon: 'fa-video' },
+      acceso: { bg: '#d1fae5', color: '#047857', icon: 'fa-id-badge' },
+      alarmas: { bg: '#fef3c7', color: '#b45309', icon: 'fa-shield-halved' },
+      redes: { bg: '#e0e7ff', color: '#4338ca', icon: 'fa-network-wired' },
+      telefonia: { bg: '#ede9fe', color: '#6d28d9', icon: 'fa-phone-volume' },
+      energia: { bg: '#fef9c3', color: '#a16207', icon: 'fa-bolt' },
+      general: { bg: '#f1f5f9', color: '#475569', icon: 'fa-graduation-cap' }
+    };
+
+    let cardsHtml = '';
+    data.historial.forEach(c => {
+      const style = catBadgeStyles[c.categoria] || catBadgeStyles.general;
+      cardsHtml += `
+        <div class="maestria-course-card">
+          <div class="maestria-course-icon" style="background: ${style.bg}; color: ${style.color};">
+            <i class="fa-solid ${style.icon}"></i>
+          </div>
+          <div class="maestria-course-info">
+            <span class="maestria-course-tag" style="background: ${style.bg}; color: ${style.color};">
+              ${c.categoria ? c.categoria.toUpperCase() : 'CURSO'} · ${c.marca || 'MGM'}
+            </span>
+            <div class="maestria-course-title">${c.titulo}</div>
+            <div class="maestria-course-meta">
+              <span><i class="fa-regular fa-calendar"></i> ${c.fecha}</span>
+              <span><i class="fa-solid fa-clock"></i> ${c.horas}h duración</span>
+              <span style="color: #16a34a; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> +${c.puntos} pts</span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    histContainer.innerHTML = cardsHtml;
+  }
+}
 
 // Inicializar el modulo cuando la app este lista
 document.addEventListener('DOMContentLoaded', function () {

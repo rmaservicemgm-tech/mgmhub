@@ -274,6 +274,22 @@
           </div>
         </div>
 
+        <!-- ACCESO DIRECTO PUNTOS DE MAESTRÍA -->
+        <div class="quick-card" onclick="switchMainTab('maestria')">
+          <div class="card-icon-pill pill-maestria" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #D97706; position:relative;">
+            <i class="fa-solid fa-award"></i>
+            <span id="badge-home-maestria"
+              style="display:none; position:absolute; top:-6px; right:-6px; background:#EF4444; color:white; font-size:10px; font-weight:800; min-width:18px; height:18px; border-radius:9px; padding:0 4px; align-items:center; justify-content:center; border:2px solid white; box-shadow:0 2px 4px rgba(239,68,68,0.3);"></span>
+          </div>
+          <div>
+            <div class="card-title" style="display:flex; align-items:center; gap:6px;">
+              Puntos de Maestría
+              <span style="font-size: 9.5px; background: #D97706; color: white; padding: 1px 6px; border-radius: 6px; font-weight: 800; letter-spacing: 0.3px;">PRO</span>
+            </div>
+            <div class="card-desc">Cursos aprobados, horas de experiencia y certificaciones.</div>
+          </div>
+        </div>
+
         <div class="quick-card" onclick="switchMainTab('promos')">
           <div class="card-icon-pill pill-promos" style="position:relative;">
             <i class="fa-solid fa-fire"></i>
@@ -4026,6 +4042,395 @@
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
          VISTA: RASTREO DE PEDIDOS
          â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VISTA: PUNTOS DE MAESTRÍA & HORAS TÉCNICAS
+         ══════════════════════════════════════════════════════════════════════════ -->
+    <main id="view-maestria" class="view-container">
+      <style>
+        .maestria-view-wrap {
+          padding: 14px 16px 85px 16px;
+          max-width: 620px;
+          margin: 0 auto;
+        }
+        .maestria-topbar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 14px;
+        }
+        .maestria-back-btn {
+          background: var(--bg-card, #ffffff);
+          border: 1px solid var(--border-light, #e2e8f0);
+          color: var(--text-dark, #0f172a);
+          width: 38px;
+          height: 38px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 15px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        .maestria-title {
+          font-size: 17px;
+          font-weight: 800;
+          color: var(--text-dark, #0f172a);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .maestria-reload-btn {
+          background: var(--bg-card, #ffffff);
+          border: 1px solid var(--border-light, #e2e8f0);
+          color: var(--primary-blue, #00214a);
+          width: 38px;
+          height: 38px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 14px;
+        }
+        .maestria-hero {
+          background: linear-gradient(135deg, #00214a 0%, #0369a1 100%);
+          color: #ffffff;
+          border-radius: 20px;
+          padding: 22px 20px;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 10px 25px rgba(0, 33, 74, 0.22);
+          margin-bottom: 18px;
+        }
+        .maestria-hero::after {
+          content: '';
+          position: absolute;
+          right: -25px;
+          bottom: -25px;
+          width: 150px;
+          height: 150px;
+          background: radial-gradient(circle, rgba(251, 191, 36, 0.25) 0%, transparent 70%);
+          border-radius: 50%;
+          pointer-events: none;
+        }
+        .maestria-hero-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(251, 191, 36, 0.2);
+          border: 1px solid rgba(251, 191, 36, 0.5);
+          color: #fef08a;
+          padding: 4px 11px;
+          border-radius: 20px;
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 12px;
+          backdrop-filter: blur(4px);
+        }
+        .maestria-hero-profile {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          margin-bottom: 18px;
+        }
+        .maestria-avatar {
+          width: 52px;
+          height: 52px;
+          border-radius: 16px;
+          background: rgba(255, 255, 255, 0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 24px;
+          color: #fef08a;
+          border: 1.5px solid rgba(255, 255, 255, 0.3);
+          flex-shrink: 0;
+        }
+        .maestria-hero-name {
+          font-size: 19px;
+          font-weight: 800;
+          line-height: 1.2;
+          margin: 0 0 4px 0;
+        }
+        .maestria-hero-sub {
+          font-size: 12.5px;
+          opacity: 0.9;
+          margin: 0;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .maestria-kpis {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+          background: rgba(0, 0, 0, 0.22);
+          padding: 12px;
+          border-radius: 14px;
+          backdrop-filter: blur(4px);
+        }
+        .maestria-kpi-item {
+          text-align: center;
+        }
+        .maestria-kpi-num {
+          font-size: 21px;
+          font-weight: 900;
+          color: #ffffff;
+          line-height: 1.1;
+        }
+        .maestria-kpi-lbl {
+          font-size: 10.5px;
+          opacity: 0.85;
+          margin-top: 3px;
+          font-weight: 600;
+        }
+        .maestria-section {
+          background: var(--bg-card, #ffffff);
+          border: 1px solid var(--border-light, #e2e8f0);
+          border-radius: 18px;
+          padding: 18px;
+          margin-bottom: 16px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .maestria-sec-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 14px;
+        }
+        .maestria-sec-title {
+          font-size: 14.5px;
+          font-weight: 800;
+          color: var(--text-dark, #0f172a);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .maestria-rama-row {
+          margin-bottom: 13px;
+        }
+        .maestria-rama-row:last-child {
+          margin-bottom: 0;
+        }
+        .maestria-rama-head {
+          display: flex;
+          justify-content: space-between;
+          font-size: 12.5px;
+          font-weight: 700;
+          margin-bottom: 5px;
+          color: var(--text-dark, #1e293b);
+        }
+        .maestria-rama-track {
+          height: 8px;
+          background: #f1f5f9;
+          border-radius: 10px;
+          overflow: hidden;
+        }
+        .maestria-rama-bar {
+          height: 100%;
+          border-radius: 10px;
+          transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .maestria-course-card {
+          border: 1px solid var(--border-light, #e2e8f0);
+          border-radius: 14px;
+          padding: 14px;
+          margin-bottom: 10px;
+          background: var(--bg-card, #ffffff);
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .maestria-course-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .maestria-course-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 17px;
+          flex-shrink: 0;
+        }
+        .maestria-course-info {
+          flex: 1;
+        }
+        .maestria-course-tag {
+          display: inline-block;
+          font-size: 10px;
+          font-weight: 800;
+          text-transform: uppercase;
+          padding: 2px 7px;
+          border-radius: 6px;
+          margin-bottom: 4px;
+        }
+        .maestria-course-title {
+          font-size: 13.5px;
+          font-weight: 800;
+          color: var(--text-dark, #0f172a);
+          line-height: 1.35;
+          margin-bottom: 5px;
+        }
+        .maestria-course-meta {
+          font-size: 11.5px;
+          color: var(--text-muted, #64748b);
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          align-items: center;
+        }
+        .maestria-lookup-bar {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 10px;
+        }
+        .maestria-lookup-input {
+          flex: 1;
+          padding: 10px 14px;
+          border-radius: 12px;
+          border: 1px solid var(--border-light, #e2e8f0);
+          font-size: 13px;
+          outline: none;
+          background: var(--bg-card, #ffffff);
+          color: var(--text-dark, #0f172a);
+        }
+        .maestria-lookup-btn {
+          background: linear-gradient(135deg, #00214a, #0369a1);
+          color: white;
+          border: none;
+          border-radius: 12px;
+          padding: 0 16px;
+          font-weight: 700;
+          font-size: 13px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .maestria-chip-demo {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
+          color: #1d4ed8;
+          font-size: 11.5px;
+          font-weight: 700;
+          padding: 5px 12px;
+          border-radius: 20px;
+          cursor: pointer;
+          margin-bottom: 14px;
+          transition: background 0.15s ease;
+        }
+        .maestria-chip-demo:hover {
+          background: #dbeafe;
+        }
+      </style>
+
+      <div class="maestria-view-wrap">
+        <!-- TOPBAR -->
+        <div class="maestria-topbar">
+          <button class="maestria-back-btn" onclick="switchMainTab('home')" title="Volver al Inicio">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <div class="maestria-title">
+            <i class="fa-solid fa-award" style="color: #f59e0b;"></i>
+            Puntos de Maestría
+          </div>
+          <button class="maestria-reload-btn" onclick="loadMaestriaData(true)" title="Actualizar datos">
+            <i class="fa-solid fa-rotate" id="maestria-reload-icon"></i>
+          </button>
+        </div>
+
+        <!-- BUSCADOR RÁPIDO DE CÉDULA -->
+        <div class="maestria-lookup-bar">
+          <input type="text" id="maestria-search-cedula" class="maestria-lookup-input" placeholder="Buscar cédula (ej. 6-701-719)..." onkeypress="if(event.key==='Enter') searchMaestriaByInput()">
+          <button class="maestria-lookup-btn" onclick="searchMaestriaByInput()">
+            <i class="fa-solid fa-magnifying-glass"></i> Consultar
+          </button>
+        </div>
+        <div>
+          <span class="maestria-chip-demo" onclick="document.getElementById('maestria-search-cedula').value='6-701-719'; searchMaestriaByInput();">
+            <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> Probar con cédula activa: <strong>6-701-719</strong> (Malloy Ruiz)
+          </span>
+        </div>
+
+        <!-- HERO DEL TÉCNICO -->
+        <div class="maestria-hero" id="maestria-hero-box">
+          <div class="maestria-hero-badge" id="maestria-hero-status">
+            <i class="fa-solid fa-shield-halved"></i> <span id="maestria-status-lbl">Cargando perfil...</span>
+          </div>
+          <div class="maestria-hero-profile">
+            <div class="maestria-avatar">
+              <i class="fa-solid fa-user-gear"></i>
+            </div>
+            <div>
+              <h2 class="maestria-hero-name" id="maestria-name-lbl">—</h2>
+              <p class="maestria-hero-sub" id="maestria-empresa-lbl">
+                <i class="fa-solid fa-building"></i> <span id="maestria-company-text">—</span>
+              </p>
+            </div>
+          </div>
+          <div class="maestria-kpis">
+            <div class="maestria-kpi-item">
+              <div class="maestria-kpi-num" id="maestria-kpi-horas">0h</div>
+              <div class="maestria-kpi-lbl">Horas Exp.</div>
+            </div>
+            <div class="maestria-kpi-item">
+              <div class="maestria-kpi-num" id="maestria-kpi-puntos" style="color: #fef08a;">0</div>
+              <div class="maestria-kpi-lbl">Puntos</div>
+            </div>
+            <div class="maestria-kpi-item">
+              <div class="maestria-kpi-num" id="maestria-kpi-cursos">0</div>
+              <div class="maestria-kpi-lbl">Cursos</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXPERIENCIA POR RAMA TÉCNICA -->
+        <div class="maestria-section">
+          <div class="maestria-sec-header">
+            <div class="maestria-sec-title">
+              <i class="fa-solid fa-chart-simple" style="color: #0284c7;"></i>
+              Experiencia por Rama Técnica
+            </div>
+          </div>
+          <div id="maestria-ramas-list">
+            <!-- Inyectado por JS -->
+          </div>
+        </div>
+
+        <!-- HISTORIAL DE CURSOS APROBADOS -->
+        <div class="maestria-section">
+          <div class="maestria-sec-header">
+            <div class="maestria-sec-title">
+              <i class="fa-solid fa-certificate" style="color: #d97706;"></i>
+              Cursos & Capacitaciones Acreditadas
+            </div>
+            <span id="maestria-cursos-badge-count" style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 12px; font-weight: 800;">0</span>
+          </div>
+          <div id="maestria-historial-container">
+            <!-- Inyectado por JS -->
+          </div>
+        </div>
+
+        <!-- NOTA CORPORATIVA MGM -->
+        <div style="background: rgba(3, 105, 161, 0.06); border: 1px dashed rgba(3, 105, 161, 0.25); border-radius: 14px; padding: 14px; display: flex; gap: 10px; align-items: flex-start;">
+          <i class="fa-solid fa-circle-check" style="color: #0284c7; font-size: 18px; margin-top: 2px;"></i>
+          <div style="font-size: 12px; color: var(--text-dark, #334155); line-height: 1.45;">
+            <strong>Acreditación MGM Tecno Sistemas:</strong> Las horas de experiencia acumuladas avalan el perfil técnico de tu empresa integradora para licitaciones y soporte prioritario.
+          </div>
+        </div>
+      </div>
+    </main>
+
     <main id="view-rastreo" class="view-container">
       <div class="mgm-consulta-module">
         <div class="rma-consulta-card">
