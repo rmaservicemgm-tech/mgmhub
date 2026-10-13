@@ -3053,13 +3053,38 @@
 
       const parseDate = (dStr) => {
         if (!dStr) return null;
-        if (dStr instanceof Date) return dStr;
+        if (dStr instanceof Date) return isNaN(dStr.getTime()) ? null : dStr;
         const s = String(dStr).trim();
         if (/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s);
-        const parts = s.split(/[\/\-]/);
-        if (parts.length === 3 && parts[2].length === 4) {
-          return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+
+        // Formatos DD/MM/YYYY o DD-MM-YYYY o DD/MM/YY
+        const matchDigits = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
+        if (matchDigits) {
+          const day = parseInt(matchDigits[1], 10);
+          const month = parseInt(matchDigits[2], 10) - 1;
+          let year = parseInt(matchDigits[3], 10);
+          if (year < 100) year += 2000;
+          return new Date(year, month, day);
         }
+
+        // Formatos en español como "Viernes, 25 de septiembre..." o "14 de octubre..."
+        const meses = {
+          enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
+          julio: 6, agosto: 7, septiembre: 8, setiembre: 8, octubre: 9, noviembre: 10, diciembre: 11,
+          ene: 0, feb: 1, mar: 2, abr: 3, may: 4, jun: 5,
+          jul: 6, ago: 7, sep: 8, oct: 9, nov: 10, dic: 11
+        };
+        const sLower = s.toLowerCase();
+        for (const mKey in meses) {
+          if (sLower.includes(mKey)) {
+            const dayMatch = s.match(/\b(\d{1,2})\b/);
+            const yearMatch = s.match(/\b(20\d{2})\b/);
+            const day = dayMatch ? parseInt(dayMatch[1], 10) : 1;
+            const year = yearMatch ? parseInt(yearMatch[1], 10) : now.getFullYear();
+            return new Date(year, meses[mKey], day);
+          }
+        }
+
         const d = new Date(s);
         return isNaN(d.getTime()) ? null : d;
       };
@@ -3071,29 +3096,29 @@
           const hrs = parseFloat(c.horas) || 0;
           if (d) {
             const diffDays = (now - d) / (1000 * 60 * 60 * 24);
-            if (diffDays <= 30 && diffDays >= -1) {
+            if (diffDays <= 30 && diffDays >= -7) {
               c30++; p30 += pts; h30 += hrs;
             }
-            if (diffDays <= 90 && diffDays >= -1) {
+            if (diffDays <= 90 && diffDays >= -7) {
               c90++; p90 += pts; h90 += hrs;
             }
-            if (diffDays <= 180 && diffDays >= -1) {
+            if (diffDays <= 180 && diffDays >= -7) {
               c150++; p150 += pts; h150 += hrs;
             }
           } else {
+            // Si no se puede extraer la fecha, al ser cursos activos recientes se contabilizan
+            c30++; p30 += pts; h30 += hrs;
+            c90++; p90 += pts; h90 += hrs;
             c150++; p150 += pts; h150 += hrs;
           }
         });
       } else if (data.total_cursos > 0) {
-        c150 = data.total_cursos || 0;
-        p150 = data.total_puntos || 0;
-        h150 = data.total_horas || 0;
-        c90 = Math.min(c150, Math.ceil(c150 * 0.7));
-        p90 = Math.min(p150, Math.ceil(p150 * 0.7));
-        h90 = Math.min(h150, Math.ceil(h150 * 0.7));
-        c30 = Math.min(c90, Math.ceil(c150 * 0.4));
-        p30 = Math.min(p90, Math.ceil(p150 * 0.4));
-        h30 = Math.min(h90, Math.ceil(h150 * 0.4));
+        const tot = data.total_cursos || 0;
+        const pts = data.total_puntos || 0;
+        const hrs = data.total_horas || 0;
+        c30 = tot; p30 = pts; h30 = hrs;
+        c90 = tot; p90 = pts; h90 = hrs;
+        c150 = tot; p150 = pts; h150 = hrs;
       }
 
       m1CursosEl.textContent = c30;
