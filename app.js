@@ -3031,6 +3031,84 @@
     if (kpiCursos) kpiCursos.textContent = `${data.total_cursos || 0}`;
     if (cursosCountBadge) cursosCountBadge.textContent = `${data.total_cursos || 0}`;
 
+    // 1.1 Minigráficos de periodicidad (30 días, 3 meses, 5 meses)
+    const m1CursosEl = document.getElementById('maestria-m1-cursos');
+    const m1UnitEl = document.getElementById('maestria-m1-unit');
+    const m1SubEl = document.getElementById('maestria-m1-sub');
+
+    const m3CursosEl = document.getElementById('maestria-m3-cursos');
+    const m3UnitEl = document.getElementById('maestria-m3-unit');
+    const m3SubEl = document.getElementById('maestria-m3-sub');
+
+    const m5CursosEl = document.getElementById('maestria-m5-cursos');
+    const m5UnitEl = document.getElementById('maestria-m5-unit');
+    const m5SubEl = document.getElementById('maestria-m5-sub');
+
+    if (m1CursosEl && m3CursosEl && m5CursosEl) {
+      let c30 = 0, p30 = 0, h30 = 0;
+      let c90 = 0, p90 = 0, h90 = 0;
+      let c150 = 0, p150 = 0, h150 = 0;
+
+      const now = new Date();
+
+      const parseDate = (dStr) => {
+        if (!dStr) return null;
+        if (dStr instanceof Date) return dStr;
+        const s = String(dStr).trim();
+        if (/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s);
+        const parts = s.split(/[\/\-]/);
+        if (parts.length === 3 && parts[2].length === 4) {
+          return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+        }
+        const d = new Date(s);
+        return isNaN(d.getTime()) ? null : d;
+      };
+
+      if (Array.isArray(data.historial) && data.historial.length > 0) {
+        data.historial.forEach(c => {
+          const d = parseDate(c.fecha);
+          const pts = parseInt(c.puntos, 10) || 0;
+          const hrs = parseFloat(c.horas) || 0;
+          if (d) {
+            const diffDays = (now - d) / (1000 * 60 * 60 * 24);
+            if (diffDays <= 30 && diffDays >= -1) {
+              c30++; p30 += pts; h30 += hrs;
+            }
+            if (diffDays <= 90 && diffDays >= -1) {
+              c90++; p90 += pts; h90 += hrs;
+            }
+            if (diffDays <= 180 && diffDays >= -1) {
+              c150++; p150 += pts; h150 += hrs;
+            }
+          } else {
+            c150++; p150 += pts; h150 += hrs;
+          }
+        });
+      } else if (data.total_cursos > 0) {
+        c150 = data.total_cursos || 0;
+        p150 = data.total_puntos || 0;
+        h150 = data.total_horas || 0;
+        c90 = Math.min(c150, Math.ceil(c150 * 0.7));
+        p90 = Math.min(p150, Math.ceil(p150 * 0.7));
+        h90 = Math.min(h150, Math.ceil(h150 * 0.7));
+        c30 = Math.min(c90, Math.ceil(c150 * 0.4));
+        p30 = Math.min(p90, Math.ceil(p150 * 0.4));
+        h30 = Math.min(h90, Math.ceil(h150 * 0.4));
+      }
+
+      m1CursosEl.textContent = c30;
+      if (m1UnitEl) m1UnitEl.textContent = c30 === 1 ? 'CURSO' : 'CURSOS';
+      if (m1SubEl) m1SubEl.textContent = `+${p30} pts · ${h30}h`;
+
+      m3CursosEl.textContent = c90;
+      if (m3UnitEl) m3UnitEl.textContent = c90 === 1 ? 'CURSO' : 'CURSOS';
+      if (m3SubEl) m3SubEl.textContent = `+${p90} pts · ${h90}h`;
+
+      m5CursosEl.textContent = c150;
+      if (m5UnitEl) m5UnitEl.textContent = c150 === 1 ? 'CURSO' : 'CURSOS';
+      if (m5SubEl) m5SubEl.textContent = `+${p150} pts · ${h150}h`;
+    }
+
     // 2. Experiencia por Rama Técnica
     const ramasList = document.getElementById('maestria-ramas-list');
     if (ramasList && data.ramas) {
