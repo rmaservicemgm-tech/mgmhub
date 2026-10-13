@@ -34,7 +34,7 @@
   <!-- Limpiar caché viejo al actualizar version -->
   <script>
     (function () {
-      var APP_VERSION = '30';
+      var APP_VERSION = '35';
       var stored = localStorage.getItem('mgm_app_v');
       if (stored !== APP_VERSION) {
         localStorage.setItem('mgm_app_v', APP_VERSION);
@@ -4286,51 +4286,39 @@
           gap: 8px;
           align-items: center;
         }
-        .maestria-lookup-bar {
-          display: flex;
-          gap: 8px;
-          margin-bottom: 10px;
-        }
-        .maestria-lookup-input {
-          flex: 1;
-          padding: 10px 14px;
-          border-radius: 12px;
-          border: 1px solid var(--border-light, #e2e8f0);
-          font-size: 13px;
-          outline: none;
+        .maestria-unauth-card {
+          text-align: center;
+          padding: 40px 20px;
           background: var(--bg-card, #ffffff);
-          color: var(--text-dark, #0f172a);
+          border: 1px solid var(--border-light, #e2e8f0);
+          border-radius: 20px;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+          margin-top: 10px;
         }
-        .maestria-lookup-btn {
-          background: linear-gradient(135deg, #00214a, #0369a1);
-          color: white;
-          border: none;
-          border-radius: 12px;
-          padding: 0 16px;
-          font-weight: 700;
-          font-size: 13px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-        .maestria-chip-demo {
+        .maestria-unauth-icon {
+          width: 64px;
+          height: 64px;
+          border-radius: 20px;
+          background: rgba(2, 132, 199, 0.1);
+          color: #0284c7;
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          background: #eff6ff;
-          border: 1px solid #bfdbfe;
-          color: #1d4ed8;
-          font-size: 11.5px;
-          font-weight: 700;
-          padding: 5px 12px;
-          border-radius: 20px;
-          cursor: pointer;
-          margin-bottom: 14px;
-          transition: background 0.15s ease;
+          justify-content: center;
+          font-size: 28px;
+          margin-bottom: 16px;
         }
-        .maestria-chip-demo:hover {
-          background: #dbeafe;
+        .maestria-unauth-title {
+          font-size: 18px;
+          font-weight: 800;
+          color: var(--text-dark, #0f172a);
+          margin: 0 0 8px 0;
+        }
+        .maestria-unauth-desc {
+          font-size: 13px;
+          color: var(--text-muted, #64748b);
+          max-width: 380px;
+          margin: 0 auto 20px auto;
+          line-height: 1.5;
         }
       </style>
 
@@ -4349,83 +4337,87 @@
           </button>
         </div>
 
-        <!-- BUSCADOR RÁPIDO DE CÉDULA -->
-        <div class="maestria-lookup-bar">
-          <input type="text" id="maestria-search-cedula" class="maestria-lookup-input" placeholder="Buscar cédula (ej. 6-701-719)..." onkeypress="if(event.key==='Enter') searchMaestriaByInput()">
-          <button class="maestria-lookup-btn" onclick="searchMaestriaByInput()">
-            <i class="fa-solid fa-magnifying-glass"></i> Consultar
+        <!-- ESTADO NO AUTENTICADO: ACCESO PRIVADO -->
+        <div id="maestria-unauth-box" class="maestria-unauth-card" style="display:none;">
+          <div class="maestria-unauth-icon">
+            <i class="fa-solid fa-id-card-clip"></i>
+          </div>
+          <h3 class="maestria-unauth-title">Acceso Personal a Maestría</h3>
+          <p class="maestria-unauth-desc">
+            Tus puntos de maestría, horas técnicas y certificaciones son información privada de cada instalador. Inicia sesión con tu cédula en <strong>MGM Puntos</strong> para ver tu historial acreditado.
+          </p>
+          <button class="btn-submit" onclick="switchMainTab('puntos')" style="width: auto; padding: 11px 22px; font-size: 13.5px; display: inline-flex; align-items: center; gap: 8px; border-radius: 12px; margin: 0 auto; cursor: pointer;">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> Iniciar Sesión con mi Cédula
           </button>
         </div>
-        <div>
-          <span class="maestria-chip-demo" onclick="document.getElementById('maestria-search-cedula').value='6-701-719'; searchMaestriaByInput();">
-            <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> Probar con cédula activa: <strong>6-701-719</strong> (Malloy Ruiz)
-          </span>
-        </div>
 
-        <!-- HERO DEL TÉCNICO -->
-        <div class="maestria-hero" id="maestria-hero-box">
-          <div class="maestria-hero-badge" id="maestria-hero-status">
-            <i class="fa-solid fa-shield-halved"></i> <span id="maestria-status-lbl">Cargando perfil...</span>
+        <!-- CONTENIDO PRIVADO (SOLO CUANDO ESTÁ AUTENTICADO) -->
+        <div id="maestria-auth-content" style="display:none;">
+          <!-- HERO DEL TÉCNICO -->
+          <div class="maestria-hero" id="maestria-hero-box">
+            <div class="maestria-hero-badge" id="maestria-hero-status">
+              <i class="fa-solid fa-shield-halved"></i> <span id="maestria-status-lbl">Cargando perfil...</span>
+            </div>
+            <div class="maestria-hero-profile">
+              <div class="maestria-avatar">
+                <i class="fa-solid fa-user-gear"></i>
+              </div>
+              <div>
+                <h2 class="maestria-hero-name" id="maestria-name-lbl">—</h2>
+                <p class="maestria-hero-sub" id="maestria-empresa-lbl">
+                  <i class="fa-solid fa-building"></i> <span id="maestria-company-text">—</span>
+                </p>
+              </div>
+            </div>
+            <div class="maestria-kpis">
+              <div class="maestria-kpi-item">
+                <div class="maestria-kpi-num" id="maestria-kpi-horas">0h</div>
+                <div class="maestria-kpi-lbl">Horas Exp.</div>
+              </div>
+              <div class="maestria-kpi-item">
+                <div class="maestria-kpi-num" id="maestria-kpi-puntos" style="color: #fef08a;">0</div>
+                <div class="maestria-kpi-lbl">Puntos</div>
+              </div>
+              <div class="maestria-kpi-item">
+                <div class="maestria-kpi-num" id="maestria-kpi-cursos">0</div>
+                <div class="maestria-kpi-lbl">Cursos</div>
+              </div>
+            </div>
           </div>
-          <div class="maestria-hero-profile">
-            <div class="maestria-avatar">
-              <i class="fa-solid fa-user-gear"></i>
-            </div>
-            <div>
-              <h2 class="maestria-hero-name" id="maestria-name-lbl">—</h2>
-              <p class="maestria-hero-sub" id="maestria-empresa-lbl">
-                <i class="fa-solid fa-building"></i> <span id="maestria-company-text">—</span>
-              </p>
-            </div>
-          </div>
-          <div class="maestria-kpis">
-            <div class="maestria-kpi-item">
-              <div class="maestria-kpi-num" id="maestria-kpi-horas">0h</div>
-              <div class="maestria-kpi-lbl">Horas Exp.</div>
-            </div>
-            <div class="maestria-kpi-item">
-              <div class="maestria-kpi-num" id="maestria-kpi-puntos" style="color: #fef08a;">0</div>
-              <div class="maestria-kpi-lbl">Puntos</div>
-            </div>
-            <div class="maestria-kpi-item">
-              <div class="maestria-kpi-num" id="maestria-kpi-cursos">0</div>
-              <div class="maestria-kpi-lbl">Cursos</div>
-            </div>
-          </div>
-        </div>
 
-        <!-- EXPERIENCIA POR RAMA TÉCNICA -->
-        <div class="maestria-section">
-          <div class="maestria-sec-header">
-            <div class="maestria-sec-title">
-              <i class="fa-solid fa-chart-simple" style="color: #0284c7;"></i>
-              Experiencia por Rama Técnica
+          <!-- EXPERIENCIA POR RAMA TÉCNICA -->
+          <div class="maestria-section">
+            <div class="maestria-sec-header">
+              <div class="maestria-sec-title">
+                <i class="fa-solid fa-chart-simple" style="color: #0284c7;"></i>
+                Experiencia por Rama Técnica
+              </div>
+            </div>
+            <div id="maestria-ramas-list">
+              <!-- Inyectado por JS -->
             </div>
           </div>
-          <div id="maestria-ramas-list">
-            <!-- Inyectado por JS -->
-          </div>
-        </div>
 
-        <!-- HISTORIAL DE CURSOS APROBADOS -->
-        <div class="maestria-section">
-          <div class="maestria-sec-header">
-            <div class="maestria-sec-title">
-              <i class="fa-solid fa-certificate" style="color: #d97706;"></i>
-              Cursos & Capacitaciones Acreditadas
+          <!-- HISTORIAL DE CURSOS APROBADOS -->
+          <div class="maestria-section">
+            <div class="maestria-sec-header">
+              <div class="maestria-sec-title">
+                <i class="fa-solid fa-certificate" style="color: #d97706;"></i>
+                Cursos & Capacitaciones Acreditadas
+              </div>
+              <span id="maestria-cursos-badge-count" style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 12px; font-weight: 800;">0</span>
             </div>
-            <span id="maestria-cursos-badge-count" style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 12px; font-weight: 800;">0</span>
+            <div id="maestria-historial-container">
+              <!-- Inyectado por JS -->
+            </div>
           </div>
-          <div id="maestria-historial-container">
-            <!-- Inyectado por JS -->
-          </div>
-        </div>
 
-        <!-- NOTA CORPORATIVA MGM -->
-        <div style="background: rgba(3, 105, 161, 0.06); border: 1px dashed rgba(3, 105, 161, 0.25); border-radius: 14px; padding: 14px; display: flex; gap: 10px; align-items: flex-start;">
-          <i class="fa-solid fa-circle-check" style="color: #0284c7; font-size: 18px; margin-top: 2px;"></i>
-          <div style="font-size: 12px; color: var(--text-dark, #334155); line-height: 1.45;">
-            <strong>Acreditación MGM Tecno Sistemas:</strong> Las horas de experiencia acumuladas avalan el perfil técnico de tu empresa integradora para licitaciones y soporte prioritario.
+          <!-- NOTA CORPORATIVA MGM -->
+          <div style="background: rgba(3, 105, 161, 0.06); border: 1px dashed rgba(3, 105, 161, 0.25); border-radius: 14px; padding: 14px; display: flex; gap: 10px; align-items: flex-start;">
+            <i class="fa-solid fa-circle-check" style="color: #0284c7; font-size: 18px; margin-top: 2px;"></i>
+            <div style="font-size: 12px; color: var(--text-dark, #334155); line-height: 1.45;">
+              <strong>Acreditación MGM Tecno Sistemas:</strong> Las horas de experiencia acumuladas avalan el perfil técnico de tu empresa integradora para licitaciones y soporte prioritario.
+            </div>
           </div>
         </div>
       </div>
@@ -5673,7 +5665,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=32"></script>
+  <script src="app.js?v=35"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
   <script>
@@ -6330,8 +6322,6 @@
       background: #fff;
     }
   </style>
-
-  <script src="app.js"></script>
 </body>
 
 
