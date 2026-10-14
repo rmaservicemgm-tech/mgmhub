@@ -274,7 +274,7 @@
             color: var(--text-muted, #94a3b8);
             padding-left: 3px;
             border-left: 1px solid #e2e8f0;
-            max-width: 64px;
+            max-width: 95px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -315,6 +315,7 @@
             <i class="fa-solid fa-car" style="font-size: 10.5px; opacity: 0.75; color: var(--text-muted, #64748b);"></i>
             <span id="mgm-trafico-icono" class="mgm-trafico-dot"></span>
             <span id="mgm-trafico-texto" class="mgm-trafico-texto">Tráfico...</span>
+            <span id="mgm-trafico-ciudad" class="mgm-clima-ciudad"></span>
           </div>
           <!-- Separador (solo si ambos activos) -->
           <span id="mgm-widgets-sep" style="flex:1;"></span>
@@ -3750,22 +3751,12 @@
             <div class="setting-info">
               <span class="setting-title"><i class="fa-solid fa-car-burst"
                   style="color:#dc2626; width: 16px; text-align: center;"></i> Widget de Tráfico</span>
-              <span class="setting-desc">Estado del tráfico en tiempo real (requiere API key TomTom)</span>
+              <span class="setting-desc">Muestra el estado del tráfico en tiempo real</span>
             </div>
             <label class="toggle-switch">
               <input type="checkbox" id="set-widget-trafico" onchange="toggleTraficoWidget(this.checked)">
               <span class="toggle-slider"></span>
             </label>
-          </div>
-          <div id="set-trafico-key-row" style="margin-top: 6px; padding: 10px 12px; background: rgba(241, 245, 249, 0.6); border: 1px solid #e2e8f0; border-radius: 10px; display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <span style="font-size: 11.5px; font-weight: 600; color: #475569;">API Key TomTom</span>
-              <a href="https://developer.tomtom.com" target="_blank" rel="noopener" style="font-size: 11px; color: #0284c7; text-decoration: none; font-weight: 500;">Obtener gratis <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 9px;"></i></a>
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <input type="text" id="set-tomtom-key" placeholder="Pega tu API Key de TomTom aquí" style="flex: 1; font-size: 12px; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; background: #fff;" onchange="guardarTomTomKey(this.value)">
-              <button type="button" onclick="guardarTomTomKey(document.getElementById('set-tomtom-key').value)" style="background: #0f172a; color: #fff; border: none; border-radius: 8px; padding: 0 12px; font-size: 11.5px; font-weight: 600; cursor: pointer;">Guardar</button>
-            </div>
           </div>
         </div>
 
@@ -6623,12 +6614,56 @@
         const iconoEl = document.getElementById('mgm-clima-icono');
         const tempEl = document.getElementById('mgm-clima-temp');
         const ciudadEl = document.getElementById('mgm-clima-ciudad');
+        const traficoCiudadEl = document.getElementById('mgm-trafico-ciudad');
         const widget = document.getElementById('mgm-clima-widget');
 
         if (iconoEl) iconoEl.innerHTML = icono || CLIMA_SVGS.nublado;
         if (tempEl) tempEl.textContent = `${temp}°C`;
         if (ciudadEl) ciudadEl.textContent = ciudad || 'Panamá';
+        if (traficoCiudadEl && ciudad) traficoCiudadEl.textContent = ciudad;
         if (widget) widget.title = `Clima actual en ${ciudad}: ${temp}°C, ${texto || 'Normal'}. Toca para refrescar.`;
+      }
+
+      async function resolverNombreUbicacion(lat, lon, fallback) {
+        const apiKey = (localStorage.getItem('MGM_TOMTOM_KEY') || 'OWzpAf47TH8sVh6FkuQGydSNXqtJ7tlM').trim();
+        // 1. TomTom Reverse Geocode (muy preciso para corregimientos en Panamá)
+        if (apiKey) {
+          try {
+            const ttRes = await fetch(`https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${encodeURIComponent(apiKey)}`);
+            if (ttRes.ok) {
+              const ttData = await ttRes.json();
+              const addr = ttData.addresses && ttData.addresses[0] && ttData.addresses[0].address;
+              if (addr) {
+                const muni = (addr.municipality || '').trim();
+                const sub = (addr.countrySecondarySubdivision || '').trim();
+                // Juan D. Arosemena es el corregimiento oficial de Nuevo Arraiján
+                if (/arosemena/i.test(muni) || /arosemena/i.test(sub)) return 'Nuevo Arraiján';
+                if (/nuevo arraij/i.test(muni) || /nuevo arraij/i.test(sub)) return 'Nuevo Arraiján';
+                if (muni && !/distrito/i.test(muni)) return muni;
+                if (sub) return sub;
+              }
+            }
+          } catch (eTT) { }
+        }
+
+        // 2. OpenStreetMap Nominatim a zoom 14 (nivel pueblo/corregimiento)
+        try {
+          const nomRes = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=14`,
+            { headers: { 'Accept-Language': 'es' } }
+          );
+          if (nomRes.ok) {
+            const nomData = await nomRes.json();
+            const addr = nomData.address || {};
+            let local = addr.village || addr.town || addr.suburb || addr.neighbourhood || addr.city_district || addr.municipality || addr.county || addr.city;
+            if (local) {
+              if (/arosemena/i.test(local)) return 'Nuevo Arraiján';
+              return local;
+            }
+          }
+        } catch (eNom) { }
+
+        return fallback || 'Panamá';
       }
 
       async function cargarClima(forzar) {
@@ -6645,11 +6680,12 @@
             const cachedStr = localStorage.getItem(CACHE_KEY);
             if (cachedStr) {
               const cached = JSON.parse(cachedStr);
-              if (cached && cached.temp !== undefined && (Date.now() - (cached.ts || 0)) < 30 * 60 * 1000) {
+              if (cached && cached.temp !== undefined && (Date.now() - (cached.ts || 0)) < 15 * 60 * 1000) {
                 if (cached.lat && cached.lon) {
                   window.MGM_GEO = window.MGM_GEO || {};
                   window.MGM_GEO.lat = cached.lat;
                   window.MGM_GEO.lon = cached.lon;
+                  window.MGM_GEO.ciudad = cached.ciudad;
                 }
                 actualizarClimaUI(cached.temp, cached.icono, cached.ciudad, cached.texto);
                 return;
@@ -6660,36 +6696,26 @@
 
         let lat = CLIMA_DEFECTO.lat, lon = CLIMA_DEFECTO.lon, ciudad = CLIMA_DEFECTO.nombre;
 
-        // 1. GPS del navegador (preciso a nivel de corregimiento/ciudad real)
+        // 1. GPS del navegador en alta precisión (sin caché viejo si es forzado)
         window.MGM_GEO = window.MGM_GEO || { lat: null, lon: null };
         const gpsOk = await new Promise((resolve) => {
           if (!navigator.geolocation) { resolve(false); return; }
           navigator.geolocation.getCurrentPosition(
             (pos) => {
               lat = pos.coords.latitude; lon = pos.coords.longitude;
-              window.MGM_GEO.lat = lat; window.MGM_GEO.lon = lon; // compartir con tráfico
+              window.MGM_GEO.lat = lat; window.MGM_GEO.lon = lon;
               resolve(true);
             },
             () => resolve(false),
-            { timeout: 6000, maximumAge: 15 * 60 * 1000 }
+            { timeout: 7000, maximumAge: forzar ? 0 : 60000, enableHighAccuracy: true }
           );
         });
 
         if (gpsOk) {
-          // Geocodificación inversa con Nominatim (gratuito, sin API key)
-          try {
-            const nomRes = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10`,
-              { headers: { 'Accept-Language': 'es' } }
-            );
-            if (nomRes.ok) {
-              const addr = (await nomRes.json()).address || {};
-              // Prioridad: town > city_district > suburb > city > county
-              ciudad = addr.town || addr.city_district || addr.suburb || addr.city || addr.municipality || addr.county || ciudad;
-            }
-          } catch (eNom) { }
+          ciudad = await resolverNombreUbicacion(lat, lon, ciudad);
+          window.MGM_GEO.ciudad = ciudad;
         } else {
-          // 2. Fallback por IP si GPS fue denegado (menos preciso pero sin permiso)
+          // 2. Fallback por IP si GPS fue denegado (menos preciso)
           try {
             const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
             if (geoRes.ok) {
@@ -6697,7 +6723,8 @@
               if (gd && gd.latitude && gd.longitude) {
                 lat = parseFloat(gd.latitude); lon = parseFloat(gd.longitude);
                 window.MGM_GEO.lat = lat; window.MGM_GEO.lon = lon;
-                if (gd.city) ciudad = gd.city.replace(/City/i, '').trim();
+                ciudad = await resolverNombreUbicacion(lat, lon, gd.city ? gd.city.replace(/City/i, '').trim() : ciudad);
+                window.MGM_GEO.ciudad = ciudad;
               }
             }
           } catch (eGeo) { }
@@ -6724,6 +6751,8 @@
       }
 
       window.refrescarClima = function (mostrarToast) {
+        localStorage.removeItem('MGM_CACHE_CLIMA');
+        localStorage.removeItem('MGM_CACHE_TRAFICO');
         const iconoEl = document.getElementById('mgm-clima-icono');
         if (iconoEl) {
           iconoEl.style.transition = 'transform 0.4s ease, opacity 0.3s ease';
@@ -6733,6 +6762,9 @@
         }
 
         cargarClima(true).then(() => {
+          if (typeof window.cargarTraficoGlobal === 'function') {
+            window.cargarTraficoGlobal(true);
+          }
           if (mostrarToast && typeof window.showToast === 'function') {
             const temp = document.getElementById('mgm-clima-temp')?.textContent || '';
             const ciudad = document.getElementById('mgm-clima-ciudad')?.textContent || '';
@@ -6817,10 +6849,20 @@
         dotEl.style.boxShadow = `0 0 6px ${shadow}`;
         textEl.textContent = estado;
 
+        const traficoCiudadEl = document.getElementById('mgm-trafico-ciudad');
+        const ubicacionActual = window.MGM_GEO?.ciudad || document.getElementById('mgm-clima-ciudad')?.textContent || '';
+        if (traficoCiudadEl) {
+          if (ubicacionActual && ubicacionActual !== 'Cargando...') {
+            traficoCiudadEl.textContent = ubicacionActual;
+            traficoCiudadEl.style.display = 'inline';
+          }
+        }
+
         if (widget) {
           const vAct = currentSpeed != null ? Math.round(currentSpeed) : '--';
           const vLibre = freeFlowSpeed != null ? Math.round(freeFlowSpeed) : '--';
-          widget.title = `Tráfico: ${estado} (${vAct} km/h vs ${vLibre} km/h límite). Toca para actualizar.`;
+          const lugar = (ubicacionActual && ubicacionActual !== 'Cargando...') ? ` en ${ubicacionActual}` : '';
+          widget.title = `Tráfico${lugar}: ${estado} (${vAct} km/h vs ${vLibre} km/h límite). Toca para actualizar.`;
         }
       }
 
@@ -6981,8 +7023,11 @@
           }
         }
       }
+      window.cargarTraficoGlobal = cargarTrafico;
 
       window.refrescarTrafico = function (mostrarToast) {
+        localStorage.removeItem('MGM_CACHE_CLIMA');
+        localStorage.removeItem('MGM_CACHE_TRAFICO');
         const apiKey = (localStorage.getItem(TOMTOM_KEY_KEY) || TOMTOM_KEY_DEFAULT).trim();
         if (!apiKey) {
           const ingresada = prompt('Ingresa tu API Key de TomTom (puedes crear una cuenta gratis con 2,500 consultas/día en https://developer.tomtom.com):');
@@ -6998,10 +7043,16 @@
           setTimeout(() => { widget.style.opacity = ''; }, 400);
         }
 
+        if (typeof window.refrescarClima === 'function') {
+          window.refrescarClima(false);
+        }
+
         cargarTrafico(true).then(() => {
           if (mostrarToast && typeof window.showToast === 'function') {
             const estado = document.getElementById('mgm-trafico-texto')?.textContent || '';
-            window.showToast(`Estado del tráfico: ${estado}`, 'fa-solid fa-car');
+            const lugar = window.MGM_GEO?.ciudad || document.getElementById('mgm-clima-ciudad')?.textContent || '';
+            const msg = lugar ? `Tráfico en ${lugar}: ${estado}` : `Estado del tráfico: ${estado}`;
+            window.showToast(msg, 'fa-solid fa-car');
           }
         });
       };
@@ -7027,10 +7078,6 @@
         if (widget) {
           widget.style.display = enabled ? 'inline-flex' : 'none';
         }
-        const keyRow = document.getElementById('set-trafico-key-row');
-        if (keyRow) {
-          keyRow.style.display = enabled ? 'block' : 'none';
-        }
         if (enabled) {
           cargarTrafico();
         }
@@ -7040,12 +7087,6 @@
         const enabled = localStorage.getItem(TRAFICO_SETTING_KEY) !== 'false';
         const chk = document.getElementById('set-widget-trafico');
         if (chk) chk.checked = enabled;
-
-        const keyRow = document.getElementById('set-trafico-key-row');
-        if (keyRow) keyRow.style.display = enabled ? 'block' : 'none';
-
-        const inputKey = document.getElementById('set-tomtom-key');
-        if (inputKey) inputKey.value = localStorage.getItem(TOMTOM_KEY_KEY) || TOMTOM_KEY_DEFAULT;
 
         const widget = document.getElementById('mgm-trafico-widget');
         if (widget) widget.style.display = enabled ? 'inline-flex' : 'none';
