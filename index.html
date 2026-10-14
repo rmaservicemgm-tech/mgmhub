@@ -196,6 +196,69 @@
         </div>
       </div>
 
+      <!-- WIDGET CLIMA (Ubicado en el espacio central) -->
+      <style>
+        .mgm-clima-container {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 11.5px;
+          color: var(--text-dark, #334155);
+          background-color: #f8fafc;
+          padding: 4px 9px;
+          border-radius: 20px;
+          border: 1px solid var(--border-light, #e2e8f0);
+          cursor: pointer;
+          user-select: none;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+        }
+        .mgm-clima-container:hover {
+          background-color: #f1f5f9;
+          border-color: #cbd5e1;
+          transform: translateY(-1px);
+        }
+        .mgm-clima-icono {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 16px;
+          height: 16px;
+          flex-shrink: 0;
+        }
+        .mgm-clima-icono svg {
+          width: 16px;
+          height: 16px;
+        }
+        .mgm-clima-temp {
+          font-weight: 800;
+          color: #0f172a;
+        }
+        .mgm-clima-ciudad {
+          font-size: 10px;
+          color: var(--text-muted, #64748b);
+          border-left: 1px solid var(--border-light, #cbd5e1);
+          padding-left: 5px;
+          max-width: 58px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        @media (max-width: 390px) {
+          .mgm-clima-ciudad {
+            display: none;
+          }
+          .mgm-clima-container {
+            padding: 4px 7px;
+          }
+        }
+      </style>
+      <div id="mgm-clima-widget" class="mgm-clima-container" onclick="refrescarClima(true)" title="Toca para actualizar clima">
+        <span id="mgm-clima-icono" class="mgm-clima-icono"><svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span>
+        <span id="mgm-clima-temp" class="mgm-clima-temp">--°C</span>
+        <span id="mgm-clima-ciudad" class="mgm-clima-ciudad">Cargando...</span>
+      </div>
+
       <div class="header-actions" style="display: flex; gap: 8px; align-items: center;">
         <button id="btn-notifications" class="btn-header-icon" onclick="openNotificationsPanel()"
           aria-label="Notificaciones"
@@ -3631,6 +3694,22 @@
         </div>
 
         <div class="settings-section">
+          <h5 class="settings-subtitle">Pantalla & Widgets</h5>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title"><i class="fa-solid fa-cloud-sun"
+                  style="color:#0284c7; width: 16px; text-align: center;"></i> Widget de Clima</span>
+              <span class="setting-desc">Muestra temperatura y condición en la barra superior</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="set-widget-clima" onchange="toggleClimaWidget(this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-section">
           <h5 class="settings-subtitle">Mi Cuenta</h5>
           <div class="setting-input-group">
             <label>Correo Electrónico</label>
@@ -6448,7 +6527,171 @@
       background: #fff;
     }
   </style>
-</body>
 
+  <!-- =====================================================================
+       LÓGICA DEL WIDGET DE CLIMA MGM HUB (Open-Meteo & Geolocalización IP)
+       ===================================================================== -->
+  <script>
+    (function () {
+      const CLIMA_DEFECTO = {
+        lat: 8.9833,
+        lon: -79.5167,
+        nombre: 'Panamá'
+      };
+
+      // SVG icons sutiles alineados con la paleta MGM Hub
+      const CLIMA_SVGS = {
+        sol: `<svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`,
+        nublado: `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="11" r="3" stroke="#f59e0b"/><path d="M17.5 19H7a5 5 0 1 1 .3-9.95A5.5 5.5 0 1 1 17.5 19z" stroke="#94a3b8" fill="#f1f5f9"/></svg>`,
+        neblina: `<svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"><path d="M3 12h18M3 8h18M3 16h12"/></svg>`,
+        lluvia: `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5A5.5 5.5 0 1 1 17.5 13H19a3 3 0 0 1 0 6H7a5 5 0 0 1-3-9z" stroke="#64748b" fill="#e2e8f0"/><path d="M8 19l-1 3M12 19l-1 3M16 19l-1 3" stroke="#3b82f6"/></svg>`,
+        tormenta: `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5A5.5 5.5 0 1 1 17.5 13H19a3 3 0 0 1 0 6H7a5 5 0 0 1-3-9z" stroke="#64748b" fill="#e2e8f0"/><polyline points="13,12 10,17 14,17 11,22" stroke="#f59e0b" fill="none"/></svg>`,
+        nieve: `<svg viewBox="0 0 24 24" fill="none" stroke="#7dd3fc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M4.93 4.93l14.14 14.14M2 12h20M4.93 19.07 19.07 4.93"/><circle cx="12" cy="12" r="2" fill="#7dd3fc"/></svg>`
+      };
+
+      function obtenerCondicionClima(code) {
+        if (code === 0) return { icono: CLIMA_SVGS.sol, texto: 'Despejado' };
+        if ([1, 2, 3].includes(code)) return { icono: CLIMA_SVGS.nublado, texto: 'Nublado' };
+        if ([45, 48].includes(code)) return { icono: CLIMA_SVGS.neblina, texto: 'Neblina' };
+        if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return { icono: CLIMA_SVGS.lluvia, texto: 'Lluvia' };
+        if ([95, 96, 99].includes(code)) return { icono: CLIMA_SVGS.tormenta, texto: 'Tormenta' };
+        if ([71, 73, 75, 77, 85, 86].includes(code)) return { icono: CLIMA_SVGS.nieve, texto: 'Nieve' };
+        return { icono: CLIMA_SVGS.nublado, texto: 'Templado' };
+      }
+
+      function actualizarClimaUI(temp, icono, ciudad, texto) {
+        const iconoEl = document.getElementById('mgm-clima-icono');
+        const tempEl = document.getElementById('mgm-clima-temp');
+        const ciudadEl = document.getElementById('mgm-clima-ciudad');
+        const widget = document.getElementById('mgm-clima-widget');
+
+        if (iconoEl) iconoEl.innerHTML = icono || CLIMA_SVGS.nublado;
+        if (tempEl) tempEl.textContent = `${temp}°C`;
+        if (ciudadEl) ciudadEl.textContent = ciudad || 'Panamá';
+        if (widget) widget.title = `Clima actual en ${ciudad}: ${temp}°C, ${texto || 'Normal'}. Toca para refrescar.`;
+      }
+
+      async function cargarClima(forzar) {
+        const widget = document.getElementById('mgm-clima-widget');
+        if (!widget) return;
+
+        const climaHabilitado = localStorage.getItem('MGM_SETTING_CLIMA') !== 'false';
+        if (!climaHabilitado) {
+          widget.style.display = 'none';
+          return;
+        }
+        widget.style.display = 'flex';
+
+        const CACHE_KEY = 'MGM_CACHE_CLIMA';
+        if (!forzar) {
+          try {
+            const cachedStr = localStorage.getItem(CACHE_KEY);
+            if (cachedStr) {
+              const cached = JSON.parse(cachedStr);
+              if (cached && cached.temp !== undefined && (Date.now() - (cached.ts || 0)) < 30 * 60 * 1000) {
+                actualizarClimaUI(cached.temp, cached.icono, cached.ciudad, cached.texto);
+                return;
+              }
+            }
+          } catch (e) { }
+        }
+
+        let lat = CLIMA_DEFECTO.lat;
+        let lon = CLIMA_DEFECTO.lon;
+        let ciudad = CLIMA_DEFECTO.nombre;
+
+        // Geolocalización rápida por IP (sin permisos molestos ni bloqueos)
+        try {
+          const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
+          if (geoRes.ok) {
+            const geoData = await geoRes.json();
+            if (geoData && geoData.latitude && geoData.longitude) {
+              lat = parseFloat(geoData.latitude);
+              lon = parseFloat(geoData.longitude);
+              if (geoData.city) {
+                ciudad = geoData.city.replace(/City/i, '').trim();
+              }
+            }
+          }
+        } catch (eGeo) { }
+
+        // Consulta gratuita a Open-Meteo
+        try {
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`;
+          const res = await fetch(url);
+          if (!res.ok) throw new Error('Respuesta inválida de Open-Meteo');
+          const data = await res.json();
+
+          const temp = Math.round(data.current.temperature_2m);
+          const condicion = obtenerCondicionClima(data.current.weather_code);
+
+          actualizarClimaUI(temp, condicion.icono, ciudad, condicion.texto);
+
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
+              temp: temp,
+              icono: condicion.icono,
+              texto: condicion.texto,
+              ciudad: ciudad,
+              ts: Date.now()
+            }));
+          } catch (eCache) { }
+
+        } catch (err) {
+          const tempEl = document.getElementById('mgm-clima-temp');
+          const ciudadEl = document.getElementById('mgm-clima-ciudad');
+          if (tempEl && (tempEl.textContent === '--°C' || tempEl.textContent === '')) tempEl.textContent = '28°C';
+          if (ciudadEl && ciudadEl.textContent === 'Cargando...') ciudadEl.textContent = ciudad;
+        }
+      }
+
+      window.refrescarClima = function (mostrarToast) {
+        const iconoEl = document.getElementById('mgm-clima-icono');
+        if (iconoEl) {
+          iconoEl.style.transition = 'transform 0.4s ease, opacity 0.3s ease';
+          iconoEl.style.transform = 'rotate(20deg) scale(1.2)';
+          iconoEl.style.opacity = '0.7';
+          setTimeout(() => { iconoEl.style.transform = ''; iconoEl.style.opacity = ''; }, 400);
+        }
+
+        cargarClima(true).then(() => {
+          if (mostrarToast && typeof window.showToast === 'function') {
+            const temp = document.getElementById('mgm-clima-temp')?.textContent || '';
+            const ciudad = document.getElementById('mgm-clima-ciudad')?.textContent || '';
+            window.showToast(`Clima en ${ciudad}: ${temp}`, 'fa-solid fa-cloud-sun');
+          }
+        });
+      };
+
+      window.toggleClimaWidget = function (enabled) {
+        localStorage.setItem('MGM_SETTING_CLIMA', enabled ? 'true' : 'false');
+        const widget = document.getElementById('mgm-clima-widget');
+        if (widget) {
+          widget.style.display = enabled ? 'flex' : 'none';
+        }
+        if (enabled) {
+          cargarClima();
+        }
+      };
+
+      function syncClimaSettingUI() {
+        const chk = document.getElementById('set-widget-clima');
+        if (chk) {
+          chk.checked = localStorage.getItem('MGM_SETTING_CLIMA') !== 'false';
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          cargarClima();
+          syncClimaSettingUI();
+        });
+      } else {
+        cargarClima();
+        syncClimaSettingUI();
+      }
+    })();
+  </script>
+</body>
 
 </html>
