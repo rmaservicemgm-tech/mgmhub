@@ -778,8 +778,17 @@
     document.querySelectorAll('.app-modal.active').forEach(m => m.classList.remove('active'));
 
     // Navegar al tab principal
-    if (tab === 'radio') {
-      switchMainTab('party');
+    if (tab === 'radio' || tab === 'fiesta') {
+      if (typeof initPartyMode === 'function') initPartyMode();
+      else switchMainTab('party');
+      return;
+    } else if (tab === 'magie') {
+      if (typeof openBot === 'function') openBot();
+      return;
+    } else if (tab === 'maestria') {
+      switchMainTab('maestria');
+      return;
+
     } else if (tab === 'toolbox' && sub) {
       switchMainTab(tab + '-' + sub);
       return;
@@ -4680,7 +4689,7 @@
     }
 
     // Actualizar burbujas de los iconos del home
-    const counts = { puntos: 0, agenda: 0, promos: 0, rma: 0, rastreo: 0, magie: 0, toolbox: 0, fiesta: 0 };
+    const counts = { puntos: 0, agenda: 0, maestria: 0, promos: 0, rma: 0, rastreo: 0, magie: 0, toolbox: 0, fiesta: 0 };
 
     const notifsActivas = state.notifications.filter(n => notifEnVentana(n));
     notifsActivas.forEach(n => {
@@ -4690,7 +4699,13 @@
       const combinedText = `${titleLower} ${bodyLower}`;
       const hasWord = (rx) => rx.test(combinedText);
 
+      if (seccion.toLowerCase() === 'puntos:maestria') {
+        seccion = 'maestria';
+      }
+
       if (!seccion) {
+        if (hasWord(/\b(maestr[ií]a|horas?\s+t[eé]cnicas?|horas?\s+de\s+experiencia|acreditaci[oó]n)\b/i)) seccion = 'maestria';
+        else
         if (hasWord(/\b(rma|garant[ií]a|garantias|taller|reparaci[oó]n|reparar|equipo)\b/i)) seccion = 'rma';
         else if (hasWord(/\b(punto|puntos|cumplea[nñ]os|redim|canje|canjear|saldo|acredit|ajuste)\b/i)) seccion = 'puntos';
         else if (hasWord(/\b(promo|oferta|descuento|rebaja|remate)\b/i)) seccion = 'promos';
@@ -4698,6 +4713,7 @@
         else if (hasWord(/\b(magie|asistente|bot|ia|cotiza|cotizaci[oó]n)\b/i)) seccion = 'magie';
         else if (hasWord(/\b(toolbox|herramienta|c[aá]lculo|calculadora|ups|almacenamiento)\b/i)) seccion = 'toolbox';
         else if (hasWord(/\b(fiesta|radio|m[uú]sica|dj|mix)\b/i)) seccion = 'fiesta';
+        else if (hasWord(/\b(rastreo|env[ií]o|paquete|despacho|entregado|bodega|transporte)\b/i)) seccion = 'rastreo';
       }
 
       const secBase = seccion.split(':')[0].toLowerCase();
@@ -4875,6 +4891,11 @@
 
     // Configuración visual por sección destino
     const SECC_CFG = {
+      maestria: { icon: 'fa-award', color: '#d97706', badgeText: '🎖️ Maestría', badgeBg: '#fef3c7', badgeTxt: '#b45309' },
+      rastreo: { icon: 'fa-box-open', color: '#0284c7', badgeText: '📦 Rastreo', badgeBg: '#e0f2fe', badgeTxt: '#0369a1' },
+      magie: { icon: 'fa-robot', color: '#8b5cf6', badgeText: '🤖 Magie IA', badgeBg: '#ede9fe', badgeTxt: '#6d28d9' },
+      toolbox: { icon: 'fa-toolbox', color: '#4f46e5', badgeText: '🧰 Toolbox', badgeBg: '#e0e7ff', badgeTxt: '#3730a3' },
+      fiesta: { icon: 'fa-music', color: '#f59e0b', badgeText: '📻 Fiesta', badgeBg: '#fef3c7', badgeTxt: '#b45309' },
       puntos: { icon: 'fa-star', color: '#f59e0b', badgeText: '⭐ Puntos', badgeBg: '#fef3c7', badgeTxt: '#b45309' },
       agenda: { icon: 'fa-calendar-days', color: '#6366f1', badgeText: '📅 Agenda', badgeBg: '#ede9fe', badgeTxt: '#5b21b6' },
       promos: { icon: 'fa-fire', color: '#ef4444', badgeText: '🔥 Promo', badgeBg: '#fee2e2', badgeTxt: '#b91c1c' },
@@ -4894,7 +4915,14 @@
       const hasWord = (rx) => rx.test(combinedText);
 
       // Si no viene sección del backend, inferirla por palabras clave
+      if (seccion.toLowerCase() === 'puntos:maestria') {
+        seccion = 'maestria';
+      }
+
       if (!seccion) {
+        if (hasWord(/\b(maestr[ií]a|horas?\s+t[eé]cnicas?|horas?\s+de\s+experiencia|acreditaci[oó]n)\b/i)) {
+          seccion = 'maestria';
+        } else
         if (hasWord(/\b(rma|garant[ií]a|garantias|taller|reparaci[oó]n|reparar|equipo)\b/i)) {
           seccion = 'rma';
         } else if (hasWord(/\b(punto|puntos|cumplea[nñ]os|redim|canje|canjear|saldo|acredit|ajuste)\b/i)) {
@@ -4903,6 +4931,14 @@
           seccion = 'promos';
         } else if (hasWord(/\b(evento|webinar|curso|capacitaci[oó]n|charla|certificaci[oó]n)\b/i)) {
           seccion = 'agenda';
+        } else if (hasWord(/\b(rastreo|env[ií]o|paquete|despacho|entregado|bodega|transporte)\b/i)) {
+          seccion = 'rastreo';
+        } else if (hasWord(/\b(magie|asistente|bot|ia|cotiza|cotizaci[oó]n)\b/i)) {
+          seccion = 'magie';
+        } else if (hasWord(/\b(toolbox|herramienta|c[aá]lculo|calculadora|ups|almacenamiento)\b/i)) {
+          seccion = 'toolbox';
+        } else if (hasWord(/\b(fiesta|radio|m[uú]sica|dj|mix)\b/i)) {
+          seccion = 'fiesta';
         }
       }
 
@@ -5003,6 +5039,14 @@
           itemBadgeText = '🎓 Capacitación';
           itemBadgeBg = '#e8f1ff';
           itemBadgeTxt = '#005bbb';
+        }
+        // 8. Puntos de Maestría y Horas Técnicas
+        else if (tab === 'maestria' || hasWord(/\b(maestr[ií]a|horas?\s+t[eé]cnicas?|horas?\s+de\s+experiencia|acreditaci[oó]n)\b/i)) {
+          itemIcon = 'fa-award';
+          itemColor = '#d97706';
+          itemBadgeText = '🎖️ Maestría';
+          itemBadgeBg = '#fef3c7';
+          itemBadgeTxt = '#b45309';
         }
       }
 
