@@ -279,8 +279,46 @@
             text-overflow: ellipsis;
             white-space: nowrap;
           }
+          /* Widget tráfico */
+          .mgm-trafico-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: var(--text-muted, #64748b);
+            background: transparent;
+            padding: 3px 0;
+            cursor: pointer;
+            user-select: none;
+            transition: opacity 0.2s ease;
+            white-space: nowrap;
+          }
+          .mgm-trafico-container:active { opacity: 0.6; }
+          .mgm-trafico-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+            background: #94a3b8;
+            transition: background 0.4s ease;
+          }
+          .mgm-trafico-texto {
+            font-weight: 600;
+            color: var(--text-dark, #334155);
+            font-size: 11.5px;
+          }
         </style>
         <div class="mgm-clima-wrapper">
+          <!-- Widget Tráfico (izquierda) -->
+          <div id="mgm-trafico-widget" class="mgm-trafico-container" onclick="refrescarTrafico(true)" title="Toca para actualizar tráfico" style="display:none;">
+            <i class="fa-solid fa-car" style="font-size: 10.5px; opacity: 0.75; color: var(--text-muted, #64748b);"></i>
+            <span id="mgm-trafico-icono" class="mgm-trafico-dot"></span>
+            <span id="mgm-trafico-texto" class="mgm-trafico-texto">Tráfico...</span>
+          </div>
+          <!-- Separador (solo si ambos activos) -->
+          <span id="mgm-widgets-sep" style="flex:1;"></span>
+          <!-- Widget Clima (derecha) -->
           <div id="mgm-clima-widget" class="mgm-clima-container" onclick="refrescarClima(true)" title="Toca para actualizar clima">
             <span id="mgm-clima-icono" class="mgm-clima-icono"><svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span>
             <span id="mgm-clima-temp" class="mgm-clima-temp">--°C</span>
@@ -3701,12 +3739,33 @@
             <div class="setting-info">
               <span class="setting-title"><i class="fa-solid fa-cloud-sun"
                   style="color:#0284c7; width: 16px; text-align: center;"></i> Widget de Clima</span>
-              <span class="setting-desc">Muestra temperatura y condición en la barra superior</span>
+              <span class="setting-desc">Muestra temperatura y condición en la pantalla de inicio</span>
             </div>
             <label class="toggle-switch">
               <input type="checkbox" id="set-widget-clima" onchange="toggleClimaWidget(this.checked)">
               <span class="toggle-slider"></span>
             </label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title"><i class="fa-solid fa-car-burst"
+                  style="color:#dc2626; width: 16px; text-align: center;"></i> Widget de Tráfico</span>
+              <span class="setting-desc">Estado del tráfico en tiempo real (requiere API key TomTom)</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="set-widget-trafico" onchange="toggleTraficoWidget(this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div id="set-trafico-key-row" style="margin-top: 6px; padding: 10px 12px; background: rgba(241, 245, 249, 0.6); border: 1px solid #e2e8f0; border-radius: 10px; display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 11.5px; font-weight: 600; color: #475569;">API Key TomTom</span>
+              <a href="https://developer.tomtom.com" target="_blank" rel="noopener" style="font-size: 11px; color: #0284c7; text-decoration: none; font-weight: 500;">Obtener gratis <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 9px;"></i></a>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="set-tomtom-key" placeholder="Pega tu API Key de TomTom aquí" style="flex: 1; font-size: 12px; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; background: #fff;" onchange="guardarTomTomKey(this.value)">
+              <button type="button" onclick="guardarTomTomKey(document.getElementById('set-tomtom-key').value)" style="background: #0f172a; color: #fff; border: none; border-radius: 8px; padding: 0 12px; font-size: 11.5px; font-weight: 600; cursor: pointer;">Guardar</button>
+            </div>
           </div>
         </div>
 
@@ -6587,6 +6646,11 @@
             if (cachedStr) {
               const cached = JSON.parse(cachedStr);
               if (cached && cached.temp !== undefined && (Date.now() - (cached.ts || 0)) < 30 * 60 * 1000) {
+                if (cached.lat && cached.lon) {
+                  window.MGM_GEO = window.MGM_GEO || {};
+                  window.MGM_GEO.lat = cached.lat;
+                  window.MGM_GEO.lon = cached.lon;
+                }
                 actualizarClimaUI(cached.temp, cached.icono, cached.ciudad, cached.texto);
                 return;
               }
@@ -6597,10 +6661,15 @@
         let lat = CLIMA_DEFECTO.lat, lon = CLIMA_DEFECTO.lon, ciudad = CLIMA_DEFECTO.nombre;
 
         // 1. GPS del navegador (preciso a nivel de corregimiento/ciudad real)
+        window.MGM_GEO = window.MGM_GEO || { lat: null, lon: null };
         const gpsOk = await new Promise((resolve) => {
           if (!navigator.geolocation) { resolve(false); return; }
           navigator.geolocation.getCurrentPosition(
-            (pos) => { lat = pos.coords.latitude; lon = pos.coords.longitude; resolve(true); },
+            (pos) => {
+              lat = pos.coords.latitude; lon = pos.coords.longitude;
+              window.MGM_GEO.lat = lat; window.MGM_GEO.lon = lon; // compartir con tráfico
+              resolve(true);
+            },
             () => resolve(false),
             { timeout: 6000, maximumAge: 15 * 60 * 1000 }
           );
@@ -6627,6 +6696,7 @@
               const gd = await geoRes.json();
               if (gd && gd.latitude && gd.longitude) {
                 lat = parseFloat(gd.latitude); lon = parseFloat(gd.longitude);
+                window.MGM_GEO.lat = lat; window.MGM_GEO.lon = lon;
                 if (gd.city) ciudad = gd.city.replace(/City/i, '').trim();
               }
             }
@@ -6643,7 +6713,7 @@
           const cond = obtenerCondicionClima(data.current.weather_code);
           actualizarClimaUI(temp, cond.icono, ciudad, cond.texto);
           try {
-            localStorage.setItem(CACHE_KEY, JSON.stringify({ temp, icono: cond.icono, texto: cond.texto, ciudad, ts: Date.now() }));
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ temp, icono: cond.icono, texto: cond.texto, ciudad, lat, lon, ts: Date.now() }));
           } catch (eCache) { }
         } catch (err) {
           const tempEl = document.getElementById('mgm-clima-temp');
@@ -6697,6 +6767,298 @@
       } else {
         cargarClima();
         syncClimaSettingUI();
+      }
+    })();
+  </script>
+
+  <!-- =====================================================================
+       WIDGET DE TRÁFICO MGM HUB (TomTom Traffic Flow + GPS/IP compartido)
+       ===================================================================== -->
+  <script>
+    (function () {
+      const TRAFICO_CACHE_KEY = 'MGM_CACHE_TRAFICO';
+      const TRAFICO_SETTING_KEY = 'MGM_SETTING_TRAFICO';
+      const TOMTOM_KEY_KEY = 'MGM_TOMTOM_KEY';
+      const TOMTOM_KEY_DEFAULT = 'OWzpAf47TH8sVh6FkuQGydSNXqtJ7tlM';
+      const COORDS_DEFECTO = { lat: 8.9824, lon: -79.5199 }; // Panamá / Vía España
+
+      function actualizarTraficoUI(ratio, currentSpeed, freeFlowSpeed, roadClosure) {
+        const dotEl = document.getElementById('mgm-trafico-icono');
+        const textEl = document.getElementById('mgm-trafico-texto');
+        const widget = document.getElementById('mgm-trafico-widget');
+        if (!dotEl || !textEl) return;
+
+        let estado = 'Fluido';
+        let color = '#22c55e'; // Verde
+        let shadow = 'rgba(34, 197, 94, 0.45)';
+
+        if (roadClosure) {
+          estado = 'Vía Cerrada';
+          color = '#ef4444';
+          shadow = 'rgba(239, 68, 68, 0.45)';
+        } else if (ratio >= 0.8) {
+          // > 80% del límite: Tráfico Fluido
+          estado = 'Fluido';
+          color = '#22c55e';
+          shadow = 'rgba(34, 197, 94, 0.45)';
+        } else if (ratio >= 0.4) {
+          // 40% - 80%: Tráfico Denso
+          estado = 'Denso';
+          color = '#eab308';
+          shadow = 'rgba(234, 179, 8, 0.45)';
+        } else {
+          // < 40%: Tráfico Lento / Congestión
+          estado = 'Lento';
+          color = '#ef4444';
+          shadow = 'rgba(239, 68, 68, 0.45)';
+        }
+
+        dotEl.style.background = color;
+        dotEl.style.boxShadow = `0 0 6px ${shadow}`;
+        textEl.textContent = estado;
+
+        if (widget) {
+          const vAct = currentSpeed != null ? Math.round(currentSpeed) : '--';
+          const vLibre = freeFlowSpeed != null ? Math.round(freeFlowSpeed) : '--';
+          widget.title = `Tráfico: ${estado} (${vAct} km/h vs ${vLibre} km/h límite). Toca para actualizar.`;
+        }
+      }
+
+      function mostrarEstadoConfig(mensaje, color) {
+        const dotEl = document.getElementById('mgm-trafico-icono');
+        const textEl = document.getElementById('mgm-trafico-texto');
+        const widget = document.getElementById('mgm-trafico-widget');
+        if (dotEl) {
+          dotEl.style.background = color || '#f59e0b';
+          dotEl.style.boxShadow = 'none';
+        }
+        if (textEl) textEl.textContent = mensaje || 'Configurar';
+        if (widget) widget.title = 'Toca para ingresar o actualizar tu API Key de TomTom';
+      }
+
+      async function obtenerCoordenadas() {
+        // 1. Reutilizar coordenadas del clima (GPS ya aceptado)
+        if (window.MGM_GEO && window.MGM_GEO.lat && window.MGM_GEO.lon) {
+          return { lat: window.MGM_GEO.lat, lon: window.MGM_GEO.lon };
+        }
+
+        // 2. Caché del clima
+        try {
+          const climaCache = localStorage.getItem('MGM_CACHE_CLIMA');
+          if (climaCache) {
+            const parsed = JSON.parse(climaCache);
+            if (parsed.lat && parsed.lon) {
+              window.MGM_GEO = window.MGM_GEO || {};
+              window.MGM_GEO.lat = parsed.lat;
+              window.MGM_GEO.lon = parsed.lon;
+              return { lat: parsed.lat, lon: parsed.lon };
+            }
+          }
+        } catch (e) { }
+
+        // 3. Fallback IP silencioso
+        try {
+          const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
+          if (geoRes.ok) {
+            const gd = await geoRes.json();
+            if (gd && gd.latitude && gd.longitude) {
+              const coords = { lat: parseFloat(gd.latitude), lon: parseFloat(gd.longitude) };
+              window.MGM_GEO = window.MGM_GEO || {};
+              window.MGM_GEO.lat = coords.lat;
+              window.MGM_GEO.lon = coords.lon;
+              return coords;
+            }
+          }
+        } catch (e) { }
+
+        return COORDS_DEFECTO;
+      }
+
+      async function cargarTrafico(forzar) {
+        const widget = document.getElementById('mgm-trafico-widget');
+        if (!widget) return;
+
+        const traficoHabilitado = localStorage.getItem(TRAFICO_SETTING_KEY) !== 'false';
+        if (!traficoHabilitado) {
+          widget.style.display = 'none';
+          return;
+        }
+        widget.style.display = 'inline-flex';
+
+        const apiKey = (localStorage.getItem(TOMTOM_KEY_KEY) || TOMTOM_KEY_DEFAULT).trim();
+        if (!apiKey) {
+          mostrarEstadoConfig('Tráfico (Config Key)', '#f59e0b');
+          return;
+        }
+
+        // Caché de 5 minutos (preserva cuota gratuita de TomTom)
+        if (!forzar) {
+          try {
+            const cachedStr = localStorage.getItem(TRAFICO_CACHE_KEY);
+            if (cachedStr) {
+              const cached = JSON.parse(cachedStr);
+              if (cached && (Date.now() - (cached.ts || 0)) < 5 * 60 * 1000) {
+                actualizarTraficoUI(cached.ratio, cached.currentSpeed, cached.freeFlowSpeed, cached.roadClosure);
+                return;
+              }
+            }
+          } catch (e) { }
+        }
+
+        const textEl = document.getElementById('mgm-trafico-texto');
+        if (textEl && !forzar) textEl.textContent = 'Tráfico...';
+
+        try {
+          const coords = await obtenerCoordenadas();
+          let ratio = 1, currentSpeed = null, freeFlowSpeed = null, roadClosure = false;
+          let exito = false;
+
+          // Intento 1: TomTom Flow Segment Data (para zonas con cobertura de malla de flujo)
+          try {
+            const flowUrl = `https://api.tomtom.com/traffic/services/4/flowSegmentData/relative0/10/json?point=${coords.lat},${coords.lon}&unit=KMPH&key=${encodeURIComponent(apiKey)}`;
+            const resFlow = await fetch(flowUrl);
+            if (resFlow.status === 403 || resFlow.status === 401) {
+              mostrarEstadoConfig('Key TomTom Inválida', '#ef4444');
+              return;
+            }
+            if (resFlow.ok) {
+              const flowData = await resFlow.json();
+              const flow = flowData.flowSegmentData;
+              if (flow) {
+                currentSpeed = flow.currentSpeed != null ? flow.currentSpeed : 0;
+                freeFlowSpeed = flow.freeFlowSpeed != null ? flow.freeFlowSpeed : (currentSpeed || 1);
+                ratio = freeFlowSpeed > 0 ? (currentSpeed / freeFlowSpeed) : 1;
+                roadClosure = !!flow.roadClosure;
+                exito = true;
+              }
+            }
+          } catch (eFlow) { }
+
+          // Intento 2: TomTom Routing API con tráfico en tiempo real (cobertura total en Panamá y Arraiján)
+          if (!exito) {
+            const latDest = coords.lat + 0.012;
+            const lonDest = coords.lon + 0.012;
+            const routeUrl = `https://api.tomtom.com/routing/1/calculateRoute/${coords.lat},${coords.lon}:${latDest},${lonDest}/json?key=${encodeURIComponent(apiKey)}&traffic=true&travelMode=car`;
+            const resRoute = await fetch(routeUrl);
+            if (resRoute.status === 403 || resRoute.status === 401) {
+              mostrarEstadoConfig('Key TomTom Inválida', '#ef4444');
+              return;
+            }
+            if (!resRoute.ok) throw new Error(`HTTP ${resRoute.status}`);
+            const routeData = await resRoute.json();
+            const summary = routeData.routes && routeData.routes[0] && routeData.routes[0].summary;
+            if (!summary) throw new Error('Sin resumen de ruta');
+
+            const travelTime = summary.travelTimeInSeconds || 1;
+            const trafficDelay = summary.trafficDelayInSeconds || 0;
+            const freeFlowTime = Math.max(1, travelTime - trafficDelay);
+
+            // Ratio según el retraso del tráfico
+            ratio = freeFlowTime / travelTime;
+            const lengthKm = (summary.lengthInMeters || 1000) / 1000;
+            currentSpeed = Math.round((lengthKm / (travelTime / 3600)));
+            freeFlowSpeed = Math.round((lengthKm / (freeFlowTime / 3600)));
+            roadClosure = false;
+            exito = true;
+          }
+
+          actualizarTraficoUI(ratio, currentSpeed, freeFlowSpeed, roadClosure);
+
+          try {
+            localStorage.setItem(TRAFICO_CACHE_KEY, JSON.stringify({
+              ratio,
+              currentSpeed,
+              freeFlowSpeed,
+              roadClosure,
+              ts: Date.now()
+            }));
+          } catch (eCache) { }
+        } catch (err) {
+          console.warn('[MGM Tráfico] Error al consultar TomTom:', err);
+          const tEl = document.getElementById('mgm-trafico-texto');
+          if (tEl && (tEl.textContent === 'Tráfico...' || tEl.textContent === '')) {
+            tEl.textContent = 'Tráfico N/D';
+          }
+        }
+      }
+
+      window.refrescarTrafico = function (mostrarToast) {
+        const apiKey = (localStorage.getItem(TOMTOM_KEY_KEY) || TOMTOM_KEY_DEFAULT).trim();
+        if (!apiKey) {
+          const ingresada = prompt('Ingresa tu API Key de TomTom (puedes crear una cuenta gratis con 2,500 consultas/día en https://developer.tomtom.com):');
+          if (ingresada && ingresada.trim()) {
+            window.guardarTomTomKey(ingresada.trim());
+          }
+          return;
+        }
+
+        const widget = document.getElementById('mgm-trafico-widget');
+        if (widget) {
+          widget.style.opacity = '0.5';
+          setTimeout(() => { widget.style.opacity = ''; }, 400);
+        }
+
+        cargarTrafico(true).then(() => {
+          if (mostrarToast && typeof window.showToast === 'function') {
+            const estado = document.getElementById('mgm-trafico-texto')?.textContent || '';
+            window.showToast(`Estado del tráfico: ${estado}`, 'fa-solid fa-car');
+          }
+        });
+      };
+
+      window.guardarTomTomKey = function (key) {
+        const limpia = (key || '').trim();
+        if (limpia) {
+          localStorage.setItem(TOMTOM_KEY_KEY, limpia);
+          if (typeof window.showToast === 'function') {
+            window.showToast('API Key de TomTom guardada correctamente', 'fa-solid fa-circle-check');
+          }
+        } else {
+          localStorage.removeItem(TOMTOM_KEY_KEY);
+        }
+        const input = document.getElementById('set-tomtom-key');
+        if (input) input.value = limpia;
+        cargarTrafico(true);
+      };
+
+      window.toggleTraficoWidget = function (enabled) {
+        localStorage.setItem(TRAFICO_SETTING_KEY, enabled ? 'true' : 'false');
+        const widget = document.getElementById('mgm-trafico-widget');
+        if (widget) {
+          widget.style.display = enabled ? 'inline-flex' : 'none';
+        }
+        const keyRow = document.getElementById('set-trafico-key-row');
+        if (keyRow) {
+          keyRow.style.display = enabled ? 'block' : 'none';
+        }
+        if (enabled) {
+          cargarTrafico();
+        }
+      };
+
+      function syncTraficoSettingUI() {
+        const enabled = localStorage.getItem(TRAFICO_SETTING_KEY) !== 'false';
+        const chk = document.getElementById('set-widget-trafico');
+        if (chk) chk.checked = enabled;
+
+        const keyRow = document.getElementById('set-trafico-key-row');
+        if (keyRow) keyRow.style.display = enabled ? 'block' : 'none';
+
+        const inputKey = document.getElementById('set-tomtom-key');
+        if (inputKey) inputKey.value = localStorage.getItem(TOMTOM_KEY_KEY) || TOMTOM_KEY_DEFAULT;
+
+        const widget = document.getElementById('mgm-trafico-widget');
+        if (widget) widget.style.display = enabled ? 'inline-flex' : 'none';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          syncTraficoSettingUI();
+          cargarTrafico();
+        });
+      } else {
+        syncTraficoSettingUI();
+        cargarTrafico();
       }
     })();
   </script>
