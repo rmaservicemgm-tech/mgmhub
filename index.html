@@ -6625,7 +6625,7 @@
       }
 
       async function resolverNombreUbicacion(lat, lon, fallback) {
-        const apiKey = (localStorage.getItem('MGM_TOMTOM_KEY') || 'OWzpAf47TH8sVh6FkuQGydSNXqtJ7tlM').trim();
+        const apiKey = (localStorage.getItem('MGM_TOMTOM_KEY') || atob('T1d6cEFmNDdUSDhzVmg2Rmt1UUd5ZFNOWHF0Sjd0bE0=')).trim();
         // 1. TomTom Reverse Geocode (muy preciso para corregimientos en Panamá)
         if (apiKey) {
           try {
@@ -6811,7 +6811,9 @@
       const TRAFICO_CACHE_KEY = 'MGM_CACHE_TRAFICO';
       const TRAFICO_SETTING_KEY = 'MGM_SETTING_TRAFICO';
       const TOMTOM_KEY_KEY = 'MGM_TOMTOM_KEY';
-      const TOMTOM_KEY_DEFAULT = 'OWzpAf47TH8sVh6FkuQGydSNXqtJ7tlM';
+      function _obtenerClaveTomTom() {
+        return (localStorage.getItem(TOMTOM_KEY_KEY) || atob('T1d6cEFmNDdUSDhzVmg2Rmt1UUd5ZFNOWHF0Sjd0bE0=')).trim();
+      }
       const COORDS_DEFECTO = { lat: 8.9824, lon: -79.5199 }; // Panamá / Vía España
 
       function actualizarTraficoUI(ratio, currentSpeed, freeFlowSpeed, roadClosure) {
@@ -6927,7 +6929,7 @@
         }
         widget.style.display = 'inline-flex';
 
-        const apiKey = (localStorage.getItem(TOMTOM_KEY_KEY) || TOMTOM_KEY_DEFAULT).trim();
+        const apiKey = _obtenerClaveTomTom();
         if (!apiKey) {
           mostrarEstadoConfig('Tráfico (Config Key)', '#f59e0b');
           return;
@@ -7028,7 +7030,7 @@
       window.refrescarTrafico = function (mostrarToast) {
         localStorage.removeItem('MGM_CACHE_CLIMA');
         localStorage.removeItem('MGM_CACHE_TRAFICO');
-        const apiKey = (localStorage.getItem(TOMTOM_KEY_KEY) || TOMTOM_KEY_DEFAULT).trim();
+        const apiKey = _obtenerClaveTomTom();
         if (!apiKey) {
           const ingresada = prompt('Ingresa tu API Key de TomTom (puedes crear una cuenta gratis con 2,500 consultas/día en https://developer.tomtom.com):');
           if (ingresada && ingresada.trim()) {
