@@ -609,7 +609,66 @@
   // MÓDULO DE NAVEGACIÓN PRINCIPAL (Bottom Nav Tabs)
   // ══════════════════════════════════════════════════════════════════════════════
 
+  function initializeAppBackNavigation() {
+    if (window._mgmBackNavigationReady) return;
+
+    const currentUrl = window.location.pathname + window.location.search + window.location.hash;
+    const initialTab = state.activeTab === 'home' ? 'home' : state.activeTab;
+    history.replaceState({ mgmAppNavigation: true, tab: 'home', kind: 'root' }, document.title, currentUrl);
+    history.pushState({ mgmAppNavigation: true, tab: 'home', kind: 'guard' }, document.title, currentUrl);
+    if (initialTab !== 'home') {
+      history.pushState({ mgmAppNavigation: true, tab: initialTab, kind: 'view' }, document.title, currentUrl);
+    }
+
+    window._mgmBackNavigationReady = true;
+    window._mgmHandlingPopstate = false;
+    window._mgmIgnoreNextPopstate = false;
+    let lastHomeBackAt = 0;
+
+    window.addEventListener('popstate', event => {
+      if (window._mgmIgnoreNextPopstate) {
+        window._mgmIgnoreNextPopstate = false;
+        return;
+      }
+
+      const activeModals = document.querySelectorAll('.app-modal.active');
+      const activeModal = activeModals.length ? activeModals[activeModals.length - 1] : null;
+      const splash = document.getElementById('imou-splash');
+      const splashIsOpen = splash && splash.classList.contains('show');
+
+      if (activeModal || splashIsOpen) {
+        if (activeModal) closeAppModal(activeModal.id);
+        else if (typeof window.closeSplashWidget === 'function') window.closeSplashWidget();
+        history.pushState({ mgmAppNavigation: true, tab: state.activeTab || 'home', kind: 'view' }, document.title, window.location.href);
+        lastHomeBackAt = 0;
+        return;
+      }
+
+      const target = event.state;
+      if (target && target.mgmAppNavigation && target.tab && target.tab !== state.activeTab) {
+        window._mgmHandlingPopstate = true;
+        window.switchMainTab(target.tab);
+        window._mgmHandlingPopstate = false;
+      }
+
+      if (target && target.mgmAppNavigation && target.kind === 'root' && state.activeTab === 'home') {
+        const now = Date.now();
+        if (now - lastHomeBackAt <= 2000) {
+          lastHomeBackAt = 0;
+          window._mgmIgnoreNextPopstate = true;
+          history.back();
+          return;
+        }
+
+        lastHomeBackAt = now;
+        if (typeof showToast === 'function') showToast('Presiona Atrás otra vez para salir', 'fa-solid fa-arrow-left');
+        history.pushState({ mgmAppNavigation: true, tab: 'home', kind: 'guard' }, document.title, window.location.href);
+      }
+    });
+  }
+
   window.switchMainTab = function (tabName) {
+    const previousTab = state.activeTab;
     document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
@@ -711,6 +770,10 @@
     }
     if (tabName === 'maestria') {
       loadMaestriaData();
+    }
+
+    if (window._mgmBackNavigationReady && !window._mgmHandlingPopstate && tabName !== previousTab) {
+      history.pushState({ mgmAppNavigation: true, tab: tabName, kind: 'view' }, document.title, window.location.href);
     }
   };
 
@@ -5504,10 +5567,13 @@
       // Pequeño delay para dejar que los datos carguen antes de navegar
       setTimeout(() => {
         navigateTo(_seccion);
+        initializeAppBackNavigation();
         if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
       }, 400);
       // Limpiar la URL para que no se repita en recargas
       history.replaceState({}, document.title, window.location.pathname);
+    } else {
+      initializeAppBackNavigation();
     }
 
     // ── SERVICE WORKER: Escuchar mensajes de navegación desde notificaciones ─
