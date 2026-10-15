@@ -757,14 +757,16 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
    MODALES GENERALES & PANTALLA COMPLETA
    ========================================================================== */
 .app-modal {
-  display: none; position: fixed; inset: 0; z-index: 8000;
+  display: none; position: fixed; inset: 0; z-index: 2147483647;
   background: rgba(0, 33, 74, 0.6);
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   align-items: center; justify-content: center; padding: 16px;
+  isolation: isolate;
 }
 .app-modal.active {
   display: flex;
   animation: modalPop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  z-index: 2147483647;
 }
 @keyframes modalPop {
   from { opacity: 0; transform: scale(0.92); }
@@ -3432,6 +3434,364 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
   padding: 30px 16px;
   color: var(--text-muted);
   font-size: 14px;
+}
+
+/* ==========================================================================
+   GALERÍA DE PREMIOS POR PUNTOS
+   ========================================================================== */
+.app-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 30, 53, 0.52);
+  backdrop-filter: blur(6px);
+  padding: 16px;
+  z-index: 2147483646;
+}
+.app-modal.active {
+  display: flex;
+}
+
+.reward-gallery-section {
+  margin: 6px 16px 20px;
+  background: transparent;
+}
+
+.reward-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.reward-gallery-card {
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.reward-gallery-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 115, 230, 0.35);
+  box-shadow: 0 10px 24px rgba(0, 33, 74, 0.09);
+}
+
+.reward-gallery-image-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #f8fbff, #edf4ff);
+  overflow: hidden;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.reward-gallery-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  padding: 8px;
+  background: linear-gradient(135deg, #f8fbff, #ffffff);
+}
+
+.reward-gallery-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 42px;
+  color: #cbd5e1;
+}
+
+.reward-gallery-badge {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #e0fdf2, #d1fae5);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #047857;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1px;
+}
+
+.reward-gallery-body {
+  padding: 10px 10px 12px;
+}
+
+.reward-gallery-model {
+  display: inline-block;
+  background: #eef4ff;
+  color: #1d4ed8;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 4px 7px;
+  margin-bottom: 8px;
+}
+
+.reward-gallery-body h3 {
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--text-dark);
+  margin: 0 0 6px;
+  min-height: 36px;
+}
+
+.reward-gallery-body p {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-muted);
+  margin: 0;
+  min-height: 34px;
+}
+
+.reward-gallery-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.reward-gallery-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.reward-gallery-status.available {
+  background: #ecfdf5;
+  color: #15803d;
+}
+
+.reward-gallery-status.soldout {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.reward-gallery-validity {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.rewards-gallery-empty {
+  background: #fff;
+  border: 1px dashed var(--border-mid);
+  border-radius: 14px;
+  padding: 18px 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.reward-modal-card {
+  position: relative;
+  width: min(100%, 430px);
+  background: #fff;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 18px 50px rgba(15, 30, 53, 0.22);
+}
+
+.reward-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  border-radius: 50%;
+  color: #334155;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.reward-modal-hero {
+  position: relative;
+  padding: 22px 20px 0;
+  background: linear-gradient(180deg, #f8fbff 0%, #f1f7ff 100%);
+}
+
+.reward-modal-img-wrap {
+  width: 100%;
+  height: 260px;
+  background: linear-gradient(135deg, #f4f8ff, #ecf8f3);
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.reward-modal-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 12px;
+}
+
+.reward-modal-points-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #d1fae5, #bbf7d0);
+  color: #065f46;
+  font-size: 14px;
+  font-weight: 800;
+  border: 1px solid rgba(22, 163, 74, 0.18);
+}
+
+.reward-modal-body {
+  padding: 12px 18px 18px;
+}
+
+.reward-modal-header-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.reward-modal-model {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #eef4ff;
+  color: #1d4ed8;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.reward-modal-validity {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.reward-modal-title {
+  font-size: clamp(22px, 5vw, 32px);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--text-dark);
+  margin: 0 0 8px;
+}
+
+.reward-modal-desc {
+  color: var(--text-body);
+  font-size: 14px;
+  line-height: 1.58;
+  margin: 0;
+}
+
+.reward-modal-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.reward-modal-stock {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.reward-modal-user-status {
+  margin-top: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 12px;
+  color: var(--text-body);
+  font-size: 12.5px;
+}
+
+.reward-modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.reward-modal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+  min-height: 46px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  font-family: inherit;
+}
+
+.reward-modal-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.98);
+}
+
+.reward-modal-btn.primary {
+  background: linear-gradient(135deg, #16a34a, #10b981);
+  color: #fff;
+}
+
+.reward-modal-btn.secondary {
+  background: #f8fafc;
+  color: var(--primary-blue);
+  border: 1px solid rgba(0, 115, 230, 0.24);
+}
+
+@media (max-width: 420px) {
+  .reward-gallery-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .reward-modal-actions {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ==========================================================================

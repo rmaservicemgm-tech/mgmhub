@@ -401,6 +401,16 @@
           </div>
         </div>
 
+        <div class="quick-card" data-card-id="premios" onclick="switchMainTab('premios')">
+          <div class="card-icon-pill pill-premios" style="background: rgba(16, 185, 129, 0.15); color: #10b981; position:relative;">
+            <i class="fa-solid fa-gift"></i>
+          </div>
+          <div>
+            <div class="card-title">Premios</div>
+            <div class="card-desc">Explora el catálogo completo por puntos</div>
+          </div>
+        </div>
+
         <div class="quick-card" data-card-id="promos" onclick="switchMainTab('promos')">
           <div class="card-icon-pill pill-promos" style="position:relative;">
             <i class="fa-solid fa-fire"></i>
@@ -496,7 +506,7 @@
       <!-- SECCIÓN: PREMIOS CANJEABLES POR PUNTOS -->
       <div class="section-header" style="margin-top: 10px;">
         <h2 class="section-title"><i class="fa-solid fa-gift" style="color: #10b981;"></i> Premios por Puntos</h2>
-        <span class="section-link" onclick="switchMainTab('puntos')">Mis Puntos →</span>
+        <span class="section-link" onclick="switchMainTab('premios')">Ver catálogo →</span>
       </div>
 
       <div class="premios-slider-container" id="home-premios-slider">
@@ -3117,6 +3127,17 @@
     </main>
 
 
+    <main id="view-premios" class="view-container">
+      <div class="section-header" style="margin: 16px 16px 10px;">
+        <h2 class="section-title"><i class="fa-solid fa-gift" style="color: #10b981;"></i> Premios por Puntos</h2>
+        <span class="section-link" onclick="switchMainTab('puntos')">Mis Puntos →</span>
+      </div>
+
+      <div class="reward-gallery-section" style="margin-top: 0;">
+        <div id="premios-catalog-grid" class="reward-gallery-grid"></div>
+      </div>
+    </main>
+
     <nav class="bottom-nav">
       <button class="nav-item active" data-tab="home" onclick="switchMainTab('home')">
         <i class="fa-solid fa-house nav-icon"></i>
@@ -3126,6 +3147,11 @@
       <button class="nav-item" data-tab="puntos" onclick="switchMainTab('puntos')">
         <i class="fa-solid fa-coins nav-icon"></i>
         <span class="nav-label">Puntos</span>
+      </button>
+
+      <button class="nav-item" data-tab="premios" onclick="switchMainTab('premios')">
+        <i class="fa-solid fa-gift nav-icon"></i>
+        <span class="nav-label">Premios</span>
       </button>
 
       <button class="nav-item" data-tab="agenda" onclick="switchMainTab('agenda')">
@@ -7105,6 +7131,44 @@
       }
     })();
   </script>
+
+  <div id="modal-premio-detail" class="app-modal" role="dialog" aria-modal="true" aria-label="Detalle de premio">
+    <div class="reward-modal-card">
+      <button type="button" class="reward-modal-close" onclick="closeAppModal('modal-premio-detail')" aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="reward-modal-hero">
+        <div id="modal-premio-img-wrap" class="reward-modal-img-wrap"></div>
+        <div id="modal-premio-pts-badge" class="reward-modal-points-badge"></div>
+      </div>
+
+      <div class="reward-modal-body">
+        <div class="reward-modal-header-line">
+          <span id="modal-premio-model" class="reward-modal-model"></span>
+          <span id="modal-premio-validez" class="reward-modal-validity"></span>
+        </div>
+
+        <h3 id="modal-premio-title" class="reward-modal-title"></h3>
+        <p id="modal-premio-desc" class="reward-modal-desc"></p>
+
+        <div class="reward-modal-meta-row">
+          <span id="modal-premio-stock" class="reward-modal-stock"></span>
+        </div>
+
+        <div id="modal-premio-user-status" class="reward-modal-user-status"></div>
+
+        <div class="reward-modal-actions">
+          <a id="modal-premio-btn-tienda" class="reward-modal-btn secondary" target="_blank" rel="noreferrer">
+            <i class="fa-solid fa-store"></i> Ver ficha
+          </a>
+          <button type="button" class="reward-modal-btn primary" onclick="actionCanjearPremio()">
+            <i class="fa-solid fa-gift"></i> Canjear
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

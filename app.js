@@ -19,7 +19,7 @@
     /** 🎊 Confeti bilateral grande — Registro nuevo exitoso */
     celebrate() {
       if (typeof confetti === 'undefined') return;
-      const opts = { particleCount: 80, spread: 70, startVelocity: 45, ticks: 300, colors: this._colors, zIndex: 99999 };
+      const opts = { particleCount: 80, spread: 70, startVelocity: 45, ticks: 300, colors: this._colors, zIndex: 2147483647 };
       confetti({ ...opts, origin: { x: 0.1, y: 0.6 }, angle: 60 });
       confetti({ ...opts, origin: { x: 0.9, y: 0.6 }, angle: 120 });
       setTimeout(() => {
@@ -32,7 +32,7 @@
       if (typeof confetti === 'undefined') return;
       confetti({
         particleCount: 100, spread: 80, startVelocity: 40, ticks: 250,
-        colors: this._goldColors, zIndex: 99999,
+        colors: this._goldColors, zIndex: 2147483647,
         origin: { x: 0.5, y: 0.55 },
         shapes: ['star', 'circle']
       });
@@ -45,8 +45,8 @@
       const end = Date.now() + duration;
       const colors = this._birthdayColors;
       const frame = () => {
-        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0, y: 0.65 }, colors, zIndex: 99999 });
-        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1, y: 0.65 }, colors, zIndex: 99999 });
+        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0, y: 0.65 }, colors, zIndex: 2147483647 });
+        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1, y: 0.65 }, colors, zIndex: 2147483647 });
         if (Date.now() < end) requestAnimationFrame(frame);
       };
       frame();
@@ -60,7 +60,7 @@
       confetti({
         particleCount: 30, spread: 55, startVelocity: 25, ticks: 120,
         colors: ['#ef4444', '#f87171', '#fecaca', '#f59e0b', '#ffffff'],
-        origin: { x: nx, y: ny }, zIndex: 99999, gravity: 1.2, scalar: 0.8
+        origin: { x: nx, y: ny }, zIndex: 2147483647, gravity: 1.2, scalar: 0.8
       });
     },
 
@@ -69,7 +69,7 @@
       if (typeof confetti === 'undefined') return;
       confetti({
         particleCount: 60, spread: 90, startVelocity: 30, ticks: 180,
-        colors: this._blueColors, zIndex: 99999,
+        colors: this._blueColors, zIndex: 2147483647,
         origin: { x: 0.5, y: 0.4 }, scalar: 0.9
       });
     }
@@ -620,6 +620,14 @@
         renderPromosGallery();
       }
     }
+    if (tabName === 'premios') {
+      if (!state.rewards || state.rewards.length === 0) {
+        state.rewards = DEMO_REWARDS.filter(isRewardActive);
+        loadHomeRewards();
+      } else {
+        renderRewardGallery();
+      }
+    }
     if (tabName === 'home') {
       if (state.promos.length === 0) loadHomePromos();
       if (state.agendaEvents.length === 0) loadHomeNextEvent();
@@ -707,7 +715,7 @@
 
     // Si coincide con alguna pestaña interna conocida o deeplink interno, NO es externa
     const internalTabs = [
-      'home', 'inicio', 'puntos', 'maestria', 'agenda', 'promos', 'rma', 'asesoria', 'soporte',
+      'home', 'inicio', 'puntos', 'maestria', 'agenda', 'premios', 'promos', 'rma', 'asesoria', 'soporte',
       'toolbox', 'toolbox-calculadora-almacenamiento', 'toolbox-conversor-tecnico',
       'toolbox-calculadora-ups', 'toolbox-calculadora-voltaje', 'toolbox-calculadora-inalambrica', 'radio'
     ];
@@ -792,6 +800,8 @@
     } else if (tab === 'toolbox' && sub) {
       switchMainTab(tab + '-' + sub);
       return;
+    } else if (tab === 'rewards' || tab === 'premios') {
+      switchMainTab('premios');
     } else {
       switchMainTab(tab);
     }
@@ -882,6 +892,32 @@
         }
       };
       tryOpenPromo(0);
+    }
+
+    // --- Rewards / Premios: abrir modal del premio por ID ---
+    if (tab === 'rewards' || tab === 'premios') {
+      const tryOpenReward = (attempts) => {
+        if (Array.isArray(state.rewards) && state.rewards.length > 0) {
+          const idx = state.rewards.findIndex(r => String(r.id).toLowerCase() === String(sub).toLowerCase());
+          if (idx >= 0) {
+            openRewardDetail(idx);
+            return;
+          }
+          // fallback: si llega el ID completo con tab=reward pero el estado aún no cargó
+          const looseIdx = state.rewards.findIndex(r => String(r.id).toLowerCase().includes(String(sub || '').toLowerCase()));
+          if (looseIdx >= 0) {
+            openRewardDetail(looseIdx);
+            return;
+          }
+        }
+        if (attempts < 20) {
+          setTimeout(() => tryOpenReward(attempts + 1), 300);
+        } else {
+          // Si no hay rewards cargados aún, garantizar que la app vuelva al home y no se quede bloqueada
+          switchMainTab('home');
+        }
+      };
+      tryOpenReward(0);
     }
 
     // --- RMA: auto-llenar y buscar cuando viene número de RMA de notificación ---
@@ -986,12 +1022,22 @@
 
   window.closeAppModal = function (modalId) {
     const el = document.getElementById(modalId);
-    if (el) el.classList.remove('active');
+    if (el) {
+      el.classList.remove('active');
+      el.style.zIndex = '';
+      el.style.position = '';
+      el.style.inset = '';
+    }
   };
 
   window.openAppModal = function (modalId) {
     const el = document.getElementById(modalId);
-    if (el) el.classList.add('active');
+    if (el) {
+      el.classList.add('active');
+      el.style.position = 'fixed';
+      el.style.inset = '0';
+      el.style.zIndex = '2147483646';
+    }
   };
 
   document.addEventListener('click', e => {
@@ -2042,44 +2088,45 @@
   window.loadHomeRewards = async function () {
     const render = () => {
       const slider = document.getElementById('home-premios-slider');
-      if (!slider) return;
+      if (slider) {
+        if (!state.rewards || state.rewards.length === 0) {
+          slider.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Próximamente nuevo catálogo de premios disponibles.</div>`;
+        } else {
+          slider.innerHTML = state.rewards.map((r, idx) => {
+            const validez = formatRewardValidez(r);
+            const ptsFormatted = Number(r.puntos || 0).toLocaleString('es-PA');
 
-      if (!state.rewards || state.rewards.length === 0) {
-        slider.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; padding: 20px;">Próximamente nuevo catálogo de premios disponibles.</div>`;
-        return;
+            return `
+            <div class="premio-slide-card" onclick="openRewardDetail(${idx})">
+              <div class="premio-card-img-wrap">
+                ${r.imagen
+                ? `<img src="${r.imagen}" alt="${r.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                     <div style="display:none; font-size:42px; color:#cbd5e1; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
+                : `<div style="font-size:42px; color:#cbd5e1; display:flex; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
+              }
+                <div class="premio-pts-tag">
+                  <i class="fa-solid fa-coins"></i> ${ptsFormatted} Pts
+                </div>
+              </div>
+
+              ${r.modelo ? `<div class="premio-model-tag">MOD. ${r.modelo}</div>` : ''}
+              <div class="premio-card-title">${r.nombre}</div>
+              <div class="premio-card-desc">${(r.descripcion || '').split('\n')[0]}</div>
+
+              <div class="premio-card-footer">
+                <div class="premio-validez-text" style="color:${validez.color};">
+                  ${validez.text}
+                </div>
+                <button class="premio-btn-action" onclick="event.stopPropagation(); openRewardDetail(${idx});">
+                  Canjear
+                </button>
+              </div>
+            </div>`;
+          }).join('');
+        }
       }
 
-      slider.innerHTML = state.rewards.map((r, idx) => {
-        const validez = formatRewardValidez(r);
-        const ptsFormatted = Number(r.puntos || 0).toLocaleString('es-PA');
-
-        return `
-        <div class="premio-slide-card" onclick="openRewardDetail(${idx})">
-          <div class="premio-card-img-wrap">
-            ${r.imagen
-            ? `<img src="${r.imagen}" alt="${r.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                 <div style="display:none; font-size:42px; color:#cbd5e1; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
-            : `<div style="font-size:42px; color:#cbd5e1; display:flex; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
-          }
-            <div class="premio-pts-tag">
-              <i class="fa-solid fa-coins"></i> ${ptsFormatted} Pts
-            </div>
-          </div>
-
-          ${r.modelo ? `<div class="premio-model-tag">MOD. ${r.modelo}</div>` : ''}
-          <div class="premio-card-title">${r.nombre}</div>
-          <div class="premio-card-desc">${(r.descripcion || '').split('\n')[0]}</div>
-
-          <div class="premio-card-footer">
-            <div class="premio-validez-text" style="color:${validez.color};">
-              ${validez.text}
-            </div>
-            <button class="premio-btn-action" onclick="event.stopPropagation(); openRewardDetail(${idx});">
-              Canjear
-            </button>
-          </div>
-        </div>`;
-      }).join('');
+      window.renderRewardGallery && window.renderRewardGallery();
     };
 
     if (!state.rewards || state.rewards.length === 0) {
@@ -2101,6 +2148,51 @@
     } else {
       render();
     }
+  };
+
+  window.renderRewardGallery = function () {
+    const grid = document.getElementById('rewards-gallery-grid') || document.getElementById('premios-catalog-grid');
+    if (!grid) return;
+
+    if (!state.rewards || state.rewards.length === 0) {
+      state.rewards = DEMO_REWARDS.filter(isRewardActive);
+    }
+
+    if (!state.rewards || state.rewards.length === 0) {
+      grid.innerHTML = '<div class="rewards-gallery-empty">Próximamente aparecerá el catálogo completo de premios.</div>';
+      return;
+    }
+
+    grid.innerHTML = state.rewards.map((r, idx) => {
+      const status = (r.stock || '').toLowerCase().includes('agot') ? 'Agotado' : 'Disponible';
+      const validez = formatRewardValidez(r);
+      const ptsFormatted = Number(r.puntos || 0).toLocaleString('es-PA');
+      const shortDesc = (r.descripcion || '').split('\n')[0].substring(0, 90);
+
+      return `
+        <article class="reward-gallery-card" onclick="openRewardDetail(${idx})" aria-label="Abrir premio ${r.nombre}">
+          <div class="reward-gallery-image-wrap">
+            ${r.imagen
+              ? `<img src="${r.imagen}" alt="${r.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                 <div class="reward-gallery-placeholder" style="display:none;"><i class="fa-solid fa-gift"></i></div>`
+              : `<div class="reward-gallery-placeholder"><i class="fa-solid fa-gift"></i></div>`
+            }
+            <div class="reward-gallery-badge"><i class="fa-solid fa-coins"></i> ${ptsFormatted} Pts</div>
+          </div>
+
+          <div class="reward-gallery-body">
+            <div class="reward-gallery-model">${r.modelo ? `MOD. ${r.modelo}` : 'PREMIO MGM'}</div>
+            <h3>${r.nombre}</h3>
+            <p>${shortDesc}</p>
+
+            <div class="reward-gallery-meta">
+              <span class="reward-gallery-status ${status === 'Agotado' ? 'soldout' : 'available'}">${status}</span>
+              <span class="reward-gallery-validity" style="color:${validez.color};">${validez.text}</span>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
   };
 
   window.openRewardDetail = function (idx) {
@@ -2245,15 +2337,19 @@
     const r = state.activeRewardData;
     if (!r) return;
     const shareText = `🎁 ¡Mira este premio en MGM Hub! ${r.nombre} (${r.modelo || ''}) canjeable por ${Number(r.puntos).toLocaleString('es-PA')} MGM Puntos.`;
-    const shareUrl = r.link || window.location.href;
+    const origin = window.location.origin || 'https://rmaservicemgm-tech.github.io';
+    const shareUrl = new URL(window.location.pathname || '/', origin);
+    shareUrl.searchParams.set('tab', 'rewards');
+    shareUrl.searchParams.set('id', r.id || '');
+
     if (navigator.share) {
       navigator.share({
         title: r.nombre,
         text: shareText,
-        url: shareUrl
+        url: shareUrl.toString()
       }).catch(() => { });
     } else {
-      navigator.clipboard.writeText(shareText + ' ' + window.location.href).then(() => {
+      navigator.clipboard.writeText(shareText + ' ' + shareUrl.toString()).then(() => {
         showToast('Enlace y detalle del premio copiado al portapapeles.', 'fa-solid fa-copy');
       });
     }
@@ -4897,6 +4993,7 @@
       toolbox: { icon: 'fa-toolbox', color: '#4f46e5', badgeText: '🧰 Toolbox', badgeBg: '#e0e7ff', badgeTxt: '#3730a3' },
       fiesta: { icon: 'fa-music', color: '#f59e0b', badgeText: '📻 Fiesta', badgeBg: '#fef3c7', badgeTxt: '#b45309' },
       puntos: { icon: 'fa-star', color: '#f59e0b', badgeText: '⭐ Puntos', badgeBg: '#fef3c7', badgeTxt: '#b45309' },
+      premios: { icon: 'fa-gift', color: '#10b981', badgeText: '🎁 Premios', badgeBg: '#d1fae5', badgeTxt: '#065f46' },
       agenda: { icon: 'fa-calendar-days', color: '#6366f1', badgeText: '📅 Agenda', badgeBg: '#ede9fe', badgeTxt: '#5b21b6' },
       promos: { icon: 'fa-fire', color: '#ef4444', badgeText: '🔥 Promo', badgeBg: '#fee2e2', badgeTxt: '#b91c1c' },
       rma: { icon: 'fa-screwdriver-wrench', color: '#0f766e', badgeText: '🔧 Mi RMA', badgeBg: '#ccfbf1', badgeTxt: '#0f766e' },
@@ -4925,7 +5022,9 @@
         } else
         if (hasWord(/\b(rma|garant[ií]a|garantias|taller|reparaci[oó]n|reparar|equipo)\b/i)) {
           seccion = 'rma';
-        } else if (hasWord(/\b(punto|puntos|cumplea[nñ]os|redim|canje|canjear|saldo|acredit|ajuste)\b/i)) {
+        } else if (hasWord(/\b(premio|premios|beneficio(?:s)?\s+por\s+puntos|puntos\s+para\s+canjear|catalogo\s+de\s+premios|canje(?:s)?\s+de\s+premio|redimi[oa]s?\s+un\s+premio)\b/i)) {
+          seccion = 'premios';
+        } else if (hasWord(/\b(punto|puntos|cumplea[nñ]os|saldo|acredit|ajuste)\b/i)) {
           seccion = 'puntos:cuenta';
         } else if (hasWord(/\b(promo|oferta|descuento|rebaja|remate)\b/i)) {
           seccion = 'promos';
@@ -4991,11 +5090,11 @@
           itemBadgeBg = '#ccfbf1';
           itemBadgeTxt = '#0f766e';
         }
-        // 2. Canjes de premios de puntos
-        else if (hasWord(/\b(redim|canje|canjeado|canjeaste|canjear|recompensa)\b/i)) {
+        // 2. Premios y canjes por puntos
+        else if (tab === 'premios' || hasWord(/\b(premio|premios|redim|canje|canjeado|canjeaste|canjear|recompensa|beneficio(?:s)?\s+por\s+puntos|puntos\s+para\s+canjear)\b/i)) {
           itemIcon = 'fa-gift';
           itemColor = '#10b981';
-          itemBadgeText = '🎁 Canje';
+          itemBadgeText = '🎁 Premios';
           itemBadgeBg = '#d1fae5';
           itemBadgeTxt = '#065f46';
         }
