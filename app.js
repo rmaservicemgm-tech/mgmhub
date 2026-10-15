@@ -896,28 +896,37 @@
 
     // --- Rewards / Premios: abrir modal del premio por ID ---
     if (tab === 'rewards' || tab === 'premios') {
-      const tryOpenReward = (attempts) => {
-        if (Array.isArray(state.rewards) && state.rewards.length > 0) {
-          const idx = state.rewards.findIndex(r => String(r.id).toLowerCase() === String(sub).toLowerCase());
-          if (idx >= 0) {
-            openRewardDetail(idx);
-            return;
-          }
-          // fallback: si llega el ID completo con tab=reward pero el estado aún no cargó
-          const looseIdx = state.rewards.findIndex(r => String(r.id).toLowerCase().includes(String(sub || '').toLowerCase()));
-          if (looseIdx >= 0) {
-            openRewardDetail(looseIdx);
-            return;
+      const findRewardIndex = () => {
+        if (!Array.isArray(state.rewards)) return -1;
+        const targetId = String(sub).toLowerCase();
+        const exactIdx = state.rewards.findIndex(r => String(r.id).toLowerCase() === targetId);
+        return exactIdx >= 0
+          ? exactIdx
+          : state.rewards.findIndex(r => String(r.id).toLowerCase().includes(targetId));
+      };
+
+      const openRewardFromCatalog = async () => {
+        let idx = findRewardIndex();
+        if (idx < 0) {
+          const freshRewards = await fetchRewardsFromGAS();
+          if (freshRewards && freshRewards.length > 0) {
+            state.rewards = freshRewards;
+            localStorage.setItem('MGM_CACHE_REWARDS', JSON.stringify(freshRewards));
+            renderRewardGallery();
+            idx = findRewardIndex();
           }
         }
-        if (attempts < 20) {
-          setTimeout(() => tryOpenReward(attempts + 1), 300);
+
+        if (idx >= 0) {
+          openRewardDetail(idx);
         } else {
-          // Si no hay rewards cargados aún, garantizar que la app vuelva al home y no se quede bloqueada
-          switchMainTab('home');
+          console.warn('[MGM] Deep link premios: no se encontró el premio:', sub);
         }
       };
-      tryOpenReward(0);
+
+      openRewardFromCatalog().catch(error => {
+        console.warn('[MGM] Deep link premios: no se pudo cargar el catálogo:', error);
+      });
     }
 
     // --- RMA: auto-llenar y buscar cuando viene número de RMA de notificación ---
@@ -1036,7 +1045,7 @@
       el.classList.add('active');
       el.style.position = 'fixed';
       el.style.inset = '0';
-      el.style.zIndex = '2147483646';
+      el.style.zIndex = '2147483647';
     }
   };
 
@@ -1586,6 +1595,16 @@
       } else {
         bdayEl.style.display = 'none';
       }
+    }
+    const homeBdayEl = document.getElementById('home-bday-banner');
+    if (homeBdayEl) {
+      homeBdayEl.style.display = bdayInfo.active ? 'flex' : 'none';
+      const homeTitleEl = homeBdayEl.querySelector('.home-bday-title');
+      const homeSubEl = homeBdayEl.querySelector('.home-bday-sub');
+      const titleEl = document.getElementById('bday-banner-title');
+      const subEl = document.getElementById('bday-banner-sub');
+      if (homeTitleEl && titleEl) homeTitleEl.textContent = titleEl.textContent;
+      if (homeSubEl && subEl) homeSubEl.textContent = subEl.textContent;
     }
     // 🎂 Cumpleaños — modal de regalo + notificación persistente en campanita
     if (bdayInfo.active) {
@@ -2187,7 +2206,7 @@
 
             <div class="reward-gallery-meta">
               <span class="reward-gallery-status ${status === 'Agotado' ? 'soldout' : 'available'}">${status}</span>
-              <span class="reward-gallery-validity" style="color:${validez.color};">${validez.text}</span>
+              <span class="reward-gallery-validity ${validez.isExpiringSoon ? 'expiring-soon' : ''}" style="color:${validez.color};">${validez.text}</span>
             </div>
           </div>
         </article>
@@ -4785,7 +4804,7 @@
     }
 
     // Actualizar burbujas de los iconos del home
-    const counts = { puntos: 0, agenda: 0, maestria: 0, promos: 0, rma: 0, rastreo: 0, magie: 0, toolbox: 0, fiesta: 0 };
+    const counts = { puntos: 0, premios: 0, agenda: 0, maestria: 0, promos: 0, rma: 0, rastreo: 0, magie: 0, toolbox: 0, fiesta: 0 };
 
     const notifsActivas = state.notifications.filter(n => notifEnVentana(n));
     notifsActivas.forEach(n => {
@@ -5024,7 +5043,6 @@
           seccion = 'rma';
         } else if (hasWord(/\b(premio|premios|beneficio(?:s)?\s+por\s+puntos|puntos\s+para\s+canjear|catalogo\s+de\s+premios|canje(?:s)?\s+de\s+premio|redimi[oa]s?\s+un\s+premio)\b/i)) {
           seccion = 'premios';
-        } else if (hasWord(/\b(punto|puntos|cumplea[nñ]os|saldo|acredit|ajuste)\b/i)) {
           seccion = 'puntos:cuenta';
         } else if (hasWord(/\b(promo|oferta|descuento|rebaja|remate)\b/i)) {
           seccion = 'promos';
@@ -5149,7 +5167,8 @@
         }
       }
 
-      const isClickable = !!seccion;
+      const isBirthdayNotif = n.type === 'bday' || String(n.id).startsWith('bday_');
+      const isClickable = !!seccion || isBirthdayNotif;
       const safeId = String(n.id).replace(/'/g, "\\'");
 
       const clickAttr = isClickable

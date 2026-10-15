@@ -1555,6 +1555,10 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
   margin: 14px 16px 0;
 }
 
+#home-bday-banner {
+  margin: 10px 16px 0;
+}
+
 .home-auth-banner-card {
   border-radius: var(--radius-md);
   padding: 14px 16px;
@@ -3787,6 +3791,28 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
   .reward-gallery-grid {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
+  }
+
+  #view-premios .reward-gallery-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #view-premios .reward-gallery-card {
+    position: relative;
+  }
+
+  #view-premios .reward-gallery-validity.expiring-soon {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 1;
+    max-width: calc(100% - 16px);
+    padding: 4px 7px;
+    border: 1px solid #fecaca;
+    border-radius: 999px;
+    background: #fef2f2;
+    white-space: nowrap;
   }
 
   .reward-modal-actions {

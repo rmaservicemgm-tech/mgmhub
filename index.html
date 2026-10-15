@@ -330,6 +330,16 @@
         <div id="home-auth-banner" class="home-auth-banner"></div>
       </div>
 
+      <div data-home-block="cumpleanos">
+        <div id="home-bday-banner" class="bday-banner" style="display: none;">
+          <div class="bday-icon">🎂</div>
+          <div class="bday-text">
+            <strong class="home-bday-title">¡Feliz Cumpleaños! 🎉</strong>
+            <span class="home-bday-sub">¡Hoy es tu día especial! Disfruta de un 10% de descuento en tus compras hoy en MGM.</span>
+          </div>
+        </div>
+      </div>
+
       <!-- BANNER DE ENCUESTA ACTIVA (Visible dinamicamente si hay encuesta activa) -->
       <div id="enc-banner" data-home-block="encuestas" style="display:none;" onclick="mgmEncuestas.abrirDesdeBanner()"></div>
 
@@ -404,6 +414,8 @@
         <div class="quick-card" data-card-id="premios" onclick="switchMainTab('premios')">
           <div class="card-icon-pill pill-premios" style="background: rgba(16, 185, 129, 0.15); color: #10b981; position:relative;">
             <i class="fa-solid fa-gift"></i>
+            <span id="badge-home-premios"
+              style="display:none; position:absolute; top:-6px; right:-6px; background:#EF4444; color:white; font-size:10px; font-weight:800; min-width:18px; height:18px; border-radius:9px; padding:0 4px; align-items:center; justify-content:center; border:2px solid white; box-shadow:0 2px 4px rgba(239,68,68,0.3);"></span>
           </div>
           <div>
             <div class="card-title">Premios</div>
@@ -3129,8 +3141,8 @@
 
     <main id="view-premios" class="view-container">
       <div class="section-header" style="margin: 16px 16px 10px;">
-        <h2 class="section-title"><i class="fa-solid fa-gift" style="color: #10b981;"></i> Premios por Puntos</h2>
-        <span class="section-link" onclick="switchMainTab('puntos')">Mis Puntos →</span>
+        <h2 class="section-title"><i class="fa-solid fa-gift" style="color: #10b981;"></i> Catálogo de premios</h2>
+        <span class="section-link" title="Mis Puntos" aria-label="Mis Puntos" onclick="switchMainTab('puntos')"><i class="fa-solid fa-coins nav-icon" aria-hidden="true"></i></span>
       </div>
 
       <div class="reward-gallery-section" style="margin-top: 0;">
