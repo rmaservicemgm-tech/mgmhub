@@ -52,6 +52,22 @@
       frame();
     },
 
+    campaign(colors) {
+      if (typeof confetti === 'undefined') return;
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const palette = Array.isArray(colors) ? colors.filter(color => /^#[0-9a-f]{6}$/i.test(color)) : [];
+      if (palette.length === 0) return;
+
+      const duration = 2200;
+      const end = Date.now() + duration;
+      const frame = () => {
+        confetti({ particleCount: 5, angle: 60, spread: 62, startVelocity: 38, origin: { x: 0, y: 0.58 }, colors: palette, zIndex: 2147483647, ticks: 180 });
+        confetti({ particleCount: 5, angle: 120, spread: 62, startVelocity: 38, origin: { x: 1, y: 0.58 }, colors: palette, zIndex: 2147483647, ticks: 180 });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      };
+      frame();
+    },
+
     /** ❤️ Mini-burst para likes en promos */
     burst(x, y) {
       if (typeof confetti === 'undefined') return;
@@ -4080,7 +4096,9 @@
       }
 
       if (pool.length > 0) {
-        const elegida = pool[Math.floor(Math.random() * pool.length)];
+        const maxPriority = Math.max(...pool.map(c => Number(c.prioridad) || 0));
+        const candidates = maxPriority > 0 ? pool.filter(c => (Number(c.prioridad) || 0) === maxPriority) : pool;
+        const elegida = candidates[Math.floor(Math.random() * candidates.length)];
         const imgEl = document.getElementById('splash-img');
         const wrapEl = document.getElementById('splash-content-wrap');
 
@@ -4098,7 +4116,17 @@
           }
 
           const splashEl = document.getElementById('imou-splash');
-          if (splashEl) setTimeout(() => splashEl.classList.add('show'), 1200);
+          if (splashEl) setTimeout(() => {
+            splashEl.classList.add('show');
+            const confetiValue = String(elegida.confeti || '').trim().toLowerCase();
+            const shouldCelebrate = elegida.confeti === true || ['si', 'sí', 'true', '1', 'yes'].includes(confetiValue);
+            if (shouldCelebrate && typeof mgmConfetti !== 'undefined') {
+              const colors = Array.isArray(elegida.colores_confeti)
+                ? elegida.colores_confeti
+                : String(elegida.colores_confeti || '').split(/[,;\s]+/);
+              mgmConfetti.campaign(colors);
+            }
+          }, 1200);
         }
       }
     } catch (err) {
