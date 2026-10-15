@@ -356,7 +356,10 @@
           <div class="next-event-title-text" id="home-event-title">Sincronizando agenda...</div>
           <div class="next-event-countdown" id="home-event-time">Calculando fecha...</div>
         </div>
-        <button onclick="event.stopPropagation(); window.promptCloseEventBanner();"
+        <a id="home-event-access" class="home-event-access" href="#" target="_blank" rel="noopener noreferrer" aria-label="Entrar al curso" title="Entrar al curso" onclick="event.stopPropagation();">
+          <i class="fa-solid fa-video" aria-hidden="true"></i>
+        </a>
+        <button id="home-event-dismiss" onclick="event.stopPropagation(); window.promptCloseEventBanner();"
           style="background: transparent; border: none; color: rgba(255,255,255,0.5); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0;">
           <i class="fa-solid fa-circle-xmark"></i>
         </button>
@@ -3180,6 +3183,31 @@
         <i class="fa-solid fa-rotate-left nav-icon"></i>
         <span class="nav-label">Mi RMA</span>
       </button>
+
+      <button class="nav-item" data-tab="maestria" onclick="switchMainTab('maestria')">
+        <i class="fa-solid fa-award nav-icon"></i>
+        <span class="nav-label">Maestría</span>
+      </button>
+
+      <button class="nav-item" data-tab="magie" onclick="openBot()">
+        <i class="fa-solid fa-robot nav-icon"></i>
+        <span class="nav-label">Magie</span>
+      </button>
+
+      <button class="nav-item" data-tab="toolbox" onclick="switchMainTab('toolbox')">
+        <i class="fa-solid fa-toolbox nav-icon"></i>
+        <span class="nav-label">Toolbox</span>
+      </button>
+
+      <button class="nav-item" data-tab="rastreo" onclick="switchMainTab('rastreo')">
+        <i class="fa-solid fa-box-open nav-icon"></i>
+        <span class="nav-label">Rastreo</span>
+      </button>
+
+      <button class="nav-item" data-tab="fiesta" onclick="initPartyMode()">
+        <i class="fa-solid fa-music nav-icon"></i>
+        <span class="nav-label">Fiesta</span>
+      </button>
     </nav>
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -4464,6 +4492,40 @@
           align-items: center;
           gap: 8px;
         }
+        .maestria-course-filters {
+          display: none;
+          grid-template-columns: 1.2fr 1fr 1fr;
+          gap: 7px;
+          margin: -2px 0 12px;
+        }
+        .maestria-course-filters select {
+          min-width: 0;
+          width: 100%;
+          height: 34px;
+          padding: 0 8px;
+          border: 1px solid var(--border-light, #dbe3ee);
+          border-radius: 8px;
+          background: #f8fafc;
+          color: var(--text-body, #334155);
+          font: inherit;
+          font-size: 11px;
+          outline: none;
+        }
+        .maestria-course-filters select:focus {
+          border-color: var(--primary-blue, #0073e6);
+          box-shadow: 0 0 0 2px rgba(0, 115, 230, 0.1);
+        }
+        .maestria-course-filter-empty {
+          margin: 0;
+          padding: 14px 10px;
+          color: var(--text-muted, #64748b);
+          font-size: 12px;
+          text-align: center;
+        }
+        @media (max-width: 380px) {
+          .maestria-course-filters { grid-template-columns: 1fr 1fr; }
+          .maestria-course-filters select:first-child { grid-column: 1 / -1; }
+        }
         .maestria-rama-row {
           margin-bottom: 13px;
         }
@@ -4536,10 +4598,13 @@
         .maestria-course-meta {
           font-size: 11.5px;
           color: var(--text-muted, #64748b);
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 4px 8px;
           align-items: center;
+        }
+        .maestria-course-meta > span:first-child {
+          grid-column: 1 / -1;
         }
         .maestria-unauth-card {
           text-align: center;
@@ -4705,6 +4770,18 @@
                 Cursos & Capacitaciones Acreditadas
               </div>
               <span id="maestria-cursos-badge-count" style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 12px; font-weight: 800;">0</span>
+            </div>
+            <div id="maestria-course-filters" class="maestria-course-filters" aria-label="Filtros de cursos acreditados">
+              <select id="maestria-course-sort" aria-label="Ordenar por fecha">
+                <option value="recent">Fecha: recientes</option>
+                <option value="oldest">Fecha: antiguas</option>
+              </select>
+              <select id="maestria-course-brand" aria-label="Filtrar por marca">
+                <option value="">Todas las marcas</option>
+              </select>
+              <select id="maestria-course-branch" aria-label="Filtrar por rama">
+                <option value="">Todas las ramas</option>
+              </select>
             </div>
             <div id="maestria-historial-container">
               <!-- Inyectado por JS -->

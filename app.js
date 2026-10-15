@@ -1840,6 +1840,39 @@
   // ══════════════════════════════════════════════════════════════════════════════
   const CACHE_KEY_HOME_CARDS = 'MGM_CACHE_HOME_CARDS_ORDER';
   const CACHE_KEY_HOME_BLOCKS = 'MGM_CACHE_HOME_BLOCKS_ORDER';
+  const CACHE_KEY_HOME_NAV = 'MGM_CACHE_HOME_NAV';
+
+  window.applyHomeNavConfig = function (items) {
+    const nav = document.querySelector('.bottom-nav');
+    if (!nav || !Array.isArray(items)) return;
+
+    const validTabs = new Set(['home', 'puntos', 'premios', 'agenda', 'promos', 'rma', 'maestria', 'magie', 'toolbox', 'rastreo', 'fiesta']);
+    const ordered = items
+      .filter(item => validTabs.has(String(item.id || '').toLowerCase()))
+      .slice()
+      .sort((a, b) => (parseInt(a.orden, 10) || 0) - (parseInt(b.orden, 10) || 0));
+
+    ordered.forEach(item => {
+      const tabId = String(item.id).toLowerCase();
+      const button = nav.querySelector(`.nav-item[data-tab="${tabId}"]`);
+      if (!button) return;
+
+      const activeValue = String(item.activa).trim().toLowerCase();
+      const visible = tabId === 'home' || item.activa === true || ['true', 'si', 'sí', '1', 'yes'].includes(activeValue);
+      button.style.display = visible ? '' : 'none';
+      button.classList.toggle('nav-anim-pulse', visible && String(item.animacion || '').trim().toLowerCase() === 'pulso');
+
+      if (item.etiqueta) {
+        const label = button.querySelector('.nav-label');
+        if (label) label.textContent = item.etiqueta;
+        button.setAttribute('aria-label', item.etiqueta);
+      }
+
+      if (visible) nav.appendChild(button);
+    });
+
+    window.mgmHomeNavConfig = ordered;
+  };
 
   function applyHomeCardsOrder(items) {
     const grid = document.querySelector('.quick-grid');
@@ -1939,6 +1972,8 @@
       }
       const cachedCards = localStorage.getItem(CACHE_KEY_HOME_CARDS);
       if (cachedCards) applyHomeCardsOrder(JSON.parse(cachedCards));
+      const cachedNav = localStorage.getItem(CACHE_KEY_HOME_NAV);
+      if (cachedNav) window.applyHomeNavConfig(JSON.parse(cachedNav));
     } catch (e) { }
 
     const baseUrl = customUrl || CFG.UTILIDADES_GAS_URL;
@@ -1957,6 +1992,10 @@
       }
 
       if (data && data.success) {
+        if (Array.isArray(data.nav) && data.nav.length > 0) {
+          window.applyHomeNavConfig(data.nav);
+          localStorage.setItem(CACHE_KEY_HOME_NAV, JSON.stringify(data.nav));
+        }
         if (Array.isArray(data.cards) && data.cards.length > 0) {
           applyHomeCardsOrder(data.cards);
           localStorage.setItem(CACHE_KEY_HOME_CARDS, JSON.stringify(data.cards));
@@ -2514,11 +2553,30 @@
       }
 
       const next = upcoming[0];
+      const normalizeEventText = value => String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+      const eventDate = new Date(`${next.fecha}T00:00:00`);
+      const eventTitle = normalizeEventText(next.titulo);
+      const confirmedCourse = state.authUser && Array.isArray(state.myCourses)
+        ? state.myCourses.find(course => {
+            const courseId = String(course.id || '').trim().toLowerCase();
+            const eventId = String(next.id || '').trim().toLowerCase();
+            const sameId = !!courseId && !!eventId && courseId === eventId;
+            const courseDate = parseSafeDate(course.fecha);
+            const sameDate = courseDate && courseDate.toDateString() === eventDate.toDateString();
+            const sameTitle = normalizeEventText(course.nombre) === eventTitle;
+            return sameId || (sameTitle && sameDate);
+          })
+        : null;
       const cedula = state.authUser ? state.authUser.cedula : '';
       const safeTitulo = encodeURIComponent(next.titulo || '').replace(/%/g, '').substring(0, 15);
       const closedKey = 'mgm_evento_cerrado_' + safeTitulo + (cedula ? '_' + cedula : '');
       
-      if (localStorage.getItem(closedKey)) {
+      if (!confirmedCourse && localStorage.getItem(closedKey)) {
         if (banner) banner.style.display = 'none';
         return;
       } else {
@@ -2565,19 +2623,38 @@
       const badgeEl = document.getElementById('home-event-badge');
       const titleEl = document.getElementById('home-event-title');
       const timeEl  = document.getElementById('home-event-time');
+      const accessEl = document.getElementById('home-event-access');
+      const dismissEl = document.getElementById('home-event-dismiss');
 
       if (iconWrap) {
-        iconWrap.innerHTML = isLive
+        iconWrap.innerHTML = confirmedCourse
+          ? '<i class="fa-solid fa-circle-check"></i>'
+          : isLive
           ? '<i class="fa-solid fa-tower-broadcast"></i>'
           : (catIconMap[next.categoria] || '<i class="fa-solid fa-calendar-days"></i>');
       }
 
       if (badgeEl) {
-        badgeEl.innerHTML = isLive
+        badgeEl.innerHTML = confirmedCourse
+          ? '<i class="fa-solid fa-circle-check"></i> CUPO CONFIRMADO'
+          : isLive
           ? '<i class="fa-solid fa-circle" style="color:#22c55e;"></i> EN VIVO'
           : `<i class="fa-solid fa-bolt"></i> ${catMap[next.categoria] || 'Evento MGM'}`;
-        badgeEl.classList.toggle('badge-live', isLive);
+        badgeEl.classList.toggle('badge-live', isLive && !confirmedCourse);
+        badgeEl.classList.toggle('badge-confirmed', !!confirmedCourse);
       }
+
+      if (accessEl) {
+        const meetUrl = String(confirmedCourse?.meet || '').trim();
+        if (/^https?:\/\//i.test(meetUrl)) {
+          accessEl.href = meetUrl;
+          accessEl.style.display = 'inline-flex';
+        } else {
+          accessEl.removeAttribute('href');
+          accessEl.style.display = 'none';
+        }
+      }
+      if (dismissEl) dismissEl.style.display = confirmedCourse ? 'none' : 'flex';
 
       if (titleEl) titleEl.textContent = next.titulo;
 
@@ -2595,8 +2672,10 @@
 
       // Estilo del banner según estado
       if (banner) {
-        banner.classList.toggle('banner-live', isLive);
-        banner.onclick = () => {
+        banner.classList.toggle('banner-live', isLive && !confirmedCourse);
+        banner.classList.toggle('banner-confirmed', !!confirmedCourse);
+        banner.style.cursor = confirmedCourse ? 'default' : 'pointer';
+        banner.onclick = confirmedCourse ? null : () => {
           if (typeof window.navigateTo === 'function') {
             window.navigateTo(`agenda:${next.id}`);
           } else {
@@ -2929,6 +3008,7 @@
         state.myCourses = res.courses;
         localStorage.setItem(K_MY_COURSES, JSON.stringify(res.courses));
         renderMyCourses();
+        if (state.agendaEvents.length > 0) loadHomeNextEvent();
       }
     } catch (err) {
       console.warn('[MGM Hub] Error consultando mis capacitaciones:', err);
@@ -3285,6 +3365,8 @@
     // 3. Historial de Cursos Acreditados
     const histContainer = document.getElementById('maestria-historial-container');
     if (histContainer) {
+      const filtersEl = document.getElementById('maestria-course-filters');
+      if (filtersEl) filtersEl.style.display = Array.isArray(data.historial) && data.historial.length > 1 ? 'grid' : 'none';
       if (!data.historial || data.historial.length === 0) {
         histContainer.innerHTML = `
           <div style="text-align: center; padding: 25px 15px; color: #64748b;">
@@ -3294,6 +3376,59 @@
         `;
         return;
       }
+
+      const courseHistory = data.historial.slice();
+      const sortSelect = document.getElementById('maestria-course-sort');
+      const brandSelect = document.getElementById('maestria-course-brand');
+      const branchSelect = document.getElementById('maestria-course-branch');
+
+      const fillFilterOptions = (select, defaultLabel, values) => {
+        if (!select) return;
+        const previousValue = select.value;
+        select.replaceChildren();
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = defaultLabel;
+        select.appendChild(defaultOption);
+        values.forEach(value => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          select.appendChild(option);
+        });
+        if (values.includes(previousValue)) select.value = previousValue;
+      };
+
+      const uniqueValues = values => [...new Set(values
+        .map(value => String(value || '').trim())
+        .filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+      fillFilterOptions(brandSelect, 'Todas las marcas', uniqueValues(courseHistory.map(course => course.marca)));
+      fillFilterOptions(branchSelect, 'Todas las ramas', uniqueValues(courseHistory.map(course => course.categoria)));
+
+      const parseCourseDate = value => {
+        if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
+        const text = String(value || '').trim();
+        if (!text) return null;
+
+        let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+        if (match) return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+        match = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})/);
+        if (match) {
+          let year = Number(match[3]);
+          if (year < 100) year += 2000;
+          return new Date(year, Number(match[2]) - 1, Number(match[1]));
+        }
+
+        const spanishDate = text.match(/\b(\d{1,2})\s+de\s+([a-záéíóúñ]+)(?:\s+de\s+(\d{4}))?/i);
+        if (spanishDate) {
+          const months = { enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5, julio: 6, agosto: 7, septiembre: 8, setiembre: 8, octubre: 9, noviembre: 10, diciembre: 11 };
+          const month = months[spanishDate[2].toLowerCase()];
+          if (month !== undefined) return new Date(Number(spanishDate[3] || new Date().getFullYear()), month, Number(spanishDate[1]));
+        }
+
+        const parsed = new Date(text);
+        return isNaN(parsed.getTime()) ? null : parsed;
+      };
 
       const catBadgeStyles = {
         cctv: { bg: '#dbeafe', color: '#1d4ed8', icon: 'fa-video' },
@@ -3305,29 +3440,54 @@
         general: { bg: '#f1f5f9', color: '#475569', icon: 'fa-graduation-cap' }
       };
 
-      let cardsHtml = '';
-      data.historial.forEach(c => {
-        const style = catBadgeStyles[c.categoria] || catBadgeStyles.general;
-        cardsHtml += `
-          <div class="maestria-course-card">
-            <div class="maestria-course-icon" style="background: ${style.bg}; color: ${style.color};">
-              <i class="fa-solid ${style.icon}"></i>
-            </div>
-            <div class="maestria-course-info">
-              <span class="maestria-course-tag" style="background: ${style.bg}; color: ${style.color};">
-                ${c.categoria ? c.categoria.toUpperCase() : 'CURSO'} · ${c.marca || 'MGM'}
-              </span>
-              <div class="maestria-course-title">${c.titulo}</div>
-              <div class="maestria-course-meta">
-                <span><i class="fa-regular fa-calendar"></i> ${c.fecha}</span>
-                <span><i class="fa-solid fa-clock"></i> ${c.horas}h duración</span>
-                <span style="color: #16a34a; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> +${c.puntos} pts</span>
+      const renderFilteredHistory = () => {
+        const selectedBrand = (brandSelect?.value || '').toLowerCase();
+        const selectedBranch = (branchSelect?.value || '').toLowerCase();
+        const filtered = courseHistory.filter(course =>
+          (!selectedBrand || String(course.marca || '').trim().toLowerCase() === selectedBrand) &&
+          (!selectedBranch || String(course.categoria || '').trim().toLowerCase() === selectedBranch)
+        );
+        const direction = sortSelect?.value === 'oldest' ? 1 : -1;
+        filtered.sort((a, b) => {
+          const dateA = parseCourseDate(a.fecha)?.getTime() ?? null;
+          const dateB = parseCourseDate(b.fecha)?.getTime() ?? null;
+          if (dateA === null) return dateB === null ? 0 : 1;
+          if (dateB === null) return -1;
+          return (dateA - dateB) * direction;
+        });
+
+        if (filtered.length === 0) {
+          histContainer.innerHTML = '<p class="maestria-course-filter-empty">No hay cursos para estos filtros.</p>';
+          return;
+        }
+
+        histContainer.innerHTML = filtered.map(course => {
+          const style = catBadgeStyles[course.categoria] || catBadgeStyles.general;
+          return `
+            <div class="maestria-course-card">
+              <div class="maestria-course-icon" style="background: ${style.bg}; color: ${style.color};">
+                <i class="fa-solid ${style.icon}"></i>
+              </div>
+              <div class="maestria-course-info">
+                <span class="maestria-course-tag" style="background: ${style.bg}; color: ${style.color};">
+                  ${course.categoria ? course.categoria.toUpperCase() : 'CURSO'} &middot; ${course.marca || 'MGM'}
+                </span>
+                <div class="maestria-course-title">${course.titulo}</div>
+                <div class="maestria-course-meta">
+                  <span><i class="fa-regular fa-calendar"></i> ${course.fecha}</span>
+                  <span><i class="fa-solid fa-clock"></i> ${course.horas}h duraci&#243;n</span>
+                  <span style="color: #16a34a; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> +${course.puntos} pts</span>
+                </div>
               </div>
             </div>
-          </div>
-        `;
+          `;
+        }).join('');
+      };
+
+      [sortSelect, brandSelect, branchSelect].forEach(select => {
+        if (select) select.onchange = renderFilteredHistory;
       });
-      histContainer.innerHTML = cardsHtml;
+      renderFilteredHistory();
     }
   }
 
@@ -4007,17 +4167,50 @@
     sendUserUpdateToBackend({ preferencias: pref }, 'Preferencias guardadas');
   };
 
+  function clearClientSessionData() {
+    state.sessionToken = (state.sessionToken || 0) + 1;
+    state.loggedOut = true;
+    state.authUser = null;
+    state.myCourses = [];
+    state.notifications = [];
+    state.clearedNotifs = [];
+    state.seenNotifs = [];
+
+    [K_AUTH, K_LAST_ACTIVITY, K_MY_COURSES, K_NOTIFS, K_CLEARED_NOTIFS, K_SEEN_NOTIFS].forEach(key => {
+      localStorage.removeItem(key);
+    });
+    sessionStorage.removeItem('mgm_bday_modal');
+
+    document.querySelectorAll('.app-modal.active').forEach(modal => {
+      modal.classList.remove('active');
+      modal.style.zIndex = '';
+      modal.style.position = '';
+      modal.style.inset = '';
+    });
+
+    const eventBanner = document.getElementById('home-event-banner');
+    if (eventBanner) eventBanner.style.display = 'none';
+    const eventAccess = document.getElementById('home-event-access');
+    if (eventAccess) eventAccess.removeAttribute('href');
+    const birthdayBanner = document.getElementById('home-bday-banner');
+    if (birthdayBanner) birthdayBanner.style.display = 'none';
+
+    renderMyCourses();
+    renderNotifications();
+    updateNotifBadge();
+    updateHeaderUserIcon();
+    updateHomeAuthBanner();
+    updatePuntosAuthViews();
+  }
+
   window.logoutUser = function () {
     openAppModal('modal-confirm-logout');
   };
 
   window.confirmLogoutUser = function () {
-    localStorage.removeItem(K_AUTH);
-    state.authUser = null;
-    closeAppModal('modal-confirm-logout');
-    closeAppModal('modal-settings');
+    clearClientSessionData();
     if (typeof showToast === 'function') showToast("Cerrando sesión...", "fa-solid fa-spinner fa-spin");
-    setTimeout(() => location.reload(), 600);
+    setTimeout(() => location.replace(location.pathname), 600);
   };
 
   window.clearAppCache = function () {
@@ -4162,33 +4355,15 @@
   }
 
   window.logoutClient = function () {
-    // │ Incrementar token de sesión para invalidar todas las respuestas en vuelo
-    state.sessionToken = (state.sessionToken || 0) + 1;
-    state.loggedOut = true; // Flag de seguridad: bloquea restauraciones posteriores
-
-    state.authUser = null;
-    localStorage.removeItem(K_AUTH);
-    localStorage.removeItem(K_LAST_ACTIVITY); // Limpiar timestamp al cerrar sesión
-    state.myCourses = [];
-    localStorage.removeItem(K_MY_COURSES);
-    renderMyCourses();
-    // Limpiar completamente las notificaciones al cerrar sesión
-    state.notifications = [];
-    localStorage.setItem(K_NOTIFS, '[]');
-    state.clearedNotifs = [];
-    localStorage.removeItem(K_CLEARED_NOTIFS);
-    updateNotifBadge();
-    renderNotifications();
-    updateHeaderUserIcon();
-    updateHomeAuthBanner();
-    updatePuntosAuthViews();
-    closeAppModal('modal-user-login');
+    clearClientSessionData();
 
     // Sincronizar encuestas (limpiar caché de usuario y cargar vista genérica)
     if (typeof window.mgmEncuestas !== 'undefined') {
       window.mgmEncuestas.ocultarBanner();
       window.mgmEncuestas.init();
     }
+    if (typeof showToast === 'function') showToast("Cerrando sesión...", "fa-solid fa-spinner fa-spin");
+    setTimeout(() => location.replace(location.pathname), 600);
   };
 
   function updateHeaderUserIcon() {
@@ -8398,6 +8573,10 @@ function loadHomeCardsOrder(scriptUrl) {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (!data || !data.success) return;
+      if (Array.isArray(data.nav) && data.nav.length > 0 && window.applyHomeNavConfig) {
+        window.applyHomeNavConfig(data.nav);
+        localStorage.setItem('MGM_CACHE_HOME_NAV', JSON.stringify(data.nav));
+      }
       if (data.blocks && data.blocks.length > 0) {
         applyHomeBlocksOrder(data.blocks, data.modoBloques || 'fijo');
       }

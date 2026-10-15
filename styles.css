@@ -176,6 +176,19 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
 .nav-icon { font-size: 18px; transition: transform 0.2s, color 0.2s; }
 .nav-label { font-size: 10.5px; font-weight: 700; }
 
+.nav-item.nav-anim-pulse .nav-icon {
+  animation: nav-icon-soft-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes nav-icon-soft-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 currentColor); }
+  50% { filter: drop-shadow(0 0 4px currentColor); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-item.nav-anim-pulse .nav-icon { animation: none; }
+}
+
 .nav-item.active { color: var(--primary-blue); }
 .nav-item.active .nav-icon { transform: translateY(-2px) scale(1.15); }
 .nav-item.active::after {
@@ -242,10 +255,36 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
 
 .next-event-details { flex: 1; min-width: 0; }
 
+.home-event-access {
+  display: none;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(134, 239, 172, 0.45);
+  border-radius: 10px;
+  background: rgba(34, 197, 94, 0.16);
+  color: #86efac;
+  font-size: 15px;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.home-event-access:hover {
+  background: rgba(34, 197, 94, 0.28);
+  transform: translateY(-1px);
+}
+
 .next-event-badge {
   font-size: 10px; font-weight: 800;
   color: var(--accent-gold); letter-spacing: 0.5px;
   display: flex; align-items: center; gap: 4px;
+}
+.next-event-badge.badge-confirmed { color: #86efac; }
+.banner-confirmed .next-event-icon-box {
+  background: rgba(34, 197, 94, 0.16);
+  border-color: rgba(134, 239, 172, 0.45);
+  color: #86efac;
 }
 
 .next-event-title-text {
