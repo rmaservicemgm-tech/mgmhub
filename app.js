@@ -2794,6 +2794,71 @@
     }
   }
 
+  function parseAgendaEventTime(value) {
+    const pattern = /(\d{1,2}):(\d{2})\s*(a\.?\s*m\.?|p\.?\s*m\.?)?/gi;
+    const matches = [];
+    let match;
+    while ((match = pattern.exec(String(value || ''))) !== null) {
+      matches.push({
+        hour: Number(match[1]),
+        minute: Number(match[2]),
+        period: match[3] ? (match[3].toLowerCase().includes('p') ? 'pm' : 'am') : ''
+      });
+    }
+    if (!matches.length) return null;
+
+    const period = matches[0].period || matches[matches.length - 1].period;
+    const times = matches.map(time => {
+      if (time.minute > 59) return null;
+      let hour = time.hour;
+      if (time.period || (period && hour >= 1 && hour <= 12)) {
+        if (hour < 1 || hour > 12) return null;
+        const meridiem = time.period || period;
+        hour = hour % 12 + (meridiem === 'pm' ? 12 : 0);
+      } else if (hour > 23) {
+        return null;
+      }
+      return { hour, minute: time.minute };
+    });
+    if (times.some(time => !time)) return null;
+    return times;
+  }
+
+  function getAgendaEventSchedule(event) {
+    const dateParts = String(event.fecha || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!dateParts) return null;
+    const date = new Date(Number(dateParts[1]), Number(dateParts[2]) - 1, Number(dateParts[3]));
+    if (date.getFullYear() !== Number(dateParts[1])
+      || date.getMonth() !== Number(dateParts[2]) - 1
+      || date.getDate() !== Number(dateParts[3])) return null;
+
+    const times = parseAgendaEventTime(event.hora);
+    const start = new Date(date);
+    if (times) start.setHours(times[0].hour, times[0].minute, 0, 0);
+
+    let end = null;
+    if (times) {
+      end = new Date(date);
+      if (times.length > 1) {
+        end.setHours(times[times.length - 1].hour, times[times.length - 1].minute, 0, 0);
+        if (end <= start) end.setDate(end.getDate() + 1);
+      } else {
+        end.setTime(start.getTime() + 60 * 60 * 1000);
+      }
+    }
+    return { date, start, end, hasTime: !!times };
+  }
+
+  function formatAgendaEventTime(value) {
+    const times = parseAgendaEventTime(value);
+    if (!times) return '';
+    const formatTime = time => new Date(2000, 0, 1, time.hour, time.minute)
+      .toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit', hour12: true });
+    return times.length > 1
+      ? `${formatTime(times[0])} - ${formatTime(times[times.length - 1])}`
+      : formatTime(times[0]);
+  }
+
   async function loadHomeNextEvent() {
     const render = () => {
       const events = state.agendaEvents;
@@ -2801,31 +2866,11 @@
       const now = new Date();
       const upcoming = events
         .filter(e => {
-          const eventDate = new Date(e.fecha + 'T00:00:00');
-          if (eventDate < today) return false;
-
-          // Si el evento es hoy, verificar si ya terminó según su hora de fin
-          if (eventDate.getTime() === today.getTime() && e.hora) {
-            const timeMatches = e.hora.match(/\d{1,2}:\d{2}/g);
-            if (timeMatches && timeMatches.length > 0) {
-              const lastTime = timeMatches[timeMatches.length - 1];
-              const [h, m] = lastTime.split(':').map(Number);
-              const eventEndTime = new Date(today);
-              eventEndTime.setHours(h, m, 0, 0);
-
-              // Si solo tiene hora de inicio, damos un margen de 1 hora por defecto
-              if (timeMatches.length === 1) {
-                eventEndTime.setHours(eventEndTime.getHours() + 1);
-              }
-
-              if (now > eventEndTime) {
-                return false; // El evento ya pasó su hora de finalización
-              }
-            }
-          }
-          return true;
+          const schedule = getAgendaEventSchedule(e);
+          if (!schedule || schedule.date < today) return false;
+          return !schedule.end || now < schedule.end;
         })
-        .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+        .sort((a, b) => getAgendaEventSchedule(a).start - getAgendaEventSchedule(b).start);
 
       const banner = document.getElementById('home-event-banner');
       
@@ -2835,13 +2880,14 @@
       }
 
       const next = upcoming[0];
+      const schedule = getAgendaEventSchedule(next);
       const normalizeEventText = value => String(value || '')
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, ' ')
         .trim();
-      const eventDate = new Date(`${next.fecha}T00:00:00`);
+      const eventDate = schedule.date;
       const eventTitle = normalizeEventText(next.titulo);
       const confirmedCourse = state.authUser && Array.isArray(state.myCourses)
         ? state.myCourses.find(course => {
@@ -2872,27 +2918,8 @@
       const diff = daysUntil(next.fecha);
 
       // Detectar si el evento está en curso ahora mismo
-      let isLive = false;
-      if (diff === 0 && next.hora) {
-        const timeMatches = next.hora.match(/\d{1,2}:\d{2}/g);
-        if (timeMatches && timeMatches.length >= 1) {
-          const [startH, startM] = timeMatches[0].split(':').map(Number);
-          const eventStart = new Date(today);
-          eventStart.setHours(startH, startM, 0, 0);
-
-          let eventEnd;
-          if (timeMatches.length >= 2) {
-            const [endH, endM] = timeMatches[1].split(':').map(Number);
-            eventEnd = new Date(today);
-            eventEnd.setHours(endH, endM, 0, 0);
-          } else {
-            eventEnd = new Date(eventStart);
-            eventEnd.setHours(eventEnd.getHours() + 1);
-          }
-
-          isLive = now >= eventStart && now <= eventEnd;
-        }
-      }
+      const isLive = schedule.hasTime && schedule.end && now >= schedule.start && now < schedule.end;
+      const displayTime = formatAgendaEventTime(next.hora);
 
       const catMap = { webinar: 'Webinar Online 📺', training: 'Capacitación 🎯', curso: 'Certificación 🏆' };
       const catIconMap = {
@@ -2942,13 +2969,30 @@
 
       if (timeEl) {
         if (isLive) {
-          timeEl.innerHTML = `<span class="live-pulse"></span> ¡EN VIVO AHORA! ${next.hora ? '— ' + next.hora : ''}`;
+          const pulse = document.createElement('span');
+          pulse.className = 'live-pulse';
+          timeEl.replaceChildren(pulse, document.createTextNode(`¡EN VIVO AHORA!${displayTime ? ' — ' + displayTime : ''}`));
           timeEl.classList.add('live-time');
         } else {
           timeEl.classList.remove('live-time');
-          if (diff === 0)      timeEl.textContent = `🔴 ¡HOY a las ${next.hora}!`;
-          else if (diff === 1) timeEl.textContent = `⏰ Mañana a las ${next.hora}`;
-          else                 timeEl.textContent = `En ${diff} días — ${next.hora}`;
+          const remainingMs = schedule.start.getTime() - now.getTime();
+          if (schedule.hasTime && remainingMs > 0 && remainingMs <= 24 * 60 * 60 * 1000) {
+            const remainingMinutes = Math.max(1, Math.ceil(remainingMs / 60000));
+            const hours = Math.floor(remainingMinutes / 60);
+            const minutes = remainingMinutes % 60;
+            const countdown = hours && minutes
+              ? `Faltan ${hours} h ${minutes} min`
+              : hours
+                ? `Faltan ${hours} h`
+                : `Faltan ${minutes} min`;
+            timeEl.textContent = `${countdown}${displayTime ? ' — ' + displayTime : ''}`;
+          } else if (diff === 0) {
+            timeEl.textContent = displayTime ? `🔴 ¡HOY a las ${displayTime}!` : '🔴 ¡HOY!';
+          } else if (diff === 1) {
+            timeEl.textContent = displayTime ? `⏰ Mañana a las ${displayTime}` : '⏰ Mañana';
+          } else {
+            timeEl.textContent = `En ${diff} días${displayTime ? ' — ' + displayTime : ''}`;
+          }
         }
       }
 
@@ -3722,6 +3766,20 @@
         general: { bg: '#f1f5f9', color: '#475569', icon: 'fa-graduation-cap' }
       };
 
+      const formatCourseDateDisplay = value => {
+        const text = String(value || '—');
+        const timeMatches = Array.from(text.matchAll(/\d{1,2}:\d{2}(?:\s*(?:a\.?\s*m\.?|p\.?\s*m\.?))?/gi));
+        if (!timeMatches.length) return text;
+
+        const firstTime = timeMatches[0];
+        const lastTime = timeMatches[timeMatches.length - 1];
+        const rangeEnd = lastTime.index + lastTime[0].length;
+        const formattedTime = formatAgendaEventTime(text.slice(firstTime.index, rangeEnd));
+        return formattedTime
+          ? text.slice(0, firstTime.index) + formattedTime + text.slice(rangeEnd)
+          : text;
+      };
+
       const renderFilteredHistory = () => {
         const selectedBrand = (brandSelect?.value || '').toLowerCase();
         const selectedBranch = (branchSelect?.value || '').toLowerCase();
@@ -3745,6 +3803,7 @@
 
         histContainer.innerHTML = filtered.map(course => {
           const style = catBadgeStyles[course.categoria] || catBadgeStyles.general;
+          const courseDateDisplay = formatCourseDateDisplay(course.fecha);
           return `
             <div class="maestria-course-card">
               <div class="maestria-course-icon" style="background: ${style.bg}; color: ${style.color};">
@@ -3756,7 +3815,7 @@
                 </span>
                 <div class="maestria-course-title">${course.titulo}</div>
                 <div class="maestria-course-meta">
-                  <span><i class="fa-regular fa-calendar"></i> ${course.fecha}</span>
+                  <span><i class="fa-regular fa-calendar"></i> ${courseDateDisplay}</span>
                   <span><i class="fa-solid fa-clock"></i> ${course.horas}h duraci&#243;n</span>
                   <span style="color: #16a34a; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> +${course.puntos} pts</span>
                 </div>
