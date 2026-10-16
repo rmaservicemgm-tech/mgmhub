@@ -19,7 +19,7 @@
   <!-- Google Fonts & FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap">
-  <link rel="stylesheet" href="styles.css?v=19">
+  <link rel="stylesheet" href="styles.css?v=21">
   <!-- jsPDF para exportacion de cotizaciones desde la Calculadora de Almacenamiento -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script defer
@@ -34,7 +34,7 @@
   <!-- Limpiar caché viejo al actualizar version -->
   <script>
     (function () {
-      var APP_VERSION = '35';
+      var APP_VERSION = '38';
       var stored = localStorage.getItem('mgm_app_v');
       if (stored !== APP_VERSION) {
         localStorage.setItem('mgm_app_v', APP_VERSION);
@@ -395,6 +395,16 @@
           <div>
             <div class="card-title">Agenda & Cursos</div>
             <div class="card-desc">Webinars, certificaciones y registro con QR.</div>
+          </div>
+        </div>
+
+        <div class="quick-card" data-card-id="misiones" onclick="switchMainTab('misiones')">
+          <div class="card-icon-pill" style="background:#fff4d6;color:#a16207;position:relative;">
+            <i class="fa-solid fa-bullseye"></i>
+          </div>
+          <div>
+            <div class="card-title">Misiones</div>
+            <div class="card-desc">Registra tu visita diaria y responde encuestas disponibles.</div>
           </div>
         </div>
 
@@ -1310,6 +1320,58 @@
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
          VISTA 4: PROMOCIONES DEL MES (GALERÍA COMPLETA)
          â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <main id="view-misiones" class="view-container">
+      <div id="missions-login-gate" class="missions-login-gate" style="display:none;">
+        <div class="missions-gate-icon"><i class="fa-solid fa-lock"></i></div>
+        <h2>Inicia sesión para ver Misiones</h2>
+        <p>El registro diario y las encuestas se guardan en tu cuenta MGM.</p>
+        <button type="button" class="missions-primary-btn" onclick="openMissionsLogin()">
+          <i class="fa-solid fa-right-to-bracket"></i> Iniciar sesión
+        </button>
+      </div>
+
+      <div id="missions-content" style="display:none;">
+        <div class="section-header" style="margin:16px 16px 10px;">
+          <h2 class="section-title"><i class="fa-solid fa-bullseye" style="color:var(--accent-gold-dark);"></i> Misiones</h2>
+        </div>
+        <section class="missions-checkin-panel" aria-label="Registro diario">
+          <div class="missions-checkin-copy">
+            <div class="missions-eyebrow">Visitas del mes</div>
+            <div class="missions-counter"><span id="missions-visit-count">0</span><span>visitas</span></div>
+            <div class="missions-pending"><i class="fa-solid fa-coins"></i> <span id="missions-pending-points">0 puntos pendientes</span></div>
+          </div>
+          <button type="button" id="missions-checkin-button" class="missions-primary-btn" onclick="registerMissionVisit()">
+            <i class="fa-solid fa-coins"></i> Registrar visita
+          </button>
+          <p id="missions-checkin-status" class="missions-status" role="status"></p>
+        </section>
+
+        <div class="calendar-wrap missions-calendar-wrap">
+          <div class="calendar-top-bar">
+            <div class="calendar-month-text">
+              <i class="fa-solid fa-calendar-days" style="color:var(--primary-blue);"></i>
+              <span id="missions-month-title">Cargando mes...</span>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="cal-nav-btn" id="missions-cal-prev" aria-label="Mes anterior"><i class="fa-solid fa-chevron-left"></i></button>
+              <button class="cal-nav-btn" id="missions-cal-next" aria-label="Mes siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+          </div>
+          <div class="cal-grid-header">
+            <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+          </div>
+          <div class="cal-grid-days" id="missions-calendar-grid"></div>
+        </div>
+
+        <section class="missions-surveys-section">
+          <div class="section-header">
+            <h2 class="section-title"><i class="fa-solid fa-clipboard-question" style="color:var(--primary-blue);"></i> Encuestas</h2>
+          </div>
+          <div id="missions-survey-content" class="missions-survey-content"></div>
+        </section>
+      </div>
+    </main>
+
     <main id="view-promos" class="view-container">
       <div class="promos-gallery" id="promos-full-gallery">
         <!-- Cargado dinámicamente desde Google Sheets -->
@@ -3172,6 +3234,11 @@
       <button class="nav-item" data-tab="agenda" onclick="switchMainTab('agenda')">
         <i class="fa-solid fa-calendar-days nav-icon"></i>
         <span class="nav-label">Agenda</span>
+      </button>
+
+      <button class="nav-item" data-tab="misiones" onclick="switchMainTab('misiones')">
+        <i class="fa-solid fa-bullseye nav-icon"></i>
+        <span class="nav-label">Misiones</span>
       </button>
 
       <button class="nav-item" data-tab="promos" onclick="switchMainTab('promos')">
@@ -6040,7 +6107,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=35"></script>
+  <script src="app.js?v=37"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
   <script>

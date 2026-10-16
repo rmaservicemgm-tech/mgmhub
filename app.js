@@ -134,6 +134,9 @@
     // Reutiliza el mismo spreadsheet del rotador de WhatsApp — agregar pestaña "Tarjetas_Home"
     UTILIDADES_GAS_URL: 'https://script.google.com/macros/s/AKfycbwMC3_lK9RHoCoRLtRrzOwjj8JqRTR61E1mB2NdP0cdDtf-00HykM0n9V0-KBymqe3ERQ/exec',
 
+    // 13. MGM MISIONES (visitas diarias y cierre mensual)
+    MISIONES_GAS_URL: 'https://script.google.com/macros/s/AKfycbykHpKx4eMyzJHIuMd7Wu5KDwPZmVPjPCIAHy6nRoSwpOqA9IkEcl_m5KW8V--8Wb5NgQ/exec',
+
     VAL_PUNTO: 0.01,
     BOTPRESS_BOT_ID: 'e5a3c8a6-9aec-41a3-870d-d1985dc8c7df',
     SPLASH_ENABLED: true,
@@ -165,6 +168,9 @@
   const state = {
     activeTab: 'home',
     activeSubtab: 'subview-cuenta',
+    pendingMissionLogin: false,
+    missionsMonth: '',
+    missionsMonthData: null,
     calYear: new Date().getFullYear(),
     calMonth: new Date().getMonth(),
     activeEventFilter: 'all',
@@ -687,6 +693,10 @@
         renderCalendar();
       }
       loadMyCourses();
+    }
+    if (tabName === 'misiones') {
+      renderMissionsAccess();
+      if (state.authUser) loadMissionMonth(state.missionsMonth || getCurrentMissionMonth());
     }
     if (tabName === 'promos') {
       if (state.promos.length === 0) {
@@ -1220,6 +1230,11 @@
     if (typeof window.mgmEncuestas !== 'undefined') {
       window.mgmEncuestas.ocultarBanner(); // Ocultamos el genérico mientras carga el específico
       window.mgmEncuestas.init();
+    }
+
+    if (state.pendingMissionLogin) {
+      state.pendingMissionLogin = false;
+      switchMainTab('misiones');
     }
   }
 
@@ -1925,7 +1940,7 @@
     const nav = document.querySelector('.bottom-nav');
     if (!nav || !Array.isArray(items)) return;
 
-    const validTabs = new Set(['home', 'puntos', 'premios', 'agenda', 'promos', 'rma', 'maestria', 'magie', 'toolbox', 'rastreo', 'fiesta']);
+    const validTabs = new Set(['home', 'puntos', 'premios', 'agenda', 'misiones', 'promos', 'rma', 'maestria', 'magie', 'toolbox', 'rastreo', 'fiesta']);
     const ordered = items
       .filter(item => validTabs.has(String(item.id || '').toLowerCase()))
       .slice()
@@ -2497,6 +2512,171 @@
   // ══════════════════════════════════════════════════════════════════════════════
 
   const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+  function getPanamaDateParts() {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Panama', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(new Date());
+    const values = {};
+    parts.forEach(part => { values[part.type] = part.value; });
+    return values;
+  }
+
+  function getCurrentMissionMonth() {
+    const parts = getPanamaDateParts();
+    return `${parts.year}-${parts.month}`;
+  }
+
+  function renderMissionsAccess() {
+    const gate = document.getElementById('missions-login-gate');
+    const content = document.getElementById('missions-content');
+    if (!gate || !content) return;
+    gate.style.display = state.authUser ? 'none' : 'block';
+    content.style.display = state.authUser ? 'block' : 'none';
+    if (!state.authUser) return;
+    if (!state.missionsMonth) state.missionsMonth = getCurrentMissionMonth();
+    renderMissionCalendar(state.missionsMonthData);
+    if (window.mgmEncuestas && typeof window.mgmEncuestas.renderMisiones === 'function') {
+      window.mgmEncuestas.renderMisiones();
+    }
+  }
+
+  window.openMissionsLogin = function () {
+    state.pendingMissionLogin = true;
+    switchMainTab('puntos');
+    setTimeout(() => document.getElementById('login-cedula')?.focus(), 200);
+  };
+
+  async function loadMissionMonth(month) {
+    if (!state.authUser || !state.authUser.cedula) return;
+    if (!CFG.MISIONES_GAS_URL || CFG.MISIONES_GAS_URL === 'URL_PENDIENTE_DE_DESPLIEGUE') {
+      renderMissionsAccess();
+      const status = document.getElementById('missions-checkin-status');
+      if (status) status.textContent = 'El backend de Misiones requiere configuración y despliegue.';
+      return;
+    }
+
+    state.missionsMonth = month;
+    const title = document.getElementById('missions-month-title');
+    if (title) {
+      const [year, monthNumber] = month.split('-').map(Number);
+      title.textContent = `${MONTHS_ES[monthNumber - 1]} ${year}`;
+    }
+
+    try {
+      const url = `${CFG.MISIONES_GAS_URL}?action=get_month&cedula=${encodeURIComponent(state.authUser.cedula)}&mes=${encodeURIComponent(month)}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (!data.success) throw new Error(data.message || 'No se pudo cargar el calendario.');
+      if (state.activeTab !== 'misiones' || !state.authUser || state.missionsMonth !== month) return;
+      state.missionsMonthData = data;
+      renderMissionCalendar(data);
+    } catch (error) {
+      console.warn('[MGM Misiones] Error cargando el mes:', error);
+      const status = document.getElementById('missions-checkin-status');
+      if (status) status.textContent = 'No se pudo cargar el calendario. Verifica tu conexión.';
+    }
+  }
+
+  function renderMissionCalendar(data) {
+    if (!state.authUser) return renderMissionsAccess();
+    const grid = document.getElementById('missions-calendar-grid');
+    if (!grid) return;
+    const month = state.missionsMonth || getCurrentMissionMonth();
+    const [year, monthNumber] = month.split('-').map(Number);
+    const title = document.getElementById('missions-month-title');
+    if (title) title.textContent = `${MONTHS_ES[monthNumber - 1]} ${year}`;
+
+    const currentMonth = getCurrentMissionMonth();
+    const todayParts = getPanamaDateParts();
+    const today = `${todayParts.year}-${todayParts.month}-${todayParts.day}`;
+    const dataIsLoaded = !!(data && data.mes === month);
+    const registeredDays = new Set((dataIsLoaded ? data.dias : []).map(String));
+    const firstDay = new Date(year, monthNumber - 1, 1).getDay();
+    const daysInMonth = new Date(year, monthNumber, 0).getDate();
+    let html = '';
+
+    for (let i = 0; i < firstDay; i++) html += '<div class="cal-day-cell empty"></div>';
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = `${month}-${String(day).padStart(2, '0')}`;
+      const isToday = date === today;
+      const registered = registeredDays.has(date);
+      html += `<div class="cal-day-cell ${isToday ? 'today' : ''} ${registered ? 'missions-registered' : ''}" aria-label="${date}${registered ? ', visita registrada' : ''}">
+        <div class="cal-day-num">${day}</div>
+        ${registered ? '<div class="missions-day-mark" title="Visita registrada"><i class="fa-solid fa-coins"></i></div>' : ''}
+      </div>`;
+    }
+    grid.innerHTML = html;
+
+    const count = document.getElementById('missions-visit-count');
+    const pending = document.getElementById('missions-pending-points');
+    const button = document.getElementById('missions-checkin-button');
+    const status = document.getElementById('missions-checkin-status');
+    if (count) count.textContent = String(registeredDays.size);
+    if (pending) pending.textContent = `${month === currentMonth ? registeredDays.size : 0} puntos pendientes`;
+    if (button) {
+      const canRegisterToday = dataIsLoaded && month === currentMonth && !registeredDays.has(today);
+      button.disabled = !canRegisterToday;
+      button.innerHTML = registeredDays.has(today) && month === currentMonth
+        ? '<i class="fa-solid fa-circle-check"></i> Visita registrada'
+        : '<i class="fa-solid fa-coins"></i> Registrar visita';
+      if (month !== currentMonth) button.disabled = true;
+    }
+    if (status) {
+      status.textContent = !dataIsLoaded
+        ? 'Cargando calendario...'
+        : (month !== currentMonth
+          ? 'Este mes ya cerró. Los días no registrados se perdieron.'
+          : (registeredDays.has(today) ? 'Tu visita de hoy ya está registrada.' : ''));
+    }
+
+    const prev = document.getElementById('missions-cal-prev');
+    const next = document.getElementById('missions-cal-next');
+    if (prev) prev.disabled = false;
+    if (next) next.disabled = month >= currentMonth;
+  }
+
+  window.registerMissionVisit = async function () {
+    if (!state.authUser || !state.authUser.cedula) {
+      renderMissionsAccess();
+      return;
+    }
+    if (!CFG.MISIONES_GAS_URL || CFG.MISIONES_GAS_URL === 'URL_PENDIENTE_DE_DESPLIEGUE') {
+      showToast('El backend de Misiones aún no está configurado.', 'fa-solid fa-triangle-exclamation');
+      return;
+    }
+    const button = document.getElementById('missions-checkin-button');
+    if (button) { button.disabled = true; button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registrando...'; }
+    try {
+      const response = await fetch(CFG.MISIONES_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'register_visit', cedula: state.authUser.cedula })
+      });
+      const result = await response.json();
+      if (!result.success) throw new Error(result.message || 'No se pudo registrar la visita.');
+      state.missionsMonthData = result.month;
+      state.missionsMonth = result.month.mes;
+      renderMissionCalendar(result.month);
+      if (typeof showToast === 'function') showToast(result.alreadyRegistered ? 'La visita de hoy ya estaba registrada.' : 'Visita registrada: +1 punto pendiente.', 'fa-solid fa-coins');
+    } catch (error) {
+      console.warn('[MGM Misiones] Error registrando visita:', error);
+      if (typeof showToast === 'function') showToast(error.message || 'No se pudo registrar la visita.', 'fa-solid fa-triangle-exclamation');
+      if (button) button.disabled = false;
+    }
+  };
+
+  function changeMissionMonth(offset) {
+    const [year, month] = (state.missionsMonth || getCurrentMissionMonth()).split('-').map(Number);
+    const changed = new Date(year, month - 1 + offset, 1);
+    const nextMonth = `${changed.getFullYear()}-${String(changed.getMonth() + 1).padStart(2, '0')}`;
+    if (nextMonth > getCurrentMissionMonth()) return;
+    state.missionsMonthData = null;
+    loadMissionMonth(nextMonth);
+  }
+
+  document.getElementById('missions-cal-prev')?.addEventListener('click', () => changeMissionMonth(-1));
+  document.getElementById('missions-cal-next')?.addEventListener('click', () => changeMissionMonth(1));
 
   function formatEventUrl(rawLink) {
     if (!rawLink) return 'https://mgmpty.odoo.com/event';
@@ -4292,6 +4472,7 @@
     updateHeaderUserIcon();
     updateHomeAuthBanner();
     updatePuntosAuthViews();
+    renderMissionsAccess();
   }
 
   window.logoutUser = function () {
@@ -5497,6 +5678,7 @@
         state.notifications = [];
         state.clearedNotifs = [];
         state.myCourses = [];
+        renderMissionsAccess();
       } else {
         // Sesión válida: actualizar timestamp de última actividad
         localStorage.setItem(K_LAST_ACTIVITY, String(ahora));
@@ -8130,6 +8312,7 @@ window.mgmEncuestas = (function () {
 
   // Estado interno del modulo
   var _encuesta     = null;   // { id, nombre, puntos, ... }
+  var _encuestasDisponibles = [];
   var _preguntas    = [];     // Array de preguntas de la encuesta activa
   var _respuestas   = {};     // { P1: valor, P2: valor, ... }
   var _pasoActual   = 0;      // Indice de la pregunta actual (0-based)
@@ -8241,6 +8424,78 @@ window.mgmEncuestas = (function () {
   function ocultarBanner() {
     var banner = document.getElementById('enc-banner');
     if (banner) banner.style.display = 'none';
+  }
+
+  function _renderMisiones(encuestas, message) {
+    var container = document.getElementById('missions-survey-content');
+    if (!container) return;
+    _encuestasDisponibles = encuestas || [];
+    if (!encuestas || !encuestas.length) {
+      container.innerHTML = '<div class="missions-survey-empty">' + _esc(message || 'No hay encuestas disponibles por ahora.') + '</div>';
+      return;
+    }
+
+    container.innerHTML = encuestas.map(function (enc) {
+      var points = Number(enc.puntos) || 0;
+      return '<article class="missions-survey-card">'
+        + '<div class="missions-survey-icon"><i class="fa-solid fa-clipboard-question"></i></div>'
+        + '<div class="missions-survey-copy"><strong>' + _esc(enc.nombre) + '</strong>'
+        + '<span>' + (points > 0 ? 'Gana ' + points + ' MGM Puntos, acreditados al responder' : 'Encuesta disponible') + '</span></div>'
+        + '<button type="button" class="missions-survey-open" data-encuesta-id="' + _esc(enc.id) + '" onclick="window.mgmEncuestas.abrirEncuesta(this.dataset.encuestaId)">Responder <i class="fa-solid fa-arrow-right"></i></button>'
+        + '</article>';
+    }).join('');
+  }
+
+  function renderMisiones() {
+    var authData = _getAuthUser();
+    if (!authData || !authData.cedula) {
+      _renderMisiones([], 'Inicia sesión para consultar encuestas.');
+      return;
+    }
+
+    var cedula = authData.cedula;
+    var cacheKey = 'mgm_misiones_encuestas_' + cedula;
+    var hasCachedSurveys = false;
+    try {
+      var cachedSurveys = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+      if (cachedSurveys && Array.isArray(cachedSurveys.encuestas)) {
+        _renderMisiones(cachedSurveys.encuestas, 'No hay encuestas disponibles por ahora.');
+        hasCachedSurveys = true;
+      }
+    } catch (error) { }
+    if (!hasCachedSurveys) _renderMisiones([], 'Buscando encuestas disponibles...');
+    _verificarEncuestaActiva();
+
+    var url = CFG.ENCUESTAS_GAS_URL + '?action=get_encuestas_disponibles&cedula=' + encodeURIComponent(cedula);
+    fetch(url)
+      .then(function (response) { return response.json(); })
+      .then(function (data) {
+        var currentUser = _getAuthUser();
+        if (!currentUser || currentUser.cedula !== cedula) return;
+        if (!data.success) throw new Error(data.message || 'No se pudieron cargar las encuestas.');
+        var surveys = data.encuestas || [];
+        localStorage.setItem(cacheKey, JSON.stringify({ encuestas: surveys, actualizado: Date.now() }));
+        _renderMisiones(surveys, 'No hay encuestas disponibles por ahora.');
+      })
+      .catch(function () {
+        if (!hasCachedSurveys) _renderMisiones([], 'No se pudieron cargar las encuestas. Verifica tu conexión.');
+      });
+  }
+
+  function abrirEncuesta(encId) {
+    if (!encId) return;
+    if (_encuesta && String(_encuesta.id) === String(encId) && _preguntas.length) {
+      _abrirModal(_encuesta, _preguntas);
+      return;
+    }
+    var cachedSurvey = _encuestasDisponibles.find(function (enc) { return String(enc.id) === String(encId); });
+    if (cachedSurvey && Array.isArray(cachedSurvey.preguntas) && cachedSurvey.preguntas.length) {
+      _encuesta = cachedSurvey;
+      _preguntas = cachedSurvey.preguntas;
+      _abrirModal(cachedSurvey, cachedSurvey.preguntas);
+      return;
+    }
+    _cargarYAbrirPorId(String(encId));
   }
 
   // ── Abrir modal desde banner ─────────────────────────────────
@@ -8512,6 +8767,12 @@ window.mgmEncuestas = (function () {
       ocultarBanner();
       if (data.success) {
         _mostrarExito(data.puntos || 0, data.encuesta || _encuesta.nombre || '');
+        var authData = _getAuthUser();
+        if (authData && authData.cedula) localStorage.removeItem('mgm_misiones_encuestas_' + authData.cedula);
+        _encuestasDisponibles = [];
+        _encuesta = null;
+        _preguntas = [];
+        renderMisiones();
       } else if (data.reason === 'ya_respondio') {
         if (typeof showToast === 'function') showToast('Ya habian registrado tu respuesta anteriormente.', 'fa-solid fa-check-circle');
       } else {
@@ -8601,6 +8862,8 @@ window.mgmEncuestas = (function () {
   return {
     init:            init,
     abrirDesdeBanner: abrirDesdeBanner,
+    abrirEncuesta:   abrirEncuesta,
+    renderMisiones:  renderMisiones,
     cerrarModal:     cerrarModal,
     cerrarExito:     cerrarExito,
     siguiente:       siguiente,
