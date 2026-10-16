@@ -804,7 +804,7 @@
 
     // Si coincide con alguna pestaña interna conocida o deeplink interno, NO es externa
     const internalTabs = [
-      'home', 'inicio', 'puntos', 'maestria', 'agenda', 'premios', 'promos', 'rma', 'asesoria', 'soporte',
+      'home', 'inicio', 'puntos', 'maestria', 'agenda', 'misiones', 'premios', 'promos', 'rma', 'asesoria', 'soporte',
       'toolbox', 'toolbox-calculadora-almacenamiento', 'toolbox-conversor-tecnico',
       'toolbox-calculadora-ups', 'toolbox-calculadora-voltaje', 'toolbox-calculadora-inalambrica', 'radio'
     ];
@@ -2655,14 +2655,37 @@
       });
       const result = await response.json();
       if (!result.success) throw new Error(result.message || 'No se pudo registrar la visita.');
-      state.missionsMonthData = result.month;
-      state.missionsMonth = result.month.mes;
-      renderMissionCalendar(result.month);
+      const monthData = result.month || state.missionsMonthData;
+      const month = result.mes || (monthData && monthData.mes);
+      if (monthData && month && monthData.mes === month) {
+        const registeredDays = new Set((monthData.dias || []).map(String));
+        if (result.fecha) registeredDays.add(result.fecha);
+        const days = Array.from(registeredDays).sort();
+        state.missionsMonthData = result.month || {
+          ...monthData,
+          dias: days,
+          visitas: days.length,
+          puntosPendientes: month === getCurrentMissionMonth() ? days.length : 0,
+          puntosPorVisitas: days.length,
+          hoyRegistrado: result.fecha ? result.fecha === `${month}-${String(getPanamaDateParts().day).padStart(2, '0')}` : true
+        };
+        state.missionsMonth = month;
+        renderMissionCalendar(state.missionsMonthData);
+      } else {
+        await loadMissionMonth(getCurrentMissionMonth());
+      }
       if (typeof showToast === 'function') showToast(result.alreadyRegistered ? 'La visita de hoy ya estaba registrada.' : 'Visita registrada: +1 punto pendiente.', 'fa-solid fa-coins');
     } catch (error) {
       console.warn('[MGM Misiones] Error registrando visita:', error);
       if (typeof showToast === 'function') showToast(error.message || 'No se pudo registrar la visita.', 'fa-solid fa-triangle-exclamation');
-      if (button) button.disabled = false;
+      if (button) {
+        if (state.missionsMonthData) {
+          renderMissionCalendar(state.missionsMonthData);
+        } else {
+          button.disabled = false;
+          button.innerHTML = '<i class="fa-solid fa-coins"></i> Registrar visita';
+        }
+      }
     }
   };
 
@@ -5734,7 +5757,7 @@
     checkAndShowSplash();
 
     // ── DEEP LINK: Leer parámetros de URL al arrancar la app ──────────────────────
-    // Ejemplos: ?tab=puntos&sub=registro | ?tab=agenda&id=EV001 | ?tab=promos&id=P001
+    // Ejemplos: ?tab=puntos&sub=registro | ?tab=agenda&id=EV001 | ?tab=misiones | ?tab=promos&id=P001
     // QR RMA:   ?tab=rma&sub=RMA-2026-0001&email=cliente@email.com
     // Modo Fiesta: ?tab=party
     const _urlParams = new URLSearchParams(window.location.search);
