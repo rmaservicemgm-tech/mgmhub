@@ -171,6 +171,8 @@
     pendingMissionLogin: false,
     missionsMonth: '',
     missionsMonthData: null,
+    missionsMonthRequestToken: 0,
+    missionVisitPending: false,
     calYear: new Date().getFullYear(),
     calMonth: new Date().getMonth(),
     activeEventFilter: 'all',
@@ -1181,6 +1183,14 @@
 
   async function setClientSession(clientData, eventType = 'login') {
     if (!clientData) return;
+    const previousCedula = state.authUser && String(state.authUser.cedula || '');
+    const nextCedula = String(clientData.cedula || '');
+    if (previousCedula !== nextCedula) {
+      state.missionsMonthData = null;
+      state.missionsMonth = '';
+      state.missionsMonthRequestToken++;
+      state.missionVisitPending = false;
+    }
     // Restablecer el flag de logout al iniciar una sesión nueva válida
     state.loggedOut = false;
     state.sessionToken = (state.sessionToken || 0) + 1;
@@ -2527,6 +2537,32 @@
     return `${parts.year}-${parts.month}`;
   }
 
+  function getMissionMonthCacheKey(cedula, month) {
+    const normalizedCedula = String(cedula || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    return `MGM_CACHE_MISSIONS_${normalizedCedula}_${month}`;
+  }
+
+  function readMissionMonthCache(cedula, month) {
+    try {
+      const cached = localStorage.getItem(getMissionMonthCacheKey(cedula, month));
+      if (!cached) return null;
+      const data = JSON.parse(cached);
+      return data && data.success && data.mes === month && Array.isArray(data.dias) ? data : null;
+    } catch (error) {
+      console.warn('[MGM Misiones] No se pudo leer el calendario guardado:', error);
+      return null;
+    }
+  }
+
+  function saveMissionMonthCache(cedula, data) {
+    if (!data || !data.mes || !Array.isArray(data.dias)) return;
+    try {
+      localStorage.setItem(getMissionMonthCacheKey(cedula, data.mes), JSON.stringify(data));
+    } catch (error) {
+      console.warn('[MGM Misiones] No se pudo guardar el calendario en caché:', error);
+    }
+  }
+
   function renderMissionsAccess() {
     const gate = document.getElementById('missions-login-gate');
     const content = document.getElementById('missions-content');
@@ -2557,24 +2593,44 @@
     }
 
     state.missionsMonth = month;
+    const cedula = String(state.authUser.cedula);
+    const requestToken = ++state.missionsMonthRequestToken;
     const title = document.getElementById('missions-month-title');
     if (title) {
       const [year, monthNumber] = month.split('-').map(Number);
       title.textContent = `${MONTHS_ES[monthNumber - 1]} ${year}`;
     }
 
+    const cachedData = readMissionMonthCache(cedula, month);
+    if (cachedData) {
+      state.missionsMonthData = cachedData;
+      renderMissionCalendar(cachedData);
+      const status = document.getElementById('missions-checkin-status');
+      if (status) status.textContent = 'Actualizando calendario...';
+    } else {
+      renderMissionCalendar(null);
+    }
+
     try {
-      const url = `${CFG.MISIONES_GAS_URL}?action=get_month&cedula=${encodeURIComponent(state.authUser.cedula)}&mes=${encodeURIComponent(month)}`;
-      const response = await fetch(url);
+      const url = `${CFG.MISIONES_GAS_URL}?action=get_month&cedula=${encodeURIComponent(cedula)}&mes=${encodeURIComponent(month)}&_=${Date.now()}`;
+      const response = await fetch(url, { cache: 'no-store' });
       const data = await response.json();
       if (!data.success) throw new Error(data.message || 'No se pudo cargar el calendario.');
-      if (state.activeTab !== 'misiones' || !state.authUser || state.missionsMonth !== month) return;
+      if (state.activeTab !== 'misiones' || !state.authUser || String(state.authUser.cedula) !== cedula
+        || state.missionsMonth !== month || state.missionsMonthRequestToken !== requestToken) return;
       state.missionsMonthData = data;
+      saveMissionMonthCache(cedula, data);
       renderMissionCalendar(data);
     } catch (error) {
       console.warn('[MGM Misiones] Error cargando el mes:', error);
+      if (!state.authUser || String(state.authUser.cedula) !== cedula
+        || state.missionsMonth !== month || state.missionsMonthRequestToken !== requestToken) return;
       const status = document.getElementById('missions-checkin-status');
-      if (status) status.textContent = 'No se pudo cargar el calendario. Verifica tu conexión.';
+      if (status) {
+        status.textContent = cachedData
+          ? 'Mostrando el último calendario guardado; no se pudo sincronizar.'
+          : 'No se pudo cargar el calendario. Verifica tu conexión.';
+      }
     }
   }
 
@@ -2616,14 +2672,18 @@
     if (pending) pending.textContent = `${month === currentMonth ? registeredDays.size : 0} puntos pendientes`;
     if (button) {
       const canRegisterToday = dataIsLoaded && month === currentMonth && !registeredDays.has(today);
-      button.disabled = !canRegisterToday;
-      button.innerHTML = registeredDays.has(today) && month === currentMonth
+      button.disabled = state.missionVisitPending || !canRegisterToday;
+      button.innerHTML = state.missionVisitPending && registeredDays.has(today) && month === currentMonth
+        ? '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...'
+        : registeredDays.has(today) && month === currentMonth
         ? '<i class="fa-solid fa-circle-check"></i> Visita registrada'
         : '<i class="fa-solid fa-coins"></i> Registrar visita';
       if (month !== currentMonth) button.disabled = true;
     }
     if (status) {
-      status.textContent = !dataIsLoaded
+      status.textContent = state.missionVisitPending
+        ? 'Confirmando tu visita con el servidor...'
+        : !dataIsLoaded
         ? 'Cargando calendario...'
         : (month !== currentMonth
           ? 'Este mes ya cerró. Los días no registrados se perdieron.'
@@ -2632,11 +2692,12 @@
 
     const prev = document.getElementById('missions-cal-prev');
     const next = document.getElementById('missions-cal-next');
-    if (prev) prev.disabled = false;
-    if (next) next.disabled = month >= currentMonth;
+    if (prev) prev.disabled = state.missionVisitPending;
+    if (next) next.disabled = state.missionVisitPending || month >= currentMonth;
   }
 
   window.registerMissionVisit = async function () {
+    if (state.missionVisitPending) return;
     if (!state.authUser || !state.authUser.cedula) {
       renderMissionsAccess();
       return;
@@ -2646,7 +2707,30 @@
       return;
     }
     const button = document.getElementById('missions-checkin-button');
-    if (button) { button.disabled = true; button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registrando...'; }
+    const cedula = String(state.authUser.cedula);
+    const sessionToken = state.sessionToken || 0;
+    const month = getCurrentMissionMonth();
+    const todayParts = getPanamaDateParts();
+    const today = `${todayParts.year}-${todayParts.month}-${todayParts.day}`;
+    const previousData = state.missionsMonthData && state.missionsMonthData.mes === month
+      ? state.missionsMonthData
+      : null;
+    const optimisticDays = new Set((previousData ? previousData.dias : []).map(String));
+    optimisticDays.add(today);
+    const days = Array.from(optimisticDays).sort();
+    state.missionVisitPending = true;
+    state.missionsMonthRequestToken++;
+    state.missionsMonthData = {
+      ...(previousData || { success: true, mes: month }),
+      dias: days,
+      visitas: days.length,
+      puntosPendientes: days.length,
+      puntosPorVisitas: days.length,
+      hoyRegistrado: true
+    };
+    renderMissionCalendar(state.missionsMonthData);
+    if (button) button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+
     try {
       const response = await fetch(CFG.MISIONES_GAS_URL, {
         method: 'POST',
@@ -2654,42 +2738,63 @@
         body: JSON.stringify({ action: 'register_visit', cedula: state.authUser.cedula })
       });
       const result = await response.json();
+      if (state.loggedOut || !state.authUser || String(state.authUser.cedula) !== cedula
+        || (state.sessionToken || 0) !== sessionToken) return;
       if (!result.success) throw new Error(result.message || 'No se pudo registrar la visita.');
-      const monthData = result.month || state.missionsMonthData;
-      const month = result.mes || (monthData && monthData.mes);
-      if (monthData && month && monthData.mes === month) {
-        const registeredDays = new Set((monthData.dias || []).map(String));
-        if (result.fecha) registeredDays.add(result.fecha);
-        const days = Array.from(registeredDays).sort();
-        state.missionsMonthData = result.month || {
-          ...monthData,
-          dias: days,
-          visitas: days.length,
-          puntosPendientes: month === getCurrentMissionMonth() ? days.length : 0,
-          puntosPorVisitas: days.length,
-          hoyRegistrado: result.fecha ? result.fecha === `${month}-${String(getPanamaDateParts().day).padStart(2, '0')}` : true
-        };
+      const confirmedMonth = result.month || state.missionsMonthData;
+      const confirmedMonthName = result.mes || (confirmedMonth && confirmedMonth.mes);
+      if (confirmedMonth && confirmedMonthName === month) {
+        const confirmedDays = new Set((confirmedMonth.dias || []).map(String));
+        confirmedDays.add(result.fecha || today);
+        const confirmedDayList = Array.from(confirmedDays).sort();
         state.missionsMonth = month;
-        renderMissionCalendar(state.missionsMonthData);
+        state.missionsMonthData = {
+          ...confirmedMonth,
+          success: true,
+          mes: month,
+          dias: confirmedDayList,
+          visitas: confirmedDayList.length,
+          puntosPendientes: confirmedDayList.length,
+          puntosPorVisitas: confirmedDayList.length,
+          hoyRegistrado: confirmedDayList.includes(today)
+        };
+        saveMissionMonthCache(cedula, state.missionsMonthData);
       } else {
-        await loadMissionMonth(getCurrentMissionMonth());
+        state.missionsMonthData = null;
       }
+      state.missionVisitPending = false;
+      renderMissionCalendar(state.missionsMonthData);
       if (typeof showToast === 'function') showToast(result.alreadyRegistered ? 'La visita de hoy ya estaba registrada.' : 'Visita registrada: +1 punto pendiente.', 'fa-solid fa-coins');
     } catch (error) {
       console.warn('[MGM Misiones] Error registrando visita:', error);
-      if (typeof showToast === 'function') showToast(error.message || 'No se pudo registrar la visita.', 'fa-solid fa-triangle-exclamation');
-      if (button) {
-        if (state.missionsMonthData) {
-          renderMissionCalendar(state.missionsMonthData);
-        } else {
-          button.disabled = false;
-          button.innerHTML = '<i class="fa-solid fa-coins"></i> Registrar visita';
-        }
+      if (state.loggedOut || !state.authUser || String(state.authUser.cedula) !== cedula
+        || (state.sessionToken || 0) !== sessionToken) return;
+      state.missionsMonthData = previousData;
+      renderMissionCalendar(previousData);
+      await loadMissionMonth(month);
+      if (state.loggedOut || !state.authUser || String(state.authUser.cedula) !== cedula
+        || (state.sessionToken || 0) !== sessionToken) return;
+      state.missionVisitPending = false;
+      renderMissionCalendar(state.missionsMonthData);
+      const visitConfirmed = !!(state.missionsMonthData && state.missionsMonthData.mes === month
+        && Array.isArray(state.missionsMonthData.dias) && state.missionsMonthData.dias.includes(today));
+      if (typeof showToast === 'function') {
+        showToast(
+          visitConfirmed ? 'Visita confirmada al sincronizar con el servidor.' : (error.message || 'No se pudo registrar la visita.'),
+          visitConfirmed ? 'fa-solid fa-coins' : 'fa-solid fa-triangle-exclamation'
+        );
+      }
+    } finally {
+      if (state.authUser && String(state.authUser.cedula) === cedula
+        && (state.sessionToken || 0) === sessionToken) {
+        state.missionVisitPending = false;
+        if (button && state.missionsMonthData) renderMissionCalendar(state.missionsMonthData);
       }
     }
   };
 
   function changeMissionMonth(offset) {
+    if (state.missionVisitPending) return;
     const [year, month] = (state.missionsMonth || getCurrentMissionMonth()).split('-').map(Number);
     const changed = new Date(year, month - 1 + offset, 1);
     const nextMonth = `${changed.getFullYear()}-${String(changed.getMonth() + 1).padStart(2, '0')}`;
@@ -4524,6 +4629,10 @@
     state.sessionToken = (state.sessionToken || 0) + 1;
     state.loggedOut = true;
     state.authUser = null;
+    state.missionsMonth = '';
+    state.missionsMonthData = null;
+    state.missionsMonthRequestToken++;
+    state.missionVisitPending = false;
     state.myCourses = [];
     state.notifications = [];
     state.clearedNotifs = [];
