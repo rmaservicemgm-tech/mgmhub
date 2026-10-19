@@ -5084,8 +5084,8 @@
     try {
       const options = {
         body,
-        icon: 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png',
-        badge: 'https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png',
+        icon: new URL('./icon-512.png', window.location.href).href,
+        badge: new URL('./notification-badge.png', window.location.href).href,
         vibrate: [200, 100, 200],
         data: { url: targetUrl || '' }
       };

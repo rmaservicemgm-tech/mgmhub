@@ -4,23 +4,31 @@
   "description": "Aplicación Móvil de MGM Seguridad: MGM Puntos, Agenda, Promociones y Asistente IA Magie.",
   "start_url": "./index.html",
   "display": "standalone",
-  "scope": "/",
+  "scope": "./",
   "launch_handler": {
     "client_mode": ["focus-existing", "navigate-new"]
   },
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#06244a",
+  "theme_color": "#06244a",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

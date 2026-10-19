@@ -1,7 +1,7 @@
 // ─── MGM HUB SERVICE WORKER ──────────────────────────────────────────────────
 // Estrategia: Network First + Cache como respaldo offline.
 // Cambiar CACHE_VERSION fuerza actualización inmediata en todos los clientes.
-const CACHE_VERSION = 32;
+const CACHE_VERSION = 33;
 const CACHE_NAME    = `mgm-toolbox-v${CACHE_VERSION}`;
 
 // Archivos a pre-cachear (para funcionalidad offline básica)
@@ -9,7 +9,13 @@ const SHELL_ASSETS = [
   './index.html',
   './styles.css',
   './app.js',
-  './manifest.json'
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-512.png',
+  './apple-touch-icon.png',
+  './favicon-32.png',
+  './notification-badge.png'
 ];
 
 // ── INSTALL: pre-cachear shell de la app ─────────────────────────────────────
