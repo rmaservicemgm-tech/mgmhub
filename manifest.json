@@ -11,6 +11,60 @@
   "background_color": "#06244a",
   "theme_color": "#06244a",
   "orientation": "portrait",
+  "shortcuts": [
+    {
+      "name": "MGM Puntos",
+      "short_name": "Puntos",
+      "description": "Consulta tu saldo de puntos MGM.",
+      "url": "./index.html?tab=puntos",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Agenda y Cursos",
+      "short_name": "Agenda",
+      "description": "Consulta la agenda de eventos y cursos.",
+      "url": "./index.html?tab=agenda",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Misiones",
+      "short_name": "Misiones",
+      "description": "Abre tus misiones MGM.",
+      "url": "./index.html?tab=misiones",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Premios",
+      "short_name": "Premios",
+      "description": "Explora el catálogo de premios MGM.",
+      "url": "./index.html?tab=premios",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
   "icons": [
     {
       "src": "icon-192.png",
