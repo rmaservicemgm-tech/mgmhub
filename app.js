@@ -1181,6 +1181,33 @@
   // GESTIÓN CENTRALIZADA DE SESIÓN (LOGIN, REGISTRO, AUTO-LOGIN & TRACKING)
   // ══════════════════════════════════════════════════════════════════════════════
 
+  let oneSignalIdentityRevision = 0;
+  let oneSignalIdentityQueue = Promise.resolve();
+
+  function syncOneSignalIdentity(externalId) {
+    const normalizedId = String(externalId || '').trim();
+    if (!normalizedId) return;
+    const revision = ++oneSignalIdentityRevision;
+    oneSignalIdentityQueue = oneSignalIdentityQueue
+      .catch(error => console.error('[MGM Hub] Error previo sincronizando OneSignal:', error))
+      .then(async () => {
+        const OneSignal = await window.mgmOneSignalReady;
+        if (revision === oneSignalIdentityRevision) await OneSignal.login(normalizedId);
+      })
+      .catch(error => console.error('[MGM Hub] No se pudo vincular la cuenta a OneSignal:', error));
+  }
+
+  function logoutOneSignalIdentity() {
+    const revision = ++oneSignalIdentityRevision;
+    oneSignalIdentityQueue = oneSignalIdentityQueue
+      .catch(error => console.error('[MGM Hub] Error previo sincronizando OneSignal:', error))
+      .then(async () => {
+        const OneSignal = await window.mgmOneSignalReady;
+        if (revision === oneSignalIdentityRevision) await OneSignal.logout();
+      })
+      .catch(error => console.error('[MGM Hub] No se pudo desvincular la cuenta de OneSignal:', error));
+  }
+
   async function setClientSession(clientData, eventType = 'login') {
     if (!clientData) return;
     const previousCedula = state.authUser && String(state.authUser.cedula || '');
@@ -1195,6 +1222,11 @@
     state.loggedOut = false;
     state.sessionToken = (state.sessionToken || 0) + 1;
     state.authUser = { ...state.authUser, ...clientData };
+    if (state.authUser.oneSignalExternalId) {
+      syncOneSignalIdentity(state.authUser.oneSignalExternalId);
+    } else if (previousCedula !== nextCedula) {
+      logoutOneSignalIdentity();
+    }
     localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
     // Registrar timestamp de actividad al iniciar sesión
     localStorage.setItem(K_LAST_ACTIVITY, String(Date.now()));
@@ -1660,6 +1692,7 @@
         checkAndNotifyNewPoints(res.client);
 
         state.authUser = { ...state.authUser, ...res.client };
+        syncOneSignalIdentity(state.authUser.oneSignalExternalId);
         localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
         renderDashboard(state.authUser);
         updateHeaderUserIcon();
@@ -4629,6 +4662,8 @@
     state.sessionToken = (state.sessionToken || 0) + 1;
     state.loggedOut = true;
     state.authUser = null;
+    logoutOneSignalIdentity();
+    logoutOneSignalIdentity();
     state.missionsMonth = '';
     state.missionsMonthData = null;
     state.missionsMonthRequestToken++;
@@ -5078,6 +5113,7 @@
         alert('No se pudo activar la suscripción a notificaciones. Inténtalo nuevamente.');
         return;
       }
+      window.mgmOneSignalSubscribed = true;
 
       mgmConfetti.bell();
       openLoginModal();
@@ -5093,32 +5129,47 @@
   // Disparar una notificación nativa del navegador/sistema
   function fireNativeNotif(title, body, targetUrl) {
     if (Notification.permission !== 'granted') return;
-    try {
-      const options = {
-        body,
-        icon: new URL('./icon-512.png', window.location.href).href,
-        badge: new URL('./notification-badge.png', window.location.href).href,
-        vibrate: [200, 100, 200],
-        data: { url: targetUrl || '' }
-      };
+    const show = function () {
+      if (window.mgmOneSignalSubscribed) return;
+      try {
+        const options = {
+          body,
+          icon: new URL('./icon-512.png', window.location.href).href,
+          badge: new URL('./notification-badge.png', window.location.href).href,
+          vibrate: [200, 100, 200],
+          data: { url: targetUrl || '' }
+        };
 
-      // Service Worker notification (funciona en móvil como PWA)
-      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.ready.then(reg => {
-          reg.showNotification(title, options);
-        }).catch(() => {
+        // Service Worker notification (funciona en móvil como PWA)
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification(title, options);
+          }).catch(() => {
+            const notif = new Notification(title, options);
+            if (targetUrl) {
+              notif.onclick = () => { window.focus(); navigateTo(targetUrl); notif.close(); };
+            }
+          });
+        } else {
           const notif = new Notification(title, options);
           if (targetUrl) {
             notif.onclick = () => { window.focus(); navigateTo(targetUrl); notif.close(); };
           }
-        });
-      } else {
-        const notif = new Notification(title, options);
-        if (targetUrl) {
-          notif.onclick = () => { window.focus(); navigateTo(targetUrl); notif.close(); };
         }
-      }
-    } catch (e) { console.warn('Notif error:', e); }
+      } catch (e) { console.warn('Notif error:', e); }
+    };
+
+    if (window.mgmOneSignalReady) {
+      window.mgmOneSignalReady.then(OneSignal => {
+        window.mgmOneSignalSubscribed = Boolean(OneSignal.User.PushSubscription.optedIn);
+        show();
+      }).catch(error => {
+        console.warn('[MGM Hub] OneSignal no disponible; usando notificación local.', error);
+        show();
+      });
+    } else {
+      show();
+    }
   }
 
   // Registrar dispositivo en el Sheet de Tracking
@@ -5925,6 +5976,7 @@
     // Si el usuario está autenticado, registrar visita en tracking sheet y refrescar puntos
     if (state.authUser) {
       trackUserActivity(state.authUser.cedula, state.authUser.nombre, 'app_open');
+      syncOneSignalIdentity(state.authUser.oneSignalExternalId);
       autoLoadPuntosDashboard();
       loadMyCourses();
       // Siempre sincronizar foto de perfil desde el backend (multi-dispositivo)

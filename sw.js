@@ -1,7 +1,7 @@
 // ─── MGM HUB SERVICE WORKER ──────────────────────────────────────────────────
 // Estrategia: Network First + Cache como respaldo offline.
 // Cambiar CACHE_VERSION fuerza actualización inmediata en todos los clientes.
-const CACHE_VERSION = 36;
+const CACHE_VERSION = 38;
 const CACHE_NAME    = `mgm-toolbox-v${CACHE_VERSION}`;
 
 // Archivos a pre-cachear (para funcionalidad offline básica)
@@ -38,7 +38,7 @@ self.addEventListener('activate', event => {
     caches.keys().then(keys =>
       Promise.all(
         keys
-          .filter(k => k !== CACHE_NAME)
+          .filter(k => k.indexOf('mgm-toolbox-') === 0 && k !== CACHE_NAME)
           .map(k => {
             console.log('[SW] Eliminando caché viejo:', k);
             return caches.delete(k);

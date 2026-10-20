@@ -42,6 +42,10 @@
       window.OneSignalDeferred.push(async function (OneSignal) {
         try {
           await OneSignal.init({ appId: 'd45d5317-9ca0-452c-8bed-632e984a9149' });
+          window.mgmOneSignalSubscribed = Boolean(OneSignal.User.PushSubscription.optedIn);
+          OneSignal.User.PushSubscription.addEventListener('change', function (event) {
+            window.mgmOneSignalSubscribed = Boolean(event.current.optedIn);
+          });
           resolve(OneSignal);
         } catch (error) {
           reject(error);
@@ -56,7 +60,7 @@
   <!-- Limpiar caché viejo al actualizar version -->
   <script>
     (function () {
-      var APP_VERSION = '39';
+      var APP_VERSION = '41';
       var stored = localStorage.getItem('mgm_app_v');
       if (stored !== APP_VERSION) {
         localStorage.setItem('mgm_app_v', APP_VERSION);
@@ -6155,7 +6159,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=38"></script>
+  <script src="app.js?v=40"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
   <script>
