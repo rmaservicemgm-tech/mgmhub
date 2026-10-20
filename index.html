@@ -35,25 +35,51 @@
   <!-- HLS.js para soporte de streams .m3u8 (Radios) -->
   <script defer src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.mgmOneSignalReady = new Promise(function (resolve, reject) {
+      window.OneSignalDeferred.push(async function (OneSignal) {
+        try {
+          await OneSignal.init({ appId: 'd45d5317-9ca0-452c-8bed-632e984a9149' });
+          resolve(OneSignal);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+    window.mgmOneSignalReady.catch(function (error) {
+      console.error('[MGM Hub] No se pudo iniciar OneSignal:', error);
+    });
+  </script>
+
   <!-- Limpiar caché viejo al actualizar version -->
   <script>
     (function () {
-      var APP_VERSION = '38';
+      var APP_VERSION = '39';
       var stored = localStorage.getItem('mgm_app_v');
       if (stored !== APP_VERSION) {
         localStorage.setItem('mgm_app_v', APP_VERSION);
-        // Borrar todos los caches del SW
+        // Borrar solo cachés de MGM Hub, sin afectar al SDK de OneSignal.
         if ('caches' in window) {
           caches.keys().then(function (names) {
-            names.forEach(function (name) { caches.delete(name); });
+            names.filter(function (name) { return name.indexOf('mgm-toolbox-') === 0; })
+              .forEach(function (name) { caches.delete(name); });
           });
         }
-        // Desregistrar todos los SW viejos
+        // Desregistrar solo el service worker de MGM Hub.
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.getRegistrations().then(function (regs) {
-            regs.forEach(function (r) { r.unregister(); });
-            // Recargar SOLO si había algo registrado (evita loop)
-            if (regs.length > 0) window.location.reload(true);
+            var appWorkerUrl = new URL('./sw.js', window.location.href).href;
+            var appRegistrations = regs.filter(function (registration) {
+              return [registration.active, registration.waiting, registration.installing]
+                .some(function (worker) { return worker && worker.scriptURL === appWorkerUrl; });
+            });
+            Promise.all(appRegistrations.map(function (registration) {
+              return registration.unregister();
+            })).then(function (results) {
+              if (results.some(Boolean)) window.location.reload();
+            });
           });
         }
       }
@@ -6129,7 +6155,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=37"></script>
+  <script src="app.js?v=38"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
   <script>

@@ -5060,22 +5060,34 @@
   };
 
   // Solicitar permiso de notificaciones nativas del navegador
-  window.requestNotificationPermission = function () {
+  window.requestNotificationPermission = async function () {
     if (!('Notification' in window)) {
       alert('Tu navegador no soporta notificaciones del sistema.');
       return;
     }
-    Notification.requestPermission().then(permission => {
-      if (permission === 'granted') {
-        // 🔔 ¡Celebrar activación de notificaciones!
-        mgmConfetti.bell();
-        fireNativeNotif('MGM Hub', '¡Notificaciones activadas! 🔔 Recibirás alertas exclusivas.');
-        openLoginModal(); // Refrescar modal para ocultar el botón
-        if (state.authUser) {
-          registerDeviceForNotifs(state.authUser.cedula, state.authUser.nombre);
-        }
+
+    if (Notification.permission === 'denied') {
+      alert('Las notificaciones están bloqueadas en la configuración del navegador. Actívalas allí y vuelve a intentarlo.');
+      return;
+    }
+
+    try {
+      const OneSignal = await window.mgmOneSignalReady;
+      await OneSignal.User.PushSubscription.optIn();
+      if (!OneSignal.User.PushSubscription.optedIn) {
+        alert('No se pudo activar la suscripción a notificaciones. Inténtalo nuevamente.');
+        return;
       }
-    });
+
+      mgmConfetti.bell();
+      openLoginModal();
+      if (state.authUser) {
+        registerDeviceForNotifs(state.authUser.cedula, state.authUser.nombre);
+      }
+    } catch (error) {
+      console.error('[MGM Hub] Error al activar OneSignal:', error);
+      alert('No se pudo activar OneSignal. Revisa tu conexión e inténtalo nuevamente.');
+    }
   };
 
   // Disparar una notificación nativa del navegador/sistema
@@ -5114,9 +5126,12 @@
     trackUserActivity(cedula, nombre, 'dispositivo');
   }
 
+  let notificationsRequestInFlight = false;
+
   // Consultar notificaciones del backend
   async function checkNotifications() {
-    if (CFG.NOTIFS_GAS_URL === 'URL_TEMPORAL_PENDIENTE') return;
+    if (CFG.NOTIFS_GAS_URL === 'URL_TEMPORAL_PENDIENTE' || notificationsRequestInFlight) return;
+    notificationsRequestInFlight = true;
     // Capturar token antes de la petición async
     const tokenSnapshot = state.sessionToken || 0;
     try {
@@ -5349,6 +5364,8 @@
       }
     } catch (e) {
       console.warn('[MGM Hub] Error al consultar notificaciones:', e);
+    } finally {
+      notificationsRequestInFlight = false;
     }
   }
 
@@ -5359,6 +5376,13 @@
       if (state.authUser) autoLoadPuntosDashboard();
     }
   });
+
+  // Consultar notificaciones periódicamente mientras la app está abierta.
+  setInterval(() => {
+    if (state.authUser && document.visibilityState === 'visible') {
+      checkNotifications();
+    }
+  }, 60000);
 
   // Chequeo periódico en segundo plano cada 20 segundos si la app está visible
   setInterval(() => {
