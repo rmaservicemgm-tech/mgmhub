@@ -584,13 +584,21 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
 .member-card::before {
   content: ''; position: absolute; top: -40px; right: -40px;
   width: 160px; height: 160px; border-radius: 50%;
-  background: rgba(255,184,0,0.12); pointer-events: none;
+  background: rgba(255,184,0,0.12); pointer-events: none; z-index: 0;
+}
+.member-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: url('./logo-mgm-watermark.png') center 54% / auto 82% no-repeat;
+  opacity: 0.1; pointer-events: none; z-index: 0;
+}
+.member-card > * {
+  position: relative; z-index: 1;
 }
 .member-card-header {
   display: flex; align-items: center;
   justify-content: space-between; margin-bottom: 18px;
 }
-.card-brand-logo { height: 26px; }
+.card-brand-logo { height: 36px; width: auto; object-fit: contain; }
 
 .card-tier-pill {
   background: rgba(255,184,0,0.2);
