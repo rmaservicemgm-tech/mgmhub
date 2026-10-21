@@ -1,7 +1,7 @@
 // ─── MGM HUB SERVICE WORKER ──────────────────────────────────────────────────
 // Estrategia: Network First + Cache como respaldo offline.
 // Cambiar CACHE_VERSION fuerza actualización inmediata en todos los clientes.
-const CACHE_VERSION = 38;
+const CACHE_VERSION = 39;
 const CACHE_NAME    = `mgm-toolbox-v${CACHE_VERSION}`;
 
 // Archivos a pre-cachear (para funcionalidad offline básica)
@@ -105,31 +105,49 @@ self.addEventListener('fetch', event => {
 // ── NOTIFICATION CLICK: abrir enlace externo o enfocar app al pulsar notificación 
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  const target = (event.notification.data && event.notification.data.url) ? event.notification.data.url.trim() : '';
+  const notificationData = event.notification.data || {};
+  const target = String(notificationData.url || notificationData.launchURL || '').trim();
+  const appUrl = new URL('./index.html', self.registration.scope);
+  let targetUrl = appUrl;
+
+  if (target) {
+    try {
+      targetUrl = new URL(target, appUrl);
+    } catch (error) {
+      targetUrl = new URL(appUrl.href);
+      targetUrl.searchParams.set('tab', target);
+    }
+
+    if (!/^https?:\/\//i.test(target)) {
+      const [tab, sub] = target.split(':');
+      targetUrl = new URL(appUrl.href);
+      targetUrl.searchParams.set('tab', tab);
+      if (sub) targetUrl.searchParams.set('sub', sub);
+    }
+  }
+
+  const appScope = new URL(self.registration.scope);
+  const isMgmHubUrl = targetUrl.origin === appScope.origin
+    && targetUrl.pathname.indexOf(appScope.pathname) === 0;
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
-      // Si el enlace es externo, abrirlo directamente en una nueva pestaña del navegador
-      const isExt = /^https?:\/\//i.test(target) || /^www\./i.test(target) || /^wa\.me\//i.test(target) || (target.includes('.') && !target.includes(':'));
-      if (isExt) {
-        let finalUrl = target;
+      if (!isMgmHubUrl && target) {
+        let finalUrl = targetUrl.href;
         if (!/^https?:\/\//i.test(finalUrl)) finalUrl = `https://${finalUrl}`;
         return clients.openWindow(finalUrl);
       }
 
-      // Si hay una ventana abierta de MGM Hub, enfocarla y enviarle la sección
+      // Navegar la ventana existente a la URL completa para conservar sus parámetros.
       for (const client of clientList) {
-        if (client.url && 'focus' in client) {
-          if (target) {
-            client.postMessage({ type: 'NAVIGATE_TO', seccion: target });
-          }
-          return client.focus();
+        if (client.url && 'focus' in client && 'navigate' in client) {
+          return client.navigate(targetUrl.href).then(navigatedClient => {
+            return (navigatedClient || client).focus();
+          });
         }
       }
 
-      // Si no hay ventana abierta, abrir la app
-      const appUrl = target ? `./index.html?tab=${encodeURIComponent(target)}` : './index.html';
-      return clients.openWindow(appUrl);
+      return clients.openWindow(targetUrl.href);
     })
   );
 });

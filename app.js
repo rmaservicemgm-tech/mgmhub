@@ -5925,6 +5925,12 @@
     document.documentElement.removeAttribute('data-theme');
     try { localStorage.removeItem('mgm_theme'); } catch (e) { }
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const refParam = urlParams.get('ref');
+    const deepTab = urlParams.get('tab');
+    const deepSub = urlParams.get('sub') || urlParams.get('id');
+    const deepEmail = urlParams.get('email') || '';
+
     // ── Verificar expiración de sesión por inactividad (30 días) ─────────────
     if (state.authUser) {
       const lastActivity = parseInt(localStorage.getItem(K_LAST_ACTIVITY) || '0');
@@ -5952,8 +5958,6 @@
     }
 
     // Capturar código de referido de URL si existe
-    const urlParams = new URLSearchParams(window.location.search);
-    const refParam = urlParams.get('ref');
     if (refParam) {
       try {
         sessionStorage.setItem('mgm_ref_code', refParam);
@@ -5964,7 +5968,7 @@
       } else {
         switchMainTab('home');
       }
-    } else {
+    } else if (!deepTab) {
       switchMainTab('home');
     }
 
@@ -5998,29 +6002,21 @@
       loadHomeCardsOrder()          // ← Orden de tarjetas desde Sheet "Utilidades"
     ]);
 
-    checkAndShowSplash();
+    if (!deepTab) checkAndShowSplash();
 
     // ── DEEP LINK: Leer parámetros de URL al arrancar la app ──────────────────────
     // Ejemplos: ?tab=puntos&sub=registro | ?tab=agenda&id=EV001 | ?tab=misiones | ?tab=promos&id=P001
     // QR RMA:   ?tab=rma&sub=RMA-2026-0001&email=cliente@email.com
     // Modo Fiesta: ?tab=party
-    const _urlParams = new URLSearchParams(window.location.search);
-    const _deepTab = _urlParams.get('tab');
-    const _deepSub = _urlParams.get('sub') || _urlParams.get('id');
-    const _deepEmail = _urlParams.get('email') || '';
-    if (_deepTab) {
+    if (deepTab) {
       // Si hay email en la URL (viene del QR), guardarlo para que navigateTo lo use
-      if (_deepEmail) window._pendingRmaEmail = _deepEmail;
-      const _seccion = _deepSub ? `${_deepTab}:${_deepSub}` : _deepTab;
+      if (deepEmail) window._pendingRmaEmail = deepEmail;
+      const section = deepSub ? `${deepTab}:${deepSub}` : deepTab;
       if (typeof window.showMgmLoader === 'function') window.showMgmLoader('Cargando sección...');
-      // Pequeño delay para dejar que los datos carguen antes de navegar
-      setTimeout(() => {
-        navigateTo(_seccion);
-        initializeAppBackNavigation();
-        if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
-      }, 400);
-      // Limpiar la URL para que no se repita en recargas
+      navigateTo(section);
       history.replaceState({}, document.title, window.location.pathname);
+      initializeAppBackNavigation();
+      if (typeof window.hideMgmLoader === 'function') window.hideMgmLoader();
     } else {
       initializeAppBackNavigation();
     }
