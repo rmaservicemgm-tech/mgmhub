@@ -41,7 +41,11 @@
     window.mgmOneSignalReady = new Promise(function (resolve, reject) {
       window.OneSignalDeferred.push(async function (OneSignal) {
         try {
-          await OneSignal.init({ appId: 'd45d5317-9ca0-452c-8bed-632e984a9149' });
+          await OneSignal.init({
+            appId: 'd45d5317-9ca0-452c-8bed-632e984a9149',
+            serviceWorkerPath: 'push/onesignal/OneSignalSDKWorker.js',
+            serviceWorkerParam: { scope: '/mgmhub/push/onesignal/' }
+          });
           window.mgmOneSignalSubscribed = Boolean(OneSignal.User.PushSubscription.optedIn);
           OneSignal.User.PushSubscription.addEventListener('change', function (event) {
             window.mgmOneSignalSubscribed = Boolean(event.current.optedIn);
@@ -60,7 +64,7 @@
   <!-- Limpiar caché viejo al actualizar version -->
   <script>
     (function () {
-      var APP_VERSION = '42';
+      var APP_VERSION = '43';
       var stored = localStorage.getItem('mgm_app_v');
       if (stored !== APP_VERSION) {
         localStorage.setItem('mgm_app_v', APP_VERSION);
