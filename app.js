@@ -5226,7 +5226,10 @@
         state.notifications = state.notifications.filter(localNotif => {
           const localId = String(localNotif.id);
           if (state.clearedNotifs.includes(localId)) return false;
-          // Mantener solo si sigue en el servidor (aplica a todos los tipos, incluyendo pts_)
+          if (String(localNotif.title || '').trim() === 'Nuevos Puntos MGM!') return false;
+          // Las notificaciones detalladas de transacciones se reconstruyen del historial
+          // de puntos y no tienen una fila espejo en el backend de notificaciones.
+          if (localId.startsWith('pts_')) return true;
           return serverIds.includes(localId);
         });
 
@@ -5236,6 +5239,9 @@
 
         // Agregar nuevas notificaciones o actualizar existentes
         res.notifications.forEach(rawN => {
+          const rawTitle = String(rawN.title || rawN.titulo || '').trim();
+          if (rawTitle === 'Nuevos Puntos MGM!') return;
+
           // Normalizar campos: el GAS puede devolver titulo/mensaje o title/body, y seccion/url/enlace/link
           // Si no viene fecha, la extraemos del timestamp embebido en el ID (ej: RMA-2026-0018-1726344000000)
           let parsedDate = rawN.date || rawN.fecha || '';
