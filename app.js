@@ -1133,10 +1133,16 @@
   window.openAppModal = function (modalId) {
     const el = document.getElementById(modalId);
     if (el) {
+      const activeModals = Array.from(document.querySelectorAll('.app-modal.active'))
+        .filter(modal => modal !== el);
+      const modalStackBase = 2147483000;
+      activeModals.forEach((modal, index) => {
+        modal.style.zIndex = String(modalStackBase + index);
+      });
       el.classList.add('active');
       el.style.position = 'fixed';
       el.style.inset = '0';
-      el.style.zIndex = '2147483647';
+      el.style.zIndex = String(modalStackBase + activeModals.length);
     }
   };
 
