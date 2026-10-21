@@ -1625,10 +1625,8 @@
           showToast(`🎁 ¡Has redimido ${ptsAbs.toLocaleString('es-PA')} Puntos MGM ($${usdVal} USD)!`, 'fa-solid fa-gift');
         }
       } else if (type === 'earned') {
-        fireNativeNotif(
-          `🎉 ¡+${ptsNum.toLocaleString('es-PA')} Puntos MGM Acreditados!`,
-          `Se cargaron ${ptsNum.toLocaleString('es-PA')} puntos a tu cuenta. Nuevo saldo: ${freshClient.puntos} Pts.`
-        );
+        // El backend envía el push de esta acreditación por OneSignal.
+        // No crear otro push local para evitar que el dispositivo lo reciba duplicado.
         mgmConfetti.gold();
         if (typeof showToast === 'function') {
           showToast(`⭐ ¡Has recibido +${ptsNum.toLocaleString('es-PA')} Puntos MGM!`, 'fa-solid fa-coins');
