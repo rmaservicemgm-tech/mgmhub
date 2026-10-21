@@ -4848,7 +4848,7 @@
     payload.action = 'update_user_info';
     payload.cedula = state.authUser.cedula;
 
-    fetch(CFG.SCRIPT_URL, {
+    fetch(CFG.PUNTOS_GAS_URL, {
       method: 'POST',
       body: JSON.stringify(payload),
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }
