@@ -5819,6 +5819,7 @@
       puntos: { icon: 'fa-star', color: '#f59e0b', badgeText: '⭐ Puntos', badgeBg: '#fef3c7', badgeTxt: '#b45309' },
       premios: { icon: 'fa-gift', color: '#10b981', badgeText: '🎁 Premios', badgeBg: '#d1fae5', badgeTxt: '#065f46' },
       agenda: { icon: 'fa-calendar-days', color: '#6366f1', badgeText: '📅 Agenda', badgeBg: '#ede9fe', badgeTxt: '#5b21b6' },
+      misiones: { icon: 'fa-bullseye', color: '#d97706', badgeText: '🎯 Misiones', badgeBg: '#fef3c7', badgeTxt: '#b45309' },
       promos: { icon: 'fa-fire', color: '#ef4444', badgeText: '🔥 Promo', badgeBg: '#fee2e2', badgeTxt: '#b91c1c' },
       rma: { icon: 'fa-screwdriver-wrench', color: '#0f766e', badgeText: '🔧 Mi RMA', badgeBg: '#ccfbf1', badgeTxt: '#0f766e' },
       external: { icon: 'fa-arrow-up-right-from-square', color: '#005bbb', badgeText: '🌐 MGM Web ↗', badgeBg: '#e8f1ff', badgeTxt: '#005bbb' },
@@ -5839,10 +5840,15 @@
       if (seccion.toLowerCase() === 'puntos:maestria') {
         seccion = 'maestria';
       }
+      if (/^(misi[oó]n|misiones)$/i.test(seccion)) {
+        seccion = 'misiones';
+      }
 
       if (!seccion) {
         if (hasWord(/\b(maestr[ií]a|horas?\s+t[eé]cnicas?|horas?\s+de\s+experiencia|acreditaci[oó]n)\b/i)) {
           seccion = 'maestria';
+        } else if (hasWord(/\b(misi[oó]n(?:es)?|constancia|visita\s+diaria|registro\s+diario|punto\s+diario|reclama\s+tu\s+punto)\b/i)) {
+          seccion = 'misiones';
         } else
         if (hasWord(/\b(rma|garant[ií]a|garantias|taller|reparaci[oó]n|reparar|equipo)\b/i)) {
           seccion = 'rma';
@@ -5905,15 +5911,23 @@
       } else if (!n.badgeText) {
         // Refinar insignia y estilo visual según el tipo específico de evento/alerta interna
 
-        // 1. RMA / Garantías / Taller técnico
-        if (tab === 'rma' || hasWord(/\b(rma|garant[ií]a|garantias|taller\s+rma|taller|reparaci[oó]n)\b/i)) {
+        // 1. Registro diario y constancia de Misiones
+        if (tab === 'misiones' || hasWord(/\b(misi[oó]n(?:es)?|constancia|visita\s+diaria|registro\s+diario|punto\s+diario|reclama\s+tu\s+punto)\b/i)) {
+          itemIcon = 'fa-bullseye';
+          itemColor = '#d97706';
+          itemBadgeText = '🎯 Misiones';
+          itemBadgeBg = '#fef3c7';
+          itemBadgeTxt = '#b45309';
+        }
+        // 2. RMA / Garantías / Taller técnico
+        else if (tab === 'rma' || hasWord(/\b(rma|garant[ií]a|garantias|taller\s+rma|taller|reparaci[oó]n)\b/i)) {
           itemIcon = 'fa-screwdriver-wrench';
           itemColor = '#0f766e';
           itemBadgeText = '🔧 Mi RMA';
           itemBadgeBg = '#ccfbf1';
           itemBadgeTxt = '#0f766e';
         }
-        // 2. Premios y canjes por puntos
+        // 3. Premios y canjes por puntos
         else if (tab === 'premios' || hasWord(/\b(premio|premios|redim|canje|canjeado|canjeaste|canjear|recompensa|beneficio(?:s)?\s+por\s+puntos|puntos\s+para\s+canjear)\b/i)) {
           itemIcon = 'fa-gift';
           itemColor = '#10b981';
@@ -5921,7 +5935,7 @@
           itemBadgeBg = '#d1fae5';
           itemBadgeTxt = '#065f46';
         }
-        // 3. Devolución de mercadería / Nota de crédito comercial (\bnc\b como palabra entera, ¡NUNCA .includes('nc')!)
+        // 4. Devolución de mercadería / Nota de crédito comercial (\bnc\b como palabra entera, ¡NUNCA .includes('nc')!)
         else if (hasWord(/\b(devoluci[oó]n|devoluciones|nota(?:s)? de cr[eé]dito|\bnc\b)\b/i)) {
           itemIcon = 'fa-file-invoice-dollar';
           itemColor = '#ef4444';
@@ -5929,7 +5943,7 @@
           itemBadgeBg = '#fee2e2';
           itemBadgeTxt = '#991b1b';
         }
-        // 4. Ajustes de saldo de puntos
+        // 5. Ajustes de saldo de puntos
         else if (hasWord(/\b(ajuste|ajustes)\b/i)) {
           const isFavor = hasWord(/\b(favor|acredit|bono|\(\+\))\b/i);
           itemIcon = isFavor ? 'fa-award' : 'fa-sliders';
@@ -5938,7 +5952,7 @@
           itemBadgeBg = isFavor ? '#ede9fe' : '#fef3c7';
           itemBadgeTxt = isFavor ? '#5b21b6' : '#92400e';
         }
-        // 5. Cumpleaños del cliente
+        // 6. Cumpleaños del cliente
         else if (hasWord(/\b(cumplea[nñ]os|aniversario)\b/i)) {
           itemIcon = 'fa-cake-candles';
           itemColor = '#ec4899';
@@ -5946,7 +5960,7 @@
           itemBadgeBg = '#fce7f3';
           itemBadgeTxt = '#9d174d';
         }
-        // 6. Bienvenida a MGM Hub
+        // 7. Bienvenida a MGM Hub
         else if (hasWord(/\b(bienvenid[oa]s?)\b/i)) {
           itemIcon = 'fa-hand-peace';
           itemColor = '#6366f1';
@@ -5954,7 +5968,7 @@
           itemBadgeBg = '#e0e7ff';
           itemBadgeTxt = '#4338ca';
         }
-        // 7. Cursos y capacitaciones
+        // 8. Cursos y capacitaciones
         else if (hasWord(/\b(curso|cursos|capacitaci[oó]n|capacitaciones|certificaci[oó]n|webinar)\b/i)) {
           itemIcon = 'fa-graduation-cap';
           itemColor = '#005bbb';
@@ -5962,7 +5976,7 @@
           itemBadgeBg = '#e8f1ff';
           itemBadgeTxt = '#005bbb';
         }
-        // 8. Puntos de Maestría y Horas Técnicas
+        // 9. Puntos de Maestría y Horas Técnicas
         else if (tab === 'maestria' || hasWord(/\b(maestr[ií]a|horas?\s+t[eé]cnicas?|horas?\s+de\s+experiencia|acreditaci[oó]n)\b/i)) {
           itemIcon = 'fa-award';
           itemColor = '#d97706';
