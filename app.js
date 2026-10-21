@@ -4609,6 +4609,97 @@
   // SETTINGS & USER INFO
   // ==========================================================================
 
+  let oneSignalPushSettingListenerBound = false;
+  let oneSignalPushToggleInFlight = false;
+
+  function renderDevicePushSetting(optedIn) {
+    const toggle = document.getElementById('set-push-device');
+    const status = document.getElementById('set-push-device-status');
+    if (!toggle || !status) return;
+
+    const subscribed = Boolean(optedIn);
+    toggle.checked = subscribed;
+    window.mgmOneSignalSubscribed = subscribed;
+
+    if ('Notification' in window && Notification.permission === 'denied') {
+      status.textContent = 'Bloqueado por los permisos de Chrome o del dispositivo.';
+    } else if (subscribed) {
+      status.textContent = 'Activo para este navegador y dispositivo.';
+    } else {
+      status.textContent = 'Desactivado en este dispositivo; no recibirá push.';
+    }
+  }
+
+  async function refreshDevicePushSetting() {
+    const toggle = document.getElementById('set-push-device');
+    const status = document.getElementById('set-push-device-status');
+    if (!toggle || !status) return;
+
+    toggle.disabled = true;
+    status.textContent = 'Consultando estado de OneSignal...';
+    try {
+      const OneSignal = await window.mgmOneSignalReady;
+      const subscription = OneSignal.User.PushSubscription;
+      renderDevicePushSetting(subscription.optedIn);
+
+      if (!oneSignalPushSettingListenerBound) {
+        subscription.addEventListener('change', event => {
+          renderDevicePushSetting(event.current.optedIn);
+        });
+        oneSignalPushSettingListenerBound = true;
+      }
+    } catch (error) {
+      toggle.checked = false;
+      status.textContent = 'No se pudo consultar la suscripción Push.';
+      console.error('[MGM Hub] No se pudo consultar el estado Push del dispositivo:', error);
+    } finally {
+      toggle.disabled = false;
+    }
+  }
+
+  window.toggleDevicePush = async function (toggle) {
+    if (!toggle || oneSignalPushToggleInFlight) return;
+
+    const requestedOptIn = toggle.checked;
+    const previousOptIn = !requestedOptIn;
+    if (requestedOptIn && 'Notification' in window && Notification.permission === 'denied') {
+      renderDevicePushSetting(false);
+      alert('Las notificaciones están bloqueadas en Chrome o en los ajustes del dispositivo. Actívalas allí y vuelve a intentarlo.');
+      return;
+    }
+
+    oneSignalPushToggleInFlight = true;
+    toggle.disabled = true;
+    const status = document.getElementById('set-push-device-status');
+    if (status) status.textContent = requestedOptIn
+      ? 'Activando push en este dispositivo...'
+      : 'Desactivando push en este dispositivo...';
+
+    try {
+      const OneSignal = await window.mgmOneSignalReady;
+      const subscription = OneSignal.User.PushSubscription;
+      if (requestedOptIn) {
+        await subscription.optIn();
+      } else {
+        await subscription.optOut();
+      }
+
+      const subscribed = Boolean(subscription.optedIn);
+      if (subscribed !== requestedOptIn) {
+        throw new Error('OneSignal no confirmó el cambio de suscripción.');
+      }
+      renderDevicePushSetting(subscribed);
+      if (subscribed) mgmConfetti.bell();
+    } catch (error) {
+      renderDevicePushSetting(previousOptIn);
+      console.error('[MGM Hub] No se pudo actualizar la suscripción Push:', error);
+      alert('No se pudo actualizar la suscripción Push. Revisa los permisos de este dispositivo e inténtalo nuevamente.');
+    } finally {
+      oneSignalPushToggleInFlight = false;
+      toggle.disabled = false;
+    }
+  };
+
   window.openSettingsModal = function () {
     if (!state.authUser) return;
 
@@ -4629,6 +4720,7 @@
     let chkEncuestas = document.getElementById('set-notif-encuestas');
     if (chkEncuestas) chkEncuestas.checked = pref.encuestas !== false;
 
+    refreshDevicePushSetting();
     openAppModal('modal-settings');
   };
 
@@ -5588,10 +5680,7 @@
   window.clearNotifications = function () {
     if (state.notifications.length === 0) return;
     // Abre el modal de confirmación elegante (en lugar del confirm() nativo)
-    const modal = document.getElementById('modal-confirm-clear');
-    if (modal) {
-      modal.classList.add('active');
-    }
+    openAppModal('modal-confirm-clear');
   };
 
   // Borrado individual de una sola notificación (una a la vez) con sincronización multidispositivo
@@ -5629,8 +5718,7 @@
   // Ejecuta el borrado masivo real (llamado desde el botón "Eliminar" del modal)
   window.confirmClearNotifications = function () {
     // Cerrar el modal de confirmación
-    const modal = document.getElementById('modal-confirm-clear');
-    if (modal) modal.classList.remove('active');
+    closeAppModal('modal-confirm-clear');
 
     // Filtrar solo las notificaciones activas para borrar
     const notifsActivas = state.notifications.filter(n => notifEnVentana(n));

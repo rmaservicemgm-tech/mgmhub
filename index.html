@@ -64,7 +64,7 @@
   <!-- Limpiar caché viejo al actualizar version -->
   <script>
     (function () {
-      var APP_VERSION = '43';
+      var APP_VERSION = '44';
       var stored = localStorage.getItem('mgm_app_v');
       if (stored !== APP_VERSION) {
         localStorage.setItem('mgm_app_v', APP_VERSION);
@@ -3857,11 +3857,22 @@
 
           <div class="setting-row">
             <div class="setting-info">
-              <span class="setting-title">Notificaciones Globales</span>
-              <span class="setting-desc">Activa o desactiva todas las alertas</span>
+              <span class="setting-title">Preferencias globales MGM</span>
+              <span class="setting-desc">Preferencia de avisos de tu cuenta; no controla la suscripción de este dispositivo</span>
             </div>
             <label class="toggle-switch">
               <input type="checkbox" id="set-notif-global" onchange="updateUserPreferences()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Push en este dispositivo</span>
+              <span class="setting-desc" id="set-push-device-status" role="status">Consultando estado de OneSignal...</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="set-push-device" onchange="toggleDevicePush(this)">
               <span class="toggle-slider"></span>
             </label>
           </div>
