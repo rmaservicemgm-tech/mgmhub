@@ -2296,7 +2296,7 @@
             const ptsFormatted = Number(r.puntos || 0).toLocaleString('es-PA');
 
             return `
-            <div class="premio-slide-card" onclick="openRewardDetail(${idx})">
+            <div class="premio-slide-card" onclick="openRewardDetail(${idx}, 'home')">
               <div class="premio-card-img-wrap">
                 ${r.imagen
                 ? `<img src="${r.imagen}" alt="${r.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -2316,7 +2316,7 @@
                 <div class="premio-validez-text" style="color:${validez.color};">
                   ${validez.text}
                 </div>
-                <button class="premio-btn-action" onclick="event.stopPropagation(); openRewardDetail(${idx});">
+                <button class="premio-btn-action" onclick="event.stopPropagation(); openRewardDetail(${idx}, 'home');">
                   Canjear
                 </button>
               </div>
@@ -2369,7 +2369,7 @@
       const shortDesc = (r.descripcion || '').split('\n')[0].substring(0, 90);
 
       return `
-        <article class="reward-gallery-card" onclick="openRewardDetail(${idx})" aria-label="Abrir premio ${r.nombre}">
+        <article class="reward-gallery-card" onclick="openRewardDetail(${idx}, 'catalog')" aria-label="Abrir premio ${r.nombre}">
           <div class="reward-gallery-image-wrap">
             ${r.imagen
               ? `<img src="${r.imagen}" alt="${r.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -2394,15 +2394,22 @@
     }).join('');
   };
 
-  window.openRewardDetail = function (idx) {
+  window.openRewardDetail = function (idx, source = 'catalog') {
     const r = state.rewards[idx];
     if (!r) return;
     state.activeRewardData = r;
 
-    document.getElementById('modal-premio-title').textContent = r.nombre;
-    document.getElementById('modal-premio-desc').textContent = r.descripcion || 'Sin descripción detallada disponible.';
+    const isHomeModal = source === 'home';
+    const modalId = isHomeModal ? 'modal-premio-detail-home' : 'modal-premio-detail';
+    const fieldPrefix = isHomeModal ? 'home-modal-premio-' : 'modal-premio-';
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    const field = name => modal.querySelector(`#${fieldPrefix}${name}`);
 
-    const modelEl = document.getElementById('modal-premio-model');
+    field('title').textContent = r.nombre;
+    field('desc').textContent = r.descripcion || 'Sin descripción detallada disponible.';
+
+    const modelEl = field('model');
     if (modelEl) {
       if (r.modelo) {
         modelEl.textContent = `MOD. ${r.modelo}`;
@@ -2413,31 +2420,31 @@
     }
 
     const validez = formatRewardValidez(r);
-    const valEl = document.getElementById('modal-premio-validez');
+    const valEl = field('validez');
     if (valEl) {
       valEl.textContent = validez.text;
       valEl.style.color = validez.color || 'var(--text-muted)';
     }
 
-    const stockEl = document.getElementById('modal-premio-stock');
+    const stockEl = field('stock');
     if (stockEl) {
       stockEl.textContent = r.stock || 'Disponible';
       stockEl.style.color = (r.stock && r.stock.toLowerCase().includes('agot')) ? '#dc2626' : '#16a34a';
       stockEl.style.background = (r.stock && r.stock.toLowerCase().includes('agot')) ? '#fef2f2' : '#f0fdf4';
     }
 
-    const ptsBadge = document.getElementById('modal-premio-pts-badge');
+    const ptsBadge = field('pts-badge');
     const ptsFormatted = Number(r.puntos || 0).toLocaleString('es-PA');
     const usdVal = (Number(r.puntos || 0) * CFG.VAL_PUNTO).toFixed(2);
     if (ptsBadge) {
       ptsBadge.innerHTML = `<i class="fa-solid fa-coins"></i> ${ptsFormatted} Pts <span style="font-size:11px; opacity:0.85; font-weight:700;">($${usdVal} USD)</span>`;
     }
 
-    const imgWrap = document.getElementById('modal-premio-img-wrap');
+    const imgWrap = field('img-wrap');
     if (imgWrap) {
       if (r.imagen) {
         imgWrap.innerHTML = `
-          <img id="modal-premio-img" src="${r.imagen}" alt="${r.nombre}" style="max-width:100%; max-height:100%; object-fit:contain;"
+          <img src="${r.imagen}" alt="${r.nombre}" style="max-width:100%; max-height:100%; object-fit:contain;"
             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
           <div style="display:none; font-size:60px; color:#cbd5e1; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>
         `;
@@ -2447,7 +2454,7 @@
     }
 
     // Comparación dinámica con los puntos del usuario autenticado
-    const statusBox = document.getElementById('modal-premio-user-status');
+    const statusBox = field('user-status');
     if (statusBox) {
       if (state.authUser) {
         const userPts = parseInt(state.authUser.puntos) || 0;
@@ -2485,7 +2492,7 @@
         statusBox.innerHTML = `
           <div style="display:flex; align-items:center; justify-content:space-between;">
             <span style="font-size:12px; color:var(--text-muted);">¿Tienes puntos acumulados?</span>
-            <button onclick="closeAppModal('modal-premio-detail'); openLoginModal();" style="background:transparent; border:none; color:var(--primary-blue); font-weight:800; font-size:12px; cursor:pointer; text-decoration:underline;">
+            <button onclick="closeAppModal('${modalId}'); openLoginModal();" style="background:transparent; border:none; color:var(--primary-blue); font-weight:800; font-size:12px; cursor:pointer; text-decoration:underline;">
               Iniciar sesión →
             </button>
           </div>
@@ -2494,7 +2501,7 @@
     }
 
     // Botón 'Ver en tienda': mostrar u ocultar según si hay link
-    const btnTienda = document.getElementById('modal-premio-btn-tienda');
+    const btnTienda = field('btn-tienda');
     if (btnTienda) {
       if (r.link) {
         btnTienda.href = r.link;
@@ -2504,7 +2511,7 @@
       }
     }
 
-    openAppModal('modal-premio-detail');
+    openAppModal(modalId);
   };
 
   window.actionCanjearPremio = function () {
