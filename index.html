@@ -7335,39 +7335,40 @@
   </script>
 
   <div id="modal-premio-detail" class="app-modal" role="dialog" aria-modal="true" aria-label="Detalle de premio">
-    <div class="reward-modal-card">
-      <button type="button" class="reward-modal-close" onclick="closeAppModal('modal-premio-detail')" aria-label="Cerrar">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-
-      <div class="reward-modal-hero">
-        <div id="modal-premio-img-wrap" class="reward-modal-img-wrap"></div>
-        <div id="modal-premio-pts-badge" class="reward-modal-points-badge"></div>
+    <div class="modal-content-card" style="max-height: 85vh; overflow-y: auto; padding: 20px; position: relative;">
+      <button class="modal-close-x" onclick="closeAppModal('modal-premio-detail')" aria-label="Cerrar">✕</button>
+      <div style="text-align: center; margin-bottom: 14px; position: relative;">
+        <div id="modal-premio-img-wrap"
+          style="width: 100%; height: 185px; border-radius: 14px; background: #f8fafc; border: 1px solid var(--border-light); display: flex; align-items: center; justify-content: center; overflow: hidden;"></div>
+        <div id="modal-premio-pts-badge"
+          style="position: absolute; bottom: 10px; right: 10px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 900; font-size: 13px; padding: 5px 12px; border-radius: 20px;"></div>
       </div>
-
-      <div class="reward-modal-body">
-        <div class="reward-modal-header-line">
-          <span id="modal-premio-model" class="reward-modal-model"></span>
-          <span id="modal-premio-validez" class="reward-modal-validity"></span>
-        </div>
-
-        <h3 id="modal-premio-title" class="reward-modal-title"></h3>
-        <p id="modal-premio-desc" class="reward-modal-desc"></p>
-
-        <div class="reward-modal-meta-row">
-          <span id="modal-premio-stock" class="reward-modal-stock"></span>
-        </div>
-
-        <div id="modal-premio-user-status" class="reward-modal-user-status"></div>
-
-        <div class="reward-modal-actions">
-          <a id="modal-premio-btn-tienda" class="reward-modal-btn secondary" target="_blank" rel="noreferrer">
-            <i class="fa-solid fa-store"></i> Ver ficha
-          </a>
-          <button type="button" class="reward-modal-btn primary" onclick="actionCanjearPremio()">
-            <i class="fa-solid fa-gift"></i> Canjear
-          </button>
-        </div>
+      <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
+        <span id="modal-premio-model"
+          style="font-size: 11px; font-weight: 800; background: #ede9fe; color: #6d28d9; padding: 3px 8px; border-radius: 6px;"></span>
+        <span id="modal-premio-validez" style="font-size: 11px; font-weight: 700; color: var(--text-muted);"></span>
+        <span id="modal-premio-stock"
+          style="font-size: 11px; font-weight: 700; color: #16a34a; background: #f0fdf4; padding: 2px 7px; border-radius: 5px;"></span>
+      </div>
+      <h3 id="modal-premio-title"
+        style="font-size: 18px; font-weight: 900; color: var(--text-dark); margin-bottom: 8px; line-height: 1.3;"></h3>
+      <p id="modal-premio-desc"
+        style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;"></p>
+      <div id="modal-premio-user-status"
+        style="background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px;"></div>
+      <a id="modal-premio-btn-tienda" href="#" target="_blank" rel="noopener noreferrer"
+        style="display:none; align-items:center; justify-content:center; gap:8px; width:100%; padding:11px 16px; margin-bottom:10px; background:var(--bg-surface); color:var(--primary-blue); border:1.5px solid var(--primary-blue); border-radius:12px; font-size:13px; font-weight:800; text-decoration:none;">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Ver ficha del producto en la tienda
+      </a>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-submit" onclick="actionCanjearPremio()"
+          style="flex: 1; background: linear-gradient(135deg, #10b981, #059669);">
+          <i class="fa-solid fa-gift"></i> Canjear con un Asesor
+        </button>
+        <button class="btn-header-action" onclick="sharePremio()" title="Compartir premio"
+          style="background: var(--bg-page); color: var(--text-dark); border-color: var(--border-light);">
+          <i class="fa-solid fa-share-nodes"></i>
+        </button>
       </div>
     </div>
   </div>
