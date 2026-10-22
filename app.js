@@ -164,6 +164,15 @@
   const K_MY_COURSES = 'mgm_my_courses';
   const K_LAST_ACTIVITY = 'mgm_last_activity';   // Timestamp de última actividad
   const SESSION_MAX_MS = 30 * 24 * 60 * 60 * 1000; // 30 días en milisegundos
+  const MGM_RETURN_GREETING_MS = 3 * 24 * 60 * 60 * 1000;
+  const MGM_ENTRY_GREETED_CLIENTS = new Set();
+  const MGM_HUB_FEATURES_CACHE_KEY = 'MGM_HUB_FEATURES';
+  const MGM_HUB_FEATURES = {
+    logo_secreto: true,
+    frases_aleatorias: true,
+    bienvenida_regreso: true
+  };
+  let mgmHubFeatureConfigPromise = null;
 
   const state = {
     activeTab: 'home',
@@ -485,12 +494,15 @@
     let lastTapAt = 0;
     let lastMessageIndex = -1;
 
-    const handleTap = () => {
+    const handleTap = async () => {
       const now = Date.now();
       taps = now - lastTapAt > 2500 ? 1 : taps + 1;
       lastTapAt = now;
       if (taps < 7) return;
       taps = 0;
+
+      await loadMgmHubFeatureConfig();
+      if (!MGM_HUB_FEATURES.logo_secreto) return;
 
       let messageIndex = Math.floor(Math.random() * messages.length);
       if (messages.length > 1 && messageIndex === lastMessageIndex) {
@@ -504,12 +516,101 @@
     };
 
     logo.addEventListener('click', handleTap);
+    logo.addEventListener('dragstart', event => event.preventDefault());
     logo.addEventListener('keydown', event => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
       event.preventDefault();
       handleTap();
     });
     logo.dataset.easterEggReady = 'true';
+  }
+
+  function applyMgmHubFeatureConfig(config) {
+    if (!config || typeof config !== 'object') return false;
+    const featureIds = ['logo_secreto', 'frases_aleatorias', 'bienvenida_regreso'];
+    featureIds.forEach(id => {
+      const value = config[id];
+      if (typeof value === 'boolean') {
+        MGM_HUB_FEATURES[id] = value;
+      } else if (typeof value === 'string') {
+        MGM_HUB_FEATURES[id] = !['false', 'no', '0', 'off'].includes(value.trim().toLowerCase());
+      }
+    });
+    return true;
+  }
+
+  function loadMgmHubFeatureConfig() {
+    if (mgmHubFeatureConfigPromise) return mgmHubFeatureConfigPromise;
+    try {
+      const cached = localStorage.getItem(MGM_HUB_FEATURES_CACHE_KEY);
+      if (cached) applyMgmHubFeatureConfig(JSON.parse(cached));
+    } catch (error) {
+      console.warn('[MGM Hub] No se pudo leer la configuración local de funciones:', error);
+    }
+
+    const baseUrl = CFG.UTILIDADES_GAS_URL;
+    if (!baseUrl) return Promise.resolve(MGM_HUB_FEATURES);
+    mgmHubFeatureConfigPromise = fetch(`${baseUrl}?action=get_home_config`)
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        if (data && data.funcionesWarning) {
+          console.warn('[MGM Hub] La hoja Funciones_Hub no pudo leerse:', data.funcionesWarning);
+        } else if (data && data.success && !data.funciones) {
+          console.warn('[MGM Hub] La implementación de Utilidades aún no publica la configuración Funciones_Hub.');
+        }
+        if (data && data.success && applyMgmHubFeatureConfig(data.funciones)) {
+          localStorage.setItem(MGM_HUB_FEATURES_CACHE_KEY, JSON.stringify(MGM_HUB_FEATURES));
+        }
+        return MGM_HUB_FEATURES;
+      })
+      .catch(error => {
+        console.warn('[MGM Hub] No se pudo cargar Funciones_Hub; se conserva la última configuración disponible:', error);
+        return MGM_HUB_FEATURES;
+      });
+    return mgmHubFeatureConfigPromise;
+  }
+
+  async function showMgmEntryGreeting(client) {
+    const cedula = String(client && client.cedula || '').trim().toLowerCase();
+    if (!cedula || MGM_ENTRY_GREETED_CLIENTS.has(cedula)) return;
+    MGM_ENTRY_GREETED_CLIENTS.add(cedula);
+    await loadMgmHubFeatureConfig();
+
+    const now = Date.now();
+    const lastEntryKey = `mgm_entry_last_seen_${encodeURIComponent(cedula)}`;
+    const lastEntryAt = Number(localStorage.getItem(lastEntryKey));
+    localStorage.setItem(lastEntryKey, String(now));
+
+    const returnMessages = [
+      '¡Te extrañábamos por aquí! Qué bueno tenerte de vuelta en MGM Hub.',
+      '¡Mira quién volvió! Tu Hub estaba esperando esta visita.',
+      '¡Bienvenido de nuevo! Ya hacía falta verte por MGM Hub.',
+      '¡Volviste! Esperamos que hayas recargado energía; aquí seguimos conectados.',
+      '¡Qué bueno verte otra vez! MGM Hub siempre tiene algo nuevo para ti.',
+      '¡Regresaste! El Hub estaba más tranquilo sin ti 😉'
+    ];
+    const casualMessages = [
+      '¡Hola! Que tu día tenga buena señal y cero fallas 😉',
+      '¡Bienvenido a MGM Hub! Soluciones listas, café opcional ☕',
+      '¡Qué bueno verte! Hoy todo conecta mejor desde aquí.',
+      'Entraste al Hub: oficialmente tu curiosidad tiene buena cobertura 📶',
+      '¡Hola! Esperamos que hoy todo te funcione a la primera 😄',
+      'MGM Hub: un lugar para resolver cosas y encontrar alguna sorpresa.'
+    ];
+
+    let messages = null;
+    if (MGM_HUB_FEATURES.bienvenida_regreso && Number.isFinite(lastEntryAt) && lastEntryAt > 0 && now - lastEntryAt >= MGM_RETURN_GREETING_MS) {
+      messages = returnMessages;
+    } else if (MGM_HUB_FEATURES.frases_aleatorias && Math.random() < 0.1) {
+      messages = casualMessages;
+    }
+    if (!messages || typeof window.showToast !== 'function') return;
+
+    const message = messages[Math.floor(Math.random() * messages.length)];
+    window.showToast(message, 'fa-solid fa-face-smile');
   }
 
   function daysUntil(dateStr) {
@@ -1280,6 +1381,7 @@
     localStorage.setItem(K_AUTH, JSON.stringify(state.authUser));
     // Registrar timestamp de actividad al iniciar sesión
     localStorage.setItem(K_LAST_ACTIVITY, String(Date.now()));
+    showMgmEntryGreeting(state.authUser);
 
     // 1. Actualizar icono con inicial y aro azul en el Header
     updateHeaderUserIcon();
@@ -2177,6 +2279,9 @@
       }
 
       if (data && data.success) {
+        if (applyMgmHubFeatureConfig(data.funciones)) {
+          localStorage.setItem(MGM_HUB_FEATURES_CACHE_KEY, JSON.stringify(MGM_HUB_FEATURES));
+        }
         if (Array.isArray(data.nav) && data.nav.length > 0) {
           window.applyHomeNavConfig(data.nav);
           localStorage.setItem(CACHE_KEY_HOME_NAV, JSON.stringify(data.nav));
@@ -6084,6 +6189,7 @@
   // ══════════════════════════════════════════════════════════════════════════════
 
   async function init() {
+    loadMgmHubFeatureConfig();
     initMgmLogoEasterEgg();
 
     // Asegurar tema estándar limpio (sin modo oscuro residual)
@@ -6121,6 +6227,7 @@
         localStorage.setItem(K_LAST_ACTIVITY, String(ahora));
       }
     }
+    showMgmEntryGreeting(state.authUser);
 
     // Capturar código de referido de URL si existe
     if (refParam) {
