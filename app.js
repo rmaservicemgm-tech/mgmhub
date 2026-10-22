@@ -8053,20 +8053,23 @@ window.closeReferralQRModal = function () {
       e.preventDefault();
       const rastreo = consultaForm.rastreo.value.trim();
       const email = consultaForm.email.value.trim();
+      const isTrackingId = /^TRK-[A-Z0-9-]+$/i.test(rastreo);
       const loader = document.getElementById("rastreo-loader");
       const resultDiv = document.getElementById("rastreo-resultado");
 
       consultaForm.querySelectorAll(".field").forEach(f => f.classList.remove("error"));
       if (!rastreo) consultaForm.rastreo.parentElement.classList.add("error");
-      if (!email) consultaForm.email.parentElement.classList.add("error");
-      if (!rastreo || !email) return;
+      if (!email && !isTrackingId) consultaForm.email.parentElement.classList.add("error");
+      if (!rastreo || (!email && !isTrackingId)) return;
 
       resultDiv.innerHTML = "";
       loader.classList.remove("hidden");
       rastreoSetLoading(true);
 
       try {
-        const res = await fetch(`${RASTREO_GAS_URL}?action=buscar_factura&factura=${encodeURIComponent(rastreo)}&email=${encodeURIComponent(email)}`);
+        const lookupUrl = `${RASTREO_GAS_URL}?action=buscar_factura&factura=${encodeURIComponent(rastreo)}`
+          + (email ? `&email=${encodeURIComponent(email)}` : '');
+        const res = await fetch(lookupUrl);
         const payload = await res.json();
 
         loader.classList.add("hidden");
