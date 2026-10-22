@@ -468,6 +468,50 @@
     setTimeout(() => { el.className = 'app-alert'; }, 5000);
   }
 
+  function initMgmLogoEasterEgg() {
+    const logo = document.querySelector('.brand-logo-img');
+    if (!logo || logo.dataset.easterEggReady === 'true') return;
+
+    const messages = [
+      '¡Encontraste el secreto MGM! Gracias por explorar el Hub.',
+      'MGM Hub: conectando soluciones… y secretos 😉',
+      '¡Buen ojo! Este detalle solo lo encuentran los más curiosos.',
+      'Tu curiosidad merece puntos… pero estos son solo una sorpresa 😄',
+      '¡Sorpresa desbloqueada! Sigue explorando MGM Hub.',
+      'Dicen que el logo guarda secretos. Este era uno de ellos 🎉',
+      '¡Nivel explorador MGM completado! 🏆'
+    ];
+    let taps = 0;
+    let lastTapAt = 0;
+    let lastMessageIndex = -1;
+
+    const handleTap = () => {
+      const now = Date.now();
+      taps = now - lastTapAt > 2500 ? 1 : taps + 1;
+      lastTapAt = now;
+      if (taps < 7) return;
+      taps = 0;
+
+      let messageIndex = Math.floor(Math.random() * messages.length);
+      if (messages.length > 1 && messageIndex === lastMessageIndex) {
+        messageIndex = (messageIndex + 1 + Math.floor(Math.random() * (messages.length - 1))) % messages.length;
+      }
+      lastMessageIndex = messageIndex;
+
+      if (typeof window.showToast === 'function') {
+        window.showToast(messages[messageIndex], 'fa-solid fa-wand-magic-sparkles');
+      }
+    };
+
+    logo.addEventListener('click', handleTap);
+    logo.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      handleTap();
+    });
+    logo.dataset.easterEggReady = 'true';
+  }
+
   function daysUntil(dateStr) {
     if (!dateStr) return null;
     const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -6040,6 +6084,8 @@
   // ══════════════════════════════════════════════════════════════════════════════
 
   async function init() {
+    initMgmLogoEasterEgg();
+
     // Asegurar tema estándar limpio (sin modo oscuro residual)
     document.documentElement.removeAttribute('data-theme');
     try { localStorage.removeItem('mgm_theme'); } catch (e) { }

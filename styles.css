@@ -94,7 +94,8 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
 }
 
 .brand-wrapper { display: flex; align-items: center; gap: 10px; }
-.brand-logo-img { height: 34px; width: auto; object-fit: contain; }
+.brand-logo-img { height: 34px; width: auto; object-fit: contain; cursor: pointer; }
+.brand-logo-img:focus-visible { outline: 2px solid var(--primary-blue); outline-offset: 3px; border-radius: 4px; }
 .brand-titles { display: flex; flex-direction: column; }
 
 .brand-app-name {
