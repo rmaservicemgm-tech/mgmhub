@@ -68,6 +68,10 @@
     window.syncMgmThemeControls();
   };
 
+  window.toggleMgmThemeMode = function () {
+    window.setMgmThemeMode(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+  };
+
   window.setMgmThemeAccent = function (accent, customColor) {
     const selected = Object.prototype.hasOwnProperty.call(presets, accent) || accent === 'custom' ? accent : 'mgm';
     if (selected === 'custom' && customColor && /^#[0-9a-f]{6}$/i.test(customColor)) {
@@ -82,7 +86,12 @@
     const mode = document.getElementById('mgm-theme-mode');
     const accent = document.getElementById('mgm-theme-accent');
     const color = document.getElementById('mgm-theme-custom-color');
-    if (mode) mode.value = readStoredValue(MODE_KEY, 'light');
+    if (mode) {
+      const isDark = readStoredValue(MODE_KEY, 'light') === 'dark';
+      mode.setAttribute('aria-checked', String(isDark));
+      mode.setAttribute('aria-label', isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+      mode.dataset.mode = isDark ? 'dark' : 'light';
+    }
     if (accent) accent.value = readStoredValue(ACCENT_KEY, 'mgm');
     if (color) color.value = getAccentColor('custom');
   };

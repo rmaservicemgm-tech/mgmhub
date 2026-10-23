@@ -51,7 +51,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&amp;display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap">
-  <link rel="stylesheet" href="styles.css?v=beta-5">
+  <link rel="stylesheet" href="styles.css?v=beta-7">
   <script src="theme-manager.js?v=1" defer></script>
   <!-- jsPDF para exportacion de cotizaciones desde la Calculadora de Almacenamiento -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -4039,14 +4039,22 @@
 
         <div class="settings-section appearance-settings-section">
           <h5 class="settings-subtitle"><i class="fa-solid fa-palette"></i> Apariencia</h5>
-          <div class="appearance-controls">
-            <div class="setting-input-group">
-              <label for="mgm-theme-mode">Pantalla</label>
-              <select id="mgm-theme-mode" class="form-control" onchange="setMgmThemeMode(this.value)">
-                <option value="light">Modo claro</option>
-                <option value="dark">Modo noche</option>
-              </select>
+          <div class="appearance-mode-row">
+            <div class="appearance-mode-info">
+              <span class="setting-title">Modo de pantalla</span>
+              <span class="setting-desc">Elige el estilo que prefieres</span>
             </div>
+            <button id="mgm-theme-mode" class="theme-mode-switch" type="button" role="switch"
+              aria-checked="false" aria-label="Cambiar a modo oscuro" onclick="toggleMgmThemeMode()">
+              <span class="theme-mode-label theme-mode-label-light">CLARO</span>
+              <span class="theme-switch-thumb" aria-hidden="true">
+                <i class="fa-solid fa-sun theme-mode-sun"></i>
+                <i class="fa-solid fa-moon theme-mode-moon"></i>
+              </span>
+              <span class="theme-mode-label theme-mode-label-dark">OSCURO</span>
+            </button>
+          </div>
+          <div class="appearance-controls">
             <div class="setting-input-group">
               <label for="mgm-theme-accent">Color de acento</label>
               <select id="mgm-theme-accent" class="form-control" onchange="setMgmThemeAccent(this.value)">

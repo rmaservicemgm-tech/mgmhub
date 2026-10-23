@@ -1,7 +1,7 @@
 // ─── MGM HUB SERVICE WORKER ──────────────────────────────────────────────────
 // Estrategia: Network First + Cache como respaldo offline.
 // Cambiar CACHE_VERSION fuerza actualización inmediata en todos los clientes.
-const CACHE_VERSION = 49;
+const CACHE_VERSION = 51;
 const CACHE_NAME    = `mgm-toolbox-v${CACHE_VERSION}`;
 const HOME_IMAGE_CACHE = 'mgm-home-images-v1';
 const HOME_IMAGE_META_CACHE = 'mgm-home-images-meta-v1';
