@@ -8,7 +8,7 @@
   "launch_handler": {
     "client_mode": ["focus-existing", "navigate-new"]
   },
-  "background_color": "#06244a",
+  "background_color": "#f0f4f9",
   "theme_color": "#06244a",
   "orientation": "portrait",
   "shortcuts": [

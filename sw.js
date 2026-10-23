@@ -1,14 +1,20 @@
 // ─── MGM HUB SERVICE WORKER ──────────────────────────────────────────────────
 // Estrategia: Network First + Cache como respaldo offline.
 // Cambiar CACHE_VERSION fuerza actualización inmediata en todos los clientes.
-const CACHE_VERSION = 48;
+const CACHE_VERSION = 49;
 const CACHE_NAME    = `mgm-toolbox-v${CACHE_VERSION}`;
+const HOME_IMAGE_CACHE = 'mgm-home-images-v1';
+const HOME_IMAGE_META_CACHE = 'mgm-home-images-meta-v1';
+const HOME_IMAGE_CACHE_LIMIT = 80;
+const HOME_IMAGE_ALLOWLIST_KEY = new URL('__mgm_cache__/home-image-allowlist', self.registration.scope).href;
+const homeImageAllowlist = new Set();
 
 // Archivos a pre-cachear (para funcionalidad offline básica)
 const SHELL_ASSETS = [
   './index.html',
   './styles.css',
   './app.js',
+  './theme-manager.js',
   './manifest.json',
   './logo-mgm-watermark.png',
   './icon-192.png',
@@ -38,14 +44,65 @@ self.addEventListener('activate', event => {
     caches.keys().then(keys =>
       Promise.all(
         keys
-          .filter(k => k.indexOf('mgm-toolbox-') === 0 && k !== CACHE_NAME)
+          .filter(k =>
+            (
+              k.indexOf('mgm-theme-beta-') === 0 &&
+              k !== HOME_IMAGE_CACHE &&
+              k !== HOME_IMAGE_META_CACHE
+            ) ||
+            (
+              k.indexOf('mgm-toolbox-') === 0 &&
+              k !== CACHE_NAME
+            )
+          )
           .map(k => {
             console.log('[SW] Eliminando caché viejo:', k);
             return caches.delete(k);
           })
       )
-    ).then(() => self.clients.claim()) // Controlar páginas ya abiertas
+    ).then(async () => {
+      try {
+        const metadata = await caches.open(HOME_IMAGE_META_CACHE);
+        const saved = await metadata.match(HOME_IMAGE_ALLOWLIST_KEY);
+        if (saved) {
+          const urls = await saved.json();
+          if (Array.isArray(urls)) urls.forEach(url => homeImageAllowlist.add(url));
+        }
+      } catch (error) {
+        console.warn('[SW] No se pudo restaurar la lista de imágenes del inicio:', error);
+      }
+      await self.clients.claim();
+    }) // Controlar páginas ya abiertas
   );
+});
+
+self.addEventListener('message', event => {
+  if (!event.data || event.data.type !== 'CACHE_HOME_IMAGES') return;
+
+  const urls = Array.isArray(event.data.urls)
+    ? event.data.urls.slice(0, 200).filter(value => {
+        try {
+          const url = new URL(value);
+          return /^https?:$/.test(url.protocol) && url.origin !== self.location.origin;
+        } catch (error) {
+          return false;
+        }
+      })
+    : [];
+  urls.forEach(url => homeImageAllowlist.add(url));
+  while (homeImageAllowlist.size > 200) {
+    homeImageAllowlist.delete(homeImageAllowlist.values().next().value);
+  }
+
+  event.waitUntil((async () => {
+    try {
+      const metadata = await caches.open(HOME_IMAGE_META_CACHE);
+      await metadata.put(HOME_IMAGE_ALLOWLIST_KEY, new Response(JSON.stringify([...homeImageAllowlist])));
+    } catch (error) {
+      console.warn('[SW] No se pudo guardar la lista de imágenes del inicio:', error);
+    }
+    if (event.ports && event.ports[0]) event.ports[0].postMessage({ type: 'HOME_IMAGES_REGISTERED' });
+  })());
 });
 
 // ── FETCH: Estrategias según el tipo de recurso ─────────────────────────────
@@ -60,6 +117,35 @@ self.addEventListener('fetch', event => {
                 url.origin.includes('fonts.gstatic.com') ||
                 url.origin.includes('cdn.jsdelivr.net') ||
                 url.origin.includes('unpkg.com');
+
+  if (!isLocal && event.request.destination === 'image' && homeImageAllowlist.has(event.request.url)) {
+    const refreshImage = caches.open(HOME_IMAGE_CACHE).then(async cache => {
+      const response = await fetch(event.request, { cache: 'no-cache' });
+      if (response && (response.status === 200 || response.type === 'opaque')) {
+        try {
+          await cache.put(event.request, response.clone());
+          const keys = await cache.keys();
+          const excess = keys.length - HOME_IMAGE_CACHE_LIMIT;
+          if (excess > 0) {
+            await Promise.all(keys.slice(0, excess).map(key => cache.delete(key)));
+          }
+        } catch (error) {
+          console.warn('[SW] No se pudo actualizar la caché de una imagen del inicio:', error);
+        }
+      }
+      return response;
+    });
+
+    event.waitUntil(refreshImage.catch(error => {
+      console.warn('[SW] No se pudo actualizar una imagen del inicio:', error);
+    }));
+    event.respondWith(
+      caches.open(HOME_IMAGE_CACHE)
+        .then(cache => cache.match(event.request))
+        .then(cached => cached || refreshImage)
+    );
+    return;
+  }
   
   // Para APIs externas (Google Scripts, WhatsApp, Odoo, etc.) dejar pasar (sin SW cache)
   if (!isLocal && !isCDN) return;

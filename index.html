@@ -5,15 +5,42 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>MGM Hub — Soluciones & Beneficios MGM</title>
+  <title>MGM Hub — Soluciones &amp; Beneficios MGM</title>
   <meta name="description"
     content="Aplicación Móvil MGM Hub: MGM Puntos, Calendario de Capacitaciones, Promociones del Mes y Asistente IA Magie.">
-  <meta name="theme-color" content="#06244a">
+  <meta name="theme-color" content="#f0f4f9">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="MGM Hub">
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json?v=production-preview-1">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+  <script>
+    (function () {
+      try {
+        var storage = window.localStorage;
+        var appearanceKeys = ['mgm_theme_beta_mode', 'mgm_theme_beta_accent', 'mgm_theme_beta_custom'];
+        appearanceKeys.forEach(function (key) {
+          var isolatedKey = 'mgmhub_theme_beta:' + key;
+          if (storage.getItem(key) === null) {
+            var isolatedValue = storage.getItem(isolatedKey);
+            if (isolatedValue !== null) storage.setItem(key, isolatedValue);
+          }
+          storage.removeItem(isolatedKey);
+        });
+
+        var mode = storage.getItem('mgm_theme_beta_mode') || 'light';
+        var accent = storage.getItem('mgm_theme_beta_accent') || 'mgm';
+        document.documentElement.dataset.theme = mode;
+        document.documentElement.dataset.accent = accent;
+        if (accent === 'custom') {
+          document.documentElement.style.setProperty('--user-accent', storage.getItem('mgm_theme_beta_custom') || '#0ea5e9');
+        }
+      } catch (error) {
+        console.warn('[MGM Hub Temas Beta] No se pudo aplicar la apariencia guardada:', error);
+      }
+    })();
+  </script>
 
   <!-- CDNs Preconnects para ganar velocidad -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,9 +48,11 @@
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 
   <!-- Google Fonts & FontAwesome Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&amp;display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap">
-  <link rel="stylesheet" href="styles.css?v=22">
+  <link rel="stylesheet" href="styles.css?v=beta-5">
+  <script src="theme-manager.js?v=1" defer></script>
   <!-- jsPDF para exportacion de cotizaciones desde la Calculadora de Almacenamiento -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script defer
@@ -44,7 +73,7 @@
           await OneSignal.init({
             appId: 'd45d5317-9ca0-452c-8bed-632e984a9149',
             serviceWorkerPath: 'push/onesignal/OneSignalSDKWorker.js',
-            serviceWorkerParam: { scope: '/mgmhub/push/onesignal/' }
+            serviceWorkerParam: { scope: new URL('./push/onesignal/', window.location.href).pathname }
           });
           window.mgmOneSignalSubscribed = Boolean(OneSignal.User.PushSubscription.optedIn);
           OneSignal.User.PushSubscription.addEventListener('change', function (event) {
@@ -64,14 +93,14 @@
   <!-- Limpiar caché viejo al actualizar version -->
   <script>
     (function () {
-      var APP_VERSION = '50';
-      var stored = localStorage.getItem('mgm_app_v');
+      var APP_VERSION = 'theme-beta-1';
+      var stored = localStorage.getItem('mgm_app_theme_beta_v');
       if (stored !== APP_VERSION) {
-        localStorage.setItem('mgm_app_v', APP_VERSION);
+        localStorage.setItem('mgm_app_theme_beta_v', APP_VERSION);
         // Borrar solo cachés de MGM Hub, sin afectar al SDK de OneSignal.
         if ('caches' in window) {
           caches.keys().then(function (names) {
-            names.filter(function (name) { return name.indexOf('mgm-toolbox-') === 0; })
+            names.filter(function (name) { return name.indexOf('mgm-theme-beta-') === 0; })
               .forEach(function (name) { caches.delete(name); });
           });
         }
@@ -97,7 +126,7 @@
   <!-- Registro del Service Worker con auto-actualización -->
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () {
+      document.addEventListener('DOMContentLoaded', function () {
         navigator.serviceWorker.register('./sw.js').then(function (reg) {
           // Detectar nuevo SW esperando
           reg.addEventListener('updatefound', function () {
@@ -232,7 +261,7 @@
             MGM <span class="badge-box">HUB</span>
             <i class="fa-solid fa-wifi-slash" id="offline-icon" title="Sin conexión"></i>
           </div>
-          <div class="brand-tagline">Soluciones & Beneficios</div>
+          <div class="brand-tagline">Soluciones &amp; Beneficios</div>
         </div>
       </div>
 
@@ -730,6 +759,46 @@
       <script>
         (function () {
           const AD_API_URL = "https://script.google.com/macros/s/AKfycbxp13LGUxKJCZqE9mFt02FNdpm7EBuk0raAbiYubrsjC6ihh62kDst3qFJfhBJdTvSuJQ/exec";
+          const AD_CACHE_KEY = 'MGM_CACHE_HOME_ADS';
+          window.mgmRegisterHomeImageCache = function (urls) {
+            const controller = navigator.serviceWorker && navigator.serviceWorker.controller;
+            const validUrls = [...new Set((Array.isArray(urls) ? urls : [])
+              .filter(url => typeof url === 'string')
+              .map(url => {
+                try {
+                  const parsed = new URL(url);
+                  parsed.hash = '';
+                  return /^https?:$/.test(parsed.protocol) && parsed.origin !== location.origin ? parsed.href : '';
+                } catch (error) {
+                  return '';
+                }
+              })
+              .filter(Boolean))].slice(0, 200);
+
+            if (!controller || validUrls.length === 0 || typeof MessageChannel === 'undefined') {
+              return Promise.resolve();
+            }
+
+            return new Promise(resolve => {
+              const channel = new MessageChannel();
+              let finished = false;
+              const finish = () => {
+                if (finished) return;
+                finished = true;
+                clearTimeout(timeout);
+                channel.port1.close();
+                resolve();
+              };
+              const timeout = setTimeout(finish, 150);
+              channel.port1.onmessage = finish;
+              try {
+                controller.postMessage({ type: 'CACHE_HOME_IMAGES', urls: validUrls }, [channel.port2]);
+              } catch (error) {
+                console.warn('[MGM Hub] No se pudo registrar la caché de imágenes del inicio:', error);
+                finish();
+              }
+            });
+          };
           let adInterval = null;
           let currentSlideIndex = 0;
           let totalSlides = 0;
@@ -783,7 +852,7 @@
             return (match && match[2].length === 11) ? match[2] : url;
           }
 
-          function getAdHtml(ad) {
+          function getAdHtml(ad, isFirstSlide) {
             const fmt = (ad.Tipo_Formato || '').toLowerCase().trim();
             if (fmt === 'html_puro') {
               return ad.Contenido || '';
@@ -792,7 +861,9 @@
             const link = fixUrl(ad.Link_Click);
             if (fmt === 'imagen') {
               const hasLink = link && link !== '#';
-              const imgTag = `<img src="${contenido}" alt="${ad.Nombre_Campaña || ad['Nombre_Campaña'] || 'Publicidad MGM'}" loading="lazy">`;
+              const loading = isFirstSlide ? 'eager' : 'lazy';
+              const priority = isFirstSlide ? ' fetchpriority="high"' : '';
+              const imgTag = `<img src="${contenido}" alt="${ad.Nombre_Campaña || ad['Nombre_Campaña'] || 'Publicidad MGM'}" loading="${loading}" decoding="async"${priority}>`;
               if (!hasLink) return imgTag;
               const route = extractInternalRoute(link);
               if (route) {
@@ -856,38 +927,41 @@
             const loader = document.getElementById('ad-loader-standalone');
             if (!target) return;
 
-            try {
-              const response = await fetch(AD_API_URL);
-              const allAds = await response.json();
-              if (!Array.isArray(allAds) || allAds.length === 0) {
-                if (loader) loader.style.display = 'none';
-                return;
+            const filterAds = allAds => allAds.filter(a => {
+              const u = (a.Ubicacion || a.Ubicación || '').toLowerCase().trim();
+              const est = (a.Estado || '').toLowerCase().trim();
+              const isLoc = u === 'todos' || u === 'web' || u === 'inicio' || !u;
+              const isActive = est !== 'inactivo' && est !== 'pausado';
+              return isLoc && isActive;
+            });
+
+            const registerAdImages = async ads => {
+              const imageUrls = ads
+                .filter(ad => (ad.Tipo_Formato || '').toLowerCase().trim() === 'imagen')
+                .map(ad => fixUrl(ad.Contenido))
+                .filter(url => /^https?:\/\//i.test(url));
+              if (typeof window.mgmRegisterHomeImageCache === 'function') {
+                await window.mgmRegisterHomeImageCache(imageUrls);
               }
+            };
 
-              // Filtrar por ubicación y estado activo
-              const validAds = allAds.filter(a => {
-                const u = (a.Ubicacion || a.Ubicación || '').toLowerCase().trim();
-                const est = (a.Estado || '').toLowerCase().trim();
-                const isLoc = u === 'todos' || u === 'web' || u === 'inicio' || !u;
-                const isActive = est !== 'inactivo' && est !== 'pausado';
-                return isLoc && isActive;
-              });
-
+            const renderAds = async ads => {
+              const validAds = filterAds(ads);
               if (validAds.length === 0) {
+                target.replaceChildren();
                 if (loader) loader.style.display = 'none';
                 return;
               }
 
+              await registerAdImages(validAds);
               totalSlides = validAds.length;
 
               if (validAds.length === 1) {
-                // Un solo anuncio: renderizado directo
-                target.innerHTML = getAdHtml(validAds[0]);
+                target.innerHTML = getAdHtml(validAds[0], true);
               } else {
-                // Múltiples anuncios: Slider interactivo con autoplay
-                const slidesHtml = validAds.map(ad => `
+                const slidesHtml = validAds.map((ad, idx) => `
                 <div class="mgm-ad-slide-item">
-                  ${getAdHtml(ad)}
+                  ${getAdHtml(ad, idx === 0)}
                 </div>
               `).join('');
 
@@ -908,7 +982,6 @@
                 </div>
               `;
 
-                // Soporte táctil / swipe en móvil
                 const wrapper = document.getElementById('mgm-ad-slider-wrapper');
                 if (wrapper) {
                   let startX = 0;
@@ -930,6 +1003,29 @@
 
               if (loader) loader.style.display = 'none';
               target.style.display = 'block';
+            };
+
+            try {
+              const cachedAds = localStorage.getItem(AD_CACHE_KEY);
+              if (cachedAds) {
+                try {
+                  const parsedAds = JSON.parse(cachedAds);
+                  if (Array.isArray(parsedAds)) await renderAds(parsedAds);
+                } catch (error) {
+                  console.warn('[Publicidad MGM] No se pudo leer la publicidad guardada:', error);
+                }
+              }
+
+              const response = await fetch(AD_API_URL);
+              const allAds = await response.json();
+              if (!Array.isArray(allAds)) throw new Error('La respuesta de publicidad no es una lista.');
+              const validAds = filterAds(allAds);
+              try {
+                localStorage.setItem(AD_CACHE_KEY, JSON.stringify(validAds));
+              } catch (error) {
+                console.warn('[Publicidad MGM] No se pudo guardar la publicidad en caché local:', error);
+              }
+              await renderAds(validAds);
             } catch (e) {
               console.error("Error AdServer:", e);
               if (loader) loader.style.display = 'none';
@@ -3580,6 +3676,8 @@
     <div class="app-modal" id="modal-user-login">
       <div class="modal-content-card" style="position: relative;">
         <button class="modal-close-x" onclick="closeAppModal('modal-user-login')">✕</button>
+        <button class="modal-settings-btn" onclick="openSettingsModal()" title="Configuración de apariencia"
+          aria-label="Configuración de apariencia"><i class="fa-solid fa-gear"></i></button>
         <div id="login-view-unauth">
           <h4
             style="font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--text-dark); text-align: center;">
@@ -3610,8 +3708,6 @@
           </div>
         </div>
         <div id="login-view-auth" style="display: none; text-align: center;">
-          <button class="modal-settings-btn" onclick="openSettingsModal()" title="Configuración"><i
-              class="fa-solid fa-gear"></i></button>
           <!-- Contenedor Avatar con subida interactiva -->
           <div class="auth-avatar-wrapper">
             <div class="auth-avatar-box" id="auth-avatar-box"
@@ -3833,7 +3929,7 @@
           <i class="fa-solid fa-gear" style="color: var(--text-muted); margin-right: 6px;"></i> Configuración
         </h4>
 
-        <div class="settings-section">
+        <div class="settings-section" data-settings-auth="true">
           <h5 class="settings-subtitle">Notificaciones Push</h5>
 
           <div class="setting-row">
@@ -3914,7 +4010,7 @@
           </div>
         </div>
 
-        <div class="settings-section">
+        <div class="settings-section" data-settings-auth="true">
           <h5 class="settings-subtitle">Pantalla & Widgets</h5>
 
           <div class="setting-row">
@@ -3941,7 +4037,38 @@
           </div>
         </div>
 
-        <div class="settings-section">
+        <div class="settings-section appearance-settings-section">
+          <h5 class="settings-subtitle"><i class="fa-solid fa-palette"></i> Apariencia</h5>
+          <div class="appearance-controls">
+            <div class="setting-input-group">
+              <label for="mgm-theme-mode">Pantalla</label>
+              <select id="mgm-theme-mode" class="form-control" onchange="setMgmThemeMode(this.value)">
+                <option value="light">Modo claro</option>
+                <option value="dark">Modo noche</option>
+              </select>
+            </div>
+            <div class="setting-input-group">
+              <label for="mgm-theme-accent">Color de acento</label>
+              <select id="mgm-theme-accent" class="form-control" onchange="setMgmThemeAccent(this.value)">
+                <option value="mgm">Azul MGM</option>
+                <option value="teal">Turquesa</option>
+                <option value="green">Verde</option>
+                <option value="violet">Violeta</option>
+                <option value="rose">Coral</option>
+                <option value="amber">Ámbar</option>
+                <option value="custom">Personalizado</option>
+              </select>
+            </div>
+            <label class="theme-accent-preview" for="mgm-theme-custom-color">
+              <span>Color personalizado</span>
+              <input id="mgm-theme-custom-color" type="color" value="#0ea5e9" aria-label="Elegir color de acento personalizado"
+                onchange="setMgmThemeAccent('custom', this.value)">
+            </label>
+          </div>
+          <p class="setting-desc appearance-note">El azul MGM se mantiene como color principal.</p>
+        </div>
+
+        <div class="settings-section" data-settings-auth="true">
           <h5 class="settings-subtitle">Mi Cuenta</h5>
           <div class="setting-input-group">
             <label>Correo Electrónico</label>
@@ -3959,7 +4086,7 @@
           </div>
         </div>
 
-        <div class="settings-section">
+        <div class="settings-section" data-settings-auth="true">
           <h5 class="settings-subtitle">Privacidad y Sesión</h5>
           <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
             <button class="btn-submit" onclick="openAppModal('modal-confirm-logout')"
@@ -3981,7 +4108,7 @@
           <!-- Línea Principal: Versión -->
           <p id="mgm-version-text"
             style="font-size: 11px; font-weight: 600; color: var(--text-muted, #64748b); letter-spacing: 0.05em; margin: 0; padding: 0;">
-            MGM HUB — Monagrillo v2.5.0 (Build 179)
+            MGM HUB
           </p>
 
           <!-- Línea Secundaria: Fecha de actualización + Derechos reservados -->
@@ -6155,7 +6282,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=44"></script>
+  <script src="app.js?v=beta-2"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
   <script>

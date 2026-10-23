@@ -2300,6 +2300,14 @@
       console.warn('[Home Config] Error al conectar con Google Sheets:', err);
     }
   }
+  async function registerHomeImages(items) {
+    if (typeof window.mgmRegisterHomeImageCache !== 'function') return;
+    const imageUrls = items
+      .map(item => item && item.imagen)
+      .filter(url => typeof url === 'string' && /^https?:\/\//i.test(url));
+    await window.mgmRegisterHomeImageCache(imageUrls);
+  }
+
   async function loadHomePromos() {
     const render = () => {
       const slider = document.getElementById('home-promos-slider');
@@ -2312,7 +2320,7 @@
 
       slider.innerHTML = state.promos.map((p, idx) => `
         <div class="promo-slide-item" onclick="openPromoDetail(${idx})" style="background:${promoPlaceholderBg(p.tipo)};">
-          ${p.imagen ? `<img src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">` : ''}
+          ${p.imagen ? `<img src="${p.imagen}" alt="${p.nombre}" loading="lazy" decoding="async" onerror="this.style.display='none'">` : ''}
           <div class="promo-slide-badge">${promoPlaceholderEmoji(p.tipo)} ${p.nombre}</div>
         </div>`).join('');
     };
@@ -2321,15 +2329,20 @@
       const cached = localStorage.getItem('MGM_CACHE_PROMOS');
       if (cached) {
         try {
-          state.promos = JSON.parse(cached);
+          const parsed = JSON.parse(cached);
+          state.promos = Array.isArray(parsed) ? parsed.filter(isPromoActive) : [];
+          await registerHomeImages(state.promos);
           render();
-        } catch (e) { }
+        } catch (error) {
+          console.warn('[Promociones MGM] No se pudo leer la caché local:', error);
+        }
       }
 
-      fetchPromosFromGAS().then(fresh => {
-        if (fresh && fresh.length > 0) {
-          state.promos = fresh;
-          localStorage.setItem('MGM_CACHE_PROMOS', JSON.stringify(fresh));
+      fetchPromosFromGAS().then(async fresh => {
+        if (Array.isArray(fresh)) {
+          state.promos = fresh.filter(isPromoActive);
+          localStorage.setItem('MGM_CACHE_PROMOS', JSON.stringify(state.promos));
+          await registerHomeImages(state.promos);
           render();
         }
       });
@@ -2343,15 +2356,20 @@
       const cached = localStorage.getItem('MGM_CACHE_PROMOS');
       if (cached) {
         try {
-          state.promos = JSON.parse(cached);
+          const parsed = JSON.parse(cached);
+          state.promos = Array.isArray(parsed) ? parsed.filter(isPromoActive) : [];
+          await registerHomeImages(state.promos);
           renderPromosGallery();
-        } catch (e) { }
+        } catch (error) {
+          console.warn('[Promociones MGM] No se pudo leer la caché local:', error);
+        }
       }
 
       const fresh = await fetchPromosFromGAS();
-      if (fresh && fresh.length > 0) {
-        state.promos = fresh;
-        localStorage.setItem('MGM_CACHE_PROMOS', JSON.stringify(fresh));
+      if (Array.isArray(fresh)) {
+        state.promos = fresh.filter(isPromoActive);
+        localStorage.setItem('MGM_CACHE_PROMOS', JSON.stringify(state.promos));
+        await registerHomeImages(state.promos);
         renderPromosGallery();
       }
     } else {
@@ -2378,7 +2396,7 @@
         <div class="promo-full-card" onclick="openPromoDetail(${idx})">
           <div class="promo-card-img-wrap" style="background:${promoPlaceholderBg(p.tipo)};">
             ${p.imagen
-          ? `<img src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">`
+          ? `<img src="${p.imagen}" alt="${p.nombre}" loading="lazy" decoding="async" onerror="this.style.display='none'">`
           : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:56px;">${promoPlaceholderEmoji(p.tipo)}</div>`
         }
           </div>
@@ -2448,7 +2466,7 @@
             <div class="premio-slide-card" onclick="openRewardDetail(${idx}, 'home')">
               <div class="premio-card-img-wrap">
                 ${r.imagen
-                ? `<img src="${r.imagen}" alt="${r.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                ? `<img src="${r.imagen}" alt="${r.nombre}" loading="lazy" decoding="async" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                      <div style="display:none; font-size:42px; color:#cbd5e1; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
                 : `<div style="font-size:42px; color:#cbd5e1; display:flex; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>`
               }
@@ -2481,15 +2499,20 @@
       const cached = localStorage.getItem('MGM_CACHE_REWARDS');
       if (cached) {
         try {
-          state.rewards = JSON.parse(cached);
+          const parsed = JSON.parse(cached);
+          state.rewards = Array.isArray(parsed) ? parsed.filter(isRewardActive) : [];
+          await registerHomeImages(state.rewards);
           render();
-        } catch (e) { }
+        } catch (error) {
+          console.warn('[Premios MGM] No se pudo leer la caché local:', error);
+        }
       }
 
-      fetchRewardsFromGAS().then(fresh => {
-        if (fresh && fresh.length > 0) {
-          state.rewards = fresh;
-          localStorage.setItem('MGM_CACHE_REWARDS', JSON.stringify(fresh));
+      fetchRewardsFromGAS().then(async fresh => {
+        if (Array.isArray(fresh)) {
+          state.rewards = fresh.filter(isRewardActive);
+          localStorage.setItem('MGM_CACHE_REWARDS', JSON.stringify(state.rewards));
+          await registerHomeImages(state.rewards);
           render();
         }
       });
@@ -2521,7 +2544,7 @@
         <article class="reward-gallery-card" onclick="openRewardDetail(${idx}, 'catalog')" aria-label="Abrir premio ${r.nombre}">
           <div class="reward-gallery-image-wrap">
             ${r.imagen
-              ? `<img src="${r.imagen}" alt="${r.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              ? `<img src="${r.imagen}" alt="${r.nombre}" loading="lazy" decoding="async" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                  <div class="reward-gallery-placeholder" style="display:none;"><i class="fa-solid fa-gift"></i></div>`
               : `<div class="reward-gallery-placeholder"><i class="fa-solid fa-gift"></i></div>`
             }
@@ -2593,7 +2616,7 @@
     if (imgWrap) {
       if (r.imagen) {
         imgWrap.innerHTML = `
-          <img src="${r.imagen}" alt="${r.nombre}" style="max-width:100%; max-height:100%; object-fit:contain;"
+          <img src="${r.imagen}" alt="${r.nombre}" loading="lazy" decoding="async" style="max-width:100%; max-height:100%; object-fit:contain;"
             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
           <div style="display:none; font-size:60px; color:#cbd5e1; align-items:center; justify-content:center; width:100%; height:100%;"><i class="fa-solid fa-gift"></i></div>
         `;
@@ -4201,7 +4224,7 @@
                 </div>
               </div>`
           : p.imagen
-            ? `<img class="cli-feed-img" src="${p.imagen}" alt="${p.nombre}" onerror="this.style.display='none'">`
+            ? `<img class="cli-feed-img" src="${p.imagen}" alt="${p.nombre}" loading="lazy" decoding="async" onerror="this.style.display='none'">`
             : `<div class="cli-feed-img-placeholder" style="background:${promoPlaceholderBg(p.tipo)};">${promoPlaceholderEmoji(p.tipo)}</div>`
         }
         <div class="cli-feed-gradient"></div>
@@ -4863,26 +4886,30 @@
   };
 
   window.openSettingsModal = function () {
-    if (!state.authUser) return;
+    const isAuthenticated = !!state.authUser;
+    document.querySelectorAll('#modal-settings [data-settings-auth="true"]').forEach(section => {
+      section.style.display = isAuthenticated ? '' : 'none';
+    });
 
-    // Poblar campos
-    document.getElementById('set-email').value = state.authUser.correo || '';
-    document.getElementById('set-phone').value = state.authUser.telefono || '';
+    if (isAuthenticated) {
+      document.getElementById('set-email').value = state.authUser.correo || '';
+      document.getElementById('set-phone').value = state.authUser.telefono || '';
 
-    // Poblar preferencias
-    let pref = state.authUser.preferencias || { global: true, puntos: true, rma: true, promos: true, agenda: true, encuestas: true };
-    document.getElementById('set-notif-global').checked = !!pref.global;
-    document.getElementById('set-notif-puntos').checked = !!pref.puntos;
-    document.getElementById('set-notif-rma').checked = !!pref.rma;
-    document.getElementById('set-notif-promos').checked = !!pref.promos;
-    
-    let chkAgenda = document.getElementById('set-notif-agenda');
-    if (chkAgenda) chkAgenda.checked = pref.agenda !== false;
-    
-    let chkEncuestas = document.getElementById('set-notif-encuestas');
-    if (chkEncuestas) chkEncuestas.checked = pref.encuestas !== false;
+      const pref = state.authUser.preferencias || { global: true, puntos: true, rma: true, promos: true, agenda: true, encuestas: true };
+      document.getElementById('set-notif-global').checked = !!pref.global;
+      document.getElementById('set-notif-puntos').checked = !!pref.puntos;
+      document.getElementById('set-notif-rma').checked = !!pref.rma;
+      document.getElementById('set-notif-promos').checked = !!pref.promos;
 
-    refreshDevicePushSetting();
+      const chkAgenda = document.getElementById('set-notif-agenda');
+      if (chkAgenda) chkAgenda.checked = pref.agenda !== false;
+
+      const chkEncuestas = document.getElementById('set-notif-encuestas');
+      if (chkEncuestas) chkEncuestas.checked = pref.encuestas !== false;
+
+      refreshDevicePushSetting();
+    }
+    if (typeof window.syncMgmThemeControls === 'function') window.syncMgmThemeControls();
     openAppModal('modal-settings');
   };
 
@@ -6192,10 +6219,6 @@
     loadMgmHubFeatureConfig();
     initMgmLogoEasterEgg();
 
-    // Asegurar tema estándar limpio (sin modo oscuro residual)
-    document.documentElement.removeAttribute('data-theme');
-    try { localStorage.removeItem('mgm_theme'); } catch (e) { }
-
     const urlParams = new URLSearchParams(window.location.search);
     const refParam = urlParams.get('ref');
     const deepTab = urlParams.get('tab');
@@ -6267,12 +6290,19 @@
     // Consultar nuevas notificaciones
     checkNotifications();
 
-    await Promise.allSettled([
+    const homeDataLoads = [
       loadHomePromos(),
       loadHomeRewards(),
       loadHomeNextEvent(),
       loadHomeCardsOrder()          // ← Orden de tarjetas desde Sheet "Utilidades"
-    ]);
+    ];
+    Promise.allSettled(homeDataLoads).then(results => {
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          console.warn(`[MGM Hub] No se pudo completar la carga de inicio #${index + 1}:`, result.reason);
+        }
+      });
+    });
 
     if (!deepTab) checkAndShowSplash();
 
