@@ -2128,6 +2128,7 @@
   const CACHE_KEY_HOME_CARDS = 'MGM_CACHE_HOME_CARDS_ORDER';
   const CACHE_KEY_HOME_BLOCKS = 'MGM_CACHE_HOME_BLOCKS_ORDER';
   const CACHE_KEY_HOME_NAV = 'MGM_CACHE_HOME_NAV';
+  const CACHE_KEY_CLOSURE_NOTICE = 'MGM_CACHE_CLOSURE_NOTICE';
 
   window.applyHomeNavConfig = function (items) {
     const nav = document.querySelector('.bottom-nav');
@@ -2215,11 +2216,15 @@
     if (!homeView || !Array.isArray(blocks) || blocks.length === 0) return;
 
     let ordered = blocks.slice();
+    if (!ordered.some(block => block.id === 'cierres')) {
+      const authBlock = ordered.find(block => block.id === 'auth-banner');
+      ordered.push({ id: 'cierres', orden: (parseInt(authBlock && authBlock.orden, 10) || 1) + 0.5, activa: true });
+    }
     const isAleatorio = modo === 'aleatorio' || modo === 'rotar';
 
     if (isAleatorio) {
-      const fixed = ordered.filter(b => b.id === 'auth-banner');
-      const others = ordered.filter(b => b.id !== 'auth-banner');
+      const fixed = ['auth-banner', 'cierres'].map(id => ordered.find(block => block.id === id)).filter(Boolean);
+      const others = ordered.filter(b => b.id !== 'auth-banner' && b.id !== 'cierres');
       for (let i = others.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         const tmp = others[i]; others[i] = others[j]; others[j] = tmp;
@@ -2234,10 +2239,11 @@
       if (!el) return;
       const activaStr = String(b.activa).trim().toLowerCase();
       const visible = (b.activa === undefined || b.activa === true || activaStr === 'true' || activaStr === 'si' || activaStr === 's\u00ED' || activaStr === 'sí' || activaStr === '1' || activaStr === 'yes');
+      if (b.id === 'cierres') window.mgmClosureBlockEnabled = visible;
       if (!visible) {
         el.style.display = 'none';
       } else {
-        if (el.id !== 'enc-banner') el.style.display = '';
+        if (el.id !== 'enc-banner' && b.id !== 'cierres') el.style.display = '';
       }
     });
 
@@ -2261,7 +2267,11 @@
       if (cachedCards) applyHomeCardsOrder(JSON.parse(cachedCards));
       const cachedNav = localStorage.getItem(CACHE_KEY_HOME_NAV);
       if (cachedNav) window.applyHomeNavConfig(JSON.parse(cachedNav));
-    } catch (e) { }
+      const cachedClosureNotice = localStorage.getItem(CACHE_KEY_CLOSURE_NOTICE);
+      if (cachedClosureNotice) window.applyMgmClosureNotice(JSON.parse(cachedClosureNotice), false);
+    } catch (error) {
+      console.warn('[Home Config] No se pudo aplicar la configuración guardada localmente:', error);
+    }
 
     const baseUrl = customUrl || CFG.UTILIDADES_GAS_URL;
     if (!baseUrl) return;
@@ -2294,6 +2304,12 @@
           const modo = data.modoBloques || data.modo || 'fijo';
           applyHomeBlocksOrder(data.blocks, modo);
           localStorage.setItem(CACHE_KEY_HOME_BLOCKS, JSON.stringify({ blocks: data.blocks, modo: modo }));
+        }
+        if (Object.prototype.hasOwnProperty.call(data, 'avisoCierre')) {
+          window.applyMgmClosureNotice(data.avisoCierre);
+          if (data.avisoCierreWarning) {
+            console.warn('[Home Config] Aviso de cierre:', data.avisoCierreWarning);
+          }
         }
       }
     } catch (err) {
@@ -9464,13 +9480,98 @@ document.addEventListener('DOMContentLoaded', function () {
 // Reordena los bloques moviendo nodos en el DOM (no usa CSS order/flex)
 // =============================================================================
 
+window.applyMgmClosureNotice = function (notice, updateCache) {
+  var banner = document.getElementById('home-closure-notice');
+  if (!banner) return;
+  var shouldUpdateCache = updateCache !== false;
+  var cacheKey = 'MGM_CACHE_CLOSURE_NOTICE';
+
+  if (shouldUpdateCache) {
+    try {
+      localStorage.setItem(cacheKey, JSON.stringify(notice || null));
+    } catch (error) {
+      console.warn('[Home Config] No se pudo guardar el aviso de cierre localmente:', error);
+    }
+  }
+
+  var title = document.getElementById('home-closure-title');
+  var message = document.getElementById('home-closure-message');
+  var dates = document.getElementById('home-closure-dates');
+  var reopening = document.getElementById('home-closure-reopening');
+  var datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+  function parseDateKey(value) {
+    if (typeof value !== 'string' || !datePattern.test(value)) return null;
+    var parts = value.split('-').map(Number);
+    var date = new Date(parts[0], parts[1] - 1, parts[2], 12);
+    if (date.getFullYear() !== parts[0] || date.getMonth() !== parts[1] - 1 || date.getDate() !== parts[2]) return null;
+    return date;
+  }
+
+  function formatDate(date, includeYear) {
+    return new Intl.DateTimeFormat('es-PA', {
+      day: 'numeric',
+      month: 'long',
+      ...(includeYear ? { year: 'numeric' } : {})
+    }).format(date);
+  }
+
+  function hideBanner() {
+    banner.style.display = 'none';
+  }
+
+  var start = parseDateKey(notice && notice.fecha_inicio);
+  var end = parseDateKey(notice && notice.fecha_fin);
+  var publishFrom = parseDateKey(notice && notice.publicar_desde) || start;
+  if (!notice || !start || !end || end < start || !title || !message || !dates || !reopening) {
+    hideBanner();
+    return;
+  }
+
+  var today = new Date();
+  today.setHours(12, 0, 0, 0);
+  if (today < publishFrom || today > end) {
+    hideBanner();
+    return;
+  }
+  if (window.mgmClosureBlockEnabled === false) {
+    hideBanner();
+    return;
+  }
+
+  var titleText = String(notice.titulo || '').trim();
+  title.textContent = titleText || 'Aviso de cierre';
+
+  var messageText = String(notice.mensaje || '').trim();
+  message.textContent = messageText;
+  message.hidden = !messageText;
+
+  var sameMonth = start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth();
+  var sameYear = start.getFullYear() === end.getFullYear();
+  var range = sameMonth
+    ? 'Del ' + start.getDate() + ' al ' + formatDate(end, true)
+    : 'Del ' + formatDate(start, !sameYear) + ' al ' + formatDate(end, true);
+  dates.textContent = range;
+
+  var reopeningDate = parseDateKey(notice.fecha_reapertura);
+  reopening.textContent = reopeningDate ? 'Retomamos la atención el ' + formatDate(reopeningDate, true) + '.' : '';
+  reopening.hidden = !reopeningDate;
+  banner.style.display = 'flex';
+};
+
 function applyHomeBlocksOrder(blocks, modo) {
   var home = document.getElementById('view-home');
   if (!home) return;
   var ordered = blocks.slice();
+  if (!ordered.some(function(block) { return block.id === 'cierres'; })) {
+    var authBlock = ordered.find(function(block) { return block.id === 'auth-banner'; });
+    ordered.push({ id: 'cierres', orden: (parseInt(authBlock && authBlock.orden, 10) || 1) + 0.5, activa: true });
+  }
   if (modo === 'aleatorio' || modo === 'rotar') {
-    var fixed  = ordered.filter(function(b) { return b.id === 'auth-banner'; });
-    var others = ordered.filter(function(b) { return b.id !== 'auth-banner' && b.activa; });
+    var fixed = ['auth-banner', 'cierres'].map(function(id) {
+      return ordered.find(function(block) { return block.id === id; });
+    }).filter(Boolean);
+    var others = ordered.filter(function(b) { return b.id !== 'auth-banner' && b.id !== 'cierres' && b.activa; });
     for (var i = others.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
       var tmp = others[i]; others[i] = others[j]; others[j] = tmp;
@@ -9482,8 +9583,9 @@ function applyHomeBlocksOrder(blocks, modo) {
   ordered.forEach(function(b) {
     var el = home.querySelector('[data-home-block="' + b.id + '"]');
     if (!el) return;
+    if (b.id === 'cierres') window.mgmClosureBlockEnabled = !!b.activa;
     if (!b.activa) { el.style.display = 'none'; }
-    else { if (el.id !== 'enc-banner') el.style.display = ''; }
+    else { if (el.id !== 'enc-banner' && b.id !== 'cierres') el.style.display = ''; }
   });
   ordered.forEach(function(b) {
     if (!b.activa) return;
@@ -9519,6 +9621,12 @@ function loadHomeCardsOrder(scriptUrl) {
             var card = grid.querySelector('[data-card-id="' + c.id + '"]');
             if (card) grid.appendChild(card);
           });
+        }
+      }
+      if (Object.prototype.hasOwnProperty.call(data, 'avisoCierre')) {
+        window.applyMgmClosureNotice(data.avisoCierre);
+        if (data.avisoCierreWarning) {
+          console.warn('[Home Config] Aviso de cierre:', data.avisoCierreWarning);
         }
       }
     })
