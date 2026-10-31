@@ -9548,10 +9548,13 @@ window.applyMgmClosureNotice = function (notice, updateCache) {
 
   var sameMonth = start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth();
   var sameYear = start.getFullYear() === end.getFullYear();
-  var range = sameMonth
-    ? 'Del ' + start.getDate() + ' al ' + formatDate(end, true)
-    : 'Del ' + formatDate(start, !sameYear) + ' al ' + formatDate(end, true);
-  dates.textContent = range;
+  var isSingleDay = start.getTime() === end.getTime();
+  var dateText = isSingleDay
+    ? 'Cerrado el ' + formatDate(start, true)
+    : sameMonth
+      ? 'Cerrado del ' + start.getDate() + ' al ' + formatDate(end, true)
+      : 'Cerrado del ' + formatDate(start, !sameYear) + ' al ' + formatDate(end, true);
+  dates.textContent = dateText;
 
   var reopeningDate = parseDateKey(notice.fecha_reapertura);
   reopening.textContent = reopeningDate ? 'Retomamos la atención el ' + formatDate(reopeningDate, true) + '.' : '';
