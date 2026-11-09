@@ -951,7 +951,7 @@
 
     // Si coincide con alguna pestaña interna conocida o deeplink interno, NO es externa
     const internalTabs = [
-      'home', 'inicio', 'puntos', 'maestria', 'agenda', 'misiones', 'premios', 'promos', 'rma', 'asesoria', 'soporte',
+      'home', 'inicio', 'puntos', 'maestria', 'agenda', 'misiones', 'premios', 'promos', 'rma', 'splash', 'asesoria', 'soporte',
       'toolbox', 'toolbox-calculadora-almacenamiento', 'toolbox-conversor-tecnico',
       'toolbox-calculadora-ups', 'toolbox-calculadora-voltaje', 'toolbox-calculadora-inalambrica', 'radio'
     ];
@@ -4764,7 +4764,15 @@
         closeSplashOption('session');
       };
     } else if (campaign.enlace && campaign.enlace !== '#') {
-      wrapEl.onclick = () => window.open(campaign.enlace, '_blank', 'noopener,noreferrer');
+      wrapEl.onclick = event => {
+        event.preventDefault();
+        if (isExternalUrl(campaign.enlace)) {
+          window.open(formatExternalUrl(campaign.enlace), '_blank', 'noopener,noreferrer');
+        } else {
+          closeSplashOption('session');
+          navigateTo(campaign.enlace);
+        }
+      };
     }
 
     setTimeout(() => {
@@ -6067,6 +6075,7 @@
       toolbox: { icon: 'fa-toolbox', color: '#4f46e5', badgeText: '🧰 Toolbox', badgeBg: '#e0e7ff', badgeTxt: '#3730a3' },
       fiesta: { icon: 'fa-music', color: '#f59e0b', badgeText: '📻 Fiesta', badgeBg: '#fef3c7', badgeTxt: '#b45309' },
       puntos: { icon: 'fa-star', color: '#f59e0b', badgeText: '⭐ Puntos', badgeBg: '#fef3c7', badgeTxt: '#b45309' },
+      splash: { icon: 'fa-image', color: '#7c3aed', badgeText: '🖼️ Campaña MGM', badgeBg: '#ede9fe', badgeTxt: '#6d28d9' },
       premios: { icon: 'fa-gift', color: '#10b981', badgeText: '🎁 Premios', badgeBg: '#d1fae5', badgeTxt: '#065f46' },
       agenda: { icon: 'fa-calendar-days', color: '#6366f1', badgeText: '📅 Agenda', badgeBg: '#ede9fe', badgeTxt: '#5b21b6' },
       misiones: { icon: 'fa-bullseye', color: '#d97706', badgeText: '🎯 Misiones', badgeBg: '#fef3c7', badgeTxt: '#b45309' },
