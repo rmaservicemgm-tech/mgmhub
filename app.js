@@ -155,6 +155,7 @@
   const K_CLIENTS = 'mgm_local_clients';
   const K_TX = 'mgm_local_tx';
   const K_SPLASH = 'mgm_splash_date_v2';
+  const K_SPLASH_CAMPAIGNS_CACHE = 'mgm_splash_campaigns_cache_v1';
   const K_LIKES = 'mgm_promo_likes';
   const K_AUTH = 'mgm_auth_user';
   const K_NOTIFS = 'mgm_notifications';
@@ -4747,13 +4748,40 @@
     return true;
   }
 
+  function getCachedSplashCampaigns() {
+    const cachedValue = localStorage.getItem(K_SPLASH_CAMPAIGNS_CACHE);
+    if (!cachedValue) return null;
+
+    try {
+      const cached = JSON.parse(cachedValue);
+      if (cached.date === new Date().toDateString() && Array.isArray(cached.campaigns)) {
+        return cached.campaigns;
+      }
+    } catch (error) {
+      console.warn('[MGM] Se descartó la caché inválida de campañas Splash:', error);
+    }
+
+    localStorage.removeItem(K_SPLASH_CAMPAIGNS_CACHE);
+    return null;
+  }
+
+  function cacheSplashCampaigns(campaigns) {
+    localStorage.setItem(K_SPLASH_CAMPAIGNS_CACHE, JSON.stringify({
+      date: new Date().toDateString(),
+      campaigns
+    }));
+  }
+
   function presentSplashCampaign(campaign, delay) {
     const imgEl = document.getElementById('splash-img');
     const wrapEl = document.getElementById('splash-content-wrap');
     const splashEl = document.getElementById('imou-splash');
     if (!imgEl || !wrapEl || !splashEl || !campaign.imagen_url) return false;
 
-    imgEl.src = campaign.imagen_url;
+    if (imgEl.dataset.splashImageUrl !== campaign.imagen_url) {
+      imgEl.dataset.splashImageUrl = campaign.imagen_url;
+      imgEl.src = campaign.imagen_url;
+    }
     splashEl.style.display = '';
     wrapEl.onclick = null;
     const cleanLink = String(campaign.enlace || '').toLowerCase();
@@ -4794,18 +4822,28 @@
     if (!id) throw new Error('Falta el ID de la campaña.');
     const normalizeCampaignId = value => String(value || '').trim().toLowerCase().replace(/^splash[-:_\s]*/, '');
 
-    const url = new URL(CFG.SPLASH_GAS_URL);
-    url.searchParams.set('plataforma', 'app');
-    const response = await fetch(url.href);
-    if (!response.ok) throw new Error('Respuesta HTTP ' + response.status);
-    const campaigns = await response.json();
-    if (!Array.isArray(campaigns)) throw new Error('Respuesta inválida del backend de campañas.');
-
-    const campaign = campaigns.find(item =>
+    const fetchCampaigns = async function () {
+      const url = new URL(CFG.SPLASH_GAS_URL);
+      url.searchParams.set('plataforma', 'app');
+      const response = await fetch(url.href);
+      if (!response.ok) throw new Error('Respuesta HTTP ' + response.status);
+      const campaigns = await response.json();
+      if (!Array.isArray(campaigns)) throw new Error('Respuesta inválida del backend de campañas.');
+      cacheSplashCampaigns(campaigns);
+      return campaigns;
+    };
+    const findCampaign = campaigns => campaigns.find(item =>
       String(item.id || '').trim().toLowerCase() === id.toLowerCase()
     ) || campaigns.find(item =>
       normalizeCampaignId(item.id) === normalizeCampaignId(id)
     );
+
+    let campaigns = getCachedSplashCampaigns() || [];
+    let campaign = findCampaign(campaigns);
+    if (!campaign) {
+      campaigns = await fetchCampaigns();
+      campaign = findCampaign(campaigns);
+    }
     if (!campaign || !isSplashCampaignActive(campaign)) {
       throw new Error('La campaña no existe, no está visible en la app o está fuera de vigencia.');
     }
@@ -4827,6 +4865,7 @@
       if (!res.ok) throw new Error('Respuesta HTTP ' + res.status);
       const data = await res.json();
       if (!Array.isArray(data)) throw new Error('Respuesta inválida del backend de campañas.');
+      cacheSplashCampaigns(data);
       const listado = data;
       const hoyEsSabado = new Date().getDay() === 6;
 
