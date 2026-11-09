@@ -1018,6 +1018,15 @@
     let tab = parts[0].toLowerCase();
     const sub = parts[1] || null;
 
+    if (tab === 'splash' && sub) {
+      closeAppModal('modal-notifications');
+      window.openSplashCampaign(sub).catch(error => {
+        console.warn('[MGM] No se pudo abrir la campaña desde la notificación:', error);
+        showToast('No se pudo cargar esta campaña. Inténtalo nuevamente.', 'fa-solid fa-triangle-exclamation');
+      });
+      return;
+    }
+
     // Cerrar cualquier modal abierto antes de navegar
     document.querySelectorAll('.app-modal.active').forEach(m => m.classList.remove('active'));
 
@@ -4723,6 +4732,77 @@
     closeSplashOption('session'); // Por defecto se oculta en esta sesión
   };
 
+  function isSplashCampaignActive(campaign) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (campaign.fecha_inicio) {
+      const start = new Date(campaign.fecha_inicio);
+      if (!isNaN(start.getTime()) && today < start) return false;
+    }
+    if (campaign.fecha_fin) {
+      const end = new Date(campaign.fecha_fin);
+      if (!isNaN(end.getTime()) && today > end) return false;
+    }
+    return true;
+  }
+
+  function presentSplashCampaign(campaign, delay) {
+    const imgEl = document.getElementById('splash-img');
+    const wrapEl = document.getElementById('splash-content-wrap');
+    const splashEl = document.getElementById('imou-splash');
+    if (!imgEl || !wrapEl || !splashEl || !campaign.imagen_url) return false;
+
+    imgEl.src = campaign.imagen_url;
+    splashEl.style.display = '';
+    wrapEl.onclick = null;
+    const cleanLink = String(campaign.enlace || '').toLowerCase();
+    if (cleanLink.includes('#magie')) {
+      wrapEl.onclick = event => {
+        event.preventDefault();
+        openMagieChatModal();
+        closeSplashOption('session');
+      };
+    } else if (campaign.enlace && campaign.enlace !== '#') {
+      wrapEl.onclick = () => window.open(campaign.enlace, '_blank', 'noopener,noreferrer');
+    }
+
+    setTimeout(() => {
+      splashEl.classList.add('show');
+      const confettiValue = String(campaign.confeti || '').trim().toLowerCase();
+      const shouldCelebrate = campaign.confeti === true || ['si', 'sí', 'true', '1', 'yes'].includes(confettiValue);
+      if (shouldCelebrate && typeof mgmConfetti !== 'undefined') {
+        const colors = Array.isArray(campaign.colores_confeti)
+          ? campaign.colores_confeti
+          : String(campaign.colores_confeti || '').split(/[,;\s]+/);
+        mgmConfetti.campaign(colors);
+      }
+    }, delay);
+    return true;
+  }
+
+  window.openSplashCampaign = async function (campaignId) {
+    const id = String(campaignId || '').trim();
+    if (!id) throw new Error('Falta el ID de la campaña.');
+
+    const url = new URL(CFG.SPLASH_GAS_URL);
+    url.searchParams.set('plataforma', 'app');
+    const response = await fetch(url.href);
+    if (!response.ok) throw new Error('Respuesta HTTP ' + response.status);
+    const campaigns = await response.json();
+    if (!Array.isArray(campaigns)) throw new Error('Respuesta inválida del backend de campañas.');
+
+    const campaign = campaigns.find(item =>
+      String(item.id || '').trim().toLowerCase() === id.toLowerCase()
+    );
+    if (!campaign || !isSplashCampaignActive(campaign)) {
+      throw new Error('La campaña no existe, no está visible en la app o está fuera de vigencia.');
+    }
+
+    closeAppModal('modal-notifications');
+    if (!presentSplashCampaign(campaign, 0)) throw new Error('La campaña no tiene una imagen configurada.');
+  };
+
   async function checkAndShowSplash() {
     if (!CFG.SPLASH_ENABLED) return;
     const lastShown = localStorage.getItem(K_SPLASH);
@@ -4730,23 +4810,16 @@
     if (sessionStorage.getItem('mgm_splash_session') === 'hidden') return;
 
     try {
-      const res = await fetch(CFG.SPLASH_GAS_URL);
+      const url = new URL(CFG.SPLASH_GAS_URL);
+      url.searchParams.set('plataforma', 'app');
+      const res = await fetch(url.href);
+      if (!res.ok) throw new Error('Respuesta HTTP ' + res.status);
       const data = await res.json();
-      const listado = Array.isArray(data) ? data : [];
+      if (!Array.isArray(data)) throw new Error('Respuesta inválida del backend de campañas.');
+      const listado = data;
       const hoyEsSabado = new Date().getDay() === 6;
 
-      const activas = listado.filter(c => {
-        const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
-        if (c.fecha_inicio) {
-          const inicio = new Date(c.fecha_inicio);
-          if (!isNaN(inicio.getTime()) && hoy < inicio) return false;
-        }
-        if (c.fecha_fin) {
-          const fin = new Date(c.fecha_fin);
-          if (!isNaN(fin.getTime()) && hoy > fin) return false;
-        }
-        return true;
-      });
+      const activas = listado.filter(isSplashCampaignActive);
 
       let pool = [];
       if (hoyEsSabado) {
@@ -4761,35 +4834,7 @@
         const maxPriority = Math.max(...pool.map(c => Number(c.prioridad) || 0));
         const candidates = maxPriority > 0 ? pool.filter(c => (Number(c.prioridad) || 0) === maxPriority) : pool;
         const elegida = candidates[Math.floor(Math.random() * candidates.length)];
-        const imgEl = document.getElementById('splash-img');
-        const wrapEl = document.getElementById('splash-content-wrap');
-
-        if (imgEl && elegida.imagen_url) {
-          imgEl.src = elegida.imagen_url;
-          const urlLimpia = (elegida.enlace || '').toLowerCase();
-          if (urlLimpia.includes('#magie')) {
-            wrapEl.onclick = (e) => {
-              e.preventDefault();
-              openMagieChatModal();
-              closeSplashOption('session');
-            };
-          } else if (elegida.enlace && elegida.enlace !== '#') {
-            wrapEl.onclick = () => window.open(elegida.enlace, '_blank');
-          }
-
-          const splashEl = document.getElementById('imou-splash');
-          if (splashEl) setTimeout(() => {
-            splashEl.classList.add('show');
-            const confetiValue = String(elegida.confeti || '').trim().toLowerCase();
-            const shouldCelebrate = elegida.confeti === true || ['si', 'sí', 'true', '1', 'yes'].includes(confetiValue);
-            if (shouldCelebrate && typeof mgmConfetti !== 'undefined') {
-              const colors = Array.isArray(elegida.colores_confeti)
-                ? elegida.colores_confeti
-                : String(elegida.colores_confeti || '').split(/[,;\s]+/);
-              mgmConfetti.campaign(colors);
-            }
-          }, 1200);
-        }
+        presentSplashCampaign(elegida, 1200);
       }
     } catch (err) {
       console.warn('Splash GAS fetch warning:', err);
