@@ -6325,7 +6325,8 @@
   <style>
     #mgm-maggy-app-bubble {
       position: fixed;
-      top: max(18px, env(safe-area-inset-top));
+      top: auto;
+      bottom: calc(82px + env(safe-area-inset-bottom));
       right: 14px;
       z-index: 1200;
       display: none;
@@ -6374,10 +6375,45 @@
       width: 90px;
       height: 90px;
       place-items: center;
-      border: 4px solid #ff0050;
       border-radius: 50%;
-      background: #0f172a;
+      isolation: isolate;
+    }
+    #mgm-maggy-app-bubble .maggy-bubble-avatar::before {
+      content: "";
+      position: absolute;
+      z-index: 0;
+      inset: -6px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, #ff0050, #00f2fe, #9d4edd, #ffbe0b, #ff0050);
+      animation: mgmMaggyRotate 4s linear infinite;
       box-shadow: 0 0 18px rgba(255, 0, 80, .38);
+    }
+    #mgm-maggy-app-bubble .maggy-bubble-pulse {
+      position: absolute;
+      z-index: 0;
+      inset: -6px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    #mgm-maggy-app-bubble .maggy-bubble-pulse::before,
+    #mgm-maggy-app-bubble .maggy-bubble-pulse::after {
+      content: "";
+      position: absolute;
+      inset: -5px;
+      border: 2px solid #00f2fe;
+      border-radius: 50%;
+      opacity: .8;
+      animation: mgmMaggyPulse 2s cubic-bezier(.215,.61,.355,1) infinite;
+    }
+    #mgm-maggy-app-bubble .maggy-bubble-pulse::after {
+      inset: -10px;
+      border-color: #ff0050;
+      animation-delay: .6s;
+    }
+    #mgm-maggy-app-bubble .maggy-bubble-avatar img {
+      position: relative;
+      z-index: 1;
+      background: #0f172a;
     }
     #mgm-maggy-app-bubble .maggy-bubble-avatar img {
       width: 100%;
@@ -6386,6 +6422,14 @@
       border-radius: 50%;
       object-fit: cover;
       pointer-events: none;
+    }
+    @keyframes mgmMaggyRotate {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes mgmMaggyPulse {
+      0% { transform: scale(.92); opacity: .8; }
+      50% { transform: scale(1.15); opacity: .4; }
+      100% { transform: scale(1.3); opacity: 0; }
     }
     #mgm-maggy-app-bubble .maggy-bubble-badge {
       position: absolute;
@@ -6418,6 +6462,11 @@
       #mgm-maggy-app-bubble .maggy-bubble-avatar { width: 76px; height: 76px; }
       #mgm-maggy-app-bubble .maggy-bubble-caption { max-width: 150px; font-size: 11px; }
     }
+    @media (prefers-reduced-motion: reduce) {
+      #mgm-maggy-app-bubble .maggy-bubble-avatar::before,
+      #mgm-maggy-app-bubble .maggy-bubble-pulse::before,
+      #mgm-maggy-app-bubble .maggy-bubble-pulse::after { animation: none; }
+    }
   </style>
   <div id="mgm-maggy-app-bubble" aria-label="Novedades MGM">
     <div class="maggy-bubble-card">
@@ -6425,6 +6474,7 @@
         onclick="closeMaggyBubbleForSession()">✕</button>
       <a id="mgm-maggy-app-link" class="maggy-bubble-link" href="#" target="_blank" rel="noopener noreferrer">
         <div class="maggy-bubble-avatar">
+          <span class="maggy-bubble-pulse" aria-hidden="true"></span>
           <img src="https://mgmpty.odoo.com/web/image/77761-e6339464/Dise%C3%B1o%20sin%20t%C3%ADtulo%20%282%29.png"
             alt="Maggy MGM">
           <span class="maggy-bubble-badge" id="mgm-maggy-app-badge">NOVEDAD</span>
@@ -6434,7 +6484,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=beta-7"></script>
+  <script src="app.js?v=beta-8"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
   <script>

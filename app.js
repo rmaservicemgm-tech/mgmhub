@@ -5086,6 +5086,13 @@
         if (wrapper.dataset.moved === 'true') {
           event.preventDefault();
           event.stopPropagation();
+          return;
+        }
+
+        const internalTarget = resolveSplashInternalTarget(link.href);
+        if (internalTarget) {
+          event.preventDefault();
+          navigateTo(internalTarget);
         }
       });
     }
