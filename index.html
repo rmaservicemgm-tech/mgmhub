@@ -3946,6 +3946,21 @@
           <i class="fa-solid fa-gear" style="color: var(--text-muted); margin-right: 6px;"></i> Configuración
         </h4>
 
+        <div class="settings-section">
+          <h5 class="settings-subtitle">Novedades</h5>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title"><i class="fa-solid fa-bullhorn"
+                  style="color:#ff0050; width: 16px; text-align: center;"></i> Burbuja de novedades</span>
+              <span class="setting-desc" id="set-maggy-bubble-status">Desactivada en este dispositivo.</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="set-maggy-bubble" onchange="toggleMaggyBubble(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
         <div class="settings-section" data-settings-auth="true">
           <h5 class="settings-subtitle">Notificaciones Push</h5>
 
@@ -6307,7 +6322,119 @@
     </div>
   </div>
 
-  <script src="app.js?v=beta-5"></script>
+  <style>
+    #mgm-maggy-app-bubble {
+      position: fixed;
+      top: max(18px, env(safe-area-inset-top));
+      right: 14px;
+      z-index: 1200;
+      display: none;
+      width: min(190px, calc(100vw - 28px));
+      flex-direction: column;
+      align-items: center;
+      font-family: Outfit, sans-serif;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    #mgm-maggy-app-bubble .maggy-bubble-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: grab;
+    }
+    #mgm-maggy-app-bubble .maggy-bubble-card:active { cursor: grabbing; }
+    #mgm-maggy-app-bubble .maggy-bubble-close {
+      position: absolute;
+      z-index: 3;
+      top: -4px;
+      right: -4px;
+      width: 24px;
+      height: 24px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: #ff4d4d;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    #mgm-maggy-app-bubble .maggy-bubble-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: inherit;
+      text-decoration: none;
+      cursor: grab;
+    }
+    #mgm-maggy-app-bubble .maggy-bubble-avatar {
+      position: relative;
+      display: grid;
+      width: 90px;
+      height: 90px;
+      place-items: center;
+      border: 4px solid #ff0050;
+      border-radius: 50%;
+      background: #0f172a;
+      box-shadow: 0 0 18px rgba(255, 0, 80, .38);
+    }
+    #mgm-maggy-app-bubble .maggy-bubble-avatar img {
+      width: 100%;
+      height: 100%;
+      border: 3px solid #0f172a;
+      border-radius: 50%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+    #mgm-maggy-app-bubble .maggy-bubble-badge {
+      position: absolute;
+      bottom: -5px;
+      padding: 2px 8px;
+      border: 2px solid #0f172a;
+      border-radius: 10px;
+      background: #ff0050;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    #mgm-maggy-app-bubble .maggy-bubble-caption {
+      max-width: 190px;
+      margin-top: 10px;
+      padding: 7px 11px;
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 14px;
+      background: rgba(15,23,42,.94);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.3;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,.25);
+    }
+    @media (max-width: 768px) {
+      #mgm-maggy-app-bubble { width: 150px; }
+      #mgm-maggy-app-bubble .maggy-bubble-avatar { width: 76px; height: 76px; }
+      #mgm-maggy-app-bubble .maggy-bubble-caption { max-width: 150px; font-size: 11px; }
+    }
+  </style>
+  <div id="mgm-maggy-app-bubble" aria-label="Novedades MGM">
+    <div class="maggy-bubble-card">
+      <button class="maggy-bubble-close" type="button" aria-label="Cerrar novedades"
+        onclick="closeMaggyBubbleForSession()">✕</button>
+      <a id="mgm-maggy-app-link" class="maggy-bubble-link" href="#" target="_blank" rel="noopener noreferrer">
+        <div class="maggy-bubble-avatar">
+          <img src="https://mgmpty.odoo.com/web/image/77761-e6339464/Dise%C3%B1o%20sin%20t%C3%ADtulo%20%282%29.png"
+            alt="Maggy MGM">
+          <span class="maggy-bubble-badge" id="mgm-maggy-app-badge">NOVEDAD</span>
+        </div>
+        <div class="maggy-bubble-caption" id="mgm-maggy-app-title">Cargando novedad...</div>
+      </a>
+    </div>
+  </div>
+
+  <script src="app.js?v=beta-7"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
   <script>

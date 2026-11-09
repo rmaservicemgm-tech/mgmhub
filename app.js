@@ -2731,10 +2731,10 @@
       `• *Saldo en cuenta:* ${clientePuntos} Pts\n\n` +
       `¿Me confirman por favor la disponibilidad en sucursal y la entrega? ¡Muchas gracias!`;
 
-    const advisor = getNextWaAdvisor();
-    registrarClicEnGAS(advisor.nombre, `Canje de premio: ${r.nombre}`, advisor.tel);
-    const waUrl = `https://wa.me/507${advisor.tel}?text=${encodeURIComponent(msg)}`;
-    window.open(waUrl, '_blank');
+    const waUrl = new URL('https://rmaservicemgm-tech.github.io/mgmhub/wa.html');
+    waUrl.searchParams.set('promo', `Canje de premio: ${r.nombre}`);
+    waUrl.searchParams.set('text', msg);
+    window.open(waUrl.toString(), '_blank');
   };
 
   window.sharePremio = function () {
@@ -4574,13 +4574,8 @@
       if (!CFG.ROTADOR_WA_GAS_URL) return;
       const telParam = telefono ? `&tel=${encodeURIComponent('507' + telefono)}` : '';
       const pingUrl = `${CFG.ROTADOR_WA_GAS_URL}?promo=${encodeURIComponent(promoNombre || activeWaPromoName)}&asesor=${encodeURIComponent(asesorNombre || 'Auto')}${telParam}&format=json`;
-      try {
-        const img = new Image();
-        img.src = pingUrl;
-      } catch (err) {}
-      if (window.fetch) {
-        fetch(pingUrl, { method: 'GET', mode: 'no-cors', keepalive: true }).catch(() => {});
-      }
+      const img = new Image();
+      img.src = pingUrl;
     } catch (e) {
       console.warn('Error registrando clic de WhatsApp en GAS:', e);
     }
@@ -4955,6 +4950,240 @@
 
   let oneSignalPushSettingListenerBound = false;
   let oneSignalPushToggleInFlight = false;
+  const MAGGY_BUBBLE_ENABLED_KEY = 'mgm_maggy_bubble_enabled';
+  const MAGGY_BUBBLE_HIDDEN_KEY = 'mgm_maggy_bubble_hidden';
+  const MAGGY_BUBBLE_POSITION_KEY = 'mgm_maggy_bubble_position';
+  const MAGGY_BUBBLE_PROMO_INDEX_KEY = 'mgm_maggy_app_promo_idx';
+  const MAGGY_BUBBLE_GAS_URL = 'https://script.google.com/macros/s/AKfycbyi70iSCI_1yL1Vmv4ljwVZFVkYhA3O6bnXFl5_-laNHGFtnOn1jral83LVIGZ1texIFA/exec';
+  let maggyBubblePromoPromise = null;
+  let maggyBubbleDragState = null;
+  let maggyBubbleToggleToken = 0;
+
+  function setMaggyBubbleStatus(message) {
+    const status = document.getElementById('set-maggy-bubble-status');
+    if (status) status.textContent = message;
+  }
+
+  function isSafeMaggyPromoUrl(value) {
+    try {
+      const url = new URL(String(value || ''), window.location.href);
+      return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : '';
+    } catch (error) {
+      return '';
+    }
+  }
+
+  async function loadMaggyBubblePromo() {
+    if (maggyBubblePromoPromise) return maggyBubblePromoPromise;
+    maggyBubblePromoPromise = (async () => {
+      const response = await fetch(MAGGY_BUBBLE_GAS_URL);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const result = await response.json();
+      if (!result || result.status !== 'success' || !Array.isArray(result.data)) {
+        throw new Error('Respuesta inválida del servicio de novedades.');
+      }
+
+      const promos = result.data.map(promo => ({
+        title: String(promo && promo.titulo || '').trim(),
+        badge: String(promo && promo.badge || 'NOVEDAD').trim(),
+        url: isSafeMaggyPromoUrl(promo && promo.enlace)
+      })).filter(promo => promo.title && promo.url);
+      if (!promos.length) return false;
+
+      let index = 0;
+      try {
+        const previousIndex = parseInt(sessionStorage.getItem(MAGGY_BUBBLE_PROMO_INDEX_KEY) || '-1', 10);
+        index = Number.isInteger(previousIndex) && previousIndex >= 0
+          ? (previousIndex + 1) % promos.length
+          : 0;
+        sessionStorage.setItem(MAGGY_BUBBLE_PROMO_INDEX_KEY, String(index));
+      } catch (error) {
+        console.warn('[MGM Hub] No se pudo guardar la rotación de novedades:', error);
+      }
+
+      const promo = promos[index];
+      document.getElementById('mgm-maggy-app-title').textContent = promo.title;
+      document.getElementById('mgm-maggy-app-badge').textContent = promo.badge;
+      document.getElementById('mgm-maggy-app-link').href = promo.url;
+      return true;
+    })();
+
+    try {
+      return await maggyBubblePromoPromise;
+    } catch (error) {
+      maggyBubblePromoPromise = null;
+      throw error;
+    }
+  }
+
+  function restoreMaggyBubblePosition(wrapper) {
+    try {
+      const position = JSON.parse(sessionStorage.getItem(MAGGY_BUBBLE_POSITION_KEY) || 'null');
+      if (!position || !Number.isFinite(position.left) || !Number.isFinite(position.top)) return;
+      const maxLeft = Math.max(10, window.innerWidth - wrapper.offsetWidth - 10);
+      const maxTop = Math.max(10, window.innerHeight - wrapper.offsetHeight - 10);
+      wrapper.style.left = `${Math.min(Math.max(position.left, 10), maxLeft)}px`;
+      wrapper.style.top = `${Math.min(Math.max(position.top, 10), maxTop)}px`;
+      wrapper.style.right = 'auto';
+    } catch (error) {
+      console.warn('[MGM Hub] No se pudo restaurar la posición de la burbuja:', error);
+    }
+  }
+
+  function bindMaggyBubbleDragging(wrapper) {
+    const handle = wrapper.querySelector('.maggy-bubble-card');
+    if (!handle || handle.dataset.dragReady === 'true') return;
+
+    handle.addEventListener('pointerdown', event => {
+      if (event.target.closest('.maggy-bubble-close')) return;
+      const rect = wrapper.getBoundingClientRect();
+      maggyBubbleDragState = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        left: rect.left,
+        top: rect.top,
+        moved: false
+      };
+      handle.setPointerCapture(event.pointerId);
+    });
+
+    handle.addEventListener('pointermove', event => {
+      if (!maggyBubbleDragState || maggyBubbleDragState.pointerId !== event.pointerId) return;
+      const dx = event.clientX - maggyBubbleDragState.startX;
+      const dy = event.clientY - maggyBubbleDragState.startY;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) maggyBubbleDragState.moved = true;
+      if (!maggyBubbleDragState.moved) return;
+
+      event.preventDefault();
+      const maxLeft = Math.max(10, window.innerWidth - wrapper.offsetWidth - 10);
+      const maxTop = Math.max(10, window.innerHeight - wrapper.offsetHeight - 10);
+      wrapper.style.left = `${Math.min(Math.max(maggyBubbleDragState.left + dx, 10), maxLeft)}px`;
+      wrapper.style.top = `${Math.min(Math.max(maggyBubbleDragState.top + dy, 10), maxTop)}px`;
+      wrapper.style.right = 'auto';
+    });
+
+    const finishDrag = event => {
+      if (!maggyBubbleDragState || maggyBubbleDragState.pointerId !== event.pointerId) return;
+      const moved = maggyBubbleDragState.moved;
+      maggyBubbleDragState = null;
+      if (moved) {
+        const rect = wrapper.getBoundingClientRect();
+        try {
+          sessionStorage.setItem(MAGGY_BUBBLE_POSITION_KEY, JSON.stringify({ left: rect.left, top: rect.top }));
+        } catch (error) {
+          console.warn('[MGM Hub] No se pudo guardar la posición de la burbuja:', error);
+        }
+        wrapper.dataset.moved = 'true';
+        setTimeout(() => { delete wrapper.dataset.moved; }, 0);
+      }
+    };
+    handle.addEventListener('pointerup', finishDrag);
+    handle.addEventListener('pointercancel', finishDrag);
+    const link = wrapper.querySelector('.maggy-bubble-link');
+    if (link) {
+      link.addEventListener('click', event => {
+        if (wrapper.dataset.moved === 'true') {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      });
+    }
+    handle.dataset.dragReady = 'true';
+    restoreMaggyBubblePosition(wrapper);
+  }
+
+  window.closeMaggyBubbleForSession = function () {
+    const wrapper = document.getElementById('mgm-maggy-app-bubble');
+    if (wrapper) wrapper.style.display = 'none';
+    setMaggyBubbleStatus('Oculta hasta que cierre esta sesión.');
+    try {
+      sessionStorage.setItem(MAGGY_BUBBLE_HIDDEN_KEY, 'true');
+    } catch (error) {
+      console.warn('[MGM Hub] No se pudo guardar el cierre temporal de novedades:', error);
+    }
+  };
+
+  window.toggleMaggyBubble = async function (toggle) {
+    if (!toggle) return;
+    const enabled = toggle.checked;
+    const toggleToken = ++maggyBubbleToggleToken;
+    try {
+      localStorage.setItem(MAGGY_BUBBLE_ENABLED_KEY, enabled ? 'true' : 'false');
+    } catch (error) {
+      toggle.checked = !enabled;
+      setMaggyBubbleStatus('No se pudo guardar esta preferencia en el dispositivo.');
+      console.error('[MGM Hub] No se pudo guardar la preferencia de novedades:', error);
+      return;
+    }
+
+    const wrapper = document.getElementById('mgm-maggy-app-bubble');
+    if (!enabled) {
+      if (wrapper) wrapper.style.display = 'none';
+      setMaggyBubbleStatus('Desactivada en este dispositivo.');
+      return;
+    }
+
+    try {
+      sessionStorage.removeItem(MAGGY_BUBBLE_HIDDEN_KEY);
+    } catch (error) {
+      console.warn('[MGM Hub] No se pudo limpiar el cierre temporal de novedades:', error);
+    }
+
+    try {
+      if (wrapper) {
+        bindMaggyBubbleDragging(wrapper);
+        wrapper.style.display = 'flex';
+      }
+      setMaggyBubbleStatus('Cargando novedades...');
+      const hasPromo = await loadMaggyBubblePromo();
+      if (toggleToken !== maggyBubbleToggleToken) return;
+      if (!hasPromo) {
+        if (wrapper) wrapper.style.display = 'none';
+        setMaggyBubbleStatus('No hay novedades disponibles en este momento.');
+        return;
+      }
+      if (wrapper) wrapper.style.display = 'flex';
+      setMaggyBubbleStatus('Activa en este dispositivo.');
+    } catch (error) {
+      if (toggleToken !== maggyBubbleToggleToken) return;
+      if (wrapper) wrapper.style.display = 'none';
+      setMaggyBubbleStatus('No se pudieron cargar las novedades. Inténtalo más tarde.');
+      console.error('[MGM Hub] No se pudo cargar la burbuja de novedades:', error);
+    }
+  };
+
+  function initMaggyBubble() {
+    const toggle = document.getElementById('set-maggy-bubble');
+    const wrapper = document.getElementById('mgm-maggy-app-bubble');
+    if (!toggle || !wrapper) return;
+
+    let enabled = false;
+    try {
+      enabled = localStorage.getItem(MAGGY_BUBBLE_ENABLED_KEY) === 'true';
+    } catch (error) {
+      console.error('[MGM Hub] No se pudo leer la preferencia de novedades:', error);
+    }
+    toggle.checked = enabled;
+    if (!enabled) {
+      wrapper.style.display = 'none';
+      setMaggyBubbleStatus('Desactivada en este dispositivo.');
+      return;
+    }
+
+    try {
+      if (sessionStorage.getItem(MAGGY_BUBBLE_HIDDEN_KEY) === 'true') {
+        wrapper.style.display = 'none';
+        setMaggyBubbleStatus('Oculta hasta que cierre esta sesión.');
+        return;
+      }
+    } catch (error) {
+      console.warn('[MGM Hub] No se pudo leer el cierre temporal de novedades:', error);
+    }
+
+    bindMaggyBubbleDragging(wrapper);
+    window.toggleMaggyBubble(toggle);
+  }
 
   function renderDevicePushSetting(optedIn) {
     const toggle = document.getElementById('set-push-device');
@@ -6378,6 +6607,7 @@
   async function init() {
     loadMgmHubFeatureConfig();
     initMgmLogoEasterEgg();
+    initMaggyBubble();
 
     const urlParams = new URLSearchParams(window.location.search);
     const refParam = urlParams.get('ref');
