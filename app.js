@@ -2731,9 +2731,9 @@
       `• *Saldo en cuenta:* ${clientePuntos} Pts\n\n` +
       `¿Me confirman por favor la disponibilidad en sucursal y la entrega? ¡Muchas gracias!`;
 
-    // Asesor 1 (+507 6454-1476)
-    const phone = '50764541476';
-    const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    const advisor = getNextWaAdvisor();
+    registrarClicEnGAS(advisor.nombre, `Canje de premio: ${r.nombre}`, advisor.tel);
+    const waUrl = `https://wa.me/507${advisor.tel}?text=${encodeURIComponent(msg)}`;
     window.open(waUrl, '_blank');
   };
 
@@ -4560,6 +4560,15 @@
     { nombre: 'Kity',  tel: '60090401' }
   ];
 
+  function getNextWaAdvisor() {
+    const lastIndex = parseInt(localStorage.getItem('MGM_WA_LAST_TURN') || '-1', 10);
+    const nextIndex = (isNaN(lastIndex) || lastIndex < 0 || lastIndex >= ASESORES_WA.length)
+      ? (Math.random() < 0.5 ? 0 : 1)
+      : ((lastIndex + 1) % ASESORES_WA.length);
+    localStorage.setItem('MGM_WA_LAST_TURN', nextIndex.toString());
+    return ASESORES_WA[nextIndex];
+  }
+
   function registrarClicEnGAS(asesorNombre, promoNombre, telefono) {
     try {
       if (!CFG.ROTADOR_WA_GAS_URL) return;
@@ -4592,13 +4601,7 @@
   };
 
   window.sendWaConsultAuto = function () {
-    const ultimoIdx = parseInt(localStorage.getItem('MGM_WA_LAST_TURN') || '-1', 10);
-    const nuevoIdx = (isNaN(ultimoIdx) || ultimoIdx < 0 || ultimoIdx >= ASESORES_WA.length)
-      ? (Math.random() < 0.5 ? 0 : 1)
-      : ((ultimoIdx + 1) % ASESORES_WA.length);
-    localStorage.setItem('MGM_WA_LAST_TURN', nuevoIdx.toString());
-
-    const elegido = ASESORES_WA[nuevoIdx];
+    const elegido = getNextWaAdvisor();
     sendWaConsult(elegido.tel, elegido.nombre);
   };
 
@@ -4772,6 +4775,50 @@
     }));
   }
 
+  function resolveSplashInternalTarget(link) {
+    const rawLink = String(link || '').trim();
+    if (!rawLink || /^(ext|url|link|odoo):/i.test(rawLink)) return '';
+    const looksLikeAppUrl = /^webapp:\/\//i.test(rawLink)
+      || /^https?:\/\//i.test(rawLink)
+      || /^[/?]/.test(rawLink);
+
+    const internalTabs = new Set([
+      'home', 'inicio', 'puntos', 'maestria', 'agenda', 'misiones', 'premios', 'rewards',
+      'promo', 'promos', 'rma', 'rastreo', 'asesoria', 'soporte', 'toolbox',
+      'toolbox-calculadora-almacenamiento', 'toolbox-conversor-tecnico',
+      'toolbox-calculadora-ups', 'toolbox-calculadora-voltaje',
+      'toolbox-calculadora-inalambrica', 'radio', 'party', 'fiesta', 'magie'
+    ]);
+
+    if (!looksLikeAppUrl && !isExternalUrl(rawLink)) {
+      const tab = rawLink.split(':')[0].trim().toLowerCase();
+      return internalTabs.has(tab) ? rawLink : '';
+    }
+
+    try {
+      const normalizedLink = rawLink.replace(/^webapp:/i, 'https:');
+      const targetUrl = new URL(normalizedLink, window.location.href);
+      const appPath = new URL('./index.html', window.location.href).pathname
+        .replace(/index\.html$/i, '')
+        .replace(/\/+$/, '');
+      const targetPath = targetUrl.pathname
+        .replace(/index\.html$/i, '')
+        .replace(/\/+$/, '');
+      if (targetUrl.origin !== window.location.origin || targetPath !== appPath) return '';
+
+      const tab = String(targetUrl.searchParams.get('tab') || '').trim().toLowerCase();
+      if (!internalTabs.has(tab)) return '';
+
+      const sub = targetUrl.searchParams.get('sub') || targetUrl.searchParams.get('id') || '';
+      const email = targetUrl.searchParams.get('email') || '';
+      if (email) window._pendingRmaEmail = email;
+      return sub ? `${tab}:${sub}` : tab;
+    } catch (error) {
+      console.warn('[MGM] No se pudo interpretar el enlace del splash:', error);
+      return '';
+    }
+  }
+
   function presentSplashCampaign(campaign, delay) {
     const imgEl = document.getElementById('splash-img');
     const wrapEl = document.getElementById('splash-content-wrap');
@@ -4792,13 +4839,14 @@
         closeSplashOption('session');
       };
     } else if (campaign.enlace && campaign.enlace !== '#') {
+      const internalTarget = resolveSplashInternalTarget(campaign.enlace);
       wrapEl.onclick = event => {
         event.preventDefault();
-        if (isExternalUrl(campaign.enlace)) {
-          window.open(formatExternalUrl(campaign.enlace), '_blank', 'noopener,noreferrer');
-        } else {
+        if (internalTarget) {
           closeSplashOption('session');
-          navigateTo(campaign.enlace);
+          navigateTo(internalTarget);
+        } else if (isExternalUrl(campaign.enlace)) {
+          window.open(formatExternalUrl(campaign.enlace), '_blank', 'noopener,noreferrer');
         }
       };
     }
