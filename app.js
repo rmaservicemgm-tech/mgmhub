@@ -4792,6 +4792,7 @@
   window.openSplashCampaign = async function (campaignId) {
     const id = String(campaignId || '').trim();
     if (!id) throw new Error('Falta el ID de la campaña.');
+    const normalizeCampaignId = value => String(value || '').trim().toLowerCase().replace(/^splash[-:_\s]*/, '');
 
     const url = new URL(CFG.SPLASH_GAS_URL);
     url.searchParams.set('plataforma', 'app');
@@ -4802,6 +4803,8 @@
 
     const campaign = campaigns.find(item =>
       String(item.id || '').trim().toLowerCase() === id.toLowerCase()
+    ) || campaigns.find(item =>
+      normalizeCampaignId(item.id) === normalizeCampaignId(id)
     );
     if (!campaign || !isSplashCampaignActive(campaign)) {
       throw new Error('La campaña no existe, no está visible en la app o está fuera de vigencia.');
