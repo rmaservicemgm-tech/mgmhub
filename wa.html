@@ -153,18 +153,10 @@
       if (title) title.innerText = 'Asignado: ' + asesorElegido.nombre;
       if (desc) desc.innerText = 'Redirigiendo al chat de WhatsApp con ' + asesorElegido.nombre + '...';
 
-      // 5. REGISTRAR CLIC EN GOOGLE SHEETS (PING GET CON IMAGEN + FETCH KEEPALIVE)
+      // 5. REGISTRAR CLIC EN GOOGLE SHEETS
       var pingUrl = GAS_URL + '?promo=' + encodeURIComponent(promoParam) + '&asesor=' + encodeURIComponent(asesorElegido.nombre) + '&tel=' + encodeURIComponent(asesorElegido.tel) + '&format=json';
-      
-      try {
-        // Disparo inmediato vía GET de imagen (no sufre restricciones CORS ni unload)
-        var beaconImg = new Image();
-        beaconImg.src = pingUrl;
-      } catch (e) {}
-
-      try {
-        fetch(pingUrl, { method: 'GET', mode: 'no-cors', keepalive: true }).catch(function () {});
-      } catch (e) {}
+      var beaconImg = new Image();
+      beaconImg.src = pingUrl;
 
       // 6. REDIRECCIÓN (700ms para garantizar que el servidor de Google reciba la solicitud)
       setTimeout(function () {
