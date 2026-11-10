@@ -954,7 +954,8 @@
     const internalTabs = [
       'home', 'inicio', 'puntos', 'maestria', 'agenda', 'misiones', 'premios', 'promos', 'rma', 'splash', 'asesoria', 'soporte',
       'toolbox', 'toolbox-calculadora-almacenamiento', 'toolbox-conversor-tecnico',
-      'toolbox-calculadora-ups', 'toolbox-calculadora-voltaje', 'toolbox-calculadora-inalambrica', 'radio'
+      'toolbox-calculadora-ups', 'toolbox-calculadora-voltaje', 'toolbox-calculadora-inalambrica',
+      'toolbox-calculadora-netport', 'radio'
     ];
     const prefix = s.split(':')[0].trim();
     if (internalTabs.includes(prefix)) return false;
@@ -4782,7 +4783,8 @@
       'promo', 'promos', 'rma', 'rastreo', 'asesoria', 'soporte', 'toolbox',
       'toolbox-calculadora-almacenamiento', 'toolbox-conversor-tecnico',
       'toolbox-calculadora-ups', 'toolbox-calculadora-voltaje',
-      'toolbox-calculadora-inalambrica', 'radio', 'party', 'fiesta', 'magie'
+      'toolbox-calculadora-inalambrica', 'toolbox-calculadora-netport',
+      'radio', 'party', 'fiesta', 'magie'
     ]);
 
     if (!looksLikeAppUrl && !isExternalUrl(rawLink)) {
@@ -9250,7 +9252,9 @@ window.closeReferralQRModal = function () {
   const _origSwitchNewCalc = window.switchMainTab;
   window.switchMainTab = function (tabName) {
     if (_origSwitchNewCalc) _origSwitchNewCalc(tabName);
-    if (tabName === 'toolbox-calculadora-voltaje' || tabName === 'toolbox-calculadora-inalambrica') {
+    if (tabName === 'toolbox-calculadora-voltaje'
+      || tabName === 'toolbox-calculadora-inalambrica'
+      || tabName === 'toolbox-calculadora-netport') {
       const _authData = localStorage.getItem('mgm_auth_user');
       if (!_authData) {
         const viewEl = document.getElementById('view-toolbox');
@@ -9259,6 +9263,9 @@ window.closeReferralQRModal = function () {
         if (typeof showToast === 'function') showToast('Debes iniciar sesión para usar las Calculadoras Técnicas.', 'fa-solid fa-lock');
         return;
       }
+    }
+    if (tabName === 'toolbox-calculadora-netport' && window.mgmNetPort) {
+      window.mgmNetPort.initialize();
     }
   };
 })();

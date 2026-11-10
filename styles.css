@@ -4706,6 +4706,529 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
   border-color: var(--border-light);
 }
 
+.netport-app-view {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 12px 16px;
+}
+
+.netport-app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  background: var(--bg-card);
+  color: var(--text-body);
+}
+
+.netport-app-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.netport-app-header p {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.netport-back-button {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-light);
+  border-radius: 9px;
+  background: var(--bg-card-alt);
+  color: var(--text-body);
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.netport-calculator-root {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  background: var(--bg-surface);
+  color: var(--text-body);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+#netport-calculator-root *,
+#netport-calculator-root *::before,
+#netport-calculator-root *::after {
+  box-sizing: border-box;
+}
+
+.netport-calculator-root .netport-navigation {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-card);
+  scrollbar-width: none;
+}
+
+#netport-calculator-root .netport-navigation > div {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 12px;
+}
+
+#netport-calculator-root .netport-navigation > div > div {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 8px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.netport-calculator-root .netport-navigation > div > div::-webkit-scrollbar {
+  display: none;
+}
+
+#netport-calculator-root .netport-navigation .tab-btn {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+#netport-calculator-root .netport-navigation .tab-btn:hover {
+  background: var(--bg-card-alt);
+  color: var(--text-dark);
+}
+
+#netport-calculator-root .netport-navigation .tab-btn.bg-slate-800 {
+  border-color: var(--border-light);
+  background: var(--primary-blue-lt);
+  color: var(--primary-blue);
+}
+
+.netport-calculator-root .netport-content {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+#netport-calculator-root .netport-content > .tab-content {
+  display: block;
+}
+
+#netport-calculator-root .netport-content > .tab-content.hidden,
+#netport-calculator-root [class~="hidden"] {
+  display: none;
+}
+
+#netport-calculator-root [class~="flex"] { display: flex; }
+#netport-calculator-root [class~="inline-flex"] { display: inline-flex; }
+#netport-calculator-root [class~="grid"] { display: grid; }
+#netport-calculator-root [class~="block"] { display: block; }
+#netport-calculator-root [class~="flex-col"] { flex-direction: column; }
+#netport-calculator-root [class~="flex-wrap"] { flex-wrap: wrap; }
+#netport-calculator-root [class~="flex-1"] { flex: 1 1 0%; }
+#netport-calculator-root [class~="shrink-0"] { flex-shrink: 0; }
+#netport-calculator-root [class~="items-center"] { align-items: center; }
+#netport-calculator-root [class~="items-start"] { align-items: flex-start; }
+#netport-calculator-root [class~="justify-between"] { justify-content: space-between; }
+#netport-calculator-root [class~="relative"] { position: relative; }
+#netport-calculator-root [class~="absolute"] { position: absolute; }
+#netport-calculator-root [class~="fixed"] { position: fixed; }
+#netport-calculator-root [class~="overflow-x-auto"] { overflow-x: auto; }
+#netport-calculator-root [class~="overflow-y-auto"] { overflow-y: auto; }
+#netport-calculator-root [class~="whitespace-nowrap"] { white-space: nowrap; }
+#netport-calculator-root [class~="w-full"] { width: 100%; }
+#netport-calculator-root [class~="w-72"] { width: 18rem; }
+#netport-calculator-root [class~="max-w-7xl"] { max-width: 80rem; }
+#netport-calculator-root [class~="max-h-[380px]"] { max-height: 380px; }
+#netport-calculator-root [class~="h-80"] { height: 20rem; }
+#netport-calculator-root [class~="h-24"] { height: 6rem; }
+#netport-calculator-root [class~="h-16"] { height: 4rem; }
+#netport-calculator-root [class~="h-6"] { height: 1.5rem; }
+#netport-calculator-root [class~="h-5"] { height: 1.25rem; }
+#netport-calculator-root [class~="h-4"] { height: 1rem; }
+#netport-calculator-root [class~="h-3.5"] { height: 0.875rem; }
+#netport-calculator-root [class~="h-3"] { height: 0.75rem; }
+#netport-calculator-root [class~="w-6"] { width: 1.5rem; }
+#netport-calculator-root [class~="w-5"] { width: 1.25rem; }
+#netport-calculator-root [class~="w-4"] { width: 1rem; }
+#netport-calculator-root [class~="w-3.5"] { width: 0.875rem; }
+#netport-calculator-root [class~="w-3"] { width: 0.75rem; }
+#netport-calculator-root [class~="top-0"] { top: 0; }
+#netport-calculator-root [class~="top-4"] { top: 1rem; }
+#netport-calculator-root [class~="top-2.5"] { top: 0.625rem; }
+#netport-calculator-root [class~="left-3"] { left: 0.75rem; }
+#netport-calculator-root [class~="right-4"] { right: 1rem; }
+#netport-calculator-root [class~="z-30"] { z-index: 30; }
+#netport-calculator-root [class~="z-40"] { z-index: 40; }
+#netport-calculator-root [class~="z-50"] { z-index: 50; }
+
+#netport-calculator-root [class~="grid-cols-1"] { grid-template-columns: minmax(0, 1fr); }
+#netport-calculator-root [class~="grid-cols-2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#netport-calculator-root [class~="grid-cols-12"] { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+#netport-calculator-root [class~="col-span-4"] { grid-column: span 4 / span 4; }
+#netport-calculator-root [class~="col-span-full"] { grid-column: 1 / -1; }
+#netport-calculator-root [class~="gap-1"] { gap: 0.25rem; }
+#netport-calculator-root [class~="gap-1.5"] { gap: 0.375rem; }
+#netport-calculator-root [class~="gap-2"] { gap: 0.5rem; }
+#netport-calculator-root [class~="gap-3"] { gap: 0.75rem; }
+#netport-calculator-root [class~="gap-4"] { gap: 1rem; }
+#netport-calculator-root [class~="gap-6"] { gap: 1.5rem; }
+
+#netport-calculator-root [class~="space-y-1"] > :not(:first-child) { margin-top: 0.25rem; }
+#netport-calculator-root [class~="space-y-1.5"] > :not(:first-child) { margin-top: 0.375rem; }
+#netport-calculator-root [class~="space-y-2"] > :not(:first-child) { margin-top: 0.5rem; }
+#netport-calculator-root [class~="space-y-2.5"] > :not(:first-child) { margin-top: 0.625rem; }
+#netport-calculator-root [class~="space-y-3"] > :not(:first-child) { margin-top: 0.75rem; }
+#netport-calculator-root [class~="space-y-4"] > :not(:first-child) { margin-top: 1rem; }
+#netport-calculator-root [class~="space-y-5"] > :not(:first-child) { margin-top: 1.25rem; }
+#netport-calculator-root [class~="space-y-6"] > :not(:first-child) { margin-top: 1.5rem; }
+#netport-calculator-root [class~="space-x-1"] > :not(:first-child) { margin-left: 0.25rem; }
+#netport-calculator-root [class~="space-x-4"] > :not(:first-child) { margin-left: 1rem; }
+
+#netport-calculator-root [class~="p-1"] { padding: 0.25rem; }
+#netport-calculator-root [class~="p-1.5"] { padding: 0.375rem; }
+#netport-calculator-root [class~="p-2"] { padding: 0.5rem; }
+#netport-calculator-root [class~="p-2.5"] { padding: 0.625rem; }
+#netport-calculator-root [class~="p-3"] { padding: 0.75rem; }
+#netport-calculator-root [class~="p-4"] { padding: 1rem; }
+#netport-calculator-root [class~="p-5"] { padding: 1.25rem; }
+#netport-calculator-root [class~="px-2"] { padding-left: 0.5rem; padding-right: 0.5rem; }
+#netport-calculator-root [class~="px-2.5"] { padding-left: 0.625rem; padding-right: 0.625rem; }
+#netport-calculator-root [class~="px-3"] { padding-left: 0.75rem; padding-right: 0.75rem; }
+#netport-calculator-root [class~="px-4"] { padding-left: 1rem; padding-right: 1rem; }
+#netport-calculator-root [class~="py-0.5"] { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+#netport-calculator-root [class~="py-1"] { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+#netport-calculator-root [class~="py-1.5"] { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+#netport-calculator-root [class~="py-2"] { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+#netport-calculator-root [class~="py-4"] { padding-top: 1rem; padding-bottom: 1rem; }
+#netport-calculator-root [class~="py-6"] { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+#netport-calculator-root [class~="py-8"] { padding-top: 2rem; padding-bottom: 2rem; }
+#netport-calculator-root [class~="pt-2"] { padding-top: 0.5rem; }
+#netport-calculator-root [class~="pt-3"] { padding-top: 0.75rem; }
+#netport-calculator-root [class~="pt-4"] { padding-top: 1rem; }
+#netport-calculator-root [class~="pb-2"] { padding-bottom: 0.5rem; }
+#netport-calculator-root [class~="pb-3"] { padding-bottom: 0.75rem; }
+#netport-calculator-root [class~="pl-9"] { padding-left: 2.25rem; }
+#netport-calculator-root [class~="pr-3"] { padding-right: 0.75rem; }
+#netport-calculator-root [class~="mb-1"] { margin-bottom: 0.25rem; }
+#netport-calculator-root [class~="mb-2"] { margin-bottom: 0.5rem; }
+#netport-calculator-root [class~="mb-3"] { margin-bottom: 0.75rem; }
+#netport-calculator-root [class~="mb-4"] { margin-bottom: 1rem; }
+#netport-calculator-root [class~="mt-0.5"] { margin-top: 0.125rem; }
+#netport-calculator-root [class~="mt-1"] { margin-top: 0.25rem; }
+#netport-calculator-root [class~="mt-4"] { margin-top: 1rem; }
+#netport-calculator-root [class~="mx-auto"] { margin-left: auto; margin-right: auto; }
+
+#netport-calculator-root [class~="border"] { border: 1px solid var(--border-light); }
+#netport-calculator-root [class~="border-b"] { border-bottom: 1px solid var(--border-light); }
+#netport-calculator-root [class~="border-t"] { border-top: 1px solid var(--border-light); }
+#netport-calculator-root [class~="border-collapse"] { border-collapse: collapse; }
+#netport-calculator-root [class~="rounded"] { border-radius: 4px; }
+#netport-calculator-root [class~="rounded-lg"] { border-radius: 9px; }
+#netport-calculator-root [class~="rounded-xl"] { border-radius: 12px; }
+#netport-calculator-root [class~="rounded-full"] { border-radius: 9999px; }
+#netport-calculator-root [class~="shadow-sm"] { box-shadow: var(--shadow-sm); }
+#netport-calculator-root [class~="shadow-md"] { box-shadow: var(--shadow-md); }
+#netport-calculator-root [class~="shadow-lg"] { box-shadow: var(--shadow-lg); }
+#netport-calculator-root [class~="text-left"] { text-align: left; }
+#netport-calculator-root [class~="text-center"] { text-align: center; }
+#netport-calculator-root [class~="text-right"] { text-align: right; }
+#netport-calculator-root [class~="text-xs"] { font-size: 0.75rem; line-height: 1.2rem; }
+#netport-calculator-root [class~="text-sm"] { font-size: 0.875rem; line-height: 1.35rem; }
+#netport-calculator-root [class~="text-base"] { font-size: 1rem; line-height: 1.5rem; }
+#netport-calculator-root [class~="text-lg"] { font-size: 1.125rem; line-height: 1.6rem; }
+#netport-calculator-root [class~="text-[10px]"] { font-size: 10px; }
+#netport-calculator-root [class~="text-[11px]"] { font-size: 11px; }
+#netport-calculator-root [class~="font-medium"] { font-weight: 500; }
+#netport-calculator-root [class~="font-semibold"] { font-weight: 600; }
+#netport-calculator-root [class~="font-bold"] { font-weight: 700; }
+#netport-calculator-root [class~="font-mono"] { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+#netport-calculator-root [class~="uppercase"] { text-transform: uppercase; }
+#netport-calculator-root [class~="tracking-tight"] { letter-spacing: -0.025em; }
+#netport-calculator-root [class~="tracking-wider"] { letter-spacing: 0.05em; }
+
+#netport-calculator-root [class~="bg-slate-950"],
+#netport-calculator-root [class~="bg-slate-900"],
+#netport-calculator-root [class~="bg-slate-900/80"],
+#netport-calculator-root [class~="bg-slate-900/90"] { background: var(--bg-card); }
+#netport-calculator-root [class~="bg-slate-950/60"],
+#netport-calculator-root [class~="bg-slate-950/80"],
+#netport-calculator-root [class~="bg-slate-800"],
+#netport-calculator-root [class~="bg-slate-800/50"] { background: var(--bg-card-alt); }
+#netport-calculator-root [class~="bg-cyan-950"] { background: var(--primary-blue-lt); }
+#netport-calculator-root [class~="bg-cyan-600"],
+#netport-calculator-root [class~="bg-blue-600"] { background: var(--primary-blue); }
+#netport-calculator-root [class~="bg-emerald-600"],
+#netport-calculator-root [class~="bg-emerald-500"] { background: #25a56a; }
+#netport-calculator-root [class~="bg-emerald-200"] { background: #a7f3d0; }
+#netport-calculator-root [class~="bg-orange-600"] { background: #ea580c; }
+#netport-calculator-root [class~="bg-orange-200"] { background: #fed7aa; }
+#netport-calculator-root [class~="bg-blue-200"] { background: #bfdbfe; }
+#netport-calculator-root [class~="bg-amber-800"] { background: #92400e; }
+#netport-calculator-root [class~="bg-amber-950"] { background: #451a03; }
+#netport-calculator-root [class~="bg-amber-950/60"] { background: #fffbeb; }
+#netport-calculator-root [class~="bg-red-950/60"] { background: #fef2f2; }
+#netport-calculator-root [class~="bg-emerald-950/60"] { background: #ecfdf5; }
+#netport-calculator-root [class~="bg-red-600"] { background: #dc2626; }
+#netport-calculator-root [class~="bg-gradient-to-tr"] { background-image: linear-gradient(to top right, #0891b2, #10b981); }
+
+#netport-calculator-root [class~="border-slate-700"],
+#netport-calculator-root [class~="border-slate-800"],
+#netport-calculator-root [class~="border-slate-800/80"],
+#netport-calculator-root [class~="border-slate-900"] { border-color: var(--border-light); }
+#netport-calculator-root [class~="border-cyan-700/50"],
+#netport-calculator-root [class~="border-cyan-700/60"],
+#netport-calculator-root [class~="border-cyan-800/60"],
+#netport-calculator-root [class~="border-cyan-500/30"] { border-color: #93c5fd; }
+#netport-calculator-root [class~="border-emerald-500"],
+#netport-calculator-root [class~="border-emerald-500/30"] { border-color: #6ee7b7; }
+#netport-calculator-root [class~="border-orange-500"],
+#netport-calculator-root [class~="border-orange-500/30"] { border-color: #fdba74; }
+#netport-calculator-root [class~="border-blue-500"],
+#netport-calculator-root [class~="border-blue-500/30"] { border-color: #93c5fd; }
+#netport-calculator-root [class~="border-amber-600"] { border-color: #fbbf24; }
+#netport-calculator-root [class~="border-red-800"] { border-color: #fecaca; }
+#netport-calculator-root [class~="border-emerald-800"] { border-color: #a7f3d0; }
+#netport-calculator-root [class~="border-amber-800"] { border-color: #fde68a; }
+
+#netport-calculator-root [class~="text-white"],
+#netport-calculator-root [class~="text-slate-100"],
+#netport-calculator-root [class~="text-slate-200"],
+#netport-calculator-root [class~="text-slate-300"] { color: var(--text-body); }
+#netport-calculator-root [class~="text-slate-400"],
+#netport-calculator-root [class~="text-slate-500"],
+#netport-calculator-root [class~="placeholder-slate-500"] { color: var(--text-muted); }
+#netport-calculator-root [class~="text-slate-950"] { color: #fff; }
+#netport-calculator-root [class~="text-cyan-300"],
+#netport-calculator-root [class~="text-cyan-400"],
+#netport-calculator-root [class~="text-cyan-500"] { color: var(--primary-blue); }
+#netport-calculator-root [class~="text-emerald-400"] { color: #059669; }
+#netport-calculator-root [class~="text-amber-400"],
+#netport-calculator-root [class~="text-amber-400/90"] { color: #b77900; }
+#netport-calculator-root [class~="text-red-400"],
+#netport-calculator-root [class~="text-red-300"] { color: #dc2626; }
+#netport-calculator-root [class~="text-orange-400"] { color: #c2410c; }
+#netport-calculator-root [class~="text-blue-400"] { color: #2563eb; }
+#netport-calculator-root [class~="text-purple-400"] { color: #7c3aed; }
+#netport-calculator-root [class~="text-emerald-300"] { color: #047857; }
+#netport-calculator-root [class~="text-amber-300"] { color: #92400e; }
+
+#netport-calculator-root input,
+#netport-calculator-root select,
+#netport-calculator-root textarea {
+  max-width: 100%;
+  border: 1px solid var(--border-mid);
+  border-radius: 8px;
+  background: var(--bg-card-alt);
+  color: var(--text-dark);
+  font: inherit;
+}
+
+#netport-calculator-root input[type="checkbox"] { accent-color: var(--primary-blue); }
+#netport-calculator-root button { cursor: pointer; font: inherit; }
+#netport-calculator-root .netport-navigation button,
+#netport-calculator-root .netport-content button {
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+#netport-calculator-root .netport-content button { border-radius: 8px; }
+#netport-calculator-root .netport-content button:hover { filter: brightness(0.96); }
+#netport-calculator-root table { width: 100%; border-collapse: collapse; }
+#netport-calculator-root th,
+#netport-calculator-root td { border-color: var(--border-light); text-align: left; }
+#netport-calculator-root textarea { display: block; resize: vertical; }
+#netport-calculator-root .port-cat-btn.bg-cyan-950 { border-color: #93c5fd; color: var(--primary-blue); }
+#netport-calculator-root .port-cat-btn:hover,
+#netport-calculator-root [class~="hover:bg-slate-700"]:hover,
+#netport-calculator-root [class~="hover:bg-slate-800/50"]:hover { background: var(--bg-card-alt); }
+#netport-calculator-root [class~="hover:bg-cyan-500"]:hover { background: #0284c7; }
+#netport-calculator-root [class~="hover:bg-emerald-500"]:hover { background: #059669; }
+#netport-calculator-root [class~="hover:bg-cyan-900"]:hover { background: #e0f2fe; }
+#netport-calculator-root [class~="hover:text-slate-200"]:hover,
+#netport-calculator-root [class~="hover:text-white"]:hover { color: var(--text-dark); }
+
+:root[data-theme="dark"] #netport-calculator-root {
+  color-scheme: dark;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="bg-amber-950/60"] {
+  background: #3a3428;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="bg-red-950/60"] {
+  background: #3d2932;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="bg-emerald-950/60"] {
+  background: #203b37;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="text-cyan-300"],
+:root[data-theme="dark"] #netport-calculator-root [class~="text-cyan-400"],
+:root[data-theme="dark"] #netport-calculator-root [class~="text-cyan-500"] {
+  color: #75b8ff;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="text-emerald-400"],
+:root[data-theme="dark"] #netport-calculator-root [class~="text-emerald-300"] {
+  color: #78d6a5;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="text-amber-400"],
+:root[data-theme="dark"] #netport-calculator-root [class~="text-amber-400/90"],
+:root[data-theme="dark"] #netport-calculator-root [class~="text-amber-300"] {
+  color: #f2c56f;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="text-red-400"],
+:root[data-theme="dark"] #netport-calculator-root [class~="text-red-300"] {
+  color: #ff9b9b;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="text-orange-400"] {
+  color: #ffb36b;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="text-blue-400"] {
+  color: #8dbaff;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="text-purple-400"] {
+  color: #c4a4ff;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="bg-emerald-600"],
+:root[data-theme="dark"] #netport-calculator-root [class~="bg-emerald-500"] {
+  background: #25885e;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="bg-cyan-600"],
+:root[data-theme="dark"] #netport-calculator-root [class~="bg-blue-600"] {
+  background: #1766b1;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="bg-red-600"] {
+  background: #a93546;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="border-red-800"] {
+  border-color: #70404b;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="border-emerald-800"] {
+  border-color: #386d58;
+}
+
+:root[data-theme="dark"] #netport-calculator-root [class~="border-amber-800"] {
+  border-color: #665335;
+}
+
+.netport-load-error {
+  padding: 24px 16px;
+  color: var(--text-body);
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.netport-load-error button {
+  display: block;
+  margin: 12px auto 0;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--primary-blue);
+  color: #fff;
+  font: inherit;
+}
+
+@media (max-width: 640px) {
+  .netport-app-view {
+    padding: 0 8px 12px;
+  }
+
+  .netport-app-header {
+    align-items: flex-start;
+    padding: 10px;
+  }
+
+  .netport-app-header p {
+    font-size: 0.72rem;
+  }
+
+  .netport-back-button {
+    padding: 7px 8px;
+    font-size: 0.72rem;
+  }
+
+  .netport-calculator-root {
+    border-radius: 10px;
+  }
+
+  #netport-calculator-root .netport-content {
+    padding: 12px 8px;
+  }
+
+  #netport-calculator-root .netport-navigation > div {
+    padding: 0 8px;
+  }
+
+  #netport-calculator-root .netport-navigation .tab-btn {
+    gap: 6px;
+    padding: 8px 10px;
+    font-size: 0.72rem;
+  }
+
+  #netport-calculator-root [class~="p-5"] {
+    padding: 0.875rem;
+  }
+
+  #netport-calculator-root [class~="text-lg"] {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 640px) {
+  #netport-calculator-root [class~="sm:grid-cols-2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #netport-calculator-root [class~="sm:grid-cols-3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #netport-calculator-root [class~="sm:flex-row"] { flex-direction: row; }
+  #netport-calculator-root [class~="sm:items-center"] { align-items: center; }
+  #netport-calculator-root [class~="sm:block"] { display: block; }
+}
+
+@media (min-width: 768px) {
+  #netport-calculator-root [class~="md:grid-cols-2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #netport-calculator-root [class~="md:flex-row"] { flex-direction: row; }
+  #netport-calculator-root [class~="md:items-center"] { align-items: center; }
+  #netport-calculator-root [class~="md:inline"] { display: inline; }
+  #netport-calculator-root [class~="md:w-72"] { width: 18rem; }
+}
+
+@media (min-width: 1024px) {
+  #netport-calculator-root [class~="lg:grid-cols-12"] { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  #netport-calculator-root [class~="lg:grid-cols-3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #netport-calculator-root [class~="lg:col-span-5"] { grid-column: span 5 / span 5; }
+  #netport-calculator-root [class~="lg:col-span-7"] { grid-column: span 7 / span 7; }
+}
+
 :root[data-theme="dark"] #mgm-wireless-wrapper {
   color: var(--text-body);
 }

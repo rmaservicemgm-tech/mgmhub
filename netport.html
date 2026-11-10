@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetPort Pro - Calculadora & Mapeo de IPs y Puertos</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfeff',
+                            100: '#cffaff',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                            700: '#0e7490',
+                            900: '#164e63',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-slate-950">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Top Header -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-gradient-to-tr from-cyan-600 to-emerald-500 rounded-xl shadow-lg shadow-cyan-500/20 text-slate-950">
+                    <i data-lucide="network" class="w-6 h-6 stroke-[2.5]"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                        NETPORT <span class="text-xs bg-cyan-950 text-cyan-400 border border-cyan-700/50 px-2 py-0.5 rounded-full font-mono uppercase tracking-wider">Installer Suite v2.5</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Herramienta de campo para Redes, CCTV y Telecomunicaciones</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="exportQuickSummary()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shadow-md shadow-emerald-950/30">
+                    <i data-lucide="share-2" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Generar Reporte</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-slate-900 border-b border-slate-800 sticky top-16 z-30 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex space-x-1 sm:space-x-4 overflow-x-auto py-2 no-scrollbar">
+                <button onclick="switchTab('seq')" id="tab-btn-seq" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 whitespace-nowrap transition bg-slate-800 text-cyan-400 border border-slate-700">
+                    <i data-lucide="list-ordered" class="w-4 h-4"></i> Secuencias & NAT
+                </button>
+                <button onclick="switchTab('ports')" id="tab-btn-ports" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 whitespace-nowrap transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                    <i data-lucide="search" class="w-4 h-4"></i> Diccionario de Puertos
+                </button>
+                <button onclick="switchTab('subnet')" id="tab-btn-subnet" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 whitespace-nowrap transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                    <i data-lucide="calculator" class="w-4 h-4"></i> Calculadora Subred / CIDR
+                </button>
+                <button onclick="switchTab('wiring')" id="tab-btn-wiring" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 whitespace-nowrap transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                    <i data-lucide="cable" class="w-4 h-4"></i> Ponchado UTP & PoE
+                </button>
+                <button onclick="switchTab('report')" id="tab-btn-report" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 whitespace-nowrap transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> Exportar WhatsApp
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Body -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- TAB 1: GENERADOR DE SECUENCIAS IP & NAT MAPPER -->
+        <section id="tab-seq" class="tab-content space-y-6">
+
+            <!-- Presets Bar -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i> Presets Rápidos por Fabricante / Proyecto:
+                    </label>
+                    <span class="text-xs text-slate-400">Aplica configuraciones estándar en 1 clic</span>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="applyPreset('hikvision')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-red-400 border border-red-500/30 flex items-center gap-1.5 transition">
+                        <i data-lucide="video" class="w-3.5 h-3.5"></i> Hikvision (80, 554, 8000)
+                    </button>
+                    <button onclick="applyPreset('dahua')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-orange-400 border border-orange-500/30 flex items-center gap-1.5 transition">
+                        <i data-lucide="video" class="w-3.5 h-3.5"></i> Dahua (80, 554, 37777)
+                    </button>
+                    <button onclick="applyPreset('uniview')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-cyan-400 border border-cyan-500/30 flex items-center gap-1.5 transition">
+                        <i data-lucide="video" class="w-3.5 h-3.5"></i> Uniview (80, 554, 8100)
+                    </button>
+                    <button onclick="applyPreset('ubiquiti')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-blue-400 border border-blue-500/30 flex items-center gap-1.5 transition">
+                        <i data-lucide="wifi" class="w-3.5 h-3.5"></i> Ubiquiti UniFi (80, 443, 8080)
+                    </button>
+                    <button onclick="applyPreset('voip')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 transition">
+                        <i data-lucide="phone-call" class="w-3.5 h-3.5"></i> VoIP / SIP (5060, 5061, 10000)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Configuration Form -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                <!-- Basic Inputs Panel -->
+                <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4 shadow-sm">
+                    <h3 class="text-sm font-semibold text-slate-200 border-b border-slate-800 pb-2 flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-4 h-4 text-cyan-400"></i> Parámetros de Dispositivos
+                    </h3>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">IP Inicial</label>
+                            <input type="text" id="seq-start-ip" value="192.168.1.100" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono text-cyan-300 focus:outline-none focus:border-cyan-500" placeholder="ej. 192.168.1.100" oninput="generateSequence()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Cantidad Equipos</label>
+                            <input type="number" id="seq-count" value="8" min="1" max="128" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono text-white focus:outline-none focus:border-cyan-500" oninput="generateSequence()">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Prefijo / Nombre Base</label>
+                            <input type="text" id="seq-name-prefix" value="CAM-" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" placeholder="ej. CAM- o AP-" oninput="generateSequence()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Incremento Externo</label>
+                            <select id="seq-port-mode" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500" onchange="generateSequence()">
+                                <option value="incremental">Consecutivo (+1 por equipo)</option>
+                                <option value="static">Estático (Mismo puerto)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-800/80">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-300">Mapeo de Puertos (Interno → Externo)</span>
+                            <span class="text-[10px] text-slate-400">WAN Forwarding</span>
+                        </div>
+
+                        <!-- Ports Setup -->
+                        <div class="space-y-2.5">
+                            <!-- HTTP -->
+                            <div class="grid grid-cols-12 gap-2 items-center bg-slate-950/60 p-2 rounded-lg border border-slate-800">
+                                <span class="col-span-4 text-xs font-medium text-slate-300 flex items-center gap-1">
+                                    <input type="checkbox" id="chk-http" checked class="rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-0" onchange="generateSequence()">
+                                    HTTP/Web
+                                </span>
+                                <input type="number" id="port-http-int" value="80" class="col-span-4 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-center font-mono text-cyan-400" placeholder="Int" oninput="generateSequence()">
+                                <input type="number" id="port-http-ext" value="8080" class="col-span-4 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-center font-mono text-emerald-400" placeholder="Ext Base" oninput="generateSequence()">
+                            </div>
+
+                            <!-- RTSP -->
+                            <div class="grid grid-cols-12 gap-2 items-center bg-slate-950/60 p-2 rounded-lg border border-slate-800">
+                                <span class="col-span-4 text-xs font-medium text-slate-300 flex items-center gap-1">
+                                    <input type="checkbox" id="chk-rtsp" checked class="rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-0" onchange="generateSequence()">
+                                    RTSP Stream
+                                </span>
+                                <input type="number" id="port-rtsp-int" value="554" class="col-span-4 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-center font-mono text-cyan-400" placeholder="Int" oninput="generateSequence()">
+                                <input type="number" id="port-rtsp-ext" value="8554" class="col-span-4 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-center font-mono text-emerald-400" placeholder="Ext Base" oninput="generateSequence()">
+                            </div>
+
+                            <!-- SDK / DATA -->
+                            <div class="grid grid-cols-12 gap-2 items-center bg-slate-950/60 p-2 rounded-lg border border-slate-800">
+                                <span class="col-span-4 text-xs font-medium text-slate-300 flex items-center gap-1">
+                                    <input type="checkbox" id="chk-sdk" checked class="rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-0" onchange="generateSequence()">
+                                    SDK / Datos
+                                </span>
+                                <input type="number" id="port-sdk-int" value="8000" class="col-span-4 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-center font-mono text-cyan-400" placeholder="Int" oninput="generateSequence()">
+                                <input type="number" id="port-sdk-ext" value="9000" class="col-span-4 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-center font-mono text-emerald-400" placeholder="Ext Base" oninput="generateSequence()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sequence Table Results -->
+                <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col justify-between shadow-sm">
+                    <div>
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+                            <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                                <i data-lucide="table" class="w-4 h-4 text-emerald-400"></i> Tabla de Direccionamiento Asignado
+                            </h3>
+                            <button onclick="copyTableText()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1 rounded flex items-center gap-1 transition">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar Tabla
+                            </button>
+                        </div>
+
+                        <!-- Table Scroll Container -->
+                        <div class="overflow-x-auto max-h-[380px] overflow-y-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="border-b border-slate-800 text-slate-400 font-mono bg-slate-950/80 sticky top-0">
+                                        <th class="p-2">#</th>
+                                        <th class="p-2">Equipo</th>
+                                        <th class="p-2">IP Local</th>
+                                        <th class="p-2">Mapeo Puertos (Int → Ext)</th>
+                                        <th class="p-2 text-right">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="seq-table-body" class="divide-y divide-slate-800/60 font-mono">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Quick Script Generator for Router NAT -->
+                    <div class="mt-4 pt-3 border-t border-slate-800">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                                <i data-lucide="terminal" class="w-3.5 h-3.5 text-cyan-400"></i> Reglas de Router / Mapeo NAT
+                            </span>
+                            <div class="flex items-center gap-2">
+                                <select id="nat-script-format" class="bg-slate-950 text-[11px] border border-slate-700 rounded px-2 py-0.5 text-slate-300 focus:outline-none" onchange="generateSequence()">
+                                    <option value="plain">Texto Plano / WhatsApp</option>
+                                    <option value="mikrotik">Sintaxis MikroTik RouterOS</option>
+                                </select>
+                                <button onclick="copyNatRules()" class="text-xs bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-700/60 px-2 py-0.5 rounded flex items-center gap-1">
+                                    <i data-lucide="copy" class="w-3 h-3"></i> Copiar Reglas
+                                </button>
+                            </div>
+                        </div>
+                        <textarea id="nat-rules-output" readonly class="w-full bg-slate-950 text-slate-300 font-mono text-[11px] p-2.5 rounded-lg border border-slate-800 h-24 focus:outline-none resize-none"></textarea>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TAB 2: DICCIIONARIO Y BUSCADOR DE PUERTOS -->
+        <section id="tab-ports" class="tab-content hidden space-y-5">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                    <div>
+                        <h2 class="text-base font-bold text-white flex items-center gap-2">
+                            <i data-lucide="book-open" class="w-5 h-5 text-cyan-400"></i> Catálogo de Puertos por Fabricante & Protocolo
+                        </h2>
+                        <p class="text-xs text-slate-400">Consulta rápida de puertos predeterminados en CCTV, VoIP y Redes</p>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="relative w-full md:w-72">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+                        <input type="text" id="port-search-input" onkeyup="filterPorts()" placeholder="Buscar por marca, puerto o servicio..." class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+                    </div>
+                </div>
+
+                <!-- Category Filters -->
+                <div class="flex flex-wrap gap-2 mb-4 pb-3 border-b border-slate-800">
+                    <button onclick="filterPortCat('all')" id="btn-cat-all" class="port-cat-btn text-xs px-3 py-1.5 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-700/60 font-medium">Todos</button>
+                    <button onclick="filterPortCat('cctv')" id="btn-cat-cctv" class="port-cat-btn text-xs px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">CCTV & NVR</button>
+                    <button onclick="filterPortCat('networking')" id="btn-cat-networking" class="port-cat-btn text-xs px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Redes & Switches</button>
+                    <button onclick="filterPortCat('telecom')" id="btn-cat-telecom" class="port-cat-btn text-xs px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">VoIP & Telefonía</button>
+                    <button onclick="filterPortCat('services')" id="btn-cat-services" class="port-cat-btn text-xs px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Servicios Estándar</button>
+                </div>
+
+                <!-- Grid of Ports -->
+                <div id="ports-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Dynamic Port Cards -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: CALCULADORA DE SUBRED Y CIDR -->
+        <section id="tab-subnet" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                <!-- Inputs Panel -->
+                <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4 shadow-sm">
+                    <h3 class="text-sm font-semibold text-slate-200 border-b border-slate-800 pb-2 flex items-center gap-2">
+                        <i data-lucide="binary" class="w-4 h-4 text-cyan-400"></i> Parámetros IPv4 / CIDR
+                    </h3>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Dirección IP de Referencia</label>
+                        <input type="text" id="calc-ip-input" value="192.168.1.1" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono text-cyan-300 focus:outline-none focus:border-cyan-500" placeholder="192.168.1.1" oninput="calculateSubnet()">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Máscara de Red / CIDR</label>
+                        <select id="calc-cidr-select" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500" onchange="calculateSubnet()">
+                            <option value="16">/16 - 255.255.0.0 (65,534 Hosts)</option>
+                            <option value="23">/23 - 255.255.254.0 (510 Hosts)</option>
+                            <option value="24" selected>/24 - 255.255.255.0 (254 Hosts - Estándar)</option>
+                            <option value="25">/25 - 255.255.255.128 (126 Hosts)</option>
+                            <option value="26">/26 - 255.255.255.192 (62 Hosts)</option>
+                            <option value="27">/27 - 255.255.255.224 (30 Hosts)</option>
+                            <option value="28">/28 - 255.255.255.240 (14 Hosts)</option>
+                            <option value="29">/29 - 255.255.255.248 (6 Hosts)</option>
+                            <option value="30">/30 - 255.255.255.252 (2 Hosts - Enlace Punto a Punto)</option>
+                        </select>
+                    </div>
+
+                    <!-- IP Tester Inside Subnet -->
+                    <div class="pt-3 border-t border-slate-800 space-y-3">
+                        <span class="text-xs font-semibold text-slate-300 block">Comprobador de Pertenencia IP</span>
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">IP a Comprobar:</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="calc-test-ip" value="192.168.1.50" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-500" placeholder="192.168.1.50">
+                                <button onclick="checkIpInSubnet()" class="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-semibold px-3 py-1.5 rounded-lg text-xs transition">Verificar</button>
+                            </div>
+                        </div>
+                        <div id="subnet-test-result" class="text-xs p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">
+                            Ingresa una IP para comprobar si pertenece a la subred activa.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subnet Summary Cards -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                            <span class="text-xs text-slate-400 block mb-1">Dirección IP de Red (Network)</span>
+                            <span id="sub-network-ip" class="text-lg font-mono font-bold text-cyan-400">192.168.1.0</span>
+                        </div>
+
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                            <span class="text-xs text-slate-400 block mb-1">Gateway Recomendado</span>
+                            <span id="sub-gateway-ip" class="text-lg font-mono font-bold text-emerald-400">192.168.1.1</span>
+                        </div>
+
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                            <span class="text-xs text-slate-400 block mb-1">Máscara Subred Decimal</span>
+                            <span id="sub-mask-dec" class="text-lg font-mono font-bold text-amber-400">255.255.255.0</span>
+                        </div>
+
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                            <span class="text-xs text-slate-400 block mb-1">Dirección Broadcast</span>
+                            <span id="sub-broadcast-ip" class="text-lg font-mono font-bold text-purple-400">192.168.1.255</span>
+                        </div>
+                    </div>
+
+                    <!-- Details Table -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-3">
+                        <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Desglose Técnico de Subred</h4>
+                        
+                        <div class="divide-y divide-slate-800 text-xs font-mono">
+                            <div class="py-2 flex justify-between">
+                                <span class="text-slate-400">Rango de IPs Útiles para Equipos:</span>
+                                <span id="sub-usable-range" class="text-white font-semibold">192.168.1.1 - 192.168.1.254</span>
+                            </div>
+                            <div class="py-2 flex justify-between">
+                                <span class="text-slate-400">Total de IPs Útiles para Dispositivos:</span>
+                                <span id="sub-usable-count" class="text-emerald-400 font-semibold">254 IPs</span>
+                            </div>
+                            <div class="py-2 flex justify-between">
+                                <span class="text-slate-400">Wildcard Mask (Comodo Firewall):</span>
+                                <span id="sub-wildcard" class="text-cyan-300">0.0.0.255</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TAB 4: GUIA DE PONCHADO Y GUIA RAPIDA EN CAMPO -->
+        <section id="tab-wiring" class="tab-content hidden space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-6">
+                <div>
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">
+                        <i data-lucide="cable" class="w-5 h-5 text-cyan-400"></i> Código de Colores UTP RJ45 (Normas T-568A / T-568B)
+                    </h2>
+                    <p class="text-xs text-slate-400">Guía visual estándar para armado de conectores y conectores hembra en campo</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <!-- T-568B Standard -->
+                    <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <span class="font-bold text-xs text-amber-400">Norma T-568B (Estándar Comercial Recomendado)</span>
+                            <span class="text-[10px] text-slate-500 font-mono">Pin 1 al 8</span>
+                        </div>
+
+                        <div class="space-y-1.5 font-mono text-xs">
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">1</span><span class="w-3 h-3 rounded-full bg-orange-200 border border-orange-500"></span> Blanco / Naranja</div>
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">2</span><span class="w-3 h-3 rounded-full bg-orange-600"></span> Naranja</div>
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">3</span><span class="w-3 h-3 rounded-full bg-emerald-200 border border-emerald-500"></span> Blanco / Verde</div>
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">4</span><span class="w-3 h-3 rounded-full bg-blue-600"></span> Azul</div>
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">5</span><span class="w-3 h-3 rounded-full bg-blue-200 border border-blue-500"></span> Blanco / Azul</div>
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">6</span><span class="w-3 h-3 rounded-full bg-emerald-600"></span> Verde</div>
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">7</span><span class="w-3 h-3 rounded-full bg-amber-800 border border-amber-600"></span> Blanco / Marrón</div>
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">8</span><span class="w-3 h-3 rounded-full bg-amber-950"></span> Marrón</div>
+                        </div>
+                    </div>
+
+                    <!-- T-568A Standard -->
+                    <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <span class="font-bold text-xs text-cyan-400">Norma T-568A (Residencial / Gobierno)</span>
+                            <span class="text-[10px] text-slate-500 font-mono">Pin 1 al 8</span>
+                        </div>
+
+                        <div class="space-y-1.5 font-mono text-xs">
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">1</span><span class="w-3 h-3 rounded-full bg-emerald-200 border border-emerald-500"></span> Blanco / Verde</div>
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">2</span><span class="w-3 h-3 rounded-full bg-emerald-600"></span> Verde</div>
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">3</span><span class="w-3 h-3 rounded-full bg-orange-200 border border-orange-500"></span> Blanco / Naranja</div>
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">4</span><span class="w-3 h-3 rounded-full bg-blue-600"></span> Azul</div>
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">5</span><span class="w-3 h-3 rounded-full bg-blue-200 border border-blue-500"></span> Blanco / Azul</div>
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">6</span><span class="w-3 h-3 rounded-full bg-orange-600"></span> Naranja</div>
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">7</span><span class="w-3 h-3 rounded-full bg-amber-800 border border-amber-600"></span> Blanco / Marrón</div>
+                            <div class="flex items-center gap-2 p-1.5 rounded bg-slate-900"><span class="w-4 text-slate-500">8</span><span class="w-3 h-3 rounded-full bg-amber-950"></span> Marrón</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- PoE Standards & Maximum Distance Cheat Sheet -->
+                <div class="pt-4 border-t border-slate-800">
+                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Estándares Power over Ethernet (PoE) para Cámaras & APs</h3>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                            <span class="font-bold text-emerald-400 block mb-1">PoE Estándar (802.3af)</span>
+                            <span class="text-slate-400 block">Potencia Máx: <strong>15.4 W</strong></span>
+                            <span class="text-slate-500 text-[11px] block mt-1">Ideal para cámaras domo/bullet fijas estándar.</span>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                            <span class="font-bold text-cyan-400 block mb-1">PoE+ (802.3at)</span>
+                            <span class="text-slate-400 block">Potencia Máx: <strong>30.0 W</strong></span>
+                            <span class="text-slate-500 text-[11px] block mt-1">Ideal para cámaras PTZ con iluminador IR potente.</span>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                            <span class="font-bold text-amber-400 block mb-1">PoE++ / Hi-PoE (802.3bt)</span>
+                            <span class="text-slate-400 block">Potencia Máx: <strong>60W - 90W</strong></span>
+                            <span class="text-slate-500 text-[11px] block mt-1">Para PTZs de exterior con calefactor y switches de borde.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: GENERADOR DE REPORTE Y WHATSAPP -->
+        <section id="tab-report" class="tab-content hidden space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+                <div>
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">
+                        <i data-lucide="file-text" class="w-5 h-5 text-cyan-400"></i> Generador de Ficha Técnica de Entrega
+                    </h2>
+                    <p class="text-xs text-slate-400">Exporta la memoria técnica lista para enviar al cliente o al equipo de soporte por WhatsApp o Email.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Nombre del Proyecto / Cliente</label>
+                        <input type="text" id="rep-client-name" value="Instalación Almacén Central ACME" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500" oninput="generateFullReport()">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Técnico / Instalador Responsable</label>
+                        <input type="text" id="rep-tech-name" value="Ing. Soporte Técnico" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500" oninput="generateFullReport()">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Notas u Observaciones Adicionales</label>
+                    <input type="text" id="rep-notes" value="Claves guardadas en bitácora interna. Router de la ISP configurado con IP estática DMZ." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500" oninput="generateFullReport()">
+                </div>
+
+                <div class="pt-2">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-300">Vista Previa del Informe</span>
+                        <div class="flex gap-2">
+                            <button onclick="copyReportWhatsApp()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-bold rounded-lg flex items-center gap-1.5 transition">
+                                <i data-lucide="message-square" class="w-4 h-4"></i> Copiar para WhatsApp
+                            </button>
+                            <button onclick="copyReportCsv()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium rounded-lg flex items-center gap-1.5 transition">
+                                <i data-lucide="download" class="w-4 h-4"></i> Copiar formato CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <textarea id="report-text-output" readonly class="w-full bg-slate-950 text-emerald-400 font-mono text-xs p-4 rounded-xl border border-slate-800 h-80 focus:outline-none resize-none"></textarea>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-900 py-4 text-center text-xs text-slate-400">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>NetPort Pro &copy; 2026 - Herramienta interactiva para instaladores</span>
+            <span class="flex items-center gap-1 text-slate-400"><i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> Diseñado para campo & operabilidad móvil</span>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Database of common standard ports
+        const PORT_DATABASE = [
+            { port: 80, protocol: 'TCP', brand: 'Hikvision / Dahua / Axis', category: 'cctv', name: 'HTTP Web Access', desc: 'Interfaz de usuario Web para configuración e inicio de sesión.', tip: 'Se sugiere cambiar externamente a 8080 o 8000+ por seguridad.' },
+            { port: 554, protocol: 'TCP/UDP', brand: 'Hikvision / Dahua / Uniview', category: 'cctv', name: 'RTSP Stream', desc: 'Protocolo de streaming de video HD en tiempo real.', tip: 'Obligatorio para visualizar streams en software VMS o VLC.' },
+            { port: 8000, protocol: 'TCP', brand: 'Hikvision', category: 'cctv', name: 'SDK / Server Port', desc: 'Puerto primario de control para apps iVMS-4200 y Hik-Connect.', tip: 'Si el router bloquea este puerto, la app móvil no conectará.' },
+            { port: 37777, protocol: 'TCP', brand: 'Dahua', category: 'cctv', name: 'Dahua Private Port', desc: 'Puerto nativo para app DMSS / gDMSS y software SmartPSS.', tip: 'Requerido para conexión directa remota fuera de P2P.' },
+            { port: 8100, protocol: 'TCP', brand: 'Uniview', category: 'cctv', name: 'UNV Data Service', desc: 'Comunicación de datos con software EZStation y EZView.', tip: 'Mapear si no se utiliza la nube EZCloud.' },
+            { port: 8080, protocol: 'TCP', brand: 'ONVIF / Ubiquiti', category: 'cctv', name: 'ONVIF / UniFi Inform', desc: 'Descubrimiento ONVIF y adopción de APs Ubiquiti.', tip: 'Utilizado por UniFi Controller para adopción Layer 3.' },
+            { port: 8443, protocol: 'TCP', brand: 'Ubiquiti UniFi', category: 'networking', name: 'UniFi Web Admin', desc: 'Consola web de gestión del controlador UniFi.', tip: 'Conexión cifrada HTTPS.' },
+            { port: 8291, protocol: 'TCP', brand: 'MikroTik', category: 'networking', name: 'Winbox Port', desc: 'Puerto de acceso por software GUI Winbox a RouterOS.', tip: 'Proteger siempre con reglas de firewall o cambiar por puerto alto.' },
+            { port: 5060, protocol: 'UDP/TCP', brand: 'VoIP SIP', category: 'telecom', name: 'SIP Protocol', desc: 'Señalización y registro de teléfonos IP y conmutadores PBX.', tip: 'Desactivar SIP ALG en el router para evitar audio unidireccional.' },
+            { port: 10000, protocol: 'UDP', brand: 'VoIP RTP', category: 'telecom', name: 'RTP Audio Stream', desc: 'Rango de transmisión de voz en tiempo real (10000-20000).', tip: 'Mapear rango completo si las llamadas sufren de silencio.' },
+            { port: 443, protocol: 'TCP', brand: 'Estándar Universal', category: 'services', name: 'HTTPS Seguro', desc: 'Navegación cifrada TLS/SSL para gestión de routers y NVRs.', tip: 'Puerto seguro por defecto.' },
+            { port: 53, protocol: 'UDP/TCP', brand: 'Estándar Universal', category: 'services', name: 'DNS Server', desc: 'Resolución de nombres de dominio en la red.', tip: 'Configurar 8.8.8.8 o 1.1.1.1 en NVRs para sincronización cloud.' },
+            { port: 123, protocol: 'UDP', brand: 'Estándar Universal', category: 'services', name: 'NTP Time Protocol', desc: 'Sincronización exacta de hora para estampas de agua en grabaciones.', tip: 'Crucial para legalidad de vídeos de seguridad.' }
+        ];
+
+        let currentCategory = 'all';
+
+        // Initialize icons and render components on load
+        window.onload = function() {
+            lucide.createIcons();
+            generateSequence();
+            renderPortsGrid();
+            calculateSubnet();
+            generateFullReport();
+        };
+
+        // Switch Tabs Function
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-slate-800', 'text-cyan-400', 'border', 'border-slate-700');
+                btn.classList.add('text-slate-400');
+            });
+
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('tab-btn-' + tabId);
+            activeBtn.classList.add('bg-slate-800', 'text-cyan-400', 'border', 'border-slate-700');
+            activeBtn.classList.remove('text-slate-400');
+        }
+
+        // Apply Brand Presets
+        function applyPreset(brand) {
+            if (brand === 'hikvision') {
+                document.getElementById('chk-http').checked = true;
+                document.getElementById('port-http-int').value = 80;
+                document.getElementById('port-http-ext').value = 8080;
+
+                document.getElementById('chk-rtsp').checked = true;
+                document.getElementById('port-rtsp-int').value = 554;
+                document.getElementById('port-rtsp-ext').value = 8554;
+
+                document.getElementById('chk-sdk').checked = true;
+                document.getElementById('port-sdk-int').value = 8000;
+                document.getElementById('port-sdk-ext').value = 9000;
+                document.getElementById('seq-name-prefix').value = 'CAM-HIK-';
+                showToast("Preset Hikvision aplicado");
+            } else if (brand === 'dahua') {
+                document.getElementById('chk-http').checked = true;
+                document.getElementById('port-http-int').value = 80;
+                document.getElementById('port-http-ext').value = 8081;
+
+                document.getElementById('chk-rtsp').checked = true;
+                document.getElementById('port-rtsp-int').value = 554;
+                document.getElementById('port-rtsp-ext').value = 8555;
+
+                document.getElementById('chk-sdk').checked = true;
+                document.getElementById('port-sdk-int').value = 37777;
+                document.getElementById('port-sdk-ext').value = 37777;
+                document.getElementById('seq-name-prefix').value = 'CAM-DAHUA-';
+                showToast("Preset Dahua aplicado");
+            } else if (brand === 'uniview') {
+                document.getElementById('chk-http').checked = true;
+                document.getElementById('port-http-int').value = 80;
+                document.getElementById('port-http-ext').value = 8082;
+
+                document.getElementById('chk-rtsp').checked = true;
+                document.getElementById('port-rtsp-int').value = 554;
+                document.getElementById('port-rtsp-ext').value = 8556;
+
+                document.getElementById('chk-sdk').checked = true;
+                document.getElementById('port-sdk-int').value = 8100;
+                document.getElementById('port-sdk-ext').value = 9100;
+                document.getElementById('seq-name-prefix').value = 'CAM-UNV-';
+                showToast("Preset Uniview aplicado");
+            } else if (brand === 'ubiquiti') {
+                document.getElementById('chk-http').checked = true;
+                document.getElementById('port-http-int').value = 80;
+                document.getElementById('port-http-ext').value = 8080;
+
+                document.getElementById('chk-rtsp').checked = false;
+
+                document.getElementById('chk-sdk').checked = true;
+                document.getElementById('port-sdk-int').value = 8443;
+                document.getElementById('port-sdk-ext').value = 8443;
+                document.getElementById('seq-name-prefix').value = 'AP-UNIFI-';
+                showToast("Preset Ubiquiti UniFi aplicado");
+            } else if (brand === 'voip') {
+                document.getElementById('chk-http').checked = true;
+                document.getElementById('port-http-int').value = 80;
+                document.getElementById('port-http-ext').value = 8090;
+
+                document.getElementById('chk-rtsp').checked = true;
+                document.getElementById('port-rtsp-int').value = 5060;
+                document.getElementById('port-rtsp-ext').value = 5060;
+
+                document.getElementById('chk-sdk').checked = true;
+                document.getElementById('port-sdk-int').value = 10000;
+                document.getElementById('port-sdk-ext').value = 10000;
+                document.getElementById('seq-name-prefix').value = 'VOIP-TEL-';
+                showToast("Preset VoIP aplicado");
+            }
+            generateSequence();
+        }
+
+        // Helper: Convert IPv4 String to Integer
+        function ipToInt(ip) {
+            return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
+        }
+
+        // Helper: Convert Integer to IPv4 String
+        function intToIp(int) {
+            return [
+                (int >>> 24) & 255,
+                (int >>> 16) & 255,
+                (int >>> 8) & 255,
+                int & 255
+            ].join('.');
+        }
+
+        // Generate IP Sequence and Table Logic
+        function generateSequence() {
+            const startIpStr = document.getElementById('seq-start-ip').value.trim();
+            const count = parseInt(document.getElementById('seq-count').value, 10) || 1;
+            const prefix = document.getElementById('seq-name-prefix').value.trim() || 'DEV-';
+            const mode = document.getElementById('seq-port-mode').value;
+
+            const useHttp = document.getElementById('chk-http').checked;
+            const httpInt = parseInt(document.getElementById('port-http-int').value, 10) || 80;
+            const httpExtBase = parseInt(document.getElementById('port-http-ext').value, 10) || 8080;
+
+            const useRtsp = document.getElementById('chk-rtsp').checked;
+            const rtspInt = parseInt(document.getElementById('port-rtsp-int').value, 10) || 554;
+            const rtspExtBase = parseInt(document.getElementById('port-rtsp-ext').value, 10) || 8554;
+
+            const useSdk = document.getElementById('chk-sdk').checked;
+            const sdkInt = parseInt(document.getElementById('port-sdk-int').value, 10) || 8000;
+            const sdkExtBase = parseInt(document.getElementById('port-sdk-ext').value, 10) || 9000;
+
+            const startInt = ipToInt(startIpStr);
+            if (isNaN(startInt) || startIpStr.split('.').length !== 4) {
+                document.getElementById('seq-table-body').innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-400">Dirección IP inicial no válida.</td></tr>`;
+                return;
+            }
+
+            let tbodyHtml = '';
+            let natRulesList = [];
+
+            for (let i = 0; i < count; i++) {
+                const currentIpInt = startInt + i;
+                const currentIp = intToIp(currentIpInt);
+                const devName = `${prefix}${String(i + 1).padStart(2, '0')}`;
+
+                const httpExt = mode === 'incremental' ? httpExtBase + i : httpExtBase;
+                const rtspExt = mode === 'incremental' ? rtspExtBase + i : rtspExtBase;
+                const sdkExt = mode === 'incremental' ? sdkExtBase + i : sdkExtBase;
+
+                let portsSummaryArr = [];
+                if (useHttp) portsSummaryArr.push(`HTTP: ${httpInt}→<span class="text-emerald-400 font-bold">${httpExt}</span>`);
+                if (useRtsp) portsSummaryArr.push(`RTSP: ${rtspInt}→<span class="text-emerald-400 font-bold">${rtspExt}</span>`);
+                if (useSdk) portsSummaryArr.push(`SDK: ${sdkInt}→<span class="text-emerald-400 font-bold">${sdkExt}</span>`);
+
+                tbodyHtml += `
+                    <tr class="hover:bg-slate-800/50 transition">
+                        <td class="p-2 text-slate-500">${i + 1}</td>
+                        <td class="p-2 font-bold text-slate-200">${devName}</td>
+                        <td class="p-2 text-cyan-300 font-semibold">${currentIp}</td>
+                        <td class="p-2 text-[11px] text-slate-300">${portsSummaryArr.join(' | ')}</td>
+                        <td class="p-2 text-right">
+                            <button onclick="copyToClipboard('${currentIp}')" title="Copiar IP" class="p-1 bg-slate-800 hover:bg-slate-700 rounded text-slate-400 hover:text-white transition">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+
+                // NAT script generation
+                const format = document.getElementById('nat-script-format').value;
+                if (format === 'mikrotik') {
+                    if (useHttp) natRulesList.push(`/ip firewall nat add chain=dstnat protocol=tcp dst-port=${httpExt} action=dst-nat to-addresses=${currentIp} to-ports=${httpInt} comment="${devName} HTTP"`);
+                    if (useRtsp) natRulesList.push(`/ip firewall nat add chain=dstnat protocol=tcp dst-port=${rtspExt} action=dst-nat to-addresses=${currentIp} to-ports=${rtspInt} comment="${devName} RTSP"`);
+                    if (useSdk) natRulesList.push(`/ip firewall nat add chain=dstnat protocol=tcp dst-port=${sdkExt} action=dst-nat to-addresses=${currentIp} to-ports=${sdkInt} comment="${devName} SDK"`);
+                } else {
+                    natRulesList.push(`${devName} (${currentIp}) -> WAN ${useHttp ? 'HTTP:' + httpExt : ''} ${useRtsp ? 'RTSP:' + rtspExt : ''} ${useSdk ? 'SDK:' + sdkExt : ''}`);
+                }
+            }
+
+            document.getElementById('seq-table-body').innerHTML = tbodyHtml;
+            document.getElementById('nat-rules-output').value = natRulesList.join('\n');
+            lucide.createIcons();
+            generateFullReport();
+        }
+
+        // Copy Table Summary as plain text
+        function copyTableText() {
+            const rows = document.querySelectorAll('#seq-table-body tr');
+            let text = "DISPOSITIVO\tIP LOCAL\tPUERTOS\n";
+            rows.forEach(r => {
+                const cols = r.querySelectorAll('td');
+                if (cols.length >= 4) {
+                    text += `${cols[1].innerText}\t${cols[2].innerText}\t${cols[3].innerText}\n`;
+                }
+            });
+            copyToClipboard(text);
+        }
+
+        // Copy NAT Rules
+        function copyNatRules() {
+            const text = document.getElementById('nat-rules-output').value;
+            copyToClipboard(text);
+        }
+
+        // Render Port Cards
+        function renderPortsGrid() {
+            const search = (document.getElementById('port-search-input')?.value || '').toLowerCase();
+            const grid = document.getElementById('ports-grid');
+
+            const filtered = PORT_DATABASE.filter(p => {
+                const matchCat = currentCategory === 'all' || p.category === currentCategory;
+                const matchSearch = p.name.toLowerCase().includes(search) || 
+                                    p.brand.toLowerCase().includes(search) || 
+                                    p.port.toString().includes(search) ||
+                                    p.desc.toLowerCase().includes(search);
+                return matchCat && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-8 text-center text-slate-500 text-xs">No se encontraron puertos con ese criterio de búsqueda.</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition shadow-sm">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-mono font-bold text-cyan-400 bg-cyan-950 border border-cyan-800/60 px-2 py-0.5 rounded">
+                                Puerto ${p.port} / ${p.protocol}
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-medium bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                                ${p.brand}
+                            </span>
+                        </div>
+                        <h4 class="text-sm font-bold text-white mb-1">${p.name}</h4>
+                        <p class="text-xs text-slate-400 mb-3">${p.desc}</p>
+                    </div>
+                    <div class="pt-2 border-t border-slate-900 text-[11px] text-amber-400/90 flex items-start gap-1.5">
+                        <i data-lucide="info" class="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-400"></i>
+                        <span>${p.tip}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function filterPorts() {
+            renderPortsGrid();
+        }
+
+        function filterPortCat(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.port-cat-btn').forEach(b => {
+                b.classList.remove('bg-cyan-950', 'text-cyan-400', 'border', 'border-cyan-700/60');
+                b.classList.add('bg-slate-800', 'text-slate-300');
+            });
+            const activeBtn = document.getElementById('btn-cat-' + cat);
+            activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+            activeBtn.classList.add('bg-cyan-950', 'text-cyan-400', 'border', 'border-cyan-700/60');
+            renderPortsGrid();
+        }
+
+        // Subnet Calculator Math
+        function calculateSubnet() {
+            const ipStr = document.getElementById('calc-ip-input').value.trim();
+            const cidr = parseInt(document.getElementById('calc-cidr-select').value, 10);
+            const ipInt = ipToInt(ipStr);
+
+            if (isNaN(ipInt) || ipStr.split('.').length !== 4) {
+                return;
+            }
+
+            const maskInt = cidr === 0 ? 0 : ((0xFFFFFFFF << (32 - cidr)) >>> 0);
+            const wildcardInt = (~maskInt) >>> 0;
+            const networkInt = (ipInt & maskInt) >>> 0;
+            const broadcastInt = (networkInt | wildcardInt) >>> 0;
+
+            const firstUsableInt = cidr >= 31 ? networkInt : networkInt + 1;
+            const lastUsableInt = cidr >= 31 ? broadcastInt : broadcastInt - 1;
+            const usableCount = cidr >= 31 ? (cidr === 31 ? 2 : 1) : Math.max(0, broadcastInt - networkInt - 1);
+
+            document.getElementById('sub-network-ip').innerText = intToIp(networkInt);
+            document.getElementById('sub-gateway-ip').innerText = intToIp(firstUsableInt);
+            document.getElementById('sub-mask-dec').innerText = intToIp(maskInt);
+            document.getElementById('sub-broadcast-ip').innerText = intToIp(broadcastInt);
+            document.getElementById('sub-usable-range').innerText = `${intToIp(firstUsableInt)} - ${intToIp(lastUsableInt)}`;
+            document.getElementById('sub-usable-count').innerText = `${usableCount} Dispositivos`;
+            document.getElementById('sub-wildcard').innerText = intToIp(wildcardInt);
+
+            checkIpInSubnet();
+        }
+
+        // Check if tested IP belongs to active subnet
+        function checkIpInSubnet() {
+            const ipStr = document.getElementById('calc-ip-input').value.trim();
+            const testIpStr = document.getElementById('calc-test-ip').value.trim();
+            const cidr = parseInt(document.getElementById('calc-cidr-select').value, 10);
+
+            const ipInt = ipToInt(ipStr);
+            const testInt = ipToInt(testIpStr);
+            const resultBox = document.getElementById('subnet-test-result');
+
+            if (isNaN(ipInt) || isNaN(testInt)) {
+                resultBox.className = "text-xs p-2.5 rounded-lg bg-red-950/60 border border-red-800 text-red-300";
+                resultBox.innerText = "Por favor ingresa direcciones IPv4 válidas.";
+                return;
+            }
+
+            const maskInt = ((0xFFFFFFFF << (32 - cidr)) >>> 0);
+            const networkInt = (ipInt & maskInt) >>> 0;
+            const broadcastInt = (networkInt | (~maskInt >>> 0)) >>> 0;
+            const testNetInt = (testInt & maskInt) >>> 0;
+
+            if (testNetInt === networkInt) {
+                if (testInt === networkInt) {
+                    resultBox.className = "text-xs p-2.5 rounded-lg bg-amber-950/60 border border-amber-800 text-amber-300 font-medium";
+                    resultBox.innerText = `⚠️ La IP ${testIpStr} es la Dirección de RED (Network IP). No asignable a equipos.`;
+                } else if (testInt === broadcastInt) {
+                    resultBox.className = "text-xs p-2.5 rounded-lg bg-amber-950/60 border border-amber-800 text-amber-300 font-medium";
+                    resultBox.innerText = `⚠️ La IP ${testIpStr} es la Dirección de BROADCAST. No asignable a equipos.`;
+                } else {
+                    resultBox.className = "text-xs p-2.5 rounded-lg bg-emerald-950/60 border border-emerald-800 text-emerald-300 font-medium";
+                    resultBox.innerText = `✅ ¡Correcto! La IP ${testIpStr} PERTENECE a esta subred y es una IP asignable válida.`;
+                }
+            } else {
+                resultBox.className = "text-xs p-2.5 rounded-lg bg-red-950/60 border border-red-800 text-red-300 font-medium";
+                resultBox.innerText = `❌ La IP ${testIpStr} NO pertenece a esta subred /${cidr}.`;
+            }
+        }
+
+        // Full Technical Report Generator
+        function generateFullReport() {
+            const client = document.getElementById('rep-client-name').value || 'Cliente';
+            const tech = document.getElementById('rep-tech-name').value || 'Técnico';
+            const notes = document.getElementById('rep-notes').value || 'N/A';
+
+            const startIp = document.getElementById('seq-start-ip').value;
+            const netIp = document.getElementById('sub-network-ip').innerText;
+            const maskDec = document.getElementById('sub-mask-dec').innerText;
+            const gateway = document.getElementById('sub-gateway-ip').innerText;
+            const cidr = document.getElementById('calc-cidr-select').value;
+
+            const rows = document.querySelectorAll('#seq-table-body tr');
+            let devListText = "";
+            rows.forEach((r, idx) => {
+                const cols = r.querySelectorAll('td');
+                if (cols.length >= 4) {
+                    devListText += `  🔹 ${cols[1].innerText} -> IP: ${cols[2].innerText} (${cols[3].innerText.replace(/<[^>]*>/g, '')})\n`;
+                }
+            });
+
+            const reportStr = 
+`📋 *FICHA TÉCNICA DE INSTALACIÓN & DIRECCIONAMIENTO IP*
+=========================================
+🏢 *PROYECTO:* ${client}
+👤 *TÉCNICO RESPONSABLE:* ${tech}
+📅 *FECHA DE ENTREGA:* ${new Date().toLocaleDateString('es-ES')}
+
+🌐 *PARÁMETROS DE RED LOCAL (LAN):*
+  • Red Subred: ${netIp} /${cidr}
+  • Máscara de Red: ${maskDec}
+  • Puerta de Enlace (Gateway): ${gateway}
+  • DNS Recomendados: 8.8.8.8 / 1.1.1.1
+
+📹 *DISPOSITIVOS ASIGNADOS & PUERTOS:*
+${devListText}
+📝 *NOTAS DE CAMPO:*
+  ${notes}
+
+=========================================
+NetPort Pro - Suite de Instalaciones`;
+
+            document.getElementById('report-text-output').value = reportStr;
+        }
+
+        // Copy functions
+        function copyReportWhatsApp() {
+            const text = document.getElementById('report-text-output').value;
+            copyToClipboard(text);
+        }
+
+        function copyReportCsv() {
+            const rows = document.querySelectorAll('#seq-table-body tr');
+            let csv = "ID,Equipo,IP_Local,Mapeo_Puertos\n";
+            rows.forEach(r => {
+                const cols = r.querySelectorAll('td');
+                if (cols.length >= 4) {
+                    csv += `"${cols[0].innerText}","${cols[1].innerText}","${cols[2].innerText}","${cols[3].innerText.replace(/<[^>]*>/g, '')}"\n`;
+                }
+            });
+            copyToClipboard(csv);
+        }
+
+        function exportQuickSummary() {
+            switchTab('report');
+            showToast("Informe listo para copiar");
+        }
+
+        // Generic Toast Notification
+        function showToast(message, isError = false) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold shadow-xl transition duration-300 transform translate-y-2 opacity-0 ${
+                isError ? 'bg-red-600 text-white' : 'bg-emerald-500 text-slate-950'
+            }`;
+            toast.innerHTML = `<i data-lucide="${isError ? 'alert-circle' : 'check-circle'}" class="w-4 h-4"></i> ${message}`;
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        // Robust Copy to Clipboard supporting frames
+        function copyToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast("¡Copiado al portapapeles!");
+                }).catch(() => {
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast("¡Copiado al portapapeles!");
+            } catch (err) {
+                showToast("Error al copiar texto", true);
+            }
+            document.body.removeChild(textArea);
+        }
+    </script>
+</body>
+</html>
