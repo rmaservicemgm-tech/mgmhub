@@ -6199,7 +6199,7 @@
     }
 
     // Actualizar burbujas de los iconos del home
-    const counts = { puntos: 0, premios: 0, agenda: 0, maestria: 0, promos: 0, rma: 0, rastreo: 0, magie: 0, toolbox: 0, fiesta: 0 };
+    const counts = { puntos: 0, premios: 0, agenda: 0, misiones: 0, maestria: 0, promos: 0, rma: 0, rastreo: 0, magie: 0, toolbox: 0, fiesta: 0 };
 
     const notifsActivas = state.notifications.filter(n => notifEnVentana(n));
     notifsActivas.forEach(n => {
@@ -6217,6 +6217,7 @@
         if (hasWord(/\b(maestr[ií]a|horas?\s+t[eé]cnicas?|horas?\s+de\s+experiencia|acreditaci[oó]n)\b/i)) seccion = 'maestria';
         else
         if (hasWord(/\b(rma|garant[ií]a|garantias|taller|reparaci[oó]n|reparar|equipo)\b/i)) seccion = 'rma';
+        else if (hasWord(/\b(misi[oó]n(?:es)?|encuestas?|visitas?\s+diarias?)\b/i)) seccion = 'misiones';
         else if (hasWord(/\b(punto|puntos|cumplea[nñ]os|redim|canje|canjear|saldo|acredit|ajuste)\b/i)) seccion = 'puntos';
         else if (hasWord(/\b(promo|oferta|descuento|rebaja|remate)\b/i)) seccion = 'promos';
         else if (hasWord(/\b(evento|webinar|curso|capacitaci[oó]n|charla|certificaci[oó]n)\b/i)) seccion = 'agenda';
