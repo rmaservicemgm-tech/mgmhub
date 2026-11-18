@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#f0f4f9">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="MGM Hub">
-  <link rel="manifest" href="manifest.json?v=production-preview-1">
+  <link rel="manifest" href="manifest.json?v=1">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
@@ -37,7 +37,7 @@
           document.documentElement.style.setProperty('--user-accent', storage.getItem('mgm_theme_beta_custom') || '#0ea5e9');
         }
       } catch (error) {
-        console.warn('[MGM Hub Temas Beta] No se pudo aplicar la apariencia guardada:', error);
+        console.warn('[MGM Hub] No se pudo aplicar la apariencia guardada:', error);
       }
     })();
   </script>
@@ -52,6 +52,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap">
   <link rel="stylesheet" href="styles.css?v=beta-10">
+  <link rel="stylesheet" href="responsive.css?v=1">
   <script src="theme-manager.js?v=1" defer></script>
   <!-- jsPDF para exportacion de cotizaciones desde la Calculadora de Almacenamiento -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -93,14 +94,14 @@
   <!-- Limpiar caché viejo al actualizar version -->
   <script>
     (function () {
-      var APP_VERSION = 'theme-beta-1';
-      var stored = localStorage.getItem('mgm_app_theme_beta_v');
+      var APP_VERSION = '51';
+      var stored = localStorage.getItem('mgm_app_v');
       if (stored !== APP_VERSION) {
-        localStorage.setItem('mgm_app_theme_beta_v', APP_VERSION);
+        localStorage.setItem('mgm_app_v', APP_VERSION);
         // Borrar solo cachés de MGM Hub, sin afectar al SDK de OneSignal.
         if ('caches' in window) {
           caches.keys().then(function (names) {
-            names.filter(function (name) { return name.indexOf('mgm-theme-beta-') === 0; })
+            names.filter(function (name) { return name.indexOf('mgm-toolbox-') === 0; })
               .forEach(function (name) { caches.delete(name); });
           });
         }
