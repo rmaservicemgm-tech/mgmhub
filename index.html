@@ -2601,7 +2601,7 @@
                             </div>
                             <div class="timeline-header">
                               <span class="timeline-estado">${h.estado || 'Actualización'}</span>
-                              <span class="timeline-fecha">${h.fecha || ''}</span>
+                              <span class="timeline-fecha">${h.fecha || ''}${h.tecnico ? `<br>por ${h.tecnico}` : ''}</span>
                             </div>
                             ${h.notas ? `<div class="timeline-notas">${h.notas}</div>` : ''}
                             ${h.precio ? `<div style="font-size:12px; color:#059669; font-weight:700; margin-top:4px;">Presupuesto: ${h.precio}</div>` : ''}

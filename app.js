@@ -8695,7 +8695,7 @@ window.closeReferralQRModal = function () {
                       </div>
                       <div class="timeline-header">
                         <span class="timeline-estado">${hInfo.label}</span>
-                        <span class="timeline-fecha">${h.fecha || ''}</span>
+                        <span class="timeline-fecha">${h.fecha || ''}${h.tecnico ? `<br>por ${h.tecnico}` : ''}</span>
                       </div>
                       ${h.notas ? `<div class="timeline-notas">${h.notas}</div>` : ''}
                     </div>`;
