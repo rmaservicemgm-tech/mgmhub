@@ -823,13 +823,16 @@
 
   window.switchMainTab = function (tabName) {
     const previousTab = state.activeTab;
-    document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const activeView = document.querySelector('.view-container.active');
+    if (activeView && activeView.id !== `view-${tabName}`) activeView.classList.remove('active');
+    const nav = document.querySelector('.bottom-nav');
+    const activeNavButton = nav && nav.querySelector('.nav-item.active');
+    if (activeNavButton) activeNavButton.classList.remove('active');
 
     const viewEl = document.getElementById(`view-${tabName}`);
     if (viewEl) viewEl.classList.add('active');
 
-    const navBtn = document.querySelector(`.nav-item[data-tab="${tabName}"]`);
+    const navBtn = nav && nav.querySelector(`.nav-item[data-tab="${tabName}"]`);
     if (navBtn) navBtn.classList.add('active');
 
     state.activeTab = tabName;
@@ -2190,7 +2193,7 @@
       if (item.titulo) {
         const titleEl = card.querySelector('.card-title');
         if (titleEl) {
-          const badgeSpan = titleEl.querySelector('span');
+          const badgeSpan = titleEl.querySelector('[data-home-card-badge]');
           if (badgeSpan) {
             titleEl.firstChild.textContent = item.titulo + ' ';
           } else {
@@ -2199,16 +2202,20 @@
         }
       }
 
-      if (item.badge) {
-        const titleEl = card.querySelector('.card-title');
-        if (titleEl) {
-          let badgeSpan = titleEl.querySelector('span');
+      const titleEl = card.querySelector('.card-title');
+      if (titleEl) {
+        let badgeSpan = titleEl.querySelector('[data-home-card-badge]');
+        const badgeText = String(item.badge || '').trim();
+        if (badgeText) {
           if (!badgeSpan) {
             badgeSpan = document.createElement('span');
+            badgeSpan.dataset.homeCardBadge = 'true';
             badgeSpan.style.cssText = 'font-size: 9.5px; background: #2563EB; color: white; padding: 1px 6px; border-radius: 6px; font-weight: 800; letter-spacing: 0.3px;';
             titleEl.appendChild(badgeSpan);
           }
-          badgeSpan.textContent = item.badge;
+          badgeSpan.textContent = badgeText;
+        } else if (badgeSpan) {
+          badgeSpan.remove();
         }
       }
     });

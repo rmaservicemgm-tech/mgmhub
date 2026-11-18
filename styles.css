@@ -174,10 +174,10 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
   background: none; border: none;
   color: var(--text-muted);
   cursor: pointer; padding: 10px 0;
-  transition: all 0.2s ease; position: relative;
+  transition: color 0.12s ease, background-color 0.12s ease; position: relative;
 }
 
-.nav-icon { font-size: 18px; transition: transform 0.2s, color 0.2s; }
+.nav-icon { font-size: 18px; transition: transform 0.12s ease, color 0.12s ease; }
 .nav-label { font-size: 10.5px; font-weight: 700; }
 
 .nav-item.nav-anim-pulse .nav-icon {
@@ -207,7 +207,7 @@ body { display: flex; flex-direction: column; min-height: 100dvh; }
    ========================================================================== */
 .view-container {
   display: none; flex: 1;
-  animation: viewIn 0.25s ease;
+  animation: viewIn 0.16s ease-out;
   padding-bottom: 24px;
 }
 .view-container.active { display: block; }
