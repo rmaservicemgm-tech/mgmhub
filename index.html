@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#f0f4f9">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="MGM Hub">
-  <link rel="manifest" href="manifest.json?v=1">
+  <link rel="manifest" href="manifest.json?v=2">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
@@ -52,7 +52,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap">
   <link rel="stylesheet" href="styles.css?v=beta-10">
-  <link rel="stylesheet" href="responsive.css?v=1">
+  <link rel="stylesheet" href="responsive.css?v=2">
   <script src="theme-manager.js?v=1" defer></script>
   <!-- jsPDF para exportacion de cotizaciones desde la Calculadora de Almacenamiento -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -94,7 +94,7 @@
   <!-- Limpiar caché viejo al actualizar version -->
   <script>
     (function () {
-      var APP_VERSION = '51';
+      var APP_VERSION = '52';
       var stored = localStorage.getItem('mgm_app_v');
       if (stored !== APP_VERSION) {
         localStorage.setItem('mgm_app_v', APP_VERSION);
@@ -3389,64 +3389,71 @@
     </main>
 
     <nav class="bottom-nav">
-      <button class="nav-item active" data-tab="home" onclick="switchMainTab('home')">
-        <i class="fa-solid fa-house nav-icon"></i>
-        <span class="nav-label">Inicio</span>
-      </button>
+      <div class="nav-items">
+        <button class="nav-item active" data-tab="home" onclick="switchMainTab('home')">
+          <i class="fa-solid fa-house nav-icon"></i>
+          <span class="nav-label">Inicio</span>
+        </button>
 
-      <button class="nav-item" data-tab="puntos" onclick="switchMainTab('puntos')">
-        <i class="fa-solid fa-coins nav-icon"></i>
-        <span class="nav-label">Puntos</span>
-      </button>
+        <button class="nav-item" data-tab="puntos" onclick="switchMainTab('puntos')">
+          <i class="fa-solid fa-coins nav-icon"></i>
+          <span class="nav-label">Puntos</span>
+        </button>
 
-      <button class="nav-item" data-tab="premios" onclick="switchMainTab('premios')">
-        <i class="fa-solid fa-gift nav-icon"></i>
-        <span class="nav-label">Premios</span>
-      </button>
+        <button class="nav-item" data-tab="premios" onclick="switchMainTab('premios')">
+          <i class="fa-solid fa-gift nav-icon"></i>
+          <span class="nav-label">Premios</span>
+        </button>
 
-      <button class="nav-item" data-tab="agenda" onclick="switchMainTab('agenda')">
-        <i class="fa-solid fa-calendar-days nav-icon"></i>
-        <span class="nav-label">Agenda</span>
-      </button>
+        <button class="nav-item" data-tab="agenda" onclick="switchMainTab('agenda')">
+          <i class="fa-solid fa-calendar-days nav-icon"></i>
+          <span class="nav-label">Agenda</span>
+        </button>
 
-      <button class="nav-item" data-tab="misiones" onclick="switchMainTab('misiones')">
-        <i class="fa-solid fa-bullseye nav-icon"></i>
-        <span class="nav-label">Misiones</span>
-      </button>
+        <button class="nav-item" data-tab="misiones" onclick="switchMainTab('misiones')">
+          <i class="fa-solid fa-bullseye nav-icon"></i>
+          <span class="nav-label">Misiones</span>
+        </button>
 
-      <button class="nav-item" data-tab="promos" onclick="switchMainTab('promos')">
-        <i class="fa-solid fa-fire nav-icon"></i>
-        <span class="nav-label">Promos</span>
-      </button>
+        <button class="nav-item" data-tab="promos" onclick="switchMainTab('promos')">
+          <i class="fa-solid fa-fire nav-icon"></i>
+          <span class="nav-label">Promos</span>
+        </button>
 
-      <button class="nav-item" data-tab="rma" onclick="switchMainTab('rma')">
-        <i class="fa-solid fa-rotate-left nav-icon"></i>
-        <span class="nav-label">Mi RMA</span>
-      </button>
+        <button class="nav-item" data-tab="rma" onclick="switchMainTab('rma')">
+          <i class="fa-solid fa-rotate-left nav-icon"></i>
+          <span class="nav-label">Mi RMA</span>
+        </button>
 
-      <button class="nav-item" data-tab="maestria" onclick="switchMainTab('maestria')">
-        <i class="fa-solid fa-award nav-icon"></i>
-        <span class="nav-label">Maestría</span>
-      </button>
+        <button class="nav-item" data-tab="maestria" onclick="switchMainTab('maestria')">
+          <i class="fa-solid fa-award nav-icon"></i>
+          <span class="nav-label">Maestría</span>
+        </button>
 
-      <button class="nav-item" data-tab="magie" onclick="openBot()">
-        <i class="fa-solid fa-robot nav-icon"></i>
-        <span class="nav-label">Magie</span>
-      </button>
+        <button class="nav-item" data-tab="magie" onclick="openBot()">
+          <i class="fa-solid fa-robot nav-icon"></i>
+          <span class="nav-label">Magie</span>
+        </button>
 
-      <button class="nav-item" data-tab="toolbox" onclick="switchMainTab('toolbox')">
-        <i class="fa-solid fa-toolbox nav-icon"></i>
-        <span class="nav-label">Toolbox</span>
-      </button>
+        <button class="nav-item" data-tab="toolbox" onclick="switchMainTab('toolbox')">
+          <i class="fa-solid fa-toolbox nav-icon"></i>
+          <span class="nav-label">Toolbox</span>
+        </button>
 
-      <button class="nav-item" data-tab="rastreo" onclick="switchMainTab('rastreo')">
-        <i class="fa-solid fa-box-open nav-icon"></i>
-        <span class="nav-label">Rastreo</span>
-      </button>
+        <button class="nav-item" data-tab="rastreo" onclick="switchMainTab('rastreo')">
+          <i class="fa-solid fa-box-open nav-icon"></i>
+          <span class="nav-label">Rastreo</span>
+        </button>
 
-      <button class="nav-item" data-tab="fiesta" onclick="initPartyMode()">
-        <i class="fa-solid fa-music nav-icon"></i>
-        <span class="nav-label">Fiesta</span>
+        <button class="nav-item" data-tab="fiesta" onclick="initPartyMode()">
+          <i class="fa-solid fa-music nav-icon"></i>
+          <span class="nav-label">Fiesta</span>
+        </button>
+      </div>
+      <button class="nav-item nav-settings-button" type="button" onclick="openSettingsModal()"
+        title="Configuración" aria-label="Abrir configuración">
+        <i class="fa-solid fa-gear nav-icon"></i>
+        <span class="nav-label">Configuración</span>
       </button>
     </nav>
 
@@ -3947,6 +3954,23 @@
           style="font-size: 18px; font-weight: 800; margin-bottom: 20px; color: var(--text-dark); border-bottom: 1px solid var(--border-light); padding-bottom: 12px; text-align: left;">
           <i class="fa-solid fa-gear" style="color: var(--text-muted); margin-right: 6px;"></i> Configuración
         </h4>
+
+        <div class="settings-section">
+          <h5 class="settings-subtitle">Pantalla</h5>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title"><i class="fa-solid fa-mobile-screen-button"
+                  style="width: 16px; text-align: center;"></i> Bloquear rotación</span>
+              <span class="setting-desc" id="set-orientation-lock-status" role="status" aria-live="polite">
+                Bloquea la orientación actual mientras la app está abierta.
+              </span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="set-orientation-lock" onchange="toggleScreenOrientationLock(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
 
         <div class="settings-section">
           <h5 class="settings-subtitle">Novedades</h5>
@@ -6515,7 +6539,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=beta-10"></script>
+  <script src="app.js?v=responsive-2"></script>
   <script src="netport-calculator.js?v=1"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->

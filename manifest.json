@@ -10,7 +10,7 @@
   },
   "background_color": "#f0f4f9",
   "theme_color": "#06244a",
-  "orientation": "portrait",
+  "orientation": "any",
   "shortcuts": [
     {
       "name": "MGM Puntos",

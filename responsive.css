@@ -1,5 +1,13 @@
 /* Responsive layouts. Mobile remains the untouched base stylesheet. */
 
+.nav-items {
+  display: contents;
+}
+
+.nav-settings-button {
+  display: none;
+}
+
 @media (min-width: 640px) and (min-height: 500px) and (orientation: portrait) {
   #app-root {
     width: 100%;
@@ -64,12 +72,39 @@
     max-width: none;
     height: calc(100dvh - 64px);
     padding: 10px 6px var(--safe-bottom);
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
     transform: none;
     border-top: 0;
     border-right: 1px solid var(--border-light);
     box-shadow: 2px 0 16px rgba(0, 33, 74, 0.06);
+  }
+
+  .nav-items {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 0;
+    padding-bottom: 62px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .nav-settings-button {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    min-height: 58px;
+    border-top: 1px solid var(--border-light);
+  }
+
+  .bottom-nav > .nav-settings-button {
+    position: absolute;
+    right: 6px;
+    bottom: var(--safe-bottom);
+    left: 6px;
+    width: auto;
   }
 
   .nav-item {
@@ -124,12 +159,28 @@
     padding: 16px 12px var(--safe-bottom);
   }
 
+  .nav-items {
+    padding-bottom: 50px;
+  }
+
   .nav-item {
     flex-direction: row;
     justify-content: flex-start;
     min-height: 46px;
     padding: 10px 14px;
     gap: 12px;
+  }
+
+  .nav-settings-button {
+    justify-content: flex-start;
+    min-height: 46px;
+    padding: 10px 14px;
+    gap: 12px;
+  }
+
+  .bottom-nav > .nav-settings-button {
+    right: 12px;
+    left: 12px;
   }
 
   .nav-item .nav-label {

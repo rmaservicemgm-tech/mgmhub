@@ -2147,6 +2147,7 @@
   window.applyHomeNavConfig = function (items) {
     const nav = document.querySelector('.bottom-nav');
     if (!nav || !Array.isArray(items)) return;
+    const navItems = nav.querySelector('.nav-items') || nav;
 
     const validTabs = new Set(['home', 'puntos', 'premios', 'agenda', 'misiones', 'promos', 'rma', 'maestria', 'magie', 'toolbox', 'rastreo', 'fiesta']);
     const ordered = items
@@ -2170,7 +2171,7 @@
         button.setAttribute('aria-label', item.etiqueta);
       }
 
-      if (visible) nav.appendChild(button);
+      if (visible) navItems.appendChild(button);
     });
 
     window.mgmHomeNavConfig = ordered;
@@ -5289,7 +5290,92 @@
     }
   };
 
+  let screenOrientationLockActive = false;
+  let screenOrientationLockUnsupported = false;
+
+  function getScreenOrientation() {
+    return window.screen && window.screen.orientation;
+  }
+
+  function syncScreenOrientationSetting() {
+    const toggle = document.getElementById('set-orientation-lock');
+    const status = document.getElementById('set-orientation-lock-status');
+    if (!toggle || !status) return;
+
+    const orientation = getScreenOrientation();
+    const supported = !screenOrientationLockUnsupported && orientation
+      && typeof orientation.lock === 'function'
+      && typeof orientation.unlock === 'function';
+
+    toggle.checked = screenOrientationLockActive;
+    toggle.disabled = !supported && !screenOrientationLockActive;
+    status.textContent = screenOrientationLockActive
+      ? 'Bloqueo activo para la orientación actual.'
+      : supported
+        ? 'Bloquea la orientación actual mientras la app está abierta.'
+        : 'Este navegador no permite bloquear la orientación desde la app.';
+  }
+
+  window.toggleScreenOrientationLock = async function (toggle) {
+    const status = document.getElementById('set-orientation-lock-status');
+    const orientation = getScreenOrientation();
+    if (!toggle || !status) return;
+
+    if (!toggle.checked) {
+      try {
+        if (orientation && typeof orientation.unlock === 'function') orientation.unlock();
+        screenOrientationLockActive = false;
+        syncScreenOrientationSetting();
+      } catch (error) {
+        toggle.checked = true;
+        status.textContent = 'No se pudo liberar la orientación. Inténtalo nuevamente.';
+        console.error('[MGM Hub] No se pudo liberar la orientación:', error);
+        if (typeof window.showToast === 'function') {
+          window.showToast('No se pudo liberar la orientación.', 'fa-solid fa-triangle-exclamation');
+        }
+      }
+      return;
+    }
+
+    if (!orientation || typeof orientation.lock !== 'function' || typeof orientation.unlock !== 'function') {
+      screenOrientationLockActive = false;
+      syncScreenOrientationSetting();
+      return;
+    }
+
+    const isLandscape = typeof orientation.type === 'string'
+      ? orientation.type.startsWith('landscape')
+      : window.matchMedia('(orientation: landscape)').matches;
+    const target = isLandscape ? 'landscape' : 'portrait';
+    toggle.disabled = true;
+    let unsupported = false;
+
+    try {
+      await orientation.lock(target);
+      screenOrientationLockActive = true;
+      toggle.checked = true;
+      status.textContent = `Rotación bloqueada en modo ${isLandscape ? 'horizontal' : 'vertical'}.`;
+    } catch (error) {
+      screenOrientationLockActive = false;
+      unsupported = !!error && error.name === 'NotSupportedError';
+      screenOrientationLockUnsupported = unsupported;
+      toggle.checked = false;
+      status.textContent = unsupported
+        ? 'Este navegador o dispositivo no admite bloquear la orientación.'
+        : error && error.name === 'SecurityError'
+          ? 'Instala y abre la app desde la pantalla de inicio para bloquear la orientación.'
+          : 'No se pudo bloquear la orientación. Inténtalo nuevamente.';
+      console.warn('[MGM Hub] No se pudo bloquear la orientación:', error);
+      if (typeof window.showToast === 'function') {
+        window.showToast('El navegador no permitió bloquear la orientación.', 'fa-solid fa-triangle-exclamation');
+      }
+    } finally {
+      toggle.disabled = unsupported;
+    }
+  };
+
   window.openSettingsModal = function () {
+    syncScreenOrientationSetting();
     const isAuthenticated = !!state.authUser;
     document.querySelectorAll('#modal-settings [data-settings-auth="true"]').forEach(section => {
       section.style.display = isAuthenticated ? '' : 'none';
