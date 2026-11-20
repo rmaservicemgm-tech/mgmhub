@@ -5601,6 +5601,14 @@
       return;
     }
 
+    const refreshButton = document.getElementById('telegram-refresh-button');
+    const originalButtonText = refreshButton ? refreshButton.textContent : '';
+    if (refreshButton) {
+      refreshButton.disabled = true;
+      refreshButton.textContent = 'Consultando...';
+    }
+    setTelegramStatus('Consultando el estado de Telegram...');
+
     try {
       const result = await requestTelegramBackend('telegram_status', {
         cedula: state.authUser.cedula,
@@ -5614,10 +5622,17 @@
         setTelegramStatus('Esperando que pulses Iniciar en el bot de Telegram.');
       } else {
         localStorage.removeItem('mgm_telegram_client_key_' + state.authUser.cedula);
+        setTelegramControlVisibility(false, false);
         setTelegramStatus('La vinculación venció. Solicita un nuevo código de verificación.');
       }
     } catch (error) {
+      console.error('[Telegram] No se pudo actualizar el estado de vinculación:', error);
       setTelegramStatus(error.message || 'No se pudo consultar la conexión de Telegram.', true);
+    } finally {
+      if (refreshButton) {
+        refreshButton.disabled = false;
+        refreshButton.textContent = originalButtonText || 'Actualizar';
+      }
     }
   };
 
