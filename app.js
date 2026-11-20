@@ -5376,6 +5376,12 @@
   };
 
   function initializeSettingsAccordions() {
+    const labsSection = document.getElementById('settings-mgm-labs');
+    const settingsFooter = document.getElementById('mgm-footer-container');
+    if (labsSection && settingsFooter && labsSection.parentElement === settingsFooter.parentElement) {
+      settingsFooter.parentElement.insertBefore(labsSection, settingsFooter);
+    }
+
     const sections = document.querySelectorAll('#modal-settings .settings-section');
     sections.forEach((section, index) => {
       if (section.dataset.settingsAccordionReady === 'true') return;
@@ -5440,6 +5446,50 @@
       if (panel) panel.hidden = true;
     });
   }
+
+  window.openDistributionModal = function() {
+    const status = document.getElementById('distribution-install-status');
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
+    if (status) {
+      status.textContent = isInstalled
+        ? 'MGM Hub ya está instalada en este dispositivo.'
+        : 'La instalación PWA está disponible desde los navegadores compatibles.';
+    }
+    openAppModal('modal-distribution');
+  };
+
+  window.installMgmHubPwa = async function() {
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
+    const status = document.getElementById('distribution-install-status');
+    if (isInstalled) {
+      if (status) status.textContent = 'MGM Hub ya está instalada en este dispositivo.';
+      return;
+    }
+
+    if (typeof window.triggerPwaInstall === 'function') {
+      const result = await window.triggerPwaInstall();
+      if (result !== null) return;
+    }
+    window.showDistributionInstructions('current');
+  };
+
+  window.showDistributionInstructions = function(platform) {
+    const status = document.getElementById('distribution-install-status');
+    if (!status) return;
+
+    const userAgent = navigator.userAgent || '';
+    let instructions = '';
+    if (platform === 'safari' || (/iphone|ipad|ipod/i.test(userAgent) && !window.MSStream)) {
+      instructions = 'En Safari, toca Compartir y selecciona “Añadir a pantalla de inicio”.';
+    } else if (platform === 'firefox' || /firefox/i.test(userAgent)) {
+      instructions = 'En Firefox móvil, abre el menú y selecciona “Instalar” o “Añadir a pantalla de inicio”.';
+    } else {
+      instructions = 'Abre el menú del navegador y selecciona “Instalar MGM Hub” o “Instalar esta página como aplicación”.';
+    }
+    status.textContent = instructions;
+  };
 
   window.openSettingsModal = function () {
     initializeSettingsAccordions();

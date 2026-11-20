@@ -4072,6 +4072,155 @@
         border-color: #0ea5e9;
         color: #0284c7;
       }
+
+      .distribution-open-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        min-height: 46px;
+        border: 0;
+        border-radius: 10px;
+        background: #38bdf8;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
+      .distribution-open-button:hover {
+        background: #0ea5e9;
+      }
+
+      .distribution-modal-card {
+        display: flex;
+        flex-direction: column;
+        max-width: 500px;
+        max-height: 92vh;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .distribution-modal-header {
+        position: relative;
+        flex: 0 0 auto;
+        padding: 22px 54px 16px 20px;
+        border-bottom: 1px solid var(--border-light);
+      }
+
+      .distribution-modal-header h3 {
+        margin: 0 0 6px;
+        color: var(--text-dark);
+        font-size: 22px;
+      }
+
+      .distribution-modal-header p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+
+      .distribution-modal-body {
+        min-height: 0;
+        padding: 6px 20px 22px;
+        overflow-y: auto;
+      }
+
+      .distribution-section {
+        margin-top: 18px;
+      }
+
+      .distribution-section-title {
+        margin: 0 0 10px;
+        color: var(--text-muted);
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .distribution-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .distribution-card {
+        display: flex;
+        min-width: 0;
+        min-height: 94px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 12px 8px;
+        border: 1px solid var(--border-light);
+        border-radius: 12px;
+        background: var(--bg-card-alt);
+        color: var(--text-body);
+        text-align: center;
+      }
+
+      button.distribution-card {
+        cursor: pointer;
+      }
+
+      button.distribution-card:not(:disabled):hover {
+        border-color: var(--user-accent, #38bdf8);
+        background: var(--bg-card);
+      }
+
+      .distribution-card:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+
+      .distribution-card i {
+        font-size: 22px;
+        color: var(--text-muted);
+      }
+
+      .distribution-card span {
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        overflow-wrap: anywhere;
+      }
+
+      .distribution-card small {
+        color: var(--text-muted);
+        font-size: 10px;
+      }
+
+      .distribution-card-wide {
+        grid-column: 1 / -1;
+      }
+
+      .distribution-install-status {
+        min-height: 18px;
+        margin: 10px 0 0;
+        color: var(--text-muted);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      @media (max-width: 360px) {
+        .distribution-modal-header {
+          padding-left: 16px;
+        }
+
+        .distribution-modal-body {
+          padding-right: 14px;
+          padding-left: 14px;
+        }
+
+        .distribution-grid {
+          gap: 8px;
+        }
+      }
     </style>
     <div class="app-modal" id="modal-settings" style="z-index: 10000;">
       <div class="modal-content-card">
@@ -4082,7 +4231,7 @@
         </h4>
 
         <div class="settings-section">
-          <h5 class="settings-subtitle">Pantalla</h5>
+          <h5 class="settings-subtitle">Pantalla y Widgets</h5>
           <div class="setting-row">
             <div class="setting-info">
               <span class="setting-title"><i class="fa-solid fa-mobile-screen-button"
@@ -4093,6 +4242,28 @@
             </div>
             <label class="toggle-switch">
               <input type="checkbox" id="set-orientation-lock" onchange="toggleScreenOrientationLock(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-row" data-settings-auth="true">
+            <div class="setting-info">
+              <span class="setting-title"><i class="fa-solid fa-cloud-sun"
+                  style="color:#0284c7; width: 16px; text-align: center;"></i> Widget de Clima</span>
+              <span class="setting-desc">Muestra temperatura y condición en la pantalla de inicio</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="set-widget-clima" onchange="toggleClimaWidget(this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-row" data-settings-auth="true">
+            <div class="setting-info">
+              <span class="setting-title"><i class="fa-solid fa-car-burst"
+                  style="color:#dc2626; width: 16px; text-align: center;"></i> Widget de Tráfico</span>
+              <span class="setting-desc">Muestra el estado del tráfico en tiempo real</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="set-widget-trafico" onchange="toggleTraficoWidget(this.checked)">
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -4321,33 +4492,6 @@
           </div>
         </div>
 
-        <div class="settings-section" data-settings-auth="true">
-          <h5 class="settings-subtitle">Pantalla & Widgets</h5>
-
-          <div class="setting-row">
-            <div class="setting-info">
-              <span class="setting-title"><i class="fa-solid fa-cloud-sun"
-                  style="color:#0284c7; width: 16px; text-align: center;"></i> Widget de Clima</span>
-              <span class="setting-desc">Muestra temperatura y condición en la pantalla de inicio</span>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="set-widget-clima" onchange="toggleClimaWidget(this.checked)">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <div class="setting-row">
-            <div class="setting-info">
-              <span class="setting-title"><i class="fa-solid fa-car-burst"
-                  style="color:#dc2626; width: 16px; text-align: center;"></i> Widget de Tráfico</span>
-              <span class="setting-desc">Muestra el estado del tráfico en tiempo real</span>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="set-widget-trafico" onchange="toggleTraficoWidget(this.checked)">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-        </div>
-
         <div class="settings-section appearance-settings-section">
           <h5 class="settings-subtitle"><i class="fa-solid fa-palette"></i> Apariencia</h5>
           <div class="appearance-mode-row">
@@ -4419,6 +4563,16 @@
           </div>
         </div>
 
+        <div class="settings-section" id="settings-distribution">
+          <h5 class="settings-subtitle"><i class="fa-solid fa-download"></i> Distribución</h5>
+          <p class="setting-desc" style="margin:0 0 12px;">
+            Instala MGM Hub o consulta las opciones disponibles para tus dispositivos.
+          </p>
+          <button class="distribution-open-button" type="button" onclick="openDistributionModal()">
+            <i class="fa-solid fa-download" aria-hidden="true"></i> Instalar aplicación
+          </button>
+        </div>
+
         <!-- CONTENEDOR ENCAPSULADO DEL FOOTER -->
         <div id="mgm-footer-container" style="text-align: center; margin-top: 24px; font-family: inherit;">
           <img src="https://mgmpty.odoo.com/web/image/68369-dbd5e226/Logo%20MGM.png" alt="MGM Hub"
@@ -4477,6 +4631,128 @@
         </div>
         <!-- FIN CONTENEDOR ENCAPSULADO -->
 
+      </div>
+    </div>
+
+    <div class="app-modal" id="modal-distribution" role="dialog" aria-modal="true"
+      aria-labelledby="distribution-modal-title">
+      <div class="modal-content-card distribution-modal-card">
+        <div class="distribution-modal-header">
+          <button class="modal-close-x" type="button" aria-label="Cerrar distribución"
+            onclick="closeAppModal('modal-distribution')">✕</button>
+          <h3 id="distribution-modal-title">Instalar MGM Hub</h3>
+          <p>Selecciona una plataforma para llevar MGM Hub contigo.</p>
+        </div>
+        <div class="distribution-modal-body">
+          <section class="distribution-section">
+            <h4 class="distribution-section-title">Navegadores (PWA)</h4>
+            <div class="distribution-grid">
+              <button class="distribution-card" type="button" onclick="installMgmHubPwa()">
+                <i class="fa-brands fa-chrome" aria-hidden="true"></i>
+                <span>CHROME</span>
+                <small>Instalar</small>
+              </button>
+              <button class="distribution-card" type="button"
+                onclick="showDistributionInstructions('safari')">
+                <i class="fa-brands fa-safari" aria-hidden="true"></i>
+                <span>SAFARI</span>
+                <small>Instrucciones</small>
+              </button>
+              <button class="distribution-card" type="button" onclick="installMgmHubPwa()">
+                <i class="fa-brands fa-edge" aria-hidden="true"></i>
+                <span>EDGE</span>
+                <small>Instalar</small>
+              </button>
+              <button class="distribution-card" type="button"
+                onclick="showDistributionInstructions('firefox')">
+                <i class="fa-brands fa-firefox-browser" aria-hidden="true"></i>
+                <span>FIREFOX</span>
+                <small>Instrucciones</small>
+              </button>
+            </div>
+            <p class="distribution-install-status" id="distribution-install-status" role="status"
+              aria-live="polite">La instalación PWA está disponible desde los navegadores compatibles.</p>
+          </section>
+
+          <section class="distribution-section">
+            <h4 class="distribution-section-title">Tiendas oficiales</h4>
+            <div class="distribution-grid">
+              <button class="distribution-card" type="button" disabled>
+                <i class="fa-brands fa-google-play" aria-hidden="true"></i>
+                <span>PLAY STORE</span>
+                <small>Próximamente</small>
+              </button>
+              <button class="distribution-card" type="button" disabled>
+                <i class="fa-brands fa-apple" aria-hidden="true"></i>
+                <span>APP STORE</span>
+                <small>Próximamente</small>
+              </button>
+              <button class="distribution-card" type="button" disabled>
+                <i class="fa-solid fa-store" aria-hidden="true"></i>
+                <span>APPGALLERY</span>
+                <small>Próximamente</small>
+              </button>
+              <button class="distribution-card" type="button" disabled>
+                <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i>
+                <span>GALAXY STORE</span>
+                <small>Próximamente</small>
+              </button>
+              <button class="distribution-card distribution-card-wide" type="button" disabled>
+                <i class="fa-brands fa-microsoft" aria-hidden="true"></i>
+                <span>MICROSOFT STORE</span>
+                <small>Próximamente</small>
+              </button>
+            </div>
+          </section>
+
+          <section class="distribution-section">
+            <h4 class="distribution-section-title">Descarga directa (Android)</h4>
+            <div class="distribution-grid">
+              <button class="distribution-card" type="button" disabled>
+                <i class="fa-solid fa-download" aria-hidden="true"></i>
+                <span>DESCARGAR APK</span>
+                <small>Próximamente</small>
+              </button>
+              <button class="distribution-card" type="button" disabled>
+                <i class="fa-solid fa-download" aria-hidden="true"></i>
+                <span>DESCARGAR AAB</span>
+                <small>Próximamente</small>
+              </button>
+            </div>
+          </section>
+
+          <section class="distribution-section">
+            <h4 class="distribution-section-title">Descarga directa (Windows)</h4>
+            <div class="distribution-grid">
+              <button class="distribution-card" type="button" disabled>
+                <i class="fa-solid fa-download" aria-hidden="true"></i>
+                <span>INSTALADOR (.EXE)</span>
+                <small>Próximamente</small>
+              </button>
+              <button class="distribution-card" type="button" disabled>
+                <i class="fa-solid fa-download" aria-hidden="true"></i>
+                <span>PORTABLE (.EXE)</span>
+                <small>Próximamente</small>
+              </button>
+              <button class="distribution-card distribution-card-wide" type="button" disabled>
+                <i class="fa-solid fa-download" aria-hidden="true"></i>
+                <span>VERSIÓN ZIP</span>
+                <small>Próximamente</small>
+              </button>
+            </div>
+          </section>
+
+          <section class="distribution-section">
+            <h4 class="distribution-section-title">Extensiones</h4>
+            <div class="distribution-grid">
+              <button class="distribution-card distribution-card-wide" type="button" disabled>
+                <i class="fa-solid fa-puzzle-piece" aria-hidden="true"></i>
+                <span>MGM HUB COMPANION (CHROME)</span>
+                <small>Próximamente</small>
+              </button>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
 
@@ -6792,7 +7068,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=responsive-6"></script>
+  <script src="app.js?v=responsive-8"></script>
   <script src="netport-calculator.js?v=1"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
@@ -6802,23 +7078,21 @@
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches
         || window.navigator.standalone === true;
 
-      if (isStandalone) return; // Si ya es webapp, no mostrar nada
-
-      // Si ya la ignoró, no mostrarla de nuevo
-      const skipped = localStorage.getItem('mgm_install_skipped');
-      if (skipped) return;
-
-      // Capturar el evento beforeinstallprompt (Android/Chrome)
       window._pwaInstallEvent = null;
       window.addEventListener('beforeinstallprompt', function (e) {
         e.preventDefault();
         window._pwaInstallEvent = e;
-        // Mostrar botón de instalación nativo
         const btn = document.getElementById('btn-install-app');
         if (btn) btn.style.display = 'flex';
         const iosHint = document.getElementById('install-ios-hint');
         if (iosHint) iosHint.style.display = 'none';
       });
+
+      if (isStandalone) return; // Si ya es webapp, no mostrar nada
+
+      // Si ya la ignoró, no mostrarla de nuevo
+      const skipped = localStorage.getItem('mgm_install_skipped');
+      if (skipped) return;
 
       // Detectar iOS (Safari) — no tiene beforeinstallprompt
       const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
@@ -6849,16 +7123,29 @@
       });
     })();
 
-    window.triggerPwaInstall = function () {
-      if (window._pwaInstallEvent) {
-        window._pwaInstallEvent.prompt();
-        window._pwaInstallEvent.userChoice.then(function (result) {
-          if (result.outcome === 'accepted') {
-            const overlay = document.getElementById('install-overlay');
-            if (overlay) overlay.style.display = 'none';
-          }
-          window._pwaInstallEvent = null;
-        });
+    window.triggerPwaInstall = async function () {
+      const installEvent = window._pwaInstallEvent;
+      if (!installEvent) return null;
+
+      try {
+        installEvent.prompt();
+        const result = await installEvent.userChoice;
+        const status = document.getElementById('distribution-install-status');
+        if (result.outcome === 'accepted') {
+          const overlay = document.getElementById('install-overlay');
+          if (overlay) overlay.style.display = 'none';
+          if (status) status.textContent = 'Instalación aceptada. MGM Hub quedará disponible en tu dispositivo.';
+          return true;
+        }
+        if (status) status.textContent = 'Instalación cancelada. Puedes intentarlo de nuevo cuando quieras.';
+        return false;
+      } catch (error) {
+        console.warn('[MGM Hub] No se pudo iniciar la instalación PWA:', error);
+        const status = document.getElementById('distribution-install-status');
+        if (status) status.textContent = 'No se pudo abrir la instalación automática. Usa las instrucciones de tu navegador.';
+        return false;
+      } finally {
+        window._pwaInstallEvent = null;
       }
     };
 
@@ -7068,7 +7355,6 @@
 
   <script>
     (function () {
-      let deferredPrompt;
       let timerRecordatorio = null;
       const pwaModal = document.getElementById('pwa-modal');
       const btnInstalar = document.getElementById('btn-instalar-app');
@@ -7110,19 +7396,17 @@
       window.addEventListener('beforeinstallprompt', (e) => {
         if (!esDispositivoMovil) return;
         e.preventDefault();
-        deferredPrompt = e;
+        window._pwaInstallEvent = e;
       });
 
       // Botón "Instalar WebApp"
       btnInstalar.addEventListener('click', async () => {
-        if (deferredPrompt) {
-          deferredPrompt.prompt();
-          const { outcome } = await deferredPrompt.userChoice;
-          if (outcome === 'accepted') {
+        if (window._pwaInstallEvent) {
+          const installed = await window.triggerPwaInstall();
+          if (installed) {
             pwaModal.style.display = 'none';
             if (timerRecordatorio) clearTimeout(timerRecordatorio);
           }
-          deferredPrompt = null;
         } else {
           // Guía para Safari en iOS u otros navegadores móviles
           alert('Para instalar:\n1. Toca el botón Compartir 📤 de tu navegador.\n2. Selecciona "Agregar a inicio" ➕.');
