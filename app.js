@@ -5382,12 +5382,51 @@
       settingsFooter.parentElement.insertBefore(labsSection, settingsFooter);
     }
 
+    const sectionDetails = {
+      'Pantalla y Widgets': {
+        icon: 'fa-mobile-screen-button',
+        summary: 'Preferencias de pantalla y widgets del inicio',
+      },
+      'Novedades': {
+        icon: 'fa-bullhorn',
+        summary: 'Activa o desactiva la burbuja de novedades MGM',
+      },
+      'Notificaciones Push': {
+        icon: 'fa-bell',
+        summary: 'Configura avisos de MGM y de este dispositivo',
+      },
+      'MGM Labs': {
+        icon: 'fa-flask',
+        summary: 'Integraciones opcionales, como Telegram',
+      },
+      'Apariencia': {
+        icon: 'fa-palette',
+        summary: 'Personaliza el tema y los colores de la aplicación',
+      },
+      'Mi Cuenta': {
+        icon: 'fa-circle-user',
+        summary: 'Actualiza tu correo electrónico y teléfono',
+      },
+      'Privacidad y Sesión': {
+        icon: 'fa-lock',
+        summary: 'Cierra sesión o limpia el caché de la aplicación',
+      },
+      'Distribución': {
+        icon: 'fa-download',
+        summary: 'Instala MGM Hub o consulta las plataformas disponibles',
+      },
+    };
     const sections = document.querySelectorAll('#modal-settings .settings-section');
     sections.forEach((section, index) => {
       if (section.dataset.settingsAccordionReady === 'true') return;
 
       const heading = section.firstElementChild;
       if (!heading || !heading.classList.contains('settings-subtitle')) return;
+      const title = heading.textContent.trim();
+      const details = sectionDetails[title] || {
+        icon: 'fa-gear',
+        summary: 'Opciones de configuración',
+      };
 
       const panel = document.createElement('div');
       panel.className = 'settings-accordion-panel';
@@ -5402,15 +5441,23 @@
       trigger.setAttribute('aria-expanded', 'false');
       trigger.setAttribute('aria-controls', panel.id);
 
-      const label = document.createElement('span');
-      label.className = 'settings-accordion-label';
-      while (heading.firstChild) label.appendChild(heading.firstChild);
-      trigger.appendChild(label);
+      const icon = document.createElement('i');
+      icon.className = 'fa-solid ' + details.icon + ' settings-accordion-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      trigger.appendChild(icon);
 
-      const chevron = document.createElement('i');
-      chevron.className = 'fa-solid fa-chevron-down settings-accordion-chevron';
-      chevron.setAttribute('aria-hidden', 'true');
-      trigger.appendChild(chevron);
+      const copy = document.createElement('span');
+      copy.className = 'settings-accordion-copy';
+      const titleElement = document.createElement('span');
+      titleElement.className = 'settings-accordion-title';
+      titleElement.textContent = title;
+      const summary = document.createElement('span');
+      summary.className = 'setting-desc';
+      summary.textContent = details.summary;
+      copy.append(titleElement, summary);
+      trigger.appendChild(copy);
+
+      heading.textContent = '';
       heading.appendChild(trigger);
 
       let child = heading.nextSibling;

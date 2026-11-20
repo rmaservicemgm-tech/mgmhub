@@ -3804,12 +3804,10 @@
       }
 
       .settings-section {
-        margin-bottom: 10px;
+        margin-bottom: 2px;
+        padding-bottom: 2px;
         text-align: left;
-        border: 1px solid var(--border-light, #e2e8f0);
-        border-radius: 12px;
-        background: var(--bg-card, #fff);
-        overflow: hidden;
+        border-bottom: 1px solid var(--border-light, #e2e8f0);
       }
 
       .settings-subtitle {
@@ -3818,21 +3816,18 @@
 
       .settings-accordion-trigger {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 16px;
         width: 100%;
-        padding: 14px 16px;
+        padding: 14px 10px;
         border: 0;
         background: transparent;
-        color: var(--primary-blue, #00214a);
+        color: var(--text-dark, #1e293b);
         font: inherit;
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 0.05em;
         text-align: left;
-        text-transform: uppercase;
         cursor: pointer;
+        border-radius: 10px;
       }
 
       .settings-accordion-trigger:hover {
@@ -3841,33 +3836,58 @@
 
       .settings-accordion-trigger:focus-visible {
         outline: 2px solid var(--primary-blue, #0ea5e9);
-        outline-offset: -3px;
+        outline-offset: -2px;
         border-radius: 10px;
       }
 
-      .settings-accordion-label {
+      .settings-accordion-icon {
+        flex: 0 0 24px;
+        width: 24px;
+        margin-top: 2px;
+        color: var(--text-dark, #1e293b);
+        font-size: 21px;
+        text-align: center;
+      }
+
+      .settings-accordion-copy {
         display: flex;
-        align-items: center;
-        gap: 8px;
+        flex: 1;
+        min-width: 0;
+        flex-direction: column;
+        gap: 4px;
       }
 
-      .settings-accordion-chevron {
-        flex: 0 0 auto;
-        font-size: 12px;
-        transition: transform 0.2s ease;
+      .settings-accordion-title {
+        display: block;
+        color: var(--text-dark, #1e293b);
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 1.25;
       }
 
-      .settings-accordion-trigger[aria-expanded="true"] .settings-accordion-chevron {
-        transform: rotate(180deg);
+      .settings-accordion-copy > .setting-desc {
+        font-size: 13px;
+        line-height: 1.35;
       }
 
       .settings-accordion-panel {
-        padding: 2px 16px 12px;
-        border-top: 1px solid var(--border-light, #e2e8f0);
+        padding: 2px 8px 12px 50px;
       }
 
       .settings-accordion-panel[hidden] {
         display: none;
+      }
+
+      @media (max-width: 480px) {
+        .settings-accordion-trigger {
+          gap: 14px;
+          padding: 13px 6px;
+        }
+
+        .settings-accordion-panel {
+          padding-right: 4px;
+          padding-left: 44px;
+        }
       }
 
       .setting-row {
@@ -7068,7 +7088,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=responsive-8"></script>
+  <script src="app.js?v=responsive-9"></script>
   <script src="netport-calculator.js?v=1"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
