@@ -5375,7 +5375,75 @@
     }
   };
 
+  function initializeSettingsAccordions() {
+    const sections = document.querySelectorAll('#modal-settings .settings-section');
+    sections.forEach((section, index) => {
+      if (section.dataset.settingsAccordionReady === 'true') return;
+
+      const heading = section.firstElementChild;
+      if (!heading || !heading.classList.contains('settings-subtitle')) return;
+
+      const panel = document.createElement('div');
+      panel.className = 'settings-accordion-panel';
+      panel.id = section.id
+        ? section.id + '-panel'
+        : 'settings-accordion-panel-' + (index + 1);
+      panel.hidden = true;
+
+      const trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'settings-accordion-trigger';
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.setAttribute('aria-controls', panel.id);
+
+      const label = document.createElement('span');
+      label.className = 'settings-accordion-label';
+      while (heading.firstChild) label.appendChild(heading.firstChild);
+      trigger.appendChild(label);
+
+      const chevron = document.createElement('i');
+      chevron.className = 'fa-solid fa-chevron-down settings-accordion-chevron';
+      chevron.setAttribute('aria-hidden', 'true');
+      trigger.appendChild(chevron);
+      heading.appendChild(trigger);
+
+      let child = heading.nextSibling;
+      while (child) {
+        const next = child.nextSibling;
+        panel.appendChild(child);
+        child = next;
+      }
+      section.appendChild(panel);
+      section.dataset.settingsAccordionReady = 'true';
+      trigger.addEventListener('click', function() {
+        setSettingsAccordion(section, trigger.getAttribute('aria-expanded') !== 'true');
+      });
+    });
+  }
+
+  function setSettingsAccordion(section, expanded) {
+    const trigger = section && section.querySelector('.settings-accordion-trigger');
+    if (!trigger) return;
+
+    document.querySelectorAll('#modal-settings .settings-accordion-trigger').forEach(button => {
+      const panel = document.getElementById(button.getAttribute('aria-controls'));
+      const isExpanded = button === trigger && expanded;
+      button.setAttribute('aria-expanded', String(isExpanded));
+      if (panel) panel.hidden = !isExpanded;
+    });
+  }
+
+  function collapseSettingsAccordions() {
+    document.querySelectorAll('#modal-settings .settings-accordion-trigger').forEach(button => {
+      button.setAttribute('aria-expanded', 'false');
+      const panel = document.getElementById(button.getAttribute('aria-controls'));
+      if (panel) panel.hidden = true;
+    });
+  }
+
   window.openSettingsModal = function () {
+    initializeSettingsAccordions();
+    collapseSettingsAccordions();
     syncScreenOrientationSetting();
     const isAuthenticated = !!state.authUser;
     document.querySelectorAll('#modal-settings [data-settings-auth="true"]').forEach(section => {
@@ -5444,6 +5512,8 @@
   function scrollTelegramVerificationIntoView() {
     const verificationGroup = document.getElementById('telegram-verification-group');
     if (!verificationGroup) return;
+    const settingsSection = verificationGroup.closest('.settings-section');
+    if (settingsSection) setSettingsAccordion(settingsSection, true);
     window.requestAnimationFrame(function() {
       verificationGroup.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       const codeInput = document.getElementById('telegram-link-code');
