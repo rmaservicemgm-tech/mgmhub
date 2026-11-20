@@ -113,6 +113,7 @@
 
     // 6. NOTIFICACIONES & TRACKING
     NOTIFS_GAS_URL: 'https://script.google.com/macros/s/AKfycby8EOl7-hZ1Q8rvPCjFB2ItFrRKqwVmDoPJrhX3sM_3-O8xeoWmuZ0RxbEgNUjLN_6dfA/exec',
+    TELEGRAM_LABS_GAS_URL: 'https://script.google.com/macros/s/AKfycby8EOl7-hZ1Q8rvPCjFB2ItFrRKqwVmDoPJrhX3sM_3-O8xeoWmuZ0RxbEgNUjLN_6dfA/exec',
 
     // 7. CATÁLOGO DE PREMIOS & CANJES
     PREMIOS_GAS_URL: 'https://script.google.com/macros/s/AKfycbwV90SCVdMrMgE1Vlev3rdpcqMJlVwCV5du_MGJ-BtV5Di8LMY9UroYD7dXhWBXyI2yGw/exec',
@@ -5398,9 +5399,224 @@
       if (chkEncuestas) chkEncuestas.checked = pref.encuestas !== false;
 
       refreshDevicePushSetting();
+      refreshTelegramStatus();
     }
     if (typeof window.syncMgmThemeControls === 'function') window.syncMgmThemeControls();
     openAppModal('modal-settings');
+  };
+
+  function getTelegramClientKey() {
+    if (!state.authUser || !state.authUser.cedula) return '';
+    return localStorage.getItem('mgm_telegram_client_key_' + state.authUser.cedula) || '';
+  }
+
+  async function requestTelegramBackend(action, payload) {
+    if (!CFG.TELEGRAM_LABS_GAS_URL || CFG.TELEGRAM_LABS_GAS_URL === 'URL_TELEGRAM_LABS_GAS_PENDIENTE') {
+      throw new Error('El backend de Telegram Labs aún no está desplegado.');
+    }
+
+    const response = await fetch(CFG.TELEGRAM_LABS_GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ action: action }, payload || {}))
+    });
+    if (!response.ok) throw new Error('El backend respondió HTTP ' + response.status + '.');
+
+    const result = await response.json();
+    if (!result || !result.success) {
+      throw new Error(result && result.message ? result.message : 'No se pudo completar la acción de Telegram.');
+    }
+    return result;
+  }
+
+  function setTelegramStatus(message, isError) {
+    const status = document.getElementById('telegram-link-status');
+    if (!status) return;
+    status.textContent = message;
+    status.style.color = isError ? '#dc2626' : '';
+  }
+
+  function setTelegramControlVisibility(connected, pending) {
+    const preferences = document.getElementById('telegram-preferences');
+    const verificationGroup = document.getElementById('telegram-verification-group');
+    const disconnectRow = document.getElementById('telegram-disconnect-row');
+    const openBotRow = document.getElementById('telegram-open-bot-row');
+    const refreshRow = document.getElementById('telegram-refresh-row');
+    const sendCodeButton = document.getElementById('telegram-send-code');
+    const verifyCodeButton = document.getElementById('telegram-verify-code');
+    const codeInput = document.getElementById('telegram-link-code');
+
+    if (preferences) preferences.disabled = !connected;
+    if (verificationGroup) verificationGroup.style.display = connected || pending ? 'none' : '';
+    if (disconnectRow) disconnectRow.style.display = connected ? 'flex' : 'none';
+    if (openBotRow) openBotRow.style.display = pending ? 'flex' : 'none';
+    if (refreshRow) refreshRow.style.display = pending ? 'flex' : 'none';
+    if (sendCodeButton) sendCodeButton.hidden = connected;
+    if (verifyCodeButton) verifyCodeButton.hidden = true;
+    if (codeInput) codeInput.hidden = true;
+  }
+
+  function applyTelegramSettings(settings) {
+    const controls = {
+      enabled: 'telegram-pref-enabled',
+      global: 'telegram-pref-global',
+      puntos: 'telegram-pref-puntos',
+      rma: 'telegram-pref-rma',
+      rastreo: 'telegram-pref-rastreo',
+      promos: 'telegram-pref-promos',
+      agenda: 'telegram-pref-agenda',
+      encuestas: 'telegram-pref-encuestas',
+      otros: 'telegram-pref-otros'
+    };
+    Object.keys(controls).forEach(function(key) {
+      const input = document.getElementById(controls[key]);
+      if (input) input.checked = !!settings[key];
+    });
+  }
+
+  window.startTelegramLink = async function () {
+    if (!state.authUser || !state.authUser.cedula) return;
+    const button = document.getElementById('telegram-send-code');
+    const codeInput = document.getElementById('telegram-link-code');
+    const verifyButton = document.getElementById('telegram-verify-code');
+    if (button) button.disabled = true;
+
+    try {
+      const result = await requestTelegramBackend('telegram_start_link', {
+        cedula: state.authUser.cedula
+      });
+      if (codeInput) {
+        codeInput.hidden = false;
+        codeInput.value = '';
+        codeInput.focus();
+      }
+      if (verifyButton) verifyButton.hidden = false;
+      setTelegramStatus(result.message || 'Revisa el correo registrado en tu cuenta MGM.');
+    } catch (error) {
+      setTelegramStatus(error.message || 'No se pudo enviar el código de verificación.', true);
+    } finally {
+      if (button) button.disabled = false;
+    }
+  };
+
+  window.verifyTelegramLink = async function () {
+    if (!state.authUser || !state.authUser.cedula) return;
+    const codeInput = document.getElementById('telegram-link-code');
+    const code = codeInput ? codeInput.value.trim() : '';
+    const verifyButton = document.getElementById('telegram-verify-code');
+    if (!/^\d{6}$/.test(code)) {
+      setTelegramStatus('Ingresa el código de seis dígitos que recibiste por correo.', true);
+      return;
+    }
+    if (verifyButton) verifyButton.disabled = true;
+
+    try {
+      const result = await requestTelegramBackend('telegram_verify_link', {
+        cedula: state.authUser.cedula,
+        code: code
+      });
+      const botUrl = new URL(result.botUrl);
+      if (botUrl.protocol !== 'https:' || botUrl.hostname !== 't.me') {
+        throw new Error('El backend devolvió un enlace de Telegram inválido.');
+      }
+      localStorage.setItem(
+        'mgm_telegram_client_key_' + state.authUser.cedula,
+        result.clientKey
+      );
+      const link = document.getElementById('telegram-open-bot');
+      const openBotRow = document.getElementById('telegram-open-bot-row');
+      const refreshRow = document.getElementById('telegram-refresh-row');
+      const verificationGroup = document.getElementById('telegram-verification-group');
+      if (link) link.href = botUrl.toString();
+      if (openBotRow) openBotRow.style.display = 'flex';
+      if (refreshRow) refreshRow.style.display = 'flex';
+      if (verificationGroup) verificationGroup.style.display = 'none';
+      if (codeInput) codeInput.hidden = true;
+      if (verifyButton) verifyButton.hidden = true;
+      setTelegramStatus('Correo verificado. Abre el bot y pulsa Iniciar para completar la conexión.');
+    } catch (error) {
+      setTelegramStatus(error.message || 'No se pudo verificar el código.', true);
+    } finally {
+      if (verifyButton) verifyButton.disabled = false;
+    }
+  };
+
+  window.refreshTelegramStatus = async function () {
+    if (!state.authUser || !state.authUser.cedula) return;
+    const clientKey = getTelegramClientKey();
+    if (!clientKey) {
+      setTelegramControlVisibility(false, false);
+      setTelegramStatus('Conecta tu cuenta mediante el código enviado a tu correo.');
+      return;
+    }
+
+    try {
+      const result = await requestTelegramBackend('telegram_status', {
+        cedula: state.authUser.cedula,
+        clientKey: clientKey
+      });
+      setTelegramControlVisibility(!!result.connected, !!result.pending);
+      if (result.connected) {
+        applyTelegramSettings(result.settings || {});
+        setTelegramStatus('Telegram está vinculado a tu cuenta MGM.');
+      } else if (result.pending) {
+        setTelegramStatus('Esperando que pulses Iniciar en el bot de Telegram.');
+      } else {
+        localStorage.removeItem('mgm_telegram_client_key_' + state.authUser.cedula);
+        setTelegramStatus('La vinculación venció. Solicita un nuevo código de verificación.');
+      }
+    } catch (error) {
+      setTelegramStatus(error.message || 'No se pudo consultar la conexión de Telegram.', true);
+    }
+  };
+
+  window.saveTelegramSettings = async function () {
+    if (!state.authUser || !state.authUser.cedula) return;
+    const fieldset = document.getElementById('telegram-preferences');
+    const clientKey = getTelegramClientKey();
+    if (!fieldset || fieldset.disabled || !clientKey) return;
+
+    const keys = ['enabled', 'global', 'puntos', 'rma', 'rastreo', 'promos', 'agenda', 'encuestas', 'otros'];
+    const settings = {};
+    keys.forEach(function(key) {
+      const input = document.getElementById('telegram-pref-' + key);
+      settings[key] = !!(input && input.checked);
+    });
+    fieldset.disabled = true;
+
+    try {
+      const result = await requestTelegramBackend('telegram_save_settings', {
+        cedula: state.authUser.cedula,
+        clientKey: clientKey,
+        settings: settings
+      });
+      applyTelegramSettings(result.settings || settings);
+      fieldset.disabled = false;
+      setTelegramStatus('Preferencias de Telegram guardadas.');
+    } catch (error) {
+      setTelegramStatus(error.message || 'No se pudieron guardar las preferencias.', true);
+      await refreshTelegramStatus();
+    }
+  };
+
+  window.disconnectTelegram = async function () {
+    if (!state.authUser || !state.authUser.cedula) return;
+    if (!window.confirm('¿Desconectar Telegram de tu cuenta MGM?')) return;
+    const clientKey = getTelegramClientKey();
+
+    try {
+      await requestTelegramBackend('telegram_unlink', {
+        cedula: state.authUser.cedula,
+        clientKey: clientKey
+      });
+      localStorage.removeItem('mgm_telegram_client_key_' + state.authUser.cedula);
+      setTelegramControlVisibility(false, false);
+      setTelegramStatus('Telegram se desconectó de tu cuenta.');
+      const codeInput = document.getElementById('telegram-link-code');
+      if (codeInput) codeInput.hidden = false;
+    } catch (error) {
+      setTelegramStatus(error.message || 'No se pudo desconectar Telegram.', true);
+    }
   };
 
   window.updateUserPreferences = function () {
@@ -5430,6 +5646,9 @@
   function clearClientSessionData() {
     state.sessionToken = (state.sessionToken || 0) + 1;
     state.loggedOut = true;
+    if (state.authUser && state.authUser.cedula) {
+      localStorage.removeItem('mgm_telegram_client_key_' + state.authUser.cedula);
+    }
     state.authUser = null;
     logoutOneSignalIdentity();
     logoutOneSignalIdentity();

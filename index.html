@@ -94,7 +94,7 @@
   <!-- Limpiar caché viejo al actualizar version -->
   <script>
     (function () {
-      var APP_VERSION = '52';
+      var APP_VERSION = '53';
       var stored = localStorage.getItem('mgm_app_v');
       if (stored !== APP_VERSION) {
         localStorage.setItem('mgm_app_v', APP_VERSION);
@@ -3946,6 +3946,41 @@
         border-color: #0ea5e9;
         color: #0284c7;
       }
+
+      .settings-section .btn-sm {
+        padding: 8px 12px;
+        border: 1px solid var(--border-light, #e2e8f0);
+        border-radius: 8px;
+        background: var(--bg-card-alt, #f1f5f9);
+        color: var(--text-dark, #1e293b);
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .settings-section .btn-sm:disabled {
+        cursor: wait;
+        opacity: 0.6;
+      }
+
+      .settings-labs-action {
+        padding: 8px 12px;
+        border: 1px solid var(--border-light, #e2e8f0);
+        border-radius: 8px;
+        background: var(--bg-card-alt, #f1f5f9);
+        color: var(--text-dark, #1e293b);
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      .settings-labs-action:hover {
+        background: #e0f2fe;
+        border-color: #0ea5e9;
+        color: #0284c7;
+      }
     </style>
     <div class="app-modal" id="modal-settings" style="z-index: 10000;">
       <div class="modal-content-card">
@@ -4065,6 +4100,132 @@
               <input type="checkbox" id="set-notif-encuestas" onchange="updateUserPreferences()">
               <span class="toggle-slider"></span>
             </label>
+          </div>
+        </div>
+
+        <div class="settings-section" data-settings-auth="true" id="settings-mgm-labs">
+          <h5 class="settings-subtitle"><i class="fa-solid fa-flask"></i> MGM Labs</h5>
+          <p class="setting-desc" style="margin:0 0 12px;">
+            Prueba integraciones opcionales. Telegram enviará tus avisos en un chat privado con el bot.
+          </p>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title"><i class="fa-brands fa-telegram"
+                  style="color:#229ED9; width:16px; text-align:center;"></i> Telegram</span>
+              <span class="setting-desc" id="telegram-link-status" role="status" aria-live="polite">
+                Verificando estado de conexión...
+              </span>
+            </div>
+          </div>
+
+          <div class="setting-input-group" id="telegram-verification-group">
+            <label for="telegram-link-code">Vinculación segura por correo</label>
+            <div class="input-with-action">
+              <input type="text" id="telegram-link-code" inputmode="numeric" autocomplete="one-time-code"
+                maxlength="6" pattern="[0-9]{6}" placeholder="Código de 6 dígitos" aria-label="Código de verificación" hidden>
+              <button class="btn-sm" type="button" id="telegram-send-code" onclick="startTelegramLink()">Enviar código</button>
+              <button class="btn-sm" type="button" id="telegram-verify-code" onclick="verifyTelegramLink()" hidden>Verificar</button>
+            </div>
+            <span class="setting-desc">El código se envía al correo registrado en tu cuenta MGM y vence en 10 minutos.</span>
+          </div>
+
+          <div class="setting-row" id="telegram-open-bot-row" style="display:none;">
+            <div class="setting-info">
+              <span class="setting-title">Termina la conexión en Telegram</span>
+              <span class="setting-desc">Abre el bot y pulsa Iniciar; luego vuelve aquí para confirmar.</span>
+            </div>
+            <a class="settings-labs-action" id="telegram-open-bot" href="#" target="_blank" rel="noopener noreferrer">Abrir bot</a>
+          </div>
+
+          <div class="setting-row" id="telegram-refresh-row" style="display:none;">
+            <div class="setting-info">
+              <span class="setting-title">¿Ya pulsaste Iniciar?</span>
+              <span class="setting-desc">Actualiza el estado de la conexión.</span>
+            </div>
+            <button class="btn-sm" type="button" onclick="refreshTelegramStatus()">Actualizar</button>
+          </div>
+
+          <fieldset id="telegram-preferences" disabled style="border:0; margin:0; padding:0;">
+            <div class="setting-row">
+              <div class="setting-info">
+                <span class="setting-title">Recibir notificaciones por Telegram</span>
+                <span class="setting-desc">Control principal de esta integración.</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="telegram-pref-enabled" onchange="saveTelegramSettings()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info"><span class="setting-title">Avisos globales</span></div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="telegram-pref-global" onchange="saveTelegramSettings()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><span class="setting-title">Puntos MGM</span></div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="telegram-pref-puntos" onchange="saveTelegramSettings()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><span class="setting-title">Estado de RMA</span></div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="telegram-pref-rma" onchange="saveTelegramSettings()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><span class="setting-title">Rastreo de pedidos</span></div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="telegram-pref-rastreo" onchange="saveTelegramSettings()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><span class="setting-title">Promociones</span></div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="telegram-pref-promos" onchange="saveTelegramSettings()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><span class="setting-title">Agenda y cursos</span></div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="telegram-pref-agenda" onchange="saveTelegramSettings()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><span class="setting-title">Encuestas</span></div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="telegram-pref-encuestas" onchange="saveTelegramSettings()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><span class="setting-title">Otras notificaciones</span></div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="telegram-pref-otros" onchange="saveTelegramSettings()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="setting-row" id="telegram-disconnect-row" style="display:none;">
+            <div class="setting-info">
+              <span class="setting-title">Desconectar Telegram</span>
+              <span class="setting-desc">Dejarás de recibir avisos en este chat.</span>
+            </div>
+            <button class="btn-sm" type="button" onclick="disconnectTelegram()">Desconectar</button>
+          </div>
+
+          <div class="setting-row" style="border-bottom:0;">
+            <span class="setting-desc">Más herramientas experimentales se podrán agregar aquí.</span>
           </div>
         </div>
 
@@ -6539,7 +6700,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=responsive-2"></script>
+  <script src="app.js?v=responsive-3"></script>
   <script src="netport-calculator.js?v=1"></script>
 
   <!-- LÓGICA DE INSTALACIÓN PWA -->
