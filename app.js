@@ -5403,11 +5403,52 @@
     }
     if (typeof window.syncMgmThemeControls === 'function') window.syncMgmThemeControls();
     openAppModal('modal-settings');
+    if (isAuthenticated && getTelegramCodeExpiry()) {
+      scrollTelegramVerificationIntoView();
+    }
   };
+
+  const TELEGRAM_CODE_TTL_MS = 10 * 60 * 1000;
 
   function getTelegramClientKey() {
     if (!state.authUser || !state.authUser.cedula) return '';
     return localStorage.getItem('mgm_telegram_client_key_' + state.authUser.cedula) || '';
+  }
+
+  function getTelegramCodeStorageKey() {
+    if (!state.authUser || !state.authUser.cedula) return '';
+    return 'mgm_telegram_code_expires_' + state.authUser.cedula;
+  }
+
+  function getTelegramCodeExpiry() {
+    const key = getTelegramCodeStorageKey();
+    if (!key) return 0;
+    const expiresAt = Number(localStorage.getItem(key) || 0);
+    if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
+      localStorage.removeItem(key);
+      return 0;
+    }
+    return expiresAt;
+  }
+
+  function markTelegramCodePending() {
+    const key = getTelegramCodeStorageKey();
+    if (key) localStorage.setItem(key, String(Date.now() + TELEGRAM_CODE_TTL_MS));
+  }
+
+  function clearTelegramCodePending() {
+    const key = getTelegramCodeStorageKey();
+    if (key) localStorage.removeItem(key);
+  }
+
+  function scrollTelegramVerificationIntoView() {
+    const verificationGroup = document.getElementById('telegram-verification-group');
+    if (!verificationGroup) return;
+    window.requestAnimationFrame(function() {
+      verificationGroup.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      const codeInput = document.getElementById('telegram-link-code');
+      if (codeInput && !codeInput.hidden) codeInput.focus();
+    });
   }
 
   async function requestTelegramBackend(action, payload) {
@@ -5445,15 +5486,16 @@
     const sendCodeButton = document.getElementById('telegram-send-code');
     const verifyCodeButton = document.getElementById('telegram-verify-code');
     const codeInput = document.getElementById('telegram-link-code');
+    const codePending = !connected && !pending && !!getTelegramCodeExpiry();
 
     if (preferences) preferences.disabled = !connected;
     if (verificationGroup) verificationGroup.style.display = connected || pending ? 'none' : '';
     if (disconnectRow) disconnectRow.style.display = connected ? 'flex' : 'none';
     if (openBotRow) openBotRow.style.display = pending ? 'flex' : 'none';
     if (refreshRow) refreshRow.style.display = pending ? 'flex' : 'none';
-    if (sendCodeButton) sendCodeButton.hidden = connected;
-    if (verifyCodeButton) verifyCodeButton.hidden = true;
-    if (codeInput) codeInput.hidden = true;
+    if (sendCodeButton) sendCodeButton.hidden = connected || pending || codePending;
+    if (verifyCodeButton) verifyCodeButton.hidden = !codePending;
+    if (codeInput) codeInput.hidden = !codePending;
   }
 
   function applyTelegramSettings(settings) {
@@ -5478,20 +5520,19 @@
     if (!state.authUser || !state.authUser.cedula) return;
     const button = document.getElementById('telegram-send-code');
     const codeInput = document.getElementById('telegram-link-code');
-    const verifyButton = document.getElementById('telegram-verify-code');
     if (button) button.disabled = true;
 
     try {
       const result = await requestTelegramBackend('telegram_start_link', {
         cedula: state.authUser.cedula
       });
+      markTelegramCodePending();
+      setTelegramControlVisibility(false, false);
       if (codeInput) {
-        codeInput.hidden = false;
         codeInput.value = '';
-        codeInput.focus();
       }
-      if (verifyButton) verifyButton.hidden = false;
       setTelegramStatus(result.message || 'Revisa el correo registrado en tu cuenta MGM.');
+      scrollTelegramVerificationIntoView();
     } catch (error) {
       setTelegramStatus(error.message || 'No se pudo enviar el código de verificación.', true);
     } finally {
@@ -5523,6 +5564,7 @@
         'mgm_telegram_client_key_' + state.authUser.cedula,
         result.clientKey
       );
+      clearTelegramCodePending();
       const link = document.getElementById('telegram-open-bot');
       const openBotRow = document.getElementById('telegram-open-bot-row');
       const refreshRow = document.getElementById('telegram-refresh-row');
@@ -5535,6 +5577,11 @@
       if (verifyButton) verifyButton.hidden = true;
       setTelegramStatus('Correo verificado. Abre el bot y pulsa Iniciar para completar la conexión.');
     } catch (error) {
+      const message = String(error.message || '');
+      if (message.toLowerCase().includes('venció') || message.toLowerCase().includes('no es válido')) {
+        clearTelegramCodePending();
+        setTelegramControlVisibility(false, false);
+      }
       setTelegramStatus(error.message || 'No se pudo verificar el código.', true);
     } finally {
       if (verifyButton) verifyButton.disabled = false;
@@ -5546,7 +5593,11 @@
     const clientKey = getTelegramClientKey();
     if (!clientKey) {
       setTelegramControlVisibility(false, false);
-      setTelegramStatus('Conecta tu cuenta mediante el código enviado a tu correo.');
+      setTelegramStatus(
+        getTelegramCodeExpiry()
+          ? 'Ingresa el código enviado a tu correo para continuar.'
+          : 'Conecta tu cuenta mediante el código enviado a tu correo.'
+      );
       return;
     }
 
